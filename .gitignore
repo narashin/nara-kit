@@ -1,0 +1,11 @@
+# Local plugin config (contains company-specific URLs and page IDs)
+confluence.local.md
+*.local.md
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp
