@@ -50,7 +50,6 @@ Other plugins I use alongside nara-kit:
 | `claude-hud` | `jarrodwatts/claude-hud` | Token/session HUD overlay |
 | `ouroboros` | `Q00/ouroboros` | Autonomous evolution engine |
 | `harness` | `revfactory/harness` | Multi-agent orchestration |
-| `oh-my-claudecode` | `omc` | Productivity pack (ultrawork, etc.) |
 | `context-mode` | `context-mode` | Context window management |
 
 ## Configuration
