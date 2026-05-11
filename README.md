@@ -1,5 +1,7 @@
 # nara-kit
 
+> **Note:** Personal skill collection by [@shinnara](https://git.linecorp.com/shinnara). Workflows and conventions reflect personal preferences — use as reference or fork to adapt.
+
 Personal Claude Code workflow toolkit.
 
 ## Skills
