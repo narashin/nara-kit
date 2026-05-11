@@ -30,13 +30,28 @@ Personal Claude Code workflow toolkit.
 
 ## Commands
 
-Slash commands available: `/mwhat`, `/prep`, `/gap`, `/reflect`, `/rfc`, `/commit`, `/pr`, `/incident`, `/incident-fix`, `/publish-spec`, `/session-start`, `/session-end`
+Slash commands available: `/mwhat`, `/prep`, `/gap`, `/reflect`, `/rfc`, `/commit`, `/pr`, `/incident`, `/incident-fix`, `/publish-spec`
 
 ## Install
 
 ```bash
 claude plugin marketplace add https://git.linecorp.com/shinnara/nara-kit.git
 ```
+
+## My Setup
+
+Other plugins I use alongside nara-kit:
+
+| Plugin | Source | Purpose |
+|--------|--------|---------|
+| `superpowers` | `anthropics/claude-plugins-official` | Skill framework (brainstorming, SDD, worktrees, etc.) |
+| `caveman` | `JuliusBrussee/caveman` | Terse response style |
+| `claude-mem` | `thedotmack/claude-mem` | Persistent memory across sessions |
+| `claude-hud` | `jarrodwatts/claude-hud` | Token/session HUD overlay |
+| `ouroboros` | `Q00/ouroboros` | Autonomous evolution engine |
+| `harness` | `revfactory/harness` | Multi-agent orchestration |
+| `oh-my-claudecode` | `omc` | Productivity pack (ultrawork, etc.) |
+| `context-mode` | `context-mode` | Context window management |
 
 ## Configuration
 
