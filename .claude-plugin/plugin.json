@@ -1,0 +1,32 @@
+{
+  "name": "nara-kit",
+  "version": "0.1.0",
+  "description": "Personal workflow toolkit — RFC, PR, incident analysis, gap check, code review, TDD workflow",
+  "author": {
+    "name": "shinnara",
+    "url": "https://git.linecorp.com/shinnara"
+  },
+  "homepage": "https://git.linecorp.com/shinnara/nara-kit",
+  "repository": "https://git.linecorp.com/shinnara/nara-kit",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "rfc",
+    "incident",
+    "code-review",
+    "gap-analysis",
+    "tdd",
+    "pr",
+    "planning"
+  ],
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "interface": {
+    "displayName": "nara-kit",
+    "shortDescription": "Personal workflow toolkit for structured delivery",
+    "longDescription": "RFC writing, PR generation, incident analysis, gap analysis, code review, TDD workflow orchestration, and more.",
+    "developerName": "shinnara",
+    "category": "Productivity",
+    "capabilities": ["Write", "Read"]
+  }
+}
