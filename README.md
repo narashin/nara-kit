@@ -21,6 +21,7 @@ Personal Claude Code workflow toolkit.
 | `code-review` | 5-agent parallel code review (Architecture/Correctness/Reliability/Security/Test) |
 | `pr-respond` | PR review response workflow |
 | `explain` | Generate shareable explanations for different audiences |
+| `empirical-prompt-tuning` | Empirically evaluate and tune prompts/skills with test cases |
 | `wiki-manager` | Convert Confluence pages to PDF report |
 | `workflow-orchestrator` | End-to-end workflow routing (doc or dev mode) |
 | `workflow-dev-mode` | Development workflow (requirements → gap → plan → execute → verify) |
