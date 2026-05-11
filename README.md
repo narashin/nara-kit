@@ -21,7 +21,7 @@ Personal Claude Code workflow toolkit.
 | `code-review` | 5-agent parallel code review (Architecture/Correctness/Reliability/Security/Test) |
 | `pr-respond` | PR review response workflow |
 | `explain` | Generate shareable explanations for different audiences |
-| `empirical-prompt-tuning` | Empirically evaluate and tune prompts/skills with test cases |
+| `empirical-prompt-tuning` | Empirically evaluate and tune prompts/skills with test cases — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) |
 | `workflow-orchestrator` | End-to-end workflow routing (doc or dev mode) |
 | `workflow-dev-mode` | Development workflow (requirements → gap → plan → execute → verify) |
 | `workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) |
