@@ -30,10 +30,6 @@ Personal Claude Code workflow toolkit.
 | `test-implement` | Implement tests from scenario documents |
 | `publish-spec` | Publish spec/plan to Confluence wiki |
 
-## Commands
-
-Slash commands available: `/mwhat`, `/prep`, `/gap`, `/reflect`, `/rfc`, `/commit`, `/pr`, `/incident`, `/incident-fix`, `/publish-spec`
-
 ## Install
 
 ```bash
