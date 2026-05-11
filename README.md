@@ -51,6 +51,7 @@ Other plugins I use alongside nara-kit:
 | `claude-mem` | `thedotmack/claude-mem` | Persistent memory across sessions |
 | `claude-hud` | `jarrodwatts/claude-hud` | Token/session HUD overlay |
 | `ouroboros` | `Q00/ouroboros` | Autonomous evolution engine |
+| `plannotator` | `backnotprop/plannotator` | Plan annotation and analysis |
 | `harness` | `revfactory/harness` | Multi-agent orchestration |
 | `context-mode` | `context-mode` | Context window management |
 
