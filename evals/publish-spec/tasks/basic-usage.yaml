@@ -1,0 +1,23 @@
+id: basic-usage-001
+name: "Publish spec to Confluence with dry-run flow"
+description: |
+  Verifies the full publish flow: collect spec file path and Jira ticket ID,
+  convert to 7-section LYRIS template, save confluence-draft.md as dry-run preview,
+  ask user confirmation, then publish in Confluence storage format (XHTML).
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "docs/plan/spec-notification.md를 Confluence에 게시해줘. Jira 티켓은 PROJ-1234야"
+  files: []
+expected:
+  output_contains:
+    - "dry-run"
+    - "template"
+    - "Confluence"
+  output_not_contains:
+    - "describe("
+    - "import "
+    - "npm install"
+  outcomes:
+    - type: task_completed

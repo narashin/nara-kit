@@ -1,24 +1,40 @@
 ---
 name: commit
-description: Generate a git commit message following conventional commits format with ticket ID prefix. Use when ready to commit changes. Triggers on "commit", "커밋 메시지", "commit message", "/commit TICKET-ID".
-version: 0.1.0
+description: >-
+  Analyze staged git changes and generate a conventional commit message with ticket ID prefix.
+  USE FOR: "commit", "커밋 메시지", "commit message", "/commit TICKET-ID", 커밋 생성.
+  DO NOT USE FOR: git push, PR creation, branch management.
 ---
 
 # commit — Git 커밋 메시지 생성
 
-### Commit Message Format
-- Format: `<TICKET-ID> <type>: <Subject>`
-- `<TICKET-ID>`: Use argument if provided (e.g., `/commit PROJ-111`). Otherwise use `NO-ISSUE`.
-- `<type>`: feat, fix, docs, style, refactor, perf, test, chore, ci, revert
-- `<Subject>`: Capitalized verb, present tense, under 72 chars
+## Steps
 
-### Best Practices
-- Run pre-commit checks before committing.
-- Each commit should be atomic and logically grouped.
-- Suggest splitting if multiple distinct changes exist.
+1. `git diff --cached --stat`으로 staged 변경 확인. staged 파일이 없으면 유저에게 안내 후 중단.
+2. `git diff --cached`로 변경 내용 분석 — 변경 의도(feat/fix/refactor 등)와 범위 파악.
+3. 아래 Format 규칙에 따라 커밋 메시지 생성.
+4. 복수 관심사가 섞여 있으면 커밋 분리 제안.
+5. 유저 확인 후 `git commit -m "<message>"` 실행.
 
-### Examples
+## Commit Message Format
+
+```
+<TICKET-ID> <type>: <Subject>
+```
+
+- `<TICKET-ID>`: 인자로 받은 값 (e.g., `/commit PROJ-111`). 없으면 `NO-ISSUE`.
+- `<type>`: feat | fix | docs | style | refactor | perf | test | chore | ci | revert
+- `<Subject>`: 대문자 동사 시작, 현재형, 72자 이내. 기능/목적 수준으로 기술 (파일 경로 반복 금지, e.g., "Add tax calculation helper" not "Add function to utils.py").
+
+## Examples
+
 - `PROJ-111 feat: Add new feature`
 - `OPS-999 fix: Fix ticket re-open logic`
 - `NO-ISSUE refactor: Merge duplicated logics`
 - `NO-ISSUE docs: Update README for setup instructions`
+
+## Error Handling
+
+- staged 파일 없음 → `git add`로 스테이징 먼저 안내.
+- pre-commit hook 실패 → 훅 에러 메시지 표시 후 수정 유도. `--no-verify` 사용 금지.
+- 커밋 메시지 72자 초과 → 축약 후 재생성.

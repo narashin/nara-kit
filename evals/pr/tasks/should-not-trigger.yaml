@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "Commit request should not trigger PR creation"
+description: |
+  Test that a commit message request does NOT activate PR creation logic.
+  Commits and PRs are handled by separate skills.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "커밋 메시지 생성해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "gh pr create"
+    - "base branch"
+    - "Breaking Changes"
+    - "Rollout"

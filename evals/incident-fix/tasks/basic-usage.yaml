@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "TDD fix from incident report"
+description: |
+  Test that the skill reads docs/incident-report.md and executes
+  the 3-phase TDD workflow: RED (failing test), GREEN (minimal fix),
+  and side-effects verification.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "incident-fix 실행해줘. 장애 리포트 기반으로 수정해줘"
+  files:
+    - path: docs/incident-report.md
+expected:
+  output_contains:
+    - "incident-report.md"
+    - "Phase"
+  output_not_contains:
+    - "/incident"
+  outcomes:
+    - type: task_completed

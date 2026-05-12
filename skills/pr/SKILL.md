@@ -1,35 +1,24 @@
 ---
 name: pr
-description: Generate a Pull Request title and body by auto-detecting base branch and analyzing commits. Writes in Korean. Triggers on "pr", "PR 만들어", "pull request", "PR 제목", "/pr".
-version: 0.1.0
+description: >-
+  Analyze commits against the auto-detected base branch and generate a Pull Request title and body in Korean.
+  USE FOR: "pr", "PR 만들어", "pull request", "PR 제목", "/pr".
+  DO NOT USE FOR: git commit, branch management, code review.
 ---
 
 # pr — Smart PR Generator
 
-Generate a Pull Request title and body by intelligently detecting the base branch. Write in Korean.
+## Steps
 
-## Automatic Base Branch Detection
+1. 아래 스크립트로 base branch 자동 감지.
+2. `git log $BASE..HEAD --oneline`으로 커밋 목록 수집.
+3. 커밋 분석 → Title Format 규칙에 따라 제목 생성.
+4. Body Sections 규칙에 따라 본문 생성 (Korean).
+5. `gh pr create --title "..." --body "..."` 명령 제안. 유저 확인 후 실행.
 
-```bash
-UPSTREAM=$(git rev-parse --abbrev-ref @{upstream} 2>/dev/null)
-if [ -z "$UPSTREAM" ]; then
-  CURRENT=$(git rev-parse --abbrev-ref HEAD)
-  if [[ $CURRENT =~ ^feature/PROJ-([0-9]+)- ]]; then
-    PARENT_FEATURE="feature/PROJ-${BASH_REMATCH[1]}"
-    if git rev-parse --verify origin/$PARENT_FEATURE >/dev/null 2>&1; then
-      UPSTREAM="origin/$PARENT_FEATURE"
-    fi
-  fi
-  if [ -z "$UPSTREAM" ]; then
-    if git rev-parse --verify origin/master >/dev/null 2>&1; then
-      UPSTREAM="origin/master"
-    else
-      UPSTREAM="origin/main"
-    fi
-  fi
-fi
-BASE=$(git merge-base HEAD $UPSTREAM 2>/dev/null)
-```
+## Base Branch Detection
+
+Auto-detect base: upstream tracking > parent feature branch > origin/master > origin/main. See [references/base-branch-detection.md](references/base-branch-detection.md) for script.
 
 ## Title Format
 `<TICKET-ID> <primary-type>: <Subject>`
@@ -45,3 +34,21 @@ BASE=$(git merge-base HEAD $UPSTREAM 2>/dev/null)
 - Validation
 - Rollout / Backout
 - Linked Issues (`Closes TICKET-ID`)
+
+## Examples
+
+```
+# Title
+PROJ-111 feat: Add order cancellation API
+
+# Body (Korean)
+## 개요
+- 주문 취소 API 신규 추가 (사용자 요청 기반)
+- 취소 사유 기록 및 환불 트리거 포함
+```
+
+## Error Handling
+
+- 커밋 없음 (`git log` 결과 비어있음) → base branch 감지 실패 가능성 안내, 수동 지정 요청.
+- `gh` CLI 미설치 또는 미인증 → 설치/인증 가이드 안내 후 중단.
+- remote에 push 안 됨 → `git push -u origin <branch>` 먼저 실행 안내.

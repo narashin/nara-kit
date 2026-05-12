@@ -1,0 +1,18 @@
+id: edge-case-001
+name: "No commits on branch — PR should abort"
+description: |
+  Test that the skill handles the case where git log returns no commits
+  between base and HEAD, informing the user about possible base branch
+  detection failure and requesting manual specification.
+tags:
+  - edge-case
+inputs:
+  prompt: "PR 생성해줘. 커밋은 아직 없어"
+  files: []
+expected:
+  output_contains:
+    - "base"
+  output_not_contains:
+    - "gh pr create --title"
+  outcomes:
+    - type: task_completed

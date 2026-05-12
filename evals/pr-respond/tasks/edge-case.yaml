@@ -1,0 +1,22 @@
+id: edge-case-001
+name: "Dry-run mode analyzes without posting replies or changing code"
+description: |
+  Verifies that with --dry-run flag, the skill performs full analysis
+  (classify, verify, decide) but does not post comment replies, make code
+  changes, or suggest commits. Output is analysis-only.
+tags:
+  - edge-case
+inputs:
+  prompt: "PR 리뷰 대응해줘 --dry-run 모드로 분석만 해줘"
+  files: []
+expected:
+  output_contains:
+    - "blocking"
+    - "suggestion"
+    - "hold"
+  output_not_contains:
+    - "Fixed."
+    - "git commit"
+    - "pushed"
+  outcomes:
+    - type: task_completed

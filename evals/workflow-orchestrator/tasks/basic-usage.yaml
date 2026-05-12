@@ -1,0 +1,19 @@
+id: basic-usage-001
+name: "Classify implementation request as dev mode"
+description: |
+  Verify that the orchestrator classifies a feature implementation request as dev mode
+  and routes to workflow-dev-mode with scope classification.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "로그인 기능 구현 진행해줘. Jira 티켓 PROJ-456 기반으로"
+  files: []
+expected:
+  output_contains:
+    - "dev"
+  output_not_contains:
+    - "설명해줘"
+    - "ADR"
+  outcomes:
+    - type: task_completed

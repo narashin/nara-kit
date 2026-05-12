@@ -9,3 +9,14 @@ confluence.local.md
 .idea/
 .vscode/
 *.swp
+
+# MCP / tool local state
+.serena/
+
+# Waza artifacts nested inside skills (waza init duplicate)
+skills/*/.github/
+skills/*/.gitignore
+skills/*/.waza.yaml
+skills/*/README.md
+skills/*/evals/
+skills/*/skills/

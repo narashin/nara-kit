@@ -1,0 +1,18 @@
+id: edge-case-001
+name: "RFC without ticket ID — should ask user"
+description: |
+  Test that the skill asks the user for a ticket ID when none is provided,
+  rather than proceeding without one or inventing a ticket number.
+tags:
+  - edge-case
+inputs:
+  prompt: "RFC 문서 작성해줘. 결제 시스템 리팩토링 관련이야"
+  files: []
+expected:
+  output_contains:
+    - "티켓"
+  output_not_contains:
+    - "PROJ-"
+    - "TICKET-"
+  outcomes:
+    - type: task_completed

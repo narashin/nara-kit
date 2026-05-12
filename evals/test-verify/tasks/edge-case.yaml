@@ -1,0 +1,21 @@
+id: edge-case-001
+name: "Verify scenarios standalone without prior test-discover context"
+description: |
+  Verifies standalone mode: when invoked without a preceding test-discover run,
+  the skill scans docs/test-scenarios/ and common test directories for scenario
+  files, selects one, and proceeds with the 3-persona review.
+tags:
+  - edge-case
+inputs:
+  prompt: "테스트 리뷰 해줘 -- 시나리오 파일 경로 모르겠어"
+  files: []
+expected:
+  output_contains:
+    - "PASS"
+    - "NEEDS_WORK"
+    - "FAIL"
+  output_not_contains:
+    - "scenarios-detailed.md generated"
+    - "S2 candidates"
+  outcomes:
+    - type: task_completed

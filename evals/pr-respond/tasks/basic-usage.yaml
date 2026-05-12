@@ -1,0 +1,22 @@
+id: basic-usage-001
+name: "Respond to PR review comments with classify-verify-decide flow"
+description: |
+  Verifies that the skill fetches PR review comments, classifies each as
+  blocking/suggestion/question/nitpick, verifies against the codebase,
+  and decides accept, rebut, or hold for each comment.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "PR 리뷰 대응해줘"
+  files: []
+expected:
+  output_contains:
+    - "accept"
+    - "review"
+  output_not_contains:
+    - "Great point!"
+    - "Thanks for the suggestion!"
+    - "You're right!"
+  outcomes:
+    - type: task_completed

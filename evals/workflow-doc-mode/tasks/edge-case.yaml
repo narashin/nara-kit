@@ -1,0 +1,20 @@
+id: edge-case-001
+name: "Doc mode handles mixed planning-and-implementation request"
+description: |
+  Verifies that when a request mixes planning and implementation intent but design
+  is not yet stable, the skill stays in doc mode and defers implementation to
+  workflow-dev-mode rather than jumping to code.
+tags:
+  - edge-case
+inputs:
+  prompt: "결제 모듈 RFC 작성하고 바로 구현도 시작해줘. PG사 연동이 필요한데 어떤 PG를 쓸지는 아직 미정이야"
+  files: []
+expected:
+  output_contains:
+    - "RFC"
+    - "design"
+  output_not_contains:
+    - "npm install"
+    - "implementation complete"
+  outcomes:
+    - type: task_completed

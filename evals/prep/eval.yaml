@@ -1,0 +1,28 @@
+name: prep-eval
+description: Evaluation suite for prep — external SoT localization into docs/requirements.md.
+skill: prep
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill localize external sources into a structured requirements document?
+graders:
+  - type: code
+    name: has_output
+    config:
+      assertions:
+        - "len(output) > 0"
+  - type: text
+    name: relevant_content
+    config:
+      regex_match:
+        - "(?i)(requirements|요구사항|Source|UNVERIFIED|docs/requirements)"
+tasks:
+  - "tasks/*.yaml"

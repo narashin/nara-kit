@@ -1,0 +1,23 @@
+id: basic-usage-001
+name: "Verify test scenarios with 3-persona parallel review"
+description: |
+  Verifies that the skill dispatches QA Lead and Developer agents in parallel (Phase 1),
+  then Red Team agent (Phase 2), and synthesizes a unified verdict (PASS/NEEDS_WORK/FAIL)
+  into docs/test-scenarios/scenarios-review.md.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "시나리오 검증해줘 docs/test-scenarios/scenarios-detailed.md"
+  files: []
+expected:
+  output_contains:
+    - "QA Lead"
+    - "Developer"
+    - "Red Team"
+  output_not_contains:
+    - "describe("
+    - "it("
+    - "import "
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,27 @@
+id: basic-usage-001
+name: "RFC document generation with ticket ID"
+description: |
+  Test that the skill generates a complete RFC document following the v2 template
+  with all required sections (Background, Goal, Proposal, Work to do, Impact & Risk,
+  Open Questions) and saves it to docs/rfc/.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "/rfc PROJ-222 주문 취소 API 설계 RFC 작성해줘"
+  files: []
+expected:
+  output_contains:
+    - "Background"
+    - "Goal"
+    - "Proposal"
+    - "Work to do"
+    - "Impact"
+    - "Risk"
+    - "Open Questions"
+    - "PROJ-222"
+  output_not_contains:
+    - "git commit"
+    - "gh pr create"
+  outcomes:
+    - type: task_completed

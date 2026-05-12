@@ -1,0 +1,22 @@
+id: basic-usage-001
+name: "Gap analysis with requirements.md"
+description: |
+  Test that the skill reads docs/requirements.md, compares each requirement
+  against the codebase, and produces docs/gap.md with a score (0-100).
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "gap 분석해줘. 요구사항 대비 구현 현황 파악해줘"
+  files:
+    - path: docs/requirements.md
+expected:
+  output_contains:
+    - "requirements.md"
+    - "gap.md"
+    - "Score"
+  output_not_contains:
+    - "git commit"
+    - "/prep"
+  outcomes:
+    - type: task_completed

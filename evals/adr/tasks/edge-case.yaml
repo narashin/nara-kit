@@ -1,0 +1,19 @@
+id: edge-case-001
+name: "Supersede an existing ADR"
+description: |
+  When superseding a previous ADR, the skill should update the old ADR's status
+  to Superseded and reference the new ADR number in both documents.
+tags:
+  - edge-case
+inputs:
+  prompt: "ADR-0003을 대체하는 새 ADR을 작성해줘. 기존에 REST API로 결정했는데 gRPC로 변경했어. 성능 요구사항이 바뀌어서"
+  files: []
+expected:
+  output_contains:
+    - "ADR"
+    - "Supersed"
+  output_not_contains:
+    - "gap 분석"
+    - "요구사항 정리"
+  outcomes:
+    - type: task_completed

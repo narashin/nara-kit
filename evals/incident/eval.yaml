@@ -1,0 +1,29 @@
+name: incident-eval
+description: Evaluation suite for incident analysis report generation skill.
+skill: incident
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill produce a structured incident report with hypotheses and evidence?
+graders:
+  - type: code
+    name: has_output
+    config:
+      assertions:
+        - "len(output) > 0"
+  - type: text
+    name: incident_report_content
+    config:
+      regex_match:
+        - "(?i)(incident-report\\.md|가설|hypothesis|root cause)"
+        - "(?i)(evidence|증거|Proposed Fix|Side Effects)"
+tasks:
+  - "tasks/*.yaml"

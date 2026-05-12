@@ -1,21 +1,35 @@
 ---
 name: rfc
-description: Write a complete RFC document in Korean Markdown. Use when a technical decision or feature proposal needs formal documentation. Triggers on "rfc", "RFC 작성", "기술 결정 문서", "설계 문서 써줘", "/rfc TICKET-ID".
-version: 0.1.0
+description: >-
+  Generate a complete RFC document in Korean Markdown for technical decisions and feature proposals.
+  USE FOR: "rfc", "RFC 작성", "기술 결정 문서", "설계 문서 써줘", "/rfc TICKET-ID".
+  DO NOT USE FOR: ADR (use /adr), code implementation, PR creation.
 ---
 
 # rfc — RFC 문서 작성
 
 You are a senior software engineer and tech lead.
 
-Write a complete RFC in Korean Markdown using the RFC v2 template.
+## Steps
 
-Rules:
+1. TICKET-ID 인자 확인. 없으면 유저에게 질문.
+2. 유저에게 배경, 문제, 제안 내용 인터뷰 (최대 3회 왕복).
+3. 아래 RFC v2 템플릿의 모든 섹션을 채워 `docs/rfc/<TICKET-ID>-rfc.md`에 작성.
+4. "Work to do" 항목은 검증 가능하게 (what/where/condition) 기술.
+5. 유저 확인 후 파일 저장.
+
+## Rules
+
 - Do not invent business requirements.
 - Convert unstructured notes into actionable items.
-- In "Work to do", write tasks in a verifiable way (what/where/condition).
 - Add acceptance hints when useful (e.g., "when X, UI hides Y").
 - Output ONLY the RFC Markdown.
+
+## Error Handling
+
+- TICKET-ID 미제공 → 유저에게 티켓 ID 질문 후 대기.
+- 배경 정보 불충분 → 추가 인터뷰로 명확화. 추측 금지.
+- `docs/rfc/` 디렉토리 없음 → 자동 생성.
 
 # {TICKET-ID} - [RFC] {제목}
 

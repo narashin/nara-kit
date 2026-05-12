@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "Documentation-only request should not trigger dev mode"
+description: |
+  A request to write a design document or spec without implementation intent
+  should not activate workflow-dev-mode. It belongs to workflow-doc-mode.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "API 설계 제안서를 Confluence에 올릴 문서로 작성해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "TDD"
+    - "gap 분석"
+    - "verification"
+    - "구현 시작"

@@ -1,0 +1,18 @@
+id: should-not-trigger-001
+name: "Doc mode does not trigger on direct code implementation request"
+description: |
+  Validates that a clear code-level task with stable requirements does not activate
+  doc mode. This should route to workflow-dev-mode or direct implementation instead.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "src/utils/date.ts에 있는 formatDate 함수에서 timezone 처리 버그 고쳐줘"
+  files: []
+expected:
+  output_not_contains:
+    - "spec"
+    - "RFC"
+    - "design document"
+    - "artifact type"
+    - "Intake"

@@ -1,0 +1,18 @@
+id: should-not-trigger-001
+name: "Bug fix request should not trigger incident analysis"
+description: |
+  Test that a direct bug fix request does NOT activate the incident analysis
+  skill. Fixing code is handled by /incident-fix, not /incident.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "이 버그 고쳐줘. NullPointerException이 발생하는 부분 수정해"
+  files: []
+expected:
+  output_not_contains:
+    - "incident-report.md"
+    - "가설"
+    - "Proposed Fix"
+    - "Side Effects"
+    - "반대 심문"

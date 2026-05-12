@@ -1,0 +1,18 @@
+id: edge-case-001
+name: "No learnings to capture — clean exit"
+description: |
+  Test that the skill outputs a clean termination message when there are
+  no meaningful decisions, conventions, or warnings from the session.
+tags:
+  - edge-case
+inputs:
+  prompt: "reflect 해줘. 이번 세션에서는 코드 읽기만 했어"
+  files: []
+expected:
+  output_contains:
+    - "특이사항 없음"
+  output_not_contains:
+    - "memory"
+    - "learnings.md"
+  outcomes:
+    - type: task_completed
