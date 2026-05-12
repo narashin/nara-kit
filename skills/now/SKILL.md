@@ -1,12 +1,12 @@
 ---
-name: mwhat
+name: now
 description: >-
   Assess current session state — git branch, changes, docs, gap score — and recommend the next action.
-  USE FOR: "mwhat", "what should I do", "where were we", "세션 시작", "어디까지 했지", "다음 뭐해".
+  USE FOR: "now", "what should I do", "where were we", "세션 시작", "어디까지 했지", "다음 뭐해", "지금 뭐해".
   DO NOT USE FOR: code implementation, gap analysis execution, commit or PR creation.
 ---
 
-# mwhat — 상황 판단 + 다음 행동 추천
+# now — 상황 판단 + 다음 행동 추천
 
 세션 시작/재개 시 현재 상황을 파악하고 다음 행동을 추천한다.
 
@@ -19,7 +19,7 @@ description: >-
 
 ## 판단 + 출력
 
-수집 결과로 판단 후 추천. Load [references/mwhat-tables.md](references/mwhat-tables.md) for judgment tables and output format.
+수집 결과로 판단 후 추천. Load [references/now-tables.md](references/now-tables.md) for judgment tables and output format.
 
 핵심 로직: main 브랜치 → `/prep` | requirements 없음 → `/prep` | gap 없음 → `/gap` | gap < 80 → 실행 방법 판단 | gap >= 80 → 리뷰/마무리.
 

@@ -1,8 +1,8 @@
 id: should-not-trigger-001
-name: "Direct code task should not trigger mwhat"
+name: "Direct code task should not trigger now"
 description: |
-  A direct implementation request like refactoring should not activate mwhat.
-  mwhat is only for session state assessment, not code execution.
+  A direct implementation request like refactoring should not activate now.
+  now is only for session state assessment, not code execution.
 tags:
   - anti-trigger
   - negative-test

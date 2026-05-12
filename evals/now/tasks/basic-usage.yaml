@@ -1,13 +1,13 @@
 id: basic-usage-001
 name: "Session start assessment on feature branch"
 description: |
-  Verify that mwhat collects git state, checks docs/requirements.md and docs/gap.md,
+  Verify that now collects git state, checks docs/requirements.md and docs/gap.md,
   and produces a situation summary with a concrete next-action recommendation.
 tags:
   - basic
   - happy-path
 inputs:
-  prompt: "mwhat"
+  prompt: "now"
   files: []
 expected:
   output_contains:

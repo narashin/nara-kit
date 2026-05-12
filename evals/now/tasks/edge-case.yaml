@@ -2,7 +2,7 @@ id: edge-case-001
 name: "Session on main branch with no docs"
 description: |
   When on main branch with no docs/requirements.md or docs/gap.md,
-  mwhat should detect the absence and recommend /prep as the first step.
+  now should detect the absence and recommend /prep as the first step.
 tags:
   - edge-case
 inputs:
