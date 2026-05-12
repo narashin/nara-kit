@@ -2,14 +2,56 @@
 
 ## Required sequence
 
-1. Confirm documentation goal, audience, and scope
-2. Localize source-of-truth when requirements are external or scattered
-3. Clarify constraints, success criteria, and open questions
-4. Shape design or product framing before locking recommendation
-5. Produce accepted approach summary or documentation artifact
-6. Route to ADR or RFC step only when decision record is warranted
-7. **Offer `publish-spec`** — ask user whether to publish the artifact to Confluence (dry-run -> confirm -> publish)
-8. Stop before implementation unless user explicitly asks to enter dev workflow
+1. Assess requirement clarity (clear vs vague) — see Clarity Gate in SKILL.md
+2. **Clear path**: brainstorming → prep (persist) → artifact
+3. **Vague path**: ooo interview → prep (persist) → optional pm/seed → artifact
+4. Both paths: `prep` persists to `docs/requirements.md` before artifact creation
+5. Route to ADR or RFC step only when decision record is warranted
+6. **Offer `publish-spec`** — ask user whether to publish to Confluence (dry-run → confirm → publish)
+7. Stop before implementation unless user explicitly asks to enter dev workflow
+
+## Clarity assessment
+
+| Clear signals | Vague signals |
+|---------------|---------------|
+| Concrete feature description with boundaries | "뭔가 만들고 싶은데" |
+| Acceptance criteria stated or derivable | No scope, audience, or constraints |
+| External SoT available (Jira, Figma, PRD, Confluence) | "아이디어 단계", "탐색 중" |
+| User names specific artifact type (RFC, spec) | "기획서 같은 거" (type unclear) |
+
+When ambiguous, ask one question: "요구사항이 명확한 편인가요, 아직 탐색 단계인가요?"
+
+## Mandatory routing table
+
+### Clear path
+| Condition | Route |
+|-----------|-------|
+| External SoT exists | `prep` → `superpowers:brainstorming` → `prep` (update) → artifact |
+| No external SoT, requirements clear | `superpowers:brainstorming` → `prep` (persist) → artifact |
+| Brainstorm reveals ambiguity | Fall back to vague path (ooo interview) |
+
+### Vague path
+| Condition | Route |
+|-----------|-------|
+| Scope/audience unclear | `ooo interview` → `prep` (persist) → artifact |
+| Trade-off framing needed | `ooo interview` → `prep` → `ooo pm` → artifact |
+| Design must be frozen | `ooo interview` → `prep` → `ooo pm` → `ooo seed` → artifact |
+
+### Post-artifact
+| Condition | Route |
+|-----------|-------|
+| Architectural decision made | `adr` |
+| Artifact complete | Offer `publish-spec` |
+| Implementation requested | `workflow-dev-mode` |
+
+## prep as universal persist
+
+`prep` serves as the convergence point for both paths:
+- **Clear path**: brainstorming output → `prep` → `docs/requirements.md`
+- **Vague path**: ooo interview output → `prep` → `docs/requirements.md`
+- **External SoT**: Jira/Figma/Confluence → `prep` → `docs/requirements.md`
+
+This ensures `docs/requirements.md` is always the source of truth for artifact creation, regardless of how requirements were gathered.
 
 ## Artifact types
 
@@ -18,30 +60,21 @@
 - `design`: architecture or flow description
 - `plan`: planning artifact before implementation begins
 
-## Mandatory routing table
-
-- external or scattered requirements -> `prep`
-- design ambiguity -> `ooo interview`
-- product framing or option comparison -> `ooo pm`
-- design snapshot needed -> `ooo seed`
-- architectural decision record needed -> `adr`
-- documentation artifact complete -> `publish-spec` (offer to user, not forced)
-- implementation requested after design stabilizes -> `workflow-dev-mode`
-
 ## Output contract
 
 Before routing onward, produce:
 
 ### Workflow Intake
 - Mode: `doc`
+- Clarity: `clear` or `vague`
 - Artifact type
 - Scope
 - Reasoning bullets
 
 ### Gate Status
-- source-of-truth localization status
-- clarification status
-- design shaping status
+- clarity assessment status
+- source-of-truth localization status (`prep`)
+- design exploration status (brainstorming or ooo interview)
 - documentation artifact status
 - confluence publish status
 - implementation handoff status
@@ -62,23 +95,27 @@ Before routing onward, produce:
 
 - stop and ask when artifact type is unclear
 - stop and ask when audience materially changes document shape
-- stop and ask when external requirements are missing
-- continue without asking only when next documentation gate is unambiguous
+- stop and ask when clarity is ambiguous (ask the one question)
+- continue without asking only when next gate is unambiguous
 
 ## Examples
 
-### Example 1
+### Example 1: Clear path
+User: `승인 후 날짜 수정 기능 기획문서 써줘. Jira에 티켓 있어.`
+Route: `prep` (Jira SoT) → `superpowers:brainstorming` → `prep` (update requirements.md) → spec artifact → offer `publish-spec`.
+
+### Example 2: Vague path
 User: `Write design doc for replacing session storage.`
-Route: doc -> `ooo interview` -> design artifact -> optional `adr`.
+Route: `ooo interview` (scope unclear) → `prep` (persist) → design artifact → optional `adr`.
 
-### Example 2
+### Example 3: Vague path with PM
 User: `Draft RFC for tenant-aware auth migration.`
-Route: doc -> `prep` when requirements are scattered -> `ooo pm` -> `ooo seed` -> RFC.
+Route: `ooo interview` → `prep` → `ooo pm` (trade-off comparison) → RFC artifact.
 
-### Example 3
+### Example 4: Clear path, no external SoT
+User: `이 API spec 문서로 정리해줘. 요구사항은 이미 정해져 있어.`
+Route: `superpowers:brainstorming` → `prep` (persist) → spec artifact.
+
+### Example 5: Clarity fallback
 User: `Help me plan feature rollout before we code.`
-Route: doc -> `ooo interview` -> planning artifact -> handoff to `workflow-dev-mode` only after design stabilizes.
-
-### Example 4
-User: `기획문서 써줘. 승인 후 날짜 수정 기능.`
-Route: doc -> codebase exploration -> spec artifact -> offer `publish-spec` (dry-run -> confirm -> publish to Confluence) -> done.
+Route: clarity ambiguous → ask → user says "아직 탐색 중" → `ooo interview` → `prep` → planning artifact → handoff to `workflow-dev-mode`.

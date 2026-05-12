@@ -1,42 +1,49 @@
 ---
 name: workflow-doc-mode
 description: >-
-  Run documentation-first workflow producing specs, RFCs, design docs, or planning artifacts through structured gates from SoT localization through design shaping.
+  Run documentation-first workflow producing specs, RFCs, design docs, or planning artifacts.
+  Routes by requirement clarity: clear → brainstorming → prep → spec, vague → ooo interview → prep → spec.
   USE FOR: "doc mode", "기획 모드", "spec 작성", "RFC", "설계 문서".
   DO NOT USE FOR: direct code implementation, bug fixes, test writing.
 ---
 
 # Workflow Doc Mode
 
-Run documentation-first workflow after router classifies request as `doc`.
+Documentation-first workflow after router classifies request as `doc`.
 
-## Use when
+## Clarity Gate
 
-- output is spec, RFC, design doc, proposal, architecture note, or planning artifact
-- user asks for planning before coding
-- request mixes planning and implementation but design intent is not stable yet
+Before routing, assess requirement clarity:
 
-## Do not use when
+| Signal | Clear | Vague |
+|--------|-------|-------|
+| User describes feature with acceptance criteria | ✓ | |
+| External SoT available (Jira, Figma, PRD) | ✓ | |
+| User says "뭔가 만들고 싶은데" / "아이디어 단계" | | ✓ |
+| No concrete scope, audience, or constraints | | ✓ |
 
-- user asks for direct code, config, test, or bugfix work with stable requirements
-- request is purely operational with no design artifact needed
+## Routes
 
-## Decision rules
+**Clear path** (requirements stable):
+1. External SoT exists → `prep` first
+2. `superpowers:brainstorming` — explore design options
+3. `prep` — persist brainstorm output to `docs/requirements.md`
+4. Produce artifact (spec/RFC/design/plan)
 
-1. Confirm request belongs to documentation-first workflow.
-2. Identify artifact type: `spec`, `rfc`, `design`, or `plan`.
-3. Check if external requirements need localization first.
-4. Check if design ambiguity needs discovery or product framing.
-5. Route in same turn when unambiguous. Hand to `workflow-dev-mode` for implementation.
+**Vague path** (requirements need discovery):
+1. `ooo interview` — clarify scope, audience, constraints
+2. `prep` — persist interview output to `docs/requirements.md`
+3. `ooo pm` — product framing (if trade-off comparison needed)
+4. `ooo seed` — lock design snapshot (if design must be frozen)
+5. Produce artifact
 
-## Execution
+**Both paths converge**: `prep` always persists to `docs/requirements.md` before artifact creation.
 
-- External SoT exists -> `prep` before design shaping
-- Scope or audience unclear -> `ooo interview`
-- Trade-off framing matters -> `ooo pm`
-- Design must be locked -> `ooo seed`
-- Architectural decision point -> `adr`
-- Artifact complete -> offer `publish-spec` (dry-run -> confirm -> publish to Confluence)
-- Implementation requested -> route to `workflow-dev-mode`
+## Post-artifact
+
+- Architectural decision → `adr`
+- Publish to wiki → offer `publish-spec` (dry-run → confirm → publish)
+- Implementation requested → handoff to `workflow-dev-mode`
+- Session end → `reflect`
 
 **Load** [references/doc-workflow-details.md](references/doc-workflow-details.md) for routing table, output contract, examples, and hallucination guards.
