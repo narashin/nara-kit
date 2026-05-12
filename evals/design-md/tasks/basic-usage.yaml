@@ -1,0 +1,18 @@
+id: adopt-mode-001
+name: Adopt Mode — Tailwind Project
+description: |
+  User wants to create a DESIGN.md for a project with tailwind.config.ts.
+  Skill should enter adopt mode: scan artifacts, recommend templates, explain token replacement.
+tags:
+  - basic
+  - adopt
+inputs:
+  prompt: "design.md 만들어줘. 프로젝트에 tailwind.config.ts 있고 React + Tailwind 사용중이야."
+  files:
+    - path: tailwind-config-sample.ts
+expected:
+  output_contains:
+    - "getdesign"
+    - "template"
+  outcomes:
+    - type: task_completed

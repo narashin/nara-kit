@@ -73,3 +73,4 @@ For each changed file:
 4. Check related test files
 5. **Search for reusable existing code** — scan utility directories, shared modules, and adjacent files with `grep -r`
 6. Detect tech stack, then read the relevant section from `references/stack-specific.md`
+7. **Design spec check (conditional)**: If changed files include `components/`, `pages/`, `styles/`, or `*.tsx`/`*.css`/`*.scss`, check for `DESIGN.md` at project root. If present, read its YAML frontmatter (colors, typography, rounded, spacing tokens) and the Do's/Don'ts section. Pass these to Agent 4 (architecture) as design context. Skip entirely if no FE files changed or no DESIGN.md exists.

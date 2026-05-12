@@ -114,6 +114,16 @@ Focus: **codebase compatibility and design quality.**
 - Helm/K8s: env vars in values.yaml must correspond to `os.getenv()` calls in code; port numbers must match `EXPOSE` and listen addresses
 - .gitignore: must not exclude files that are tracked and needed (or vice versa)
 
+**Design Consistency (conditional — only when DESIGN.md context is provided)**:
+- Hardcoded hex values that should use Tailwind color tokens defined in DESIGN.md
+- Border radius values deviating from the project's radius scale (e.g., `rounded-lg` when spec says `{rounded.200}`)
+- Font weight usage violating the project's weight mapping (e.g., raw `font-bold` when LDS classes required)
+- Color usage violating Do's/Don'ts (e.g., primary color used as content area background)
+- Shadow usage on elements where DESIGN.md specifies border-only depth
+- Components not using the project's design system library when one is available
+- Spacing values outside the defined scale
+- Skip this entire section if no DESIGN.md context was provided in Phase 2
+
 **Stack-specific**:
 - Spring: Bean scope misuse, circular dependencies
 - React: component split granularity, props drilling vs context

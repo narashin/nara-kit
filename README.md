@@ -154,20 +154,35 @@ All external skills are **optional enhancements**. Without them, the workflow fa
 
 모든 외부 스킬은 **선택적 강화**. 없으면 수동 대안으로 동작 (예: 직접 계획 작성, 직접 테스트 실행).
 
-| External Skill | Plugin | Stage / 단계 | Required? |
-|----------------|--------|--------------|-----------|
-| `superpowers:brainstorming` | superpowers | Design exploration / 설계 탐색 | Optional |
-| `superpowers:writing-plans` | superpowers | Plan creation / 계획 생성 | Optional |
-| `superpowers:subagent-driven-development` | superpowers | Large-scale execution / 대규모 실행 | Optional |
-| `superpowers:test-driven-development` | superpowers | TDD gate / TDD 게이트 | Optional |
-| `superpowers:finishing-a-development-branch` | superpowers | Branch finish / 브랜치 마무리 | Optional |
-| `superpowers:receiving-code-review` | superpowers | PR response principle / PR 대응 원칙 | Optional |
-| `ooo interview` | ouroboros | Clarify requirements / 요구사항 명확화 | Optional |
-| `ooo pm` | ouroboros | Product framing / 프로덕트 프레이밍 | Optional |
-| `ooo seed` | ouroboros | Design snapshot / 설계 스냅샷 | Optional |
-| `ooo run` / `ooo auto` | ouroboros | Execution fallback / 실행 대안 | Optional |
-| `ooo evaluate` | ouroboros | Completion verification / 완료 검증 | Optional |
-| `codex:adversarial-review` | codex | Adversarial final review / 반론 최종 리뷰 | Optional |
+### Referenced by nara-kit skills / 스킬에서 직접 참조
+
+| External Skill | Plugin | Referenced By | Stage / 단계 |
+|----------------|--------|---------------|--------------|
+| `superpowers:brainstorming` | superpowers | workflow-dev-mode | Design exploration / 설계 탐색 |
+| `superpowers:subagent-driven-development` | superpowers | workflow-dev-mode | Large-scale execution / 대규모 실행 |
+| `superpowers:receiving-code-review` | superpowers | pr-respond | Core principle (reference only) / 원칙 참조 |
+| `ooo interview` | ouroboros | prep, workflow-dev-mode, workflow-doc-mode | Clarify requirements / 요구사항 명확화 |
+| `ooo pm` | ouroboros | workflow-doc-mode | Product framing / 프로덕트 프레이밍 |
+| `ooo seed` | ouroboros | workflow-doc-mode | Design snapshot / 설계 스냅샷 |
+| `ooo run` / `ooo auto` | ouroboros | workflow-dev-mode | Execution fallback / 실행 대안 |
+| `ooo evaluate` | ouroboros | workflow-dev-mode | Completion verification / 완료 검증 |
+
+> **Note**: `ooo pm` and `ooo seed` also appear in `workflow-dev-mode/references/dev-workflow-details.md` routing table, but are only directly invoked from `workflow-doc-mode` SKILL.md. In dev mode, design discovery falls back to doc mode when requirements are unsettled.
+>
+> `ooo pm`, `ooo seed`는 dev-mode reference 라우팅 테이블에도 등장하지만, SKILL.md에서 직접 호출하는 건 doc-mode뿐. dev-mode에서 설계가 불명확하면 doc-mode로 handoff.
+| `codex:adversarial-review` | codex | code-review | Adversarial final review / 반론 최종 리뷰 |
+
+### Referenced by workflow rules only / workflow.md에서만 참조
+
+These are invoked by CLAUDE.md workflow rules, not by nara-kit skills directly.
+
+이 스킬들은 nara-kit 스킬이 아니라 CLAUDE.md 워크플로우 규칙에서 호출됨.
+
+| External Skill | Plugin | Stage / 단계 |
+|----------------|--------|--------------|
+| `superpowers:writing-plans` | superpowers | Plan creation / 계획 생성 |
+| `superpowers:test-driven-development` | superpowers | TDD gate / TDD 게이트 |
+| `superpowers:finishing-a-development-branch` | superpowers | Branch finish / 브랜치 마무리 |
 
 ## My Setup / 내 설정
 
