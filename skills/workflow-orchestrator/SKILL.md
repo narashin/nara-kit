@@ -2,7 +2,7 @@
 name: workflow-orchestrator
 description: >-
   Classify natural-language workflow requests into doc or dev mode and route to the correct downstream workflow skill.
-  USE FOR: "mwhat", "워크플로우", "workflow", "어떤 모드", "start work".
+  USE FOR: "now", "워크플로우", "workflow", "어떤 모드", "start work".
   DO NOT USE FOR: direct implementation tasks, standalone documentation edits, simple bug fixes.
 ---
 

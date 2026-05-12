@@ -1,6 +1,6 @@
-name: mwhat-eval
-description: Evaluation suite for mwhat — session state assessment and next-action recommendation.
-skill: mwhat
+name: now-eval
+description: Evaluation suite for now — session state assessment and next-action recommendation.
+skill: now
 version: "1.0"
 config:
   trials_per_task: 1

@@ -1,4 +1,4 @@
-# mwhat — Judgment & Execution Tables
+# now — Judgment & Execution Tables
 
 ## 판단 로직
 
