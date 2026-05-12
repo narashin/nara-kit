@@ -77,28 +77,28 @@ nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrato
 
 ```mermaid
 flowchart TD
-    START([Session Start]) --> MWHAT["/mwhat\nAssess state"]
-    MWHAT --> PREP["/prep\nLocalize SoT + Readiness"]
+    START([Session Start]) --> MWHAT["/mwhat<br>Assess state"]
+    MWHAT --> PREP["/prep<br>Localize SoT + Readiness"]
     PREP --> READY{Readiness?}
-    READY -->|"READY 4/4"| BRAIN["☆ superpowers:brainstorming\n(optional)"]
-    READY -->|"PARTIAL or\nINSUFFICIENT"| OOO_INT["◇ ooo interview\n(optional)"]
+    READY -->|"READY 4/4"| BRAIN["☆ superpowers:brainstorming<br>(optional)"]
+    READY -->|"PARTIAL or<br>INSUFFICIENT"| OOO_INT["◇ ooo interview<br>(optional)"]
     OOO_INT --> PREP
-    BRAIN --> GAP["/gap\nGap analysis"]
-    GAP --> PLAN["☆ superpowers:writing-plans\n(optional)"]
+    BRAIN --> GAP["/gap<br>Gap analysis"]
+    GAP --> PLAN["☆ superpowers:writing-plans<br>(optional)"]
     PLAN --> EXEC{Scope?}
-    EXEC -->|small| DIRECT["Direct impl\n☆ superpowers:TDD"]
+    EXEC -->|small| DIRECT["Direct impl<br>☆ superpowers:TDD"]
     EXEC -->|large| SDD["☆ superpowers:SDD"]
-    EXEC -->|fallback| OOO_RUN["◇ ooo run/auto\n(optional)"]
+    EXEC -->|fallback| OOO_RUN["◇ ooo run/auto<br>(optional)"]
     DIRECT --> VERIFY["/gap --verify"]
     SDD --> VERIFY
     OOO_RUN --> VERIFY
     VERIFY --> ADR_Q{Arch decision?}
     ADR_Q -->|yes| ADR["/adr"]
     ADR_Q -->|no| REVIEW
-    ADR --> REVIEW["/code-review\n5-agent parallel"]
-    REVIEW --> CODEX["☆ codex:adversarial-review\n(optional)"]
+    ADR --> REVIEW["/code-review<br>5-agent parallel"]
+    REVIEW --> CODEX["☆ codex:adversarial-review<br>(optional)"]
     CODEX --> REFLECT["/reflect"]
-    REFLECT --> FINISH["☆ superpowers:finish-branch\n(optional)"]
+    REFLECT --> FINISH["☆ superpowers:finish-branch<br>(optional)"]
     FINISH --> PR_RESPOND["/pr-respond"]
     PR_RESPOND -->|changes| PR_RESPOND
 
@@ -116,14 +116,14 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START([Session Start]) --> MWHAT["/mwhat\nDoc mode"]
-    MWHAT --> ORCH["workflow-orchestrator\n→ doc mode"]
-    ORCH --> OOO_INT["◇ ooo interview\n(optional)"]
-    OOO_INT --> OOO_PM["◇ ooo pm\n(optional)"]
-    OOO_PM --> OOO_SEED["◇ ooo seed\n(optional)"]
+    START([Session Start]) --> MWHAT["/mwhat<br>Doc mode"]
+    MWHAT --> ORCH["workflow-orchestrator<br>→ doc mode"]
+    ORCH --> OOO_INT["◇ ooo interview<br>(optional)"]
+    OOO_INT --> OOO_PM["◇ ooo pm<br>(optional)"]
+    OOO_PM --> OOO_SEED["◇ ooo seed<br>(optional)"]
     OOO_SEED --> SPEC["Spec artifact"]
     SPEC --> PUB{Publish?}
-    PUB -->|yes| PUBLISH["/publish-spec\n→ Confluence"]
+    PUB -->|yes| PUBLISH["/publish-spec<br>→ Confluence"]
     PUB -->|no| RFC_Q{RFC needed?}
     PUBLISH --> RFC_Q
     RFC_Q -->|yes| RFC["/rfc"]
