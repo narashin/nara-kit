@@ -1,7 +1,9 @@
 ---
 name: incident-fix
-description: Implement a fix based on docs/incident-report.md using strict TDD (Red-Green-Refactor). Requires incident-report.md to exist first. Triggers on "incident-fix", "장애 수정", "버그 고쳐", "fix the incident", after /incident analysis is complete.
-version: 0.1.0
+description: >-
+  Implement a TDD fix (Red-Green-Refactor) based on docs/incident-report.md analysis.
+  USE FOR: "incident-fix", "장애 수정", "버그 고쳐", "fix the incident", "incident 수정 구현".
+  DO NOT USE FOR: incident analysis (use /incident), general bug investigation, code review.
 ---
 
 # incident-fix — 장애 리포트 기반 수정 구현
@@ -28,6 +30,26 @@ version: 0.1.0
 - incident-report.md의 Side Effects 섹션 확인
 - 영향 경로별 기존 테스트 실행
 - 신규 회귀 없음 확인
+
+## Examples
+
+```bash
+# Phase 1: 실패 테스트 실행
+npx jest --testPathPattern="order-cancel" --no-coverage
+
+# Phase 2: 수정 후 통과 확인
+npx jest --testPathPattern="order-cancel" --no-coverage
+
+# Phase 3: 전체 회귀 검증
+npx jest --no-coverage
+```
+
+## Error Handling
+
+- report 없음 → `/incident` 안내 후 중단
+- Phase 1 테스트 이미 통과 → 재현 조건 재검토
+- Phase 2 기존 테스트 깨짐 → Proposed Fix 범위 재확인
+- Phase 3 회귀 → Side Effects 기반 원인 분석 후 보고
 
 ## 규칙
 

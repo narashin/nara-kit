@@ -1,0 +1,19 @@
+id: should-not-trigger-001
+name: "PR creation request does not trigger pr-respond"
+description: |
+  Validates that a request to create a new PR does not trigger pr-respond.
+  This should route to the pr skill instead.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "PR 만들어줘 feature/auth 브랜치에서"
+  files: []
+expected:
+  output_not_contains:
+    - "accept"
+    - "rebut"
+    - "hold"
+    - "blocking"
+    - "classify"
+    - "review comment"

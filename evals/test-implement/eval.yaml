@@ -1,0 +1,28 @@
+name: test-implement-eval
+description: Evaluation suite for test-implement.
+skill: test-implement
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill implement test code domain-by-domain following golden sample patterns?
+graders:
+  - type: code
+    name: has_output
+    config:
+      assertions:
+        - "len(output) > 0"
+  - type: text
+    name: relevant_content
+    config:
+      regex_match:
+        - "(?i)(domain|golden sample|pipeline|test|implement)"
+tasks:
+  - "tasks/*.yaml"

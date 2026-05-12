@@ -1,0 +1,18 @@
+id: edge-case-001
+name: "Dev workflow with ambiguous requirements — hand back to doc mode"
+description: |
+  When requirements are too vague for implementation, workflow-dev-mode should
+  detect the ambiguity and suggest switching to doc mode or running an interview
+  to stabilize design before proceeding.
+tags:
+  - edge-case
+inputs:
+  prompt: "뭔가 알림 같은 걸 만들어야 하는데 아직 뭘 만들지 잘 모르겠어"
+  files: []
+expected:
+  output_not_contains:
+    - "TDD 시작"
+    - "코드를 작성"
+    - "구현 완료"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,29 @@
+name: gap-eval
+description: Evaluation suite for requirements gap analysis skill.
+skill: gap
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill produce gap.md with requirement status and a score?
+graders:
+  - type: code
+    name: has_output
+    config:
+      assertions:
+        - "len(output) > 0"
+  - type: text
+    name: gap_analysis_content
+    config:
+      regex_match:
+        - "(?i)(gap\\.md|requirements\\.md|Score|점수)"
+        - "(?i)(Implemented|Missing|Partial|Agreed Exceptions)"
+tasks:
+  - "tasks/*.yaml"

@@ -1,0 +1,17 @@
+id: edge-case-001
+name: "Brief Slack message explanation"
+description: |
+  When user requests a brief explanation for Slack, the skill should produce
+  a concise output (max 5 bullet points) instead of a full Markdown document.
+tags:
+  - edge-case
+inputs:
+  prompt: "이번 PR 변경사항 슬랙에 올릴 수 있게 짧게 설명해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "# 목차"
+    - "## 아키텍처"
+    - "docs/explain"
+  outcomes:
+    - type: task_completed

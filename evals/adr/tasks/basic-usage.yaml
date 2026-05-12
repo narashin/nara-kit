@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "Record library choice decision as ADR"
+description: |
+  Verify that adr creates a properly formatted ADR document with sequential numbering,
+  context, considered options, decision, and consequences sections.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "상태 관리 라이브러리로 Zustand를 선택한 결정을 ADR로 기록해줘. Redux, Jotai, Zustand를 비교했고 번들 사이즈와 DX를 기준으로 Zustand를 택했어"
+  files: []
+expected:
+  output_contains:
+    - "ADR"
+    - "Zustand"
+    - "Context"
+  output_not_contains:
+    - "구현하겠습니다"
+    - "코드를 작성"
+  outcomes:
+    - type: task_completed

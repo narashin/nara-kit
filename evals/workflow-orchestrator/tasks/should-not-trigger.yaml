@@ -1,0 +1,18 @@
+id: should-not-trigger-001
+name: "Simple code question should not trigger orchestrator"
+description: |
+  A direct question about what a function does should not activate the
+  workflow orchestrator. It is not a workflow initiation request.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "이 함수 뭐하는 거야?"
+  files: []
+expected:
+  output_not_contains:
+    - "Mode"
+    - "모드"
+    - "workflow-dev-mode"
+    - "workflow-doc-mode"
+    - "Routing"
