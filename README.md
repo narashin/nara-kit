@@ -117,12 +117,16 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START([Session Start]) --> MWHAT["/now<br>Doc mode"]
-    MWHAT --> ORCH["workflow-orchestrator<br>→ doc mode"]
-    ORCH --> OOO_INT["◇ ooo interview<br>(optional)"]
-    OOO_INT --> OOO_PM["◇ ooo pm<br>(optional)"]
+    START([Session Start]) --> NOW["/now<br>Doc mode"]
+    NOW --> CLARITY{Clarity?}
+    CLARITY -->|clear| BRAIN["☆ brainstorming"]
+    CLARITY -->|vague| OOO_INT["◇ ooo interview"]
+    BRAIN --> PREP1["/prep<br>Persist to requirements.md"]
+    OOO_INT --> PREP2["/prep<br>Persist to requirements.md"]
+    PREP2 --> OOO_PM["◇ ooo pm<br>(optional)"]
     OOO_PM --> OOO_SEED["◇ ooo seed<br>(optional)"]
-    OOO_SEED --> SPEC["Spec artifact"]
+    PREP1 --> SPEC["Spec artifact"]
+    OOO_SEED --> SPEC
     SPEC --> PUB{Publish?}
     PUB -->|yes| PUBLISH["/publish-spec<br>→ Confluence"]
     PUB -->|no| RFC_Q{RFC needed?}
@@ -135,6 +139,7 @@ flowchart TD
     ADR --> REFLECT
     REFLECT --> END([END])
 
+    style BRAIN fill:#e8f5e9
     style OOO_INT fill:#e3f2fd
     style OOO_PM fill:#e3f2fd
     style OOO_SEED fill:#e3f2fd
