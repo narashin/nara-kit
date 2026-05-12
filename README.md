@@ -1,73 +1,106 @@
 # nara-kit
 
 > **Note:** Personal skill collection by [@shinnara](https://git.linecorp.com/shinnara). Workflows and conventions reflect personal preferences — use as reference or fork to adapt.
+>
+> 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit.
+Personal Claude Code workflow toolkit — 21 skills for structured software development and documentation workflows.
 
-## Skills
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 21개 스킬.
 
-| Skill | Description |
-|-------|-------------|
-| `mwhat` | Session situation assessment + next action recommendation |
-| `prep` | Localize external SoT (Jira/Figma/Confluence/PRD) into `docs/requirements.md` |
-| `gap` | Requirements vs implementation gap analysis → `docs/gap.md` |
-| `reflect` | Capture session learnings (decisions, conventions, warnings) |
-| `rfc` | Write RFC document in Korean Markdown |
-| `commit` | Generate conventional commit message |
-| `pr` | Generate PR title and body |
-| `incident` | Structured incident analysis report (analysis only, no code changes) |
-| `incident-fix` | TDD-based fix implementation from `docs/incident-report.md` |
-| `adr` | Architecture Decision Record |
-| `code-review` | 5-agent parallel code review (Architecture/Correctness/Reliability/Security/Test) |
-| `pr-respond` | PR review response workflow |
-| `explain` | Generate shareable explanations for different audiences |
-| `empirical-prompt-tuning` | Empirically evaluate and tune prompts/skills with test cases — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) |
-| `workflow-orchestrator` | End-to-end workflow routing (doc or dev mode) |
-| `workflow-dev-mode` | Development workflow (requirements → gap → plan → execute → verify) |
-| `workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) |
-| `test-discover` | Generate test scenarios for a feature or file |
-| `test-verify` | Review and validate test scenarios |
-| `test-implement` | Implement tests from scenario documents |
-| `publish-spec` | Publish spec/plan to Confluence wiki |
+## Skills / 스킬 목록
 
-## Install
+### Workflow / 워크플로우
+
+| Skill | Description / 설명 |
+|-------|---------------------|
+| `mwhat` | Session state assessment + next action / 세션 상황 판단 + 다음 행동 추천 |
+| `workflow-orchestrator` | Route requests to dev or doc mode / 요청을 dev/doc 모드로 라우팅 |
+| `workflow-dev-mode` | Implementation workflow (prep → gap → plan → execute → verify) / 구현 워크플로우 |
+| `workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
+
+### Requirements & Analysis / 요구사항 & 분석
+
+| Skill | Description / 설명 |
+|-------|---------------------|
+| `prep` | Localize external SoT (Jira/Figma/Confluence) into `docs/requirements.md` + Readiness score / 외부 SoT 로컬화 + 충분성 판정 |
+| `gap` | Requirements vs implementation gap analysis → `docs/gap.md` (0-100 score) / 요구사항 vs 구현 갭 분석 |
+| `incident` | Structured incident analysis report (no code changes) / 장애 분석 리포트 (코드 수정 없음) |
+| `incident-fix` | TDD-based fix from `docs/incident-report.md` / 장애 리포트 기반 TDD 수정 |
+
+### Code Lifecycle / 코드 라이프사이클
+
+| Skill | Description / 설명 |
+|-------|---------------------|
+| `commit` | Generate conventional commit message with ticket ID / 커밋 메시지 생성 |
+| `pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
+| `code-review` | 5-agent parallel review (Architecture/Correctness/Reliability/Security/Test) / 5-에이전트 병렬 코드 리뷰 |
+| `pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
+
+### Documentation / 문서
+
+| Skill | Description / 설명 |
+|-------|---------------------|
+| `rfc` | Write RFC document in Korean Markdown / RFC 문서 작성 |
+| `adr` | Architecture Decision Record / 아키텍처 결정 기록 |
+| `explain` | Shareable explanations for different audiences / 대상별 설명 문서 생성 |
+| `publish-spec` | Publish spec to Confluence wiki / 스펙 → Confluence 게시 |
+| `reflect` | Capture session learnings (decisions, conventions, warnings) / 세션 학습 캡처 |
+
+### Testing / 테스트
+
+| Skill | Description / 설명 |
+|-------|---------------------|
+| `test-discover` | Discover test scenarios for a feature or file / 테스트 시나리오 발굴 |
+| `test-verify` | Review and validate test scenarios (3-persona review) / 테스트 시나리오 검증 |
+| `test-implement` | Implement tests from scenario documents / 시나리오 기반 테스트 구현 |
+
+### Meta / 메타
+
+| Skill | Description / 설명 |
+|-------|---------------------|
+| `empirical-prompt-tuning` | Iteratively improve prompts via bias-free executor testing — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) / 프롬프트 경험적 튜닝 |
+
+## Install / 설치
 
 ```bash
 claude plugin marketplace add https://git.linecorp.com/shinnara/nara-kit.git
 ```
 
-## Workflow
+## Workflow / 워크플로우
 
-nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies incoming requests and routes to the appropriate mode.
+nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 21 skills work standalone — external plugins enhance automation but are **not required**.
 
-### Mode A — Dev (Implementation)
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 21개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+
+### Mode A — Dev (Implementation / 구현)
 
 ```mermaid
 flowchart TD
-    START([Session Start]) --> MWHAT["/mwhat<br>상황 판단"]
-    MWHAT --> PREP["/prep<br>SoT 로컬화 + Readiness 판정"]
+    START([Session Start]) --> MWHAT["/mwhat\nAssess state"]
+    MWHAT --> PREP["/prep\nLocalize SoT + Readiness"]
     PREP --> READY{Readiness?}
-    READY -->|"READY (4/4)"| BRAIN["☆ superpowers:brainstorming"]
-    READY -->|"PARTIAL/INSUFFICIENT"| OOO_INT["◇ ooo interview<br>요구사항 보완"]
+    READY -->|"READY 4/4"| BRAIN["☆ superpowers:brainstorming\n(optional)"]
+    READY -->|"PARTIAL or\nINSUFFICIENT"| OOO_INT["◇ ooo interview\n(optional)"]
     OOO_INT --> PREP
-    BRAIN --> GAP["/gap<br>갭 분석"]
-    GAP --> PLAN["☆ superpowers:writing-plans"]
-    PLAN --> EXEC{실행 규모?}
-    EXEC -->|소규모| DIRECT["직접 구현<br>☆ superpowers:TDD"]
-    EXEC -->|대규모| SDD["☆ superpowers:subagent-driven-development"]
-    EXEC -->|fallback| OOO_RUN["◇ ooo run / ooo auto"]
+    BRAIN --> GAP["/gap\nGap analysis"]
+    GAP --> PLAN["☆ superpowers:writing-plans\n(optional)"]
+    PLAN --> EXEC{Scope?}
+    EXEC -->|small| DIRECT["Direct impl\n☆ superpowers:TDD"]
+    EXEC -->|large| SDD["☆ superpowers:SDD"]
+    EXEC -->|fallback| OOO_RUN["◇ ooo run/auto\n(optional)"]
     DIRECT --> VERIFY["/gap --verify"]
     SDD --> VERIFY
     OOO_RUN --> VERIFY
-    VERIFY --> ADR{아키텍처 결정?}
-    ADR -->|yes| ADR_WRITE["/adr"]
-    ADR -->|no| REVIEW
-    ADR_WRITE --> REVIEW["/code-review<br>5-agent parallel"]
-    REVIEW --> CODEX["☆ codex:adversarial-review"]
+    VERIFY --> ADR_Q{Arch decision?}
+    ADR_Q -->|yes| ADR["/adr"]
+    ADR_Q -->|no| REVIEW
+    ADR --> REVIEW["/code-review\n5-agent parallel"]
+    REVIEW --> CODEX["☆ codex:adversarial-review\n(optional)"]
     CODEX --> REFLECT["/reflect"]
-    REFLECT --> FINISH["☆ superpowers:finishing-a-development-branch"]
-    FINISH --> PR_RESPOND["/pr-respond<br>리뷰 대응"]
-    PR_RESPOND -->|변경 있으면| PR_RESPOND
+    REFLECT --> FINISH["☆ superpowers:finish-branch\n(optional)"]
+    FINISH --> PR_RESPOND["/pr-respond"]
+    PR_RESPOND -->|changes| PR_RESPOND
 
     style BRAIN fill:#e8f5e9
     style PLAN fill:#e8f5e9
@@ -75,25 +108,26 @@ flowchart TD
     style SDD fill:#e8f5e9
     style FINISH fill:#e8f5e9
     style CODEX fill:#fff3e0
+    style OOO_INT fill:#e3f2fd
     style OOO_RUN fill:#e3f2fd
 ```
 
-### Mode B — Doc (Documentation)
+### Mode B — Doc (Documentation / 문서화)
 
 ```mermaid
 flowchart TD
-    START([Session Start]) --> MWHAT["/mwhat<br>기획문서 모드"]
-    MWHAT --> ORCH["workflow-orchestrator<br>→ doc mode"]
-    ORCH --> OOO_INT["◇ ooo interview<br>요구사항 명확화"]
-    OOO_INT --> OOO_PM["◇ ooo pm<br>프로덕트 프레이밍"]
-    OOO_PM --> OOO_SEED["◇ ooo seed<br>설계 스냅샷"]
-    OOO_SEED --> SPEC["spec artifact 생성"]
-    SPEC --> PUB{게시?}
-    PUB -->|yes| PUBLISH["/publish-spec<br>→ Confluence"]
-    PUB -->|no| RFC_Q{RFC 필요?}
+    START([Session Start]) --> MWHAT["/mwhat\nDoc mode"]
+    MWHAT --> ORCH["workflow-orchestrator\n→ doc mode"]
+    ORCH --> OOO_INT["◇ ooo interview\n(optional)"]
+    OOO_INT --> OOO_PM["◇ ooo pm\n(optional)"]
+    OOO_PM --> OOO_SEED["◇ ooo seed\n(optional)"]
+    OOO_SEED --> SPEC["Spec artifact"]
+    SPEC --> PUB{Publish?}
+    PUB -->|yes| PUBLISH["/publish-spec\n→ Confluence"]
+    PUB -->|no| RFC_Q{RFC needed?}
     PUBLISH --> RFC_Q
     RFC_Q -->|yes| RFC["/rfc"]
-    RFC_Q -->|no| ADR_Q{아키텍처 결정?}
+    RFC_Q -->|no| ADR_Q{Arch decision?}
     RFC --> ADR_Q
     ADR_Q -->|yes| ADR["/adr"]
     ADR_Q -->|no| REFLECT["/reflect"]
@@ -105,73 +139,55 @@ flowchart TD
     style OOO_SEED fill:#e3f2fd
 ```
 
-### Design Discovery (workflow-dev-mode 내부)
+### Legend / 범례
 
-dev mode에서 요구사항이 불명확할 때 ouroboros skills로 fallback:
+| Symbol | Plugin | Required? / 필수? |
+|--------|--------|-------------------|
+| (no symbol) | **nara-kit** (this plugin) | **Required** — core skills / 핵심 스킬 |
+| ☆ green | **superpowers** | Optional — enhances planning, execution, review / 계획, 실행, 리뷰 강화 |
+| ◇ blue | **ouroboros** | Optional — design discovery, execution fallback / 설계 발견, 실행 대안 |
+| ☆ orange | **codex** | Optional — adversarial review / 반론 리뷰 |
 
-```mermaid
-flowchart LR
-    UNCLEAR{설계 불명확?} -->|yes| INT["◇ ooo interview"]
-    INT --> PM["◇ ooo pm"]
-    PM --> SEED["◇ ooo seed"]
-    SEED --> BACK["→ dev mode 복귀"]
-    UNCLEAR -->|no| CONTINUE["→ gap → plan → execute"]
+## External Plugin Dependencies / 외부 플러그인 의존성
 
-    VERIFY_DONE{구현 완료?} --> EVAL["◇ ooo evaluate"]
-    EVAL --> CR["/code-review"]
+All external skills are **optional enhancements**. Without them, the workflow falls back to manual equivalents (e.g., write plans yourself, run tests directly).
 
-    style INT fill:#e3f2fd
-    style PM fill:#e3f2fd
-    style SEED fill:#e3f2fd
-    style EVAL fill:#e3f2fd
-```
+모든 외부 스킬은 **선택적 강화**. 없으면 수동 대안으로 동작 (예: 직접 계획 작성, 직접 테스트 실행).
 
-### Legend
+| External Skill | Plugin | Stage / 단계 | Required? |
+|----------------|--------|--------------|-----------|
+| `superpowers:brainstorming` | superpowers | Design exploration / 설계 탐색 | Optional |
+| `superpowers:writing-plans` | superpowers | Plan creation / 계획 생성 | Optional |
+| `superpowers:subagent-driven-development` | superpowers | Large-scale execution / 대규모 실행 | Optional |
+| `superpowers:test-driven-development` | superpowers | TDD gate / TDD 게이트 | Optional |
+| `superpowers:finishing-a-development-branch` | superpowers | Branch finish / 브랜치 마무리 | Optional |
+| `superpowers:receiving-code-review` | superpowers | PR response principle / PR 대응 원칙 | Optional |
+| `ooo interview` | ouroboros | Clarify requirements / 요구사항 명확화 | Optional |
+| `ooo pm` | ouroboros | Product framing / 프로덕트 프레이밍 | Optional |
+| `ooo seed` | ouroboros | Design snapshot / 설계 스냅샷 | Optional |
+| `ooo run` / `ooo auto` | ouroboros | Execution fallback / 실행 대안 | Optional |
+| `ooo evaluate` | ouroboros | Completion verification / 완료 검증 | Optional |
+| `codex:adversarial-review` | codex | Adversarial final review / 반론 최종 리뷰 | Optional |
 
-| Symbol | Plugin | Used at |
-|--------|--------|---------|
-| ☆ | **superpowers** | brainstorming, writing-plans, TDD, SDD execution, finishing branch |
-| ◇ | **ouroboros** | interview, pm, seed (design discovery), run/auto (execution fallback), evaluate (completion) |
-| ☆ | **codex** | adversarial-review (final review) |
+## My Setup / 내 설정
 
-## External Plugin Dependencies
+Other plugins I use alongside nara-kit / nara-kit과 함께 사용하는 플러그인:
 
-nara-kit skills reference external plugin skills at specific workflow stages:
-
-| External Skill | Plugin | Used By | Stage |
-|----------------|--------|---------|-------|
-| `superpowers:brainstorming` | superpowers | workflow-dev-mode | Step 2 — Design exploration |
-| `superpowers:writing-plans` | superpowers | workflow-dev-mode | Step 4 — Plan creation |
-| `superpowers:subagent-driven-development` | superpowers | workflow-dev-mode | Step 5 — Large-scale execution |
-| `superpowers:test-driven-development` | superpowers | workflow-dev-mode | Step 5 — TDD gate |
-| `superpowers:finishing-a-development-branch` | superpowers | workflow-dev-mode | Step 10 — Branch finish |
-| `superpowers:receiving-code-review` | superpowers | pr-respond | Core principle |
-| `superpowers:using-git-worktrees` | superpowers | workflow-dev-mode | Workspace isolation |
-| `ooo interview` | ouroboros | workflow-dev-mode, workflow-doc-mode | Discovery — clarify requirements |
-| `ooo pm` | ouroboros | workflow-dev-mode, workflow-doc-mode | Discovery — product framing |
-| `ooo seed` | ouroboros | workflow-dev-mode, workflow-doc-mode | Discovery — design snapshot |
-| `ooo run` / `ooo auto` | ouroboros | workflow-dev-mode | Step 5 — Execution fallback |
-| `ooo evaluate` | ouroboros | workflow-dev-mode | Step 8 — Completion verification |
-| `codex:adversarial-review` | codex | workflow-dev-mode | Step 8 — Adversarial final review |
-
-## My Setup
-
-Other plugins I use alongside nara-kit:
-
-| Plugin | Source | Purpose |
-|--------|--------|---------|
+| Plugin | Source | Purpose / 용도 |
+|--------|--------|----------------|
 | `superpowers` | `anthropics/claude-plugins-official` | Skill framework (brainstorming, SDD, worktrees, etc.) |
-| `caveman` | `JuliusBrussee/caveman` | Terse response style |
-| `claude-mem` | `thedotmack/claude-mem` | Persistent memory across sessions |
+| `caveman` | `JuliusBrussee/caveman` | Terse response style / 간결한 응답 |
+| `claude-mem` | `thedotmack/claude-mem` | Persistent memory across sessions / 세션 간 기억 |
 | `claude-hud` | `jarrodwatts/claude-hud` | Token/session HUD overlay |
-| `ouroboros` | `Q00/ouroboros` | Autonomous evolution engine |
-| `plannotator` | `backnotprop/plannotator` | Plan annotation and analysis |
-| `harness` | `revfactory/harness` | Multi-agent orchestration |
-| `context-mode` | `context-mode` | Context window management |
+| `ouroboros` | `Q00/ouroboros` | Autonomous evolution engine / 자율 진화 엔진 |
+| `plannotator` | `backnotprop/plannotator` | Plan annotation and analysis / 계획 주석 및 분석 |
+| `codex` | `anthropics/claude-code-codex` | Codex integration (adversarial review, rescue) |
 
-## Configuration
+## Configuration / 설정
 
 For `publish-spec`: create `confluence.local.md` in plugin root:
+
+`publish-spec` 사용 시: 플러그인 루트에 `confluence.local.md` 생성:
 
 ```yaml
 ---
