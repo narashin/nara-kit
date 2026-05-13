@@ -1,3 +1,6 @@
+# Project-specific working docs (generated per-project, not plugin content)
+docs/
+
 # Local plugin config (contains company-specific URLs and page IDs)
 confluence.local.md
 *.local.md
