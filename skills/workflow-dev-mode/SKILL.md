@@ -33,7 +33,7 @@ Run implementation-first workflow after router classifies request as `dev`.
 
 ## Core gates
 
-SoT localization -> discovery -> integration review -> gap analysis -> written plan -> TDD -> verification -> evaluate + review -> finish
+SoT localization -> discovery -> backlog decompose (if backlog exists) -> plan per subtask -> TDD -> verification (auto-verify loop) -> evaluate + review -> finish
 
 ## Execution
 
@@ -42,9 +42,11 @@ SoT localization -> discovery -> integration review -> gap analysis -> written p
   - READY (4/4) -> `superpowers:brainstorming` -> `gap`
   - PARTIAL (2-3/4) -> `ooo interview` -> `/prep` 재실행
   - INSUFFICIENT (0-1/4) -> `ooo interview` 필수 -> `/prep` 재실행
-- Gap to current code matters -> `gap`
-- Implementation next -> require written plan before code
+- `backlog/` exists + Level 1 task selected -> `/backlog decompose` (scoped gap + subtask creation)
+- No backlog -> `gap` (full, legacy flow)
+- Implementation next -> require written plan before code (per subtask if decomposed)
 - Execution -> `superpowers:subagent-driven-development` (default), `ooo run` / `ooo auto` as fallback
+- Subtask completion -> `/backlog done` (triggers auto-verify loop)
 - Completion -> `ooo evaluate` -> `code-review` -> `reflect` -> `adr` if relevant -> branch finish
 
 **Load** [references/dev-workflow-details.md](references/dev-workflow-details.md) for routing table, output contract, examples, and hallucination guards.

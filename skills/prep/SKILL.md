@@ -48,3 +48,4 @@ Load [references/prep-template.md](references/prep-template.md) for input source
 - 비어있는 섹션도 헤더 유지, "없음" 한 줄 기재
 - `Agreed Exceptions` 섹션 필수 — gap 분석 false positive 방지
 - `docs/requirements.md` 이미 존재하면 덮어쓰기 전 사용자 확인
+- `backlog/` 존재 시 완료 후 "/backlog sync로 태스크 동기화 가능" 안내

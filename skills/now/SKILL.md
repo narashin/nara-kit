@@ -14,8 +14,9 @@ description: >-
 
 1. **Git 상태**: `git branch --show-current`, `git status -s`, `git log --oneline -5`
 2. **작업 문서**: `docs/requirements.md`, `docs/gap.md` 존재 확인. gap.md 있으면 점수 추출
-3. **프로젝트 메모리**: claude-mem observations 최근 항목 조회
-4. **미완료 작업**: task 목록 확인 (판단용, 출력 안 함)
+3. **Backlog**: `backlog/` 존재 시 `backlog task list -s "In Progress"` 실행. 없으면 생략
+4. **프로젝트 메모리**: claude-mem observations 최근 항목 조회
+5. **미완료 작업**: task 목록 확인 (판단용, 출력 안 함)
 
 ## 판단 + 출력
 

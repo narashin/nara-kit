@@ -16,6 +16,7 @@ description: >-
 - `--verify` → 기존 gap.md 기준 재검증 (경량)
 - `--score` → gap.md에서 점수만 산출
 - `--doc` → requirements.md 자체 완성도 체크
+- `--task TASK-ID` → 해당 backlog 태스크 AC 기준 scoped 갭 분석 (gap.md 미생성, transient)
 
 ## 생성 모드
 
@@ -42,3 +43,14 @@ Score = (Implemented + Partial*0.5) / (Total - Agreed Exceptions) * 100
 - 구현 여부 확인 불가 시 `Unknown (코드 접근 불가)` 표기
 - 점수 80 미만: "구현 계속 필요" 명시. 80 이상: "리뷰 단계 진입 가능" 명시
 - Evidence는 `파일경로:라인번호` 형식. 코드 내용 인라인 출력 금지
+
+## 태스크 모드 (`--task TASK-ID`)
+
+backlog 태스크 단위 scoped gap. `/backlog decompose` 내부에서 호출됨.
+
+1. `backlog task list`에서 TASK-ID의 title, description, AC 읽기
+2. task description 키워드로 관련 디렉토리/파일 scope 도출
+3. scope 내에서만 Grep/Glob (최대 10파일, symbol-level 선호)
+4. 각 AC 항목별 구현 상태 확인
+5. 결과를 transient로 반환 (gap.md 미생성)
+6. 점수 산출 공식 동일
