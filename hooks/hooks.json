@@ -1,0 +1,17 @@
+{
+  "description": "nara-kit session-end hooks: remind /reflect and /adr when appropriate",
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "You are a session-end advisor. Evaluate whether the user should run /reflect or /adr before ending.\n\nCheck TWO conditions:\n\n1. **reflect**: Was there substantial work this session? (multiple file edits, commits, meaningful code/doc changes, debugging, or architectural exploration). If yes, remind about /reflect to capture session learnings.\n\n2. **adr**: Was there an architectural decision? (new library/framework chosen, design pattern introduced, significant structural change, technology tradeoff evaluated, existing architecture direction changed). If yes, remind about /adr to record the decision.\n\nRules:\n- If NEITHER condition applies (trivial session, quick lookup, chat-only), return approve with no message.\n- If EITHER condition applies, return approve but include a systemMessage reminder.\n- NEVER block the stop. Always approve.\n- Keep the reminder under 2 sentences. Use Korean.\n- Do not remind about skills the user already ran this session.\n\nReturn JSON:\n- No reminder needed: {\"decision\": \"approve\"}\n- Reminder needed: {\"decision\": \"approve\", \"systemMessage\": \"<reminder in Korean>\"}",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
