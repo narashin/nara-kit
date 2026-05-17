@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "nara-kit",
+  "description": "@shinnara's personal workflow toolkit marketplace",
+  "owner": {
+    "name": "shinnara",
+    "url": "https://github.com/narashin"
+  },
+  "plugins": [
+    {
+      "name": "nara-kit",
+      "source": "./",
+      "description": "@shinnara's personal workflow toolkit — opinionated skills for RFC, PR, incident analysis, gap check, code review, and TDD.",
+      "version": "0.1.1",
+      "category": "productivity",
+      "tags": ["workflow", "rfc", "incident", "code-review", "gap-analysis", "tdd", "pr", "planning"]
+    }
+  ]
+}
