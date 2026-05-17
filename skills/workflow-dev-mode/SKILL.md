@@ -3,50 +3,38 @@ name: workflow-dev-mode
 description: >-
   Run implementation-first workflow enforcing structured gates from SoT localization through gap analysis, TDD, verification, and branch finish.
   USE FOR: "dev mode", "구현 워크플로우", "implementation workflow", "개발 모드", "feature implementation".
-  DO NOT USE FOR: documentation-only artifacts, design exploration without stable requirements, simple one-file edits.
+  DO NOT USE FOR: documentation-only artifacts (→ workflow-doc-mode), design exploration without stable requirements (→ ooo interview or superpowers:brainstorming), simple one-file edits (→ direct edit).
 ---
 
 # Workflow Dev Mode
 
-Run implementation-first workflow after router classifies request as `dev`.
+Implementation-first workflow (router classifies `dev`).
 
 ## Use when
 
-- request changes code, config, tests, behavior, or runtime execution
-- user asks for bugfix, feature, refactor, or implementation delivery
-- design intent is stable enough for implementation workflow
-
-## Do not use when
-
-- user only needs a design artifact, RFC, or planning document
-- requirements are too ambiguous for implementation — use doc workflow first
+bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, design stable.
 
 ## Decision rules
 
-1. Confirm request belongs to implementation workflow.
-2. Classify scope (choose higher when ambiguous):
-   - `small`: 1-2 files, single concern, low integration risk
-   - `medium`: 3-10 files, single domain, clear integration points
-   - `large`: 10+ files, multi-domain, cross-service, or phased delivery
-3. Walk gates in order: SoT localization -> discovery -> gap -> plan -> TDD -> verify.
-4. Choose next skill/tool and invoke in same turn when unambiguous.
-
-## Core gates
-
-SoT localization -> discovery -> backlog decompose (if backlog exists) -> plan per subtask -> TDD -> verification (auto-verify loop) -> evaluate + review -> finish
+1. Confirm implementation workflow.
+2. Classify scope (모호 시 상향): `small` (1-2 files, single concern) / `medium` (3-10 files, single domain) / `large` (10+ files, multi-domain).
+3. Walk gates: SoT -> discovery -> gap -> plan -> pre-execution -> TDD -> verify.
 
 ## Execution
 
-- External requirements exist -> `prep` first (router는 SoT fetch 안 함 — 유저 컨텍스트만으로 판단, fetch는 prep이 담당)
-- `prep` Readiness 결과로 분기:
-  - READY (4/4) -> `superpowers:brainstorming` -> `gap`
-  - PARTIAL (2-3/4) -> `ooo interview` -> `/prep` 재실행
-  - INSUFFICIENT (0-1/4) -> `ooo interview` 필수 -> `/prep` 재실행
-- `backlog/` exists + Level 1 task selected -> `/backlog decompose` (scoped gap + subtask creation)
-- No backlog -> `gap` (full, legacy flow)
-- Implementation next -> require written plan before code (per subtask if decomposed)
-- Execution -> `superpowers:subagent-driven-development` (default), `ooo run` / `ooo auto` as fallback
-- Subtask completion -> `/backlog done` (triggers auto-verify loop)
-- Completion -> `ooo evaluate` -> `code-review` -> `reflect` -> `adr` if relevant -> branch finish
+- External req -> `prep` (SoT fetch)
+- Readiness 4/4 -> `superpowers:brainstorming` -> `gap`; 2-3/4 -> `ooo interview` -> `/prep`; 0-1/4 -> `ooo interview` 필수
+- `backlog/` + Level 1 -> `/backlog decompose`. 없으면 `gap` full
+- plan per subtask -> Pre-execution gate -> execute
+- Execute: `superpowers:SDD` default, `ooo run`/`auto` fallback
+- Subtask 완료 -> `/backlog done` (auto-verify)
+- 완료 -> `ooo evaluate` -> `code-review` -> `reflect` -> `adr` -> branch finish
 
-**Load** [references/dev-workflow-details.md](references/dev-workflow-details.md) for routing table, output contract, examples, and hallucination guards.
+## Gates
+
+- Pre-execution: plan + AskUserQuestion 승인 ([상세](references/pre-execution-gate.md))
+- Component Pick: 카탈로그 5단계 ([상세](references/component-pick-procedure.md))
+
+AskUserQuestion은 Pre-execution gate에만. 라우팅/분기는 평문.
+
+**Load** [references/dev-workflow-details.md](references/dev-workflow-details.md) for routing table, output contract, examples, hallucination guards.

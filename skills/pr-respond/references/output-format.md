@@ -1,6 +1,26 @@
 # PR Respond Output Format
 
-## Standard Output
+> output-contract receipt + verification preview 두 단을 합친 형식.
+> Receipt = 영수증 (자동화/스캔용), Tables = 사용자 검수용 preview.
+> 항상 둘 다 출력. 플래그 없음 (human usability first).
+
+## Receipt Header (필수, 먼저 출력)
+
+```
+PR #<N> 리뷰 대응 완료.
+- comments processed: <N>
+- accepted: <n> (implemented) · rebutted: <n> · on hold: <n>
+- side effects:
+  - github: <n> replies posted, <n> code changes pushed
+- artifact: PR thread (#<N>)
+- next: hold 항목 사용자 결정 또는 reviewer 응답 대기
+```
+
+Receipt는 nara-kit output-contract `/pr-respond` 템플릿 그대로 (CLAUDE.md 자동 상속).
+
+## Standard Output (Receipt + Verification Preview)
+
+Receipt header 출력 후 아래 표 이어서:
 
 ```
 ## PR Review Response -- PR #{number}
@@ -36,6 +56,8 @@
 
 ## --status Mode Output
 
+Receipt header(`comments processed: 0`) 생략 가능. 미답 코멘트 표만 출력.
+
 ```
 ## PR #{number} -- Unreplied Review Comments
 
@@ -49,4 +71,4 @@ Total N unreplied
 
 ## --dry-run Mode Output
 
-Same structure as standard but with "(dry-run)" in title, "planned" instead of "implemented", and no code changes or replies posted.
+Receipt header에 `(dry-run)` 명시, side effects는 `github: 0 (dry-run)`, "implemented"는 "planned"로 변경. 본문 표는 standard와 동일 구조.

@@ -14,15 +14,29 @@ description: >-
 
 1. **Git 상태**: `git branch --show-current`, `git status -s`, `git log --oneline -5`
 2. **작업 문서**: `docs/requirements.md`, `docs/gap.md` 존재 확인. gap.md 있으면 점수 추출
-3. **Backlog**: `backlog/` 존재 시 `backlog task list -s "In Progress"` 실행. 없으면 생략
-4. **프로젝트 메모리**: claude-mem observations 최근 항목 조회
-5. **미완료 작업**: task 목록 확인 (판단용, 출력 안 함)
+3. **Requirements stale 검증**: `docs/requirements.md` 존재 시 frontmatter `sources[].fetched_at` 확인. 가장 오래된 source의 경과시간 측정
+4. **Handoff**: `docs/handoff.md` 존재 확인. 있으면 9섹션 스키마로 파싱 — baseline SHA로 stale 검증, 현재 목표/In Progress/Open Questions/다음 안전 조치/먼저 읽을 파일/최근 완료 태스크 컨텍스트 우선 표면화
+5. **Backlog**: `backlog/` 존재 시 `backlog task list -s "In Progress"` 실행. 없으면 생략
+6. **프로젝트 메모리**: claude-mem observations 최근 항목 조회
+7. **미완료 작업**: task 목록 확인 (판단용, 출력 안 함)
+
+## Stale 판정
+
+| 경과 | 판정 | 행동 |
+|------|------|------|
+| ≤ 3일 | fresh | 정상 진행 |
+| 4-7일 | aging | 사용자에게 재fetch 권고 (선택) |
+| > 7일 | stale | "requirements.md 7일 이상 경과. `/prep` 재실행 권고" 우선 표면화 |
+
+frontmatter에 `fetched_at` 없거나 `sources` 배열 누락 → `legacy prep` 표시 + 사용자에게 마이그레이션 안내.
 
 ## 판단 + 출력
 
 수집 결과로 판단 후 추천. Load [references/now-tables.md](references/now-tables.md) for judgment tables and output format.
 
-핵심 로직: main 브랜치 → `/prep` | requirements 없음 → `/prep` | gap 없음 → `/gap` | gap < 80 → 실행 방법 판단 | gap >= 80 → 리뷰/마무리.
+핵심 로직: main 브랜치 → `/prep` | requirements 없음 → `/prep` | **requirements stale (>7일) → `/prep` 재실행 권고** | gap 없음 → `/gap` | gap < 80 → 실행 방법 판단 | gap >= 80 → 리뷰/마무리.
+
+**Handoff 우선순위**: `docs/handoff.md` 존재하면 다른 추천보다 먼저 표면화. "이전 세션에서 X 작업 중단, Y 질문 미해결" 형태로 1-2줄 요약 후 그 다음 액션 추천.
 
 ## 규칙
 

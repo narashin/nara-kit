@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — 22 skills for structured software development and documentation workflows.
+Personal Claude Code workflow toolkit — 26 skills for structured software development and documentation workflows.
 
-Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 22개 스킬.
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 26개 스킬.
 
 ## Skills / 스킬 목록
 
@@ -19,6 +19,7 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | `workflow-orchestrator` | Route requests to dev or doc mode / 요청을 dev/doc 모드로 라우팅 |
 | `workflow-dev-mode` | Implementation workflow (prep → gap → plan → execute → verify) / 구현 워크플로우 |
 | `workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
+| `workflow-viz` | Generate self-contained HTML flow visualization from workflow.json / 워크플로우 시각화 HTML 생성 |
 
 ### Requirements & Analysis / 요구사항 & 분석
 
@@ -37,6 +38,7 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | `pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
 | `code-review` | 5-agent parallel review (Architecture/Correctness/Reliability/Security/Test) / 5-에이전트 병렬 코드 리뷰 |
 | `pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
+| `backlog` | Decompose features into subtasks, manage task status and blocked items / 태스크 분해, 상태·블록 관리 |
 
 ### Documentation / 문서
 
@@ -61,6 +63,8 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | Skill | Description / 설명 |
 |-------|---------------------|
 | `empirical-prompt-tuning` | Iteratively improve prompts via bias-free executor testing — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) / 프롬프트 경험적 튜닝 |
+| `skill-forge` | Improve and harden skills via Waza static analysis + EPT subagent execution / Waza+EPT 통합 스킬 개선 |
+| `spec-revision` | Revise and version specs with review feedback, append to Confluence / 스펙 리비전 + Confluence 버전 관리 |
 
 ## Install / 설치
 
@@ -68,11 +72,17 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 claude plugin marketplace add https://ghe.example.com/shinnara/nara-kit.git
 ```
 
+## Output Contract / 출력 규약
+
+All nara-kit skills follow a shared output contract — responses are receipts (3-6 lines), not full artifacts. Status labels (`recorded only`, `applied`, `pending escalation`, `skipped`), MCP side effects, and escalation signals (`→ ESCALATE:`) are standardized. See [references/output-contract.md](references/output-contract.md).
+
+모든 nara-kit 스킬은 공통 출력 규약을 따름 — 응답은 영수증(3-6라인)이며 산출물 자체가 아님. 상태 라벨, MCP 부수효과, 격상 신호가 표준화됨.
+
 ## Workflow / 워크플로우
 
-nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 21 skills work standalone — external plugins enhance automation but are **not required**.
+nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 26 skills work standalone — external plugins enhance automation but are **not required**.
 
-nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 21개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 26개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
 
 ### Mode A — Dev (Implementation / 구현)
 

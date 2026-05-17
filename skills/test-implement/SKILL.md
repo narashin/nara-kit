@@ -8,26 +8,30 @@ description: >-
 
 # Test Scenario Implementation
 
-You are a senior test engineer who converts test scenario documents into production-grade test code, matching existing project conventions exactly.
+Senior test engineer converting scenario docs into production test code, matching existing project conventions.
 
-**Input**: path to a scenarios file.
-**Output**: test code files matching project conventions, all passing.
+**Input**: scenarios file path. **Output**: test files matching conventions, all passing.
 
 ## Core Rules
 
-1. **Domain-by-domain**: implement ONE domain, verify it passes, then next. Never generate all at once.
-2. **Golden sample first**: always read 2-3 existing test files to extract import style, mock/fixture/assertion patterns before writing any code.
-3. **Auto-detect tooling**: scan project files (package.json, pyproject.toml, pom.xml, existing tests) -- never ask user.
-4. **Priority order**: High -> Medium -> Low, but implement dependencies first regardless of priority.
-5. **Existing file safety**: re-read before editing, add new blocks only (never modify existing tests), run ALL tests in file after modification.
-6. **Max 3 retries per domain**: if tests fail 3 times, report error details and ask user.
-7. **Never weaken assertions** to make tests pass. Never add `# type: ignore` or `@SuppressWarnings`.
+1. **Domain-by-domain**: implement ONE domain, verify pass, then next.
+2. **Golden sample first**: read 2-3 existing test files for import/mock/fixture/assertion patterns before coding.
+3. **Auto-detect tooling**: scan project files (package.json, pyproject.toml, pom.xml, existing tests).
+4. **Priority order**: High -> Medium -> Low, dependencies first regardless of priority.
+5. **Existing file safety**: re-read before editing, add new blocks (preserve existing tests), run ALL tests after.
+6. **Max 3 retries per domain**: 3 fails -> report and ask user.
+7. **Keep assertions strict** — resolve type errors at source, avoid suppressions (`# type: ignore`, `@SuppressWarnings`).
 
-## After All Domains Pass
+## Pre-execution gate
 
-Run full test suite, report summary (domains, tests added, tests passing), fix regressions before reporting done.
+골든 샘플 읽은 직후, 첫 테스트 코드 작성 전 plan 출력 + AskUserQuestion 승인. [상세](references/pre-execution.md).
+
+## After all domains pass
+
+Run full test suite, report summary (domains, tests added, passing), fix regressions before reporting done.
 
 ## References
 
-- [Full pipeline (4 phases)](references/pipeline.md)
-- [Mock accuracy guards and anti-patterns](references/mock-guards.md)
+- [Pipeline (4 phases)](references/pipeline.md)
+- [Mock guards + anti-patterns](references/mock-guards.md)
+- [Pre-execution gate](references/pre-execution.md)

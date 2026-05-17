@@ -15,17 +15,52 @@
 
 인자 없으면 사용자에게 소스 URL/텍스트 요청.
 
+## Raw 원문 템플릿 (`docs/sources/<id>.raw.md`)
+
+`<id>` 규칙: Jira는 `proj-123` (소문자), Confluence는 page-id, Figma는 file-key, 기타는 슬러그.
+
+```markdown
+---
+source_id: {id}
+source_url: {원본 URL}
+source_type: jira | confluence | figma | linear | web | text
+fetched_at: {ISO8601 timestamp}
+fetched_by: prep skill
+source_hash: {SHA-256 첫 16자 — 본문 기준}
+---
+
+{fetched 원문 verbatim. 의역/요약/재정렬/번역 절대 금지.}
+{Jira: description + acceptance criteria 원문 그대로}
+{Confluence: 본문 그대로 (HTML→MD 변환만 허용, 내용 변형 금지)}
+{Figma: 노드 트리 + 텍스트 콘텐츠 + 컴포넌트명 원문}
+```
+
 ## 출력 템플릿 (`docs/requirements.md`)
 
 ```markdown
+---
+created: {ISO8601}
+updated: {ISO8601}
+sources:
+  - id: {source-id-1}
+    url: {URL-1}
+    raw_file: docs/sources/{id-1}.raw.md
+    fetched_at: {ISO8601}
+    source_hash: {SHA-256 첫 16자}
+  - id: {source-id-2}
+    url: {URL-2}
+    raw_file: docs/sources/{id-2}.raw.md
+    fetched_at: {ISO8601}
+    source_hash: {SHA-256 첫 16자}
+status: Draft | Reviewed
+---
+
 # Requirements
 
-- Source: {원본 URL/티켓}
-- Created: {날짜}
-- Status: Draft | Reviewed
+> 원문 검증 필요 시: `docs/sources/<id>.raw.md` 참조 (verbatim).
 
 ## Background
-{배경 및 현재 상태}
+{배경 및 현재 상태 — raw에서 추출 또는 인용}
 
 ## Goal
 {달성 목표}

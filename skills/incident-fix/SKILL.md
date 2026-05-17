@@ -14,6 +14,22 @@ description: >-
 
 `docs/incident-report.md` 존재 필수. 없으면 `/incident` 먼저 실행 안내 후 중단.
 
+## Pre-execution gate (필수)
+
+incident-report.md 읽은 직후, **Phase 1 시작 전**:
+
+1. **Fix Plan 요약 출력**:
+   - Proposed Fix 핵심 (1-2줄)
+   - 영향 파일 목록 (Proposed Fix + Similar Patterns)
+   - 작성 예정 실패 테스트 시나리오 한 줄 요약
+   - Side Effects 검증 대상 경로
+2. **AskUserQuestion**: "이 방향으로 Red-Green-Refactor 진행할까요?"
+3. 승인 전 테스트 작성/코드 수정 **금지**
+
+**Skip 조건**:
+- 사용자가 `--auto` / "go" / "approved" 명시
+- Proposed Fix가 단일 파일 + 단일 라인 변경 + Similar Patterns 비어있음 → 1줄 요약 후 진행 가능
+
 ## 실행 (3-Phase TDD)
 
 ### Phase 1: RED — 실패 테스트 작성
