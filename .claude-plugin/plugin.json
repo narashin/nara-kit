@@ -1,13 +1,13 @@
 {
   "name": "nara-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "@shinnara's personal workflow toolkit — opinionated skills for RFC, PR, incident analysis, gap check, code review, and TDD. Reflects one developer's conventions; fork to adapt.",
   "author": {
     "name": "shinnara",
-    "url": "https://git.linecorp.com/shinnara"
+    "url": "https://github.com/narashin"
   },
-  "homepage": "https://git.linecorp.com/shinnara/nara-kit",
-  "repository": "https://git.linecorp.com/shinnara/nara-kit",
+  "homepage": "https://github.com/narashin/nara-kit",
+  "repository": "https://github.com/narashin/nara-kit",
   "license": "MIT",
   "keywords": [
     "workflow",
