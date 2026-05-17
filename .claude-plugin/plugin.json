@@ -20,6 +20,7 @@
     "planning"
   ],
   "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "nara-kit",
     "shortDescription": "@shinnara's opinionated workflow toolkit — fork to adapt",
