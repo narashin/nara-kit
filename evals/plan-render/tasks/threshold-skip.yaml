@@ -1,0 +1,19 @@
+id: threshold-skip-001
+name: "Short plan below threshold should skip render"
+description: |
+  Test that the skill respects the threshold rule and does not generate
+  HTML for plans under 200 lines / 8KB unless `render: force` is set.
+tags:
+  - threshold
+  - skip-path
+inputs:
+  prompt: "/plan-render docs/plan/sample-short.md"
+  files:
+    - path: fixtures/sample-short.md
+expected:
+  output_contains:
+    - "skipped"
+  output_not_contains:
+    - "applied"
+  outcomes:
+    - type: task_completed

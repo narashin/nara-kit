@@ -14,10 +14,12 @@ description: >-
 
 ## Flow
 
+0. **Load project override** (if `.claude/overrides/code-review.md` exists) — see "Project Override" below
 1. **Collect changes** + parse arguments — [phases](references/phases.md)
 2. **Gather context** (full files, types, tests, reusable code) — [phases](references/phases.md)
 3. **Launch 5 agents in parallel** via Agent tool — [agents](references/agents.md)
    - logic | type-safety | error-handling | architecture | security-performance
+   - Each agent receives base checklist + project override (if loaded) as a single merged prompt
 4. **Aggregate & filter** (confidence >= threshold, merge duplicates) — [fix-loop](references/fix-loop.md)
 5. **Auto-fix -> re-review -> converge** (max 3 rounds) — [fix-loop](references/fix-loop.md)
 6. **Final report** in Korean, saved to `./docs/review/YYMMDD-<desc>.md` — [fix-loop](references/fix-loop.md)
@@ -28,6 +30,51 @@ description: >-
 - Confidence >= 80 required (speculative concerns stay at 50 or below)
 - Iterative convergence: loop stops when clean, max rounds hit, no progress, or only suggestions remain
 - See [cross-cutting](references/cross-cutting.md) and [stack-specific](references/stack-specific.md) for additional checklists
+
+## Project Override (Step 0)
+
+Convention: project-local checks live in `.claude/overrides/code-review.md` (in the cwd of the project being reviewed, not in nara-kit).
+
+```bash
+# Run before Step 1
+test -f .claude/overrides/code-review.md && cat .claude/overrides/code-review.md
+```
+
+Behavior:
+- **Exists**: read body. Inject as "project-specific checklist" block into every agent prompt in Step 3. Apply alongside base checks.
+- **Missing**: skip silently. No fallback fetch, no remote lookup.
+- **Conflict resolution**: override never disables a base check. It can only add, raise severity, or narrow scope.
+
+Override file format (example structure projects should follow):
+
+```markdown
+# Project: <name> — code-review override
+
+## Stack-specific checks
+| 항목 | 심각도 | 기준 |
+|------|--------|------|
+| ... | ... | ... |
+
+## Local static analysis (optional)
+\`\`\`bash
+npx tsc --noEmit
+pnpm lint
+\`\`\`
+
+## Project rules
+- bullet rules
+```
+
+## Output Status (mandatory trailing line)
+
+Final report must end with:
+
+```
+overrides: applied (.claude/overrides/code-review.md)   # when loaded
+overrides: none                                          # when missing
+```
+
+This is a contract enforcement gate — without trailing status, the review is considered incomplete.
 
 ## Auto-chain: Adversarial Review
 

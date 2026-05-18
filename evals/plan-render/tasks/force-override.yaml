@@ -1,0 +1,20 @@
+id: force-override-001
+name: "Frontmatter render: force overrides threshold"
+description: |
+  Test that a short MD with `render: force` frontmatter still produces HTML,
+  overriding the size threshold.
+tags:
+  - frontmatter
+  - override
+inputs:
+  prompt: "/plan-render docs/plan/sample-force.md"
+  files:
+    - path: fixtures/sample-force.md
+expected:
+  output_contains:
+    - ".html"
+    - "applied"
+  output_not_contains:
+    - "skipped"
+  outcomes:
+    - type: task_completed
