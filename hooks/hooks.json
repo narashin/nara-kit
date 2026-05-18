@@ -1,5 +1,5 @@
 {
-  "description": "nara-kit hooks: SessionStart memory health check, PostToolUse plan-render trigger, Stop session-end reminders",
+  "description": "nara-kit hooks: SessionStart memory health check, Stop session-end reminders",
   "hooks": {
     "SessionStart": [
       {
@@ -9,18 +9,6 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/memory-health-check.sh",
             "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "You are a plan-render trigger. Inspect the just-written file. Decide whether to nudge the user to run `/plan-render`.\n\nTrigger conditions (ALL must hold):\n1. tool_input.file_path matches `docs/plan/.*\\.md$`, `docs/spec/.*\\.md$`, or `docs/rfc/.*\\.md$`\n2. File body (excluding frontmatter) is >= 200 lines OR >= 8KB\n3. Frontmatter does NOT contain `render: skip`\n\nSkip conditions:\n- Path does not match the patterns above → return approve with no message\n- File below threshold AND frontmatter does not have `render: force` → return approve with no message\n- Frontmatter has `render: skip` → return approve with no message\n- File already contains a `> 📄 **HTML viewer:**` line referencing a `.html` next to it whose mtime is newer than the MD's mtime → return approve with no message (already rendered)\n\nWhen triggered:\n- Return approve with systemMessage in Korean, under 2 sentences\n- Suggest: `/plan-render <file_path>` to derive an HTML viewer\n- Mention current line/byte count briefly\n- NEVER block the tool result\n\nReturn JSON:\n- No trigger: {\"decision\": \"approve\"}\n- Trigger: {\"decision\": \"approve\", \"systemMessage\": \"<reminder in Korean>\"}",
-            "timeout": 15
           }
         ]
       }
