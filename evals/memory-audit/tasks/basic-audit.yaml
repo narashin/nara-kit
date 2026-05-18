@@ -1,0 +1,19 @@
+id: basic-audit-001
+name: "Audit memory dir and produce score table"
+description: |
+  Test that the skill scans the memory directory, scores each file 0-4
+  via the 4 signals, and emits a sorted table with labels.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "/memory-audit 메모리 점검해줘"
+  files: []
+expected:
+  output_contains:
+    - "healthy"
+    - "score"
+  output_not_contains:
+    - "error"
+  outcomes:
+    - type: task_completed

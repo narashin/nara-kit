@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — 28 skills for structured software development and documentation workflows.
+Personal Claude Code workflow toolkit — 30 skills for structured software development and documentation workflows.
 
-Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 28개 스킬.
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 30개 스킬.
 
 ## Skills / 스킬 목록
 
@@ -20,7 +20,6 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | `workflow-dev-mode` | Implementation workflow (prep → gap → plan → execute → verify) / 구현 워크플로우 |
 | `workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
 | `workflow-viz` | Generate self-contained HTML flow visualization from workflow.json / 워크플로우 시각화 HTML 생성 |
-| `plan-render` | Derive a self-contained HTML viewer from long plan/spec MD (≥200 lines / 8KB) — MD is source of truth / 긴 plan·spec MD → HTML 뷰어 생성 (MD가 SoT) |
 
 ### Requirements & Analysis / 요구사항 & 분석
 
@@ -67,6 +66,8 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | `empirical-prompt-tuning` | Iteratively improve prompts via bias-free executor testing — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) / 프롬프트 경험적 튜닝 |
 | `skill-forge` | Improve and harden skills via Waza static analysis + EPT subagent execution / Waza+EPT 통합 스킬 개선 |
 | `spec-revision` | Revise and version specs with review feedback, append to Confluence / 스펙 리비전 + Confluence 버전 관리 |
+| `memory-audit` | Score auto-memory files 0-4 by 4 signals (age/ref_validity/code_drift/conflict) and flag hallucination-risk entries / 메모리 4신호 점수화로 환각 위험 탐지 |
+| `memory-archive` | Move flagged memory to `archive/` and clean MEMORY.md index — reversible, never deletes / flag된 메모리 archive 폴더로 격리 (복구 가능, 자동 삭제 X) |
 
 ## Install / 설치
 
@@ -116,9 +117,9 @@ webapp/
 
 ## Workflow / 워크플로우
 
-nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 28 skills work standalone — external plugins enhance automation but are **not required**.
+nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 30 skills work standalone — external plugins enhance automation but are **not required**.
 
-nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 27개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 30개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
 
 ### Mode A — Dev (Implementation / 구현)
 

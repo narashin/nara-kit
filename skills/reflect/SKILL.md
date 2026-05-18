@@ -28,9 +28,33 @@ description: >-
 ## 저장
 
 1. **Auto-memory**: 다음 세션에도 유효한 Decisions/Warnings/Conventions → memory 저장
+   - 새 메모리에는 반드시 `verified_at: <today>` + `ref_paths: [...]` (또는 `[]`) 박기 → `memory-audit` 호환
+   - 기존 메모리 업데이트 시 `verified_at` 갱신
 2. **docs/handoff.md**: In Progress + Open Questions 있으면 9섹션 정식 스키마로 덮어쓰기 (없으면 파일 삭제). 단기 인계 계약. **9번 섹션은 `/backlog done` 소관 — read-only 보존**
 3. **docs/learnings.md**: 팀 공유 필요 시, 파일 존재 시만 append
 4. **gap.md**: Agreed Exceptions 변경 시 반영
+
+## Memory Health Check
+
+저장 끝나면 `memory-audit` 호출 (`--log` 모드 = `.audit-log.jsonl` append). score>=2 메모리만 surface.
+
+```bash
+PROJECT_SLUG=$(echo "$PWD" | sed 's|/|-|g')
+MEM=~/.claude/projects/$PROJECT_SLUG/memory
+for f in "$MEM"/*.md; do
+  [[ "$(basename "$f")" == "MEMORY.md" ]] && continue
+  bash skills/memory-audit/scripts/audit.sh --log "$f"
+done | jq -s 'sort_by(-.score) | map(select(.score >= 2))'
+```
+
+**flag 결과 처리 (A1: flag 1회 → 즉시 archive 제안):**
+- score>=2 메모리 발견 시 사용자에게 AskUserQuestion으로 4지선다 제시:
+  1. `update` — 메모리 본문 수정 + `verified_at` 갱신
+  2. `keep` — 무시 (다음 audit에서 또 surface됨)
+  3. `archive` — `memory-archive` 스킬 호출 (move to `archive/` + MEMORY.md 정리)
+  4. `skip` — 이번 세션 결정 보류
+
+자동 archive/삭제 금지. **반드시 사용자 명시 승인**.
 
 ### docs/handoff.md 작성
 
@@ -38,7 +62,7 @@ description: >-
 
 ## 출력
 
-`## Session Reflect — {날짜}` 헤더 아래 Decisions, Conventions, Warnings, **In Progress, Open Questions**, Gap Status (이전→현재), Next Session 각 섹션 출력.
+`## Session Reflect — {날짜}` 헤더 아래 Decisions, Conventions, Warnings, **In Progress, Open Questions**, Gap Status (이전→현재), Next Session 각 섹션 출력. 마지막에 **Memory Health** 섹션 — score>=2 메모리만 표 형태로 (없으면 생략).
 
 ## 규칙
 
