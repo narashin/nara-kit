@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — 26 skills for structured software development and documentation workflows.
+Personal Claude Code workflow toolkit — 28 skills for structured software development and documentation workflows.
 
-Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 26개 스킬.
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 28개 스킬.
 
 ## Skills / 스킬 목록
 
@@ -20,6 +20,7 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | `workflow-dev-mode` | Implementation workflow (prep → gap → plan → execute → verify) / 구현 워크플로우 |
 | `workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
 | `workflow-viz` | Generate self-contained HTML flow visualization from workflow.json / 워크플로우 시각화 HTML 생성 |
+| `plan-render` | Derive a self-contained HTML viewer from long plan/spec MD (≥200 lines / 8KB) — MD is source of truth / 긴 plan·spec MD → HTML 뷰어 생성 (MD가 SoT) |
 
 ### Requirements & Analysis / 요구사항 & 분석
 
@@ -48,6 +49,7 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | `adr` | Architecture Decision Record / 아키텍처 결정 기록 |
 | `explain` | Shareable explanations for different audiences / 대상별 설명 문서 생성 |
 | `publish-spec` | Publish spec to Confluence wiki / 스펙 → Confluence 게시 |
+| `wiki-inject` | Inject notes into personal LLM wiki (Obsidian) — routes by project (tech-notes / LINE) and type (source / meeting-summary / meeting-raw / concept-draft) / 프로젝트·타입별 위키 노트 주입 |
 | `reflect` | Capture session learnings (decisions, conventions, warnings) / 세션 학습 캡처 |
 
 ### Testing / 테스트
@@ -78,11 +80,45 @@ All nara-kit skills follow a shared output contract — responses are receipts (
 
 모든 nara-kit 스킬은 공통 출력 규약을 따름 — 응답은 영수증(3-6라인)이며 산출물 자체가 아님. 상태 라벨, MCP 부수효과, 격상 신호가 표준화됨.
 
+## Project Override Convention / 프로젝트 오버라이드 컨벤션
+
+nara-kit skills are **general workflow engines**. Project-specific stack rules, conventions, and checks live in the project repo at `.claude/overrides/<skill-name>.md`. The skill loads the override at Step 0 and merges it with base behavior.
+
+nara-kit 스킬은 **제너럴 워크플로우 엔진**. 프로젝트 특화 스택 룰·컨벤션·체크는 프로젝트 repo의 `.claude/overrides/<skill-name>.md` 에 둔다. 스킬이 Step 0에서 오버라이드를 로드하여 기본 동작에 병합.
+
+### How it works / 동작 방식
+
+1. Skill에 Step 0 override-load 게이트가 있는 경우, 실행 시작 시 cwd의 `.claude/overrides/<skill>.md` 확인
+2. 존재 → 본문을 base prompt/checklist에 병합. 미존재 → silent skip
+3. Override는 base check 비활성화 불가. **추가 / 격상 / 범위 축소만 가능**
+4. Trailing status: `overrides: applied (path)` 또는 `overrides: none` 명시
+
+### Example / 예시
+
+webapp (Next.js + TanStack + LINE DS) repo:
+
+```
+webapp/
+  .claude/
+    overrides/
+      code-review.md   # libs/fetch, TanStack v5, queryKey, Recoil, LINE DS checks
+```
+
+`/nara-kit:code-review` 실행 시 base 5-agent + webapp 특화 체크를 자동 병합.
+
+### Skills with override support / 오버라이드 지원 스킬
+
+| Skill | Override Path |
+|-------|---------------|
+| `code-review` | `.claude/overrides/code-review.md` |
+
+(Add new skills as override gates are introduced. / 게이트 추가에 따라 목록 확장.)
+
 ## Workflow / 워크플로우
 
-nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 26 skills work standalone — external plugins enhance automation but are **not required**.
+nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 28 skills work standalone — external plugins enhance automation but are **not required**.
 
-nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 26개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 27개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
 
 ### Mode A — Dev (Implementation / 구현)
 

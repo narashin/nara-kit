@@ -80,9 +80,10 @@ Plugin-provided hooks in `hooks/hooks.json` — run in every project that instal
 
 | Event | Purpose |
 |-------|---------|
+| PostToolUse (Write/Edit/MultiEdit) | Suggest `/plan-render` when long plan/spec MD (`docs/plan/*.md`, `docs/spec/*.md`, `docs/rfc/*.md`) crosses threshold |
 | Stop | Remind `/reflect` (substantial work) and `/adr` (architectural decisions) before session end |
 
-Hooks use prompt-based evaluation (semantic, not mechanical). Always `approve` stop — never block.
+Hooks use prompt-based evaluation (semantic, not mechanical). Always `approve` — never block.
 
 ## When Adding a New Skill
 
@@ -98,3 +99,34 @@ Hooks use prompt-based evaluation (semantic, not mechanical). Always `approve` s
 2. If changing `description` field, verify routing doesn't break (test with `workflow-orchestrator` eval)
 3. For substantive behavior changes, use `/nara-kit:skill-forge <name>` — EPT subagent loop with iterative fixes
 4. Check cross-references — other skills may link to this one via `references/`
+
+## Release / Redeploy
+
+Changes to skills, hooks, or any plugin file are **not live** until the plugin is republished and reinstalled. Local edits affect only this repo, not other projects that consume nara-kit.
+
+**Trigger this flow whenever any of these change:**
+- `skills/**/*` — SKILL.md, references, assets
+- `hooks/hooks.json`
+- `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`
+- `commands/**` (if added later)
+
+**Steps:**
+
+1. **Version bump (semver):**
+   - Patch (`0.1.1 → 0.1.2`): bug fix, doc fix, single skill tweak
+   - Minor (`0.1.x → 0.2.0`): new skill, new hook, breaking skill rename
+   - Major (`0.x.y → 1.0.0`): incompatible workflow restructure
+   - Bump BOTH `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` to the same version
+2. **Commit + push** to `origin/main`. Tag the release: `git tag v<version> && git push --tags`
+3. **Marketplace refresh** (consumer side): `/plugin marketplace update nara-kit`
+4. **Plugin update**: `/plugin update nara-kit` (or reinstall if first time)
+5. **Restart Claude Code** — hooks are loaded at SessionStart only; without restart new/changed hooks do not activate
+
+**Automation:** `claude-mem:version-bump` handles steps 1-2 (bumps all manifests, tags, optionally publishes GitHub release). Prefer it over manual bumps.
+
+**Skip release when:** changes touch only `evals/**`, `README.md`, `CLAUDE.md`, or development tooling — these are not shipped to consumers.
+
+**Verify after release:**
+- `ls ~/.claude/plugins/cache/nara-kit/nara-kit/` should show the new version directory
+- `ls ~/.claude/plugins/cache/nara-kit/nara-kit/<new-version>/skills/` should list the new/changed skill
+- Run a quick smoke test of the changed skill in a fresh Claude Code session
