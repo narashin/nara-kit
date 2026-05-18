@@ -1,0 +1,16 @@
+id: basic-archive-001
+name: "Archive flagged memory"
+description: |
+  Test that the skill moves a memory file to archive/ and removes its
+  line from MEMORY.md, returning action=archived.
+tags:
+  - basic
+inputs:
+  prompt: "/memory-archive 메모리 archive 해줘"
+  files:
+    - path: fixtures/sample-memory.md
+expected:
+  output_contains:
+    - "archived"
+  outcomes:
+    - type: task_completed
