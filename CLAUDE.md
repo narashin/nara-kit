@@ -81,7 +81,6 @@ Plugin-provided hooks in `hooks/hooks.json` — run in every project that instal
 | Event | Purpose |
 |-------|---------|
 | SessionStart | Silently audit auto-memories via `memory-audit`; surface `systemMessage` when any memory scores ≥2 (flag count) |
-| PostToolUse (Write/Edit/MultiEdit) | Suggest `/plan-render` when long plan/spec MD (`docs/plan/*.md`, `docs/spec/*.md`, `docs/rfc/*.md`) crosses threshold |
 | Stop | Remind `/reflect` (substantial work) and `/adr` (architectural decisions) before session end |
 
 Hooks use prompt-based evaluation (semantic, not mechanical). Always `approve` — never block.
