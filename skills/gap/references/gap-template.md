@@ -13,7 +13,7 @@
 - **P0 Missing (Critical): {N}**  ← hard gate
 - P1 Missing (High): {N}
 - P2 Missing (Low): {N}
-- Verbatim 항목: {N} (pre-scan 적용)
+- Verbatim 항목: {N} (rubric §1 처리 대상 항목 수 — pre-scan에 의해 exact match 검증된 항목)
 - Needs Confirm: {N} (forced sampling)
 
 ## Critical (P0) Missing — 보완 1순위

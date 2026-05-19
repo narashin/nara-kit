@@ -82,7 +82,21 @@ bullet 형식도 허용 (legacy spec, 외부 SoT 형식 그대로 보존 시):
 ### 외부 SoT에 AC 없는 경우
 
 - Jira/Confluence에 AC 누락 시: doc-mode에서 작성 → 사용자가 외부 SoT에도 보강 권고 (외부와 desync 방지)
+- 외부 SoT 자체가 부재 (vague path 신규 spec) → interview 결과로 AC 후보 도출, 사용자 확정
 - 우회 금지: "AC 없어도 spec 만들어줘" 요청 시 reject + 이유 설명
+
+### 금지: 도메인 hint 주입
+
+AC Gate에서 사용자에게 제시 가능한 것:
+- ✅ Given-When-Then 빈 템플릿 구조 (`Given <...>` 형태)
+- ✅ "AC 작성하려면 interview 필요" 안내
+
+제시 금지:
+- ❌ 도메인별 AC 후보 영역 ("재시도 종료 조건", "fallback 정책", "멱등성" 등)
+- ❌ "AC 영역 힌트" / "interview 질문축 후보"
+- ❌ 예시 AC 본문 (실제 도메인 단어가 들어간 Given-When-Then)
+
+이유: 영역 hint도 사용자의 사고를 좁힘 → 누락된 영역 발견 차단. interview 스킬이 발산적 질문을 책임짐. doc-mode는 게이트만 강제.
 
 ## Post-artifact
 
