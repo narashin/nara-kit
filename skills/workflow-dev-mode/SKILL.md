@@ -1,9 +1,9 @@
 ---
 name: workflow-dev-mode
 description: >-
-  Run implementation-first workflow enforcing structured gates from SoT localization through gap analysis, TDD, verification, and branch finish.
-  USE FOR: "dev mode", "구현 워크플로우", "implementation workflow", "개발 모드", "feature implementation".
-  DO NOT USE FOR: documentation-only artifacts (→ workflow-doc-mode), design exploration without stable requirements (→ ooo interview or superpowers:brainstorming), simple one-file edits (→ direct edit).
+  Implementation-first workflow with structured gates: SoT → gap → TDD → verify → branch finish.
+  USE FOR: "dev mode", "구현 워크플로우", "개발 모드", "feature implementation".
+  DO NOT USE FOR: docs-only artifacts (→ workflow-doc-mode), unstable requirements (→ interview), simple edits.
 ---
 
 # Workflow Dev Mode

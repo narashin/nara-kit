@@ -1,9 +1,9 @@
 ---
 name: prep
 description: >-
-  Localize external source-of-truth (Jira, Confluence, Figma, Linear, PRD) into docs/requirements.md.
+  Localize external SoT (Jira/Confluence/Figma/Linear) into docs/requirements.md. AC verbatim 보존.
   USE FOR: "prep", "/prep TICKET-ID", "요구사항 정리", "스펙 로컬화", Jira URL, Confluence URL.
-  DO NOT USE FOR: gap analysis (→ /gap), code implementation (→ workflow-dev-mode), RFC writing (→ /rfc), verbal-only requirements with no external SoT (→ workflow-doc-mode brainstorming/interview first).
+  DO NOT USE FOR: gap (→ /gap), code impl (→ dev-mode), RFC (→ /rfc), no external SoT (→ doc-mode).
 ---
 
 # prep — 외부 SoT 로컬화
