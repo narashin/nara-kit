@@ -81,7 +81,6 @@ Plugin-provided hooks in `hooks/hooks.json` — run in every project that instal
 | Event | Purpose |
 |-------|---------|
 | SessionStart | Silently audit auto-memories via `memory-audit`; surface `systemMessage` when any memory scores ≥2 (flag count) |
-| Stop | Remind `/reflect` (substantial work) and `/adr` (architectural decisions) before session end |
 
 Hooks use prompt-based evaluation (semantic, not mechanical). Always `approve` — never block.
 
