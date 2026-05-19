@@ -1,6 +1,6 @@
 {
   "name": "nara-kit",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "@shinnara's personal workflow toolkit — opinionated skills for RFC, PR, incident analysis, gap check, code review, and TDD. Reflects one developer's conventions; fork to adapt.",
   "author": {
     "name": "shinnara",
@@ -20,7 +20,6 @@
     "planning"
   ],
   "skills": "./skills/",
-  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "nara-kit",
     "shortDescription": "@shinnara's opinionated workflow toolkit — fork to adapt",
