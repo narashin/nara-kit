@@ -71,8 +71,119 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 
 ## Install / 설치
 
+### 1. Marketplace 등록 / 마켓플레이스 추가
+
+Claude Code 세션 안에서 slash command 실행:
+
+```
+/plugin marketplace add narashin/nara-kit
+```
+
+또는 LINE 내부 git 원격 사용 시:
+
+```
+/plugin marketplace add https://ghe.example.com/shinnara/nara-kit.git
+```
+
+로컬 clone 경로로도 가능 (개발용):
+
+```
+/plugin marketplace add /path/to/nara-kit
+```
+
+### 2. Plugin 설치 / 플러그인 설치
+
+```
+/plugin install nara-kit@nara-kit
+```
+
+> 표기 `<plugin-name>@<marketplace-name>`. 마켓플레이스 이름도 `nara-kit`이라 양쪽 동일.
+
+### 3. Claude Code 재시작 / 재시작
+
+Hooks는 SessionStart에만 로드됨. 설치 후 **반드시 재시작** 필요.
+
+### 4. 검증 / 설치 확인
+
+```
+/plugin list
+```
+
+`nara-kit` 항목이 `Status: Enabled`, version 표시, 에러 0개면 정상.
+
+캐시 위치 확인:
+
 ```bash
-claude plugin marketplace add https://ghe.example.com/shinnara/nara-kit.git
+ls ~/.claude/plugins/cache/nara-kit/nara-kit/<version>/skills/
+```
+
+29개 스킬 디렉토리가 보이면 OK.
+
+## Usage / 사용법
+
+### 스킬 호출 / Invoke a skill
+
+두 가지 방식:
+
+**1) Slash command (명시 호출)** — 정확히 그 스킬만 실행:
+
+```
+/nara-kit:now
+/nara-kit:prep PROJ-1234
+/nara-kit:code-review
+/nara-kit:rfc PROJ-5678
+```
+
+**2) 자연어 트리거 (라우팅)** — Claude가 `description`의 `USE FOR` 키워드로 자동 매칭:
+
+```
+"어디까지 했지"        → now
+"요구사항 정리해줘"    → prep
+"리뷰해줘"             → code-review
+"PR 만들어"            → pr
+"커밋 메시지"          → commit
+```
+
+각 스킬 `description`에 트리거 구문이 박혀있음. 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
+
+### 워크플로우 진입 / Enter a workflow
+
+전체 작업 흐름 (prep → gap → plan → execute → review):
+
+```
+"개발 모드로 시작"     → workflow-dev-mode
+"기획 모드로 시작"     → workflow-doc-mode
+"workflow"             → workflow-orchestrator (자동 분류)
+```
+
+상세 흐름은 아래 [Workflow](#workflow--워크플로우) 섹션의 mermaid 다이어그램 참조.
+
+### 첫 사용 권장 순서 / First-time path
+
+1. `/nara-kit:now` — 현재 세션 상태 점검
+2. `/nara-kit:prep <TICKET>` — Jira·Confluence를 `docs/requirements.md`로 로컬화
+3. `/nara-kit:gap` — 요구사항 vs 현재 코드 갭 점수
+4. 구현 후 `/nara-kit:code-review` → `/nara-kit:pr`
+
+## Update / 업데이트
+
+```
+/plugin marketplace update nara-kit
+/plugin update nara-kit
+```
+
+업데이트 후 Claude Code 재시작 필수.
+
+## Uninstall / 삭제
+
+```
+/plugin uninstall nara-kit
+```
+
+캐시까지 정리 (선택):
+
+```bash
+rm -rf ~/.claude/plugins/cache/nara-kit/
 ```
 
 ## Output Contract / 출력 규약
