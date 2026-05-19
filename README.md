@@ -1,6 +1,6 @@
 # nara-kit
 
-> **Note:** Personal skill collection by [@shinnara](https://ghe.example.com/shinnara). Workflows and conventions reflect personal preferences — use as reference or fork to adapt.
+> **Note:** Personal skill collection by @shinnara. Workflows and conventions reflect personal preferences — use as reference or fork to adapt.
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
@@ -76,20 +76,12 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 Claude Code 세션 안에서 slash command 실행:
 
 ```
-/plugin marketplace add narashin/nara-kit
+/plugin marketplace add <repo-url>
 ```
 
-또는 LINE 내부 git 원격 사용 시:
+`<repo-url>` 자리에 본 저장소의 git URL (또는 shorthand가 지원되는 호스트의 `<owner>/<repo>` 형식)을 넣음. 로컬 clone 경로 (`/path/to/nara-kit`)도 가능 — 개발용.
 
-```
-/plugin marketplace add https://ghe.example.com/shinnara/nara-kit.git
-```
-
-로컬 clone 경로로도 가능 (개발용):
-
-```
-/plugin marketplace add /path/to/nara-kit
-```
+> 본 페이지를 어디서 읽고 있느냐에 따라 URL은 브라우저 주소창에 있음.
 
 ### 2. Plugin 설치 / 플러그인 설치
 
