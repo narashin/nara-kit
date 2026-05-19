@@ -1,6 +1,6 @@
 # nara-kit
 
-> **Note:** Personal skill collection by @shinnara. Workflows and conventions reflect personal preferences — use as reference or fork to adapt.
+> **Note:** Personal skill collection by shinnara. Workflows and conventions reflect personal preferences — use as reference or fork to adapt.
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
