@@ -16,14 +16,22 @@ description: >-
 2. **Git diff**: `git diff main...HEAD --stat` 또는 최근 커밋 목록
 3. **gap.md 변화**: gap.md 있으면 점수 변화 확인
 4. **발견된 패턴**: 세션 중 발견한 코드 컨벤션이나 프로젝트 특이사항
+5. **`docs/implementation-notes.md` 흡수**: 존재 시 4섹션 (Design decisions / Deviations / Tradeoffs / Open questions) 모두 읽기 → 아래 분류로 매핑
 
 ## 분류
 
-- **Decisions**: 기술적/설계적 결정 + 이유
+- **Decisions**: 기술적/설계적 결정 + 이유 (← notes의 `Design decisions` + `Tradeoffs` 매핑)
 - **Conventions**: 발견하거나 확립한 코드 컨벤션
-- **Warnings**: 다음 세션 주의사항 (코드만 봐서 알 수 없는 것)
+- **Warnings**: 다음 세션 주의사항 (코드만 봐서 알 수 없는 것) (← notes의 `Deviations` 일부)
 - **In Progress**: 미완료 작업의 현재 위치 + 다음에 이어서 할 일 (이번 세션에 끝나지 않은 것)
-- **Open Questions**: 보류된 결정, 디버깅 가설, 검증 못 한 가정 (사용자/다음 세션에 답이 필요한 것)
+- **Open Questions**: 보류된 결정, 디버깅 가설, 검증 못 한 가정 (사용자/다음 세션에 답이 필요한 것) (← notes의 `Open questions` 그대로)
+
+### implementation-notes 후속 액션
+
+흡수 후 결정:
+- `Deviations` 중 구조적 변경 (새 패턴/모듈 도입) → `/adr` 호출 권고
+- `Open questions` 남은 채면 → `docs/handoff.md`에 박음 (다음 세션 `/now`가 surface)
+- 흡수 완료된 `docs/implementation-notes.md`는 **삭제 금지**, 그대로 보존 (PR 리뷰 참고용)
 
 ## 저장
 

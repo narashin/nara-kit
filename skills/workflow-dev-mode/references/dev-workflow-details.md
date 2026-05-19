@@ -8,9 +8,10 @@
 4. Perform integration review against existing code and patterns
 5. Run gap analysis when current-state vs target-state delta matters
 6. Create written implementation plan before execution
-7. Enforce TDD for behavior-changing work where practical
-8. Run verification before claiming completion
-9. Route to evaluation, review, reflect, ADR, and finish only after prior gates pass
+7. **Implementation Notes Gate**: Execute 진입 시 `docs/implementation-notes.md` 생성. 모든 변경 응답에 trailing `📝 notes:` 출력. (SKILL.md 참조)
+8. Enforce TDD for behavior-changing work where practical
+9. Run verification before claiming completion. **verify는 implementation-notes.md 비어 있으면 reject.**
+10. Route to evaluation, review, reflect (notes 흡수), ADR, and finish only after prior gates pass
 
 ## Mandatory routing table
 
@@ -44,6 +45,7 @@ Before routing onward, produce:
 - integration review status
 - gap status
 - planning status
+- **implementation-notes status (file existence, total entries, last trailing status)**
 - TDD status
 - verification status
 
@@ -65,6 +67,7 @@ Before routing onward, produce:
 - stop and ask when success criteria are unclear
 - stop and ask when doc and dev paths are both plausible and materially different
 - stop and ask when required external input or credential is missing
+- **stop when verify is requested but `docs/implementation-notes.md` is missing/empty** — instruct user to fill notes first
 - continue without asking only when next implementation gate is unambiguous
 
 ## Examples
