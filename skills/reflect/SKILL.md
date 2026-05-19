@@ -29,8 +29,11 @@ description: >-
 ### implementation-notes 후속 액션
 
 흡수 후 결정:
-- `Deviations` 중 구조적 변경 (새 패턴/모듈 도입) → `/adr` 호출 권고
+- `Deviations` 분류:
+  - **구조적 변경** (새 패턴/모듈 도입, 디렉토리 배치 규약 변경 등) → Warnings + `/adr` 호출 권고
+  - **정책 결정** (운영 표준에 맞춘 spec 누락 영역 보강) → Decisions (Why 보존). 후속 영향 (caller timeout 등)은 Warnings로 split
 - `Open questions` 남은 채면 → `docs/handoff.md`에 박음 (다음 세션 `/now`가 surface)
+  - In Progress 없어도 Open Questions 있으면 handoff.md 생성 (OR 조건)
 - 흡수 완료된 `docs/implementation-notes.md`는 **삭제 금지**, 그대로 보존 (PR 리뷰 참고용)
 
 ## 저장

@@ -22,7 +22,7 @@
 ## Detail
 
 ### Implemented
-| ID | Priority | Requirement | Quote (req원문) | Evidence (파일:라인) | Verbatim? |
+| ID | Priority | Requirement | Quote (req원문) | Evidence (파일:라인) | Verbatim? | Why (선택, DD-ID 인용) |
 
 ### Partial
 | ID | Priority | Requirement | Done | Remaining | Evidence |
@@ -35,6 +35,13 @@
 
 ### Needs Confirm (forced sampling — user 확인 요청)
 | ID | Priority | Requirement | Why sampled | Evidence |
+
+reviewer context로 합류한 항목 (rubric §7 Tradeoffs/Open Q[confirm])은 Priority/Evidence 컬럼에 `-` 표기 허용. Why sampled 컬럼에 `tradeoff: TO-ID` 또는 `open-Q: OQ-ID` 명시.
+
+### Spec Revise Candidates (선택 — gap --verify Notes Reconciliation 시만)
+| ID | Topic | Type | Context | Source |
+
+`Source` 형식: `implementation-notes.md OQ-<N>`. 다음 `/prep` 재실행 후보 표시.
 
 ## Next Actions
 1. {P0 미구현 우선}
