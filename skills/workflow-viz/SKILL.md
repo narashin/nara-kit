@@ -1,11 +1,9 @@
 ---
 name: workflow-viz
 description: >-
-  Generate a single self-contained HTML page that visualizes packages, components, and the
-  information flow between them for selectable actions, driven by one workflow.json document.
-  USE FOR: "workflow viz", "워크플로우 시각화", "패키지 흐름도", "flow map", "다이어그램 만들어", "패키지 간 흐름 문서화".
-  DO NOT USE FOR: architecture decision records (use /adr), code-level sequence diagrams,
-  generic README generation.
+  Generate self-contained HTML visualizing packages, components, and information flow from workflow.json.
+  USE FOR: "workflow viz", "워크플로우 시각화", "패키지 흐름도", "flow map", "다이어그램 만들어".
+  DO NOT USE FOR: ADR (use /adr), code-level sequence diagrams, README generation.
 ---
 
 # Workflow Viz

@@ -1,9 +1,9 @@
 ---
 name: wiki-inject
 description: >-
-  Inject a new note into the personal LLM wiki (Obsidian vault). Routes by project (tech-notes / LINE-common / others) and content type (external source / meeting summary / meeting transcript / concept).
-  USE FOR: "wiki에 추가", "wiki-inject", "위키에 박아", "source note 만들어", "회의록 정리해서 위키에", "이거 LINE-common 위키에", "/wiki-inject".
-  DO NOT USE FOR: editing existing wiki notes (edit directly), Confluence team docs (use publish-spec), session learnings (use reflect), PDF report generation.
+  Inject a note into personal LLM wiki (Obsidian). Routes by project + content type (source / meeting / concept).
+  USE FOR: "wiki에 추가", "위키에 박아", "회의록 위키에", "/wiki-inject".
+  DO NOT USE FOR: editing existing notes, Confluence (use publish-spec), session learnings (use reflect).
 ---
 
 # wiki-inject — LLM Wiki Note 주입
