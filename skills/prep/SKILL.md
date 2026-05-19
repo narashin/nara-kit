@@ -28,4 +28,8 @@ description: >-
 - 추론은 `[UNVERIFIED: <이유>]` 또는 Open Questions
 - Figma: 화면/컴포넌트/인터랙션. Jira: description + AC + 결정사항
 - 빈 섹션도 헤더 + "없음". `Agreed Exceptions` 필수 — gap false positive 방지
+- **Acceptance Criteria 처리:**
+  - Jira "Acceptance Criteria" 필드, Confluence 본문의 "AC" / "수락 기준" / "Given-When-Then" 블록 발견 시 verbatim 보존 → `## Acceptance Criteria` 섹션에 박음
+  - 외부 SoT에 AC 없음 → 빈 섹션 + `Open Questions`에 `[blocking] AC 누락. doc-mode AC Gate에서 작성 필요` 추가
+  - **AC 추론·창작 금지.** raw에 없으면 만들지 않음. gap·test-discover가 정확도 잃는 게 spec 변조보다 나음
 - 덮어쓰기 전 사용자 확인. `backlog/` 존재 시 "/backlog sync 가능" 안내

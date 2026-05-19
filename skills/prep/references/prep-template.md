@@ -68,6 +68,18 @@ status: Draft | Reviewed
 ## Functional Requirements
 - [ ] FR-1: {기능 요구사항}
 
+## Acceptance Criteria
+> 외부 SoT에서 AC 발견 시 verbatim 보존. 없으면 빈 채로 두고 Open Questions에 `[blocking] AC 누락` 추가. **AC 추론·창작 금지.**
+
+- [ ] AC-1
+  - Given {초기 상태}
+  - When  {행동}
+  - Then  {기대 결과}
+  - And   {추가 검증, 선택}
+
+bullet 형식도 허용 (외부 SoT가 bullet 형식이면 그대로 보존):
+- [ ] AC-1: {조건 + 기대 결과}
+
 ## Non-Functional Requirements
 - [ ] NFR-1: {성능/보안/접근성 등}
 

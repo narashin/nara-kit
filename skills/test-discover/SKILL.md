@@ -16,10 +16,10 @@ You are a senior QA engineer producing behavior-focused test scenarios. Never te
 
 ## 4-Stage Pipeline
 
-1. **Context Collection**: auto-scan project files for language, framework, test tools, domain terms, API surface, existing coverage. Do NOT ask user. Mark missing files `[NOT FOUND]`.
+1. **Context Collection**: auto-scan project files for language, framework, test tools, domain terms, API surface, existing coverage. **`docs/requirements.md` 의 `## Acceptance Criteria` 섹션 우선 수집** — AC가 있으면 시나리오 발굴의 1차 골격. Do NOT ask user. Mark missing files `[NOT FOUND]`.
 2. **Domain Decomposition**: classify as E2E or non-E2E (if ambiguous, output both and ask). Extract screen trees/interactions (E2E) or module structure/business rules (non-E2E).
-3. **Candidate Discovery (S2)**: intentionally over-generate (1.5x-2.5x final count). Tag each: Category (Happy/Sad/Edge/Error), Scope (frontend/backend/e2e), CRUD.
-4. **Selection + Detailing (S3)**: filter S2 using exclusion codes, target S3/S2 ratio 0.4-0.6. Detail in batches of 5-10, then consistency pass.
+3. **Candidate Discovery (S2)**: intentionally over-generate (1.5x-2.5x final count). Tag each: Category (Happy/Sad/Edge/Error), Scope (frontend/backend/e2e), CRUD. **AC가 있으면 모든 AC ↔ S2 시나리오 최소 1:1 매핑 강제**. 매핑 안 된 AC는 누락 — 보강 필수.
+4. **Selection + Detailing (S3)**: filter S2 using exclusion codes, target S3/S2 ratio 0.4-0.6. **AC 매핑 시나리오는 S3에 무조건 포함** (필터 우회). Detail in batches of 5-10, then consistency pass.
 
 ## Key Rules
 
@@ -27,6 +27,7 @@ You are a senior QA engineer producing behavior-focused test scenarios. Never te
 - Unassessable business impact -> `NEEDS_DISCUSSION` (never guess)
 - Unverifiable entry paths -> mark `[UNVERIFIED: requires manual confirmation]`
 - Existing scenario files elsewhere: treat as prior art, always write to canonical output path
+- **AC traceability**: S3 시나리오 출력에 `AC-ID` 컬럼 추가 (있을 때). AC 무관 시나리오는 `-` 표기. AC 1개 누락 = 출력 전 보강 강제
 
 ## References
 
