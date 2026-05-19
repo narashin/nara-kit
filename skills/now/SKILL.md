@@ -34,7 +34,7 @@ frontmatter에 `fetched_at` 없거나 `sources` 배열 누락 → `legacy prep` 
 
 수집 결과로 판단 후 추천. Load [references/now-tables.md](references/now-tables.md) for judgment tables and output format.
 
-핵심 로직: main 브랜치 → `/prep` | requirements 없음 → `/prep` | **requirements stale (>7일) → `/prep` 재실행 권고** | gap 없음 → `/gap` | gap < 80 → 실행 방법 판단 | gap >= 80 → 리뷰/마무리.
+핵심 로직: main 브랜치 → `/prep` | requirements 없음 → `/prep` | **requirements stale (>7일) → `/prep` 재실행 권고** | gap 없음 → `/gap` | **P0 Missing ≥ 1 → P0 보완 (점수 무관)** | P0 0 + gap < 80 → 실행 방법 판단 | P0 0 + gap ≥ 80 → 리뷰/마무리.
 
 **Handoff 우선순위**: `docs/handoff.md` 존재하면 다른 추천보다 먼저 표면화. "이전 세션에서 X 작업 중단, Y 질문 미해결" 형태로 1-2줄 요약 후 그 다음 액션 추천.
 

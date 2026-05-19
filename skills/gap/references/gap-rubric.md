@@ -50,3 +50,59 @@ Implemented로 분류한 항목 중:
 
 - `Agreed Exceptions` 항목
 - `[UNVERIFIED]` 항목 (별도 처리)
+
+## 6. Priority Classification (P0/P1/P2)
+
+각 요구사항을 분류. **모든 항목 (Implemented / Partial / Missing) 분류 필수.** 분류 근거 1줄 출력 (trace).
+
+### P0 — Critical (must, hard gate)
+
+다음 중 **하나라도** 매칭되면 P0.
+
+- spec 표현: `필수`, `MUST`, `반드시`, `required`, `core`, `필요`, `should not be missing`
+- AC (Acceptance Criteria) 본문 항목 — 헤더 아래 bullet
+- User Story `Given-When-Then`의 `Then` 절
+- 데이터 무결성 / 권한 / 보안 / 인증
+- API contract: request/response shape, HTTP status, endpoint 존재
+- 사용자가 못 쓰면 기능 자체가 실패하는 항목 (golden path)
+- 사용자가 명시적으로 보는 에러 경로 (error message text, error state UI)
+- Verbatim 항목 (rubric §1) — UI 카피·API endpoint·env var 등 exact match 필요 항목은 기본 P0
+
+### P1 — High (should)
+
+- spec 표현: `should`, `권장`, `권고`, `recommended`
+- UX 폴리시: loading state, empty state, toast, 보조 UI
+- 보조 기능: 필터, 정렬, 페이지네이션 — spec에 있지만 core path 아님
+- Edge case 처리 — 자주 안 가는 경로
+- ARIA / 접근성 — 명시된 항목만
+
+### P2 — Low (nice-to-have)
+
+- spec 표현: `nice`, `future`, `차기`, `phase 2`, `추후`, `optional`
+- 명시적 후순위 표기 항목
+- 성능 마이크로 최적화 — spec 명시 없으면 P2 아님 (P1)
+
+### 모호 시 (spec에 명시 없음)
+
+| 항목 성격 | 분류 |
+|---|---|
+| user-facing 핵심 동작 | **P0** |
+| user-facing 보조 동작 | P1 |
+| 내부 구현 디테일만 영향 | P1 |
+| 명시 없는 micro-opt | P2 |
+
+**원칙: 의심되면 conservative — P0로.** 잘못 P0 분류 비용 < P0 누락 비용.
+
+### Override
+
+프로젝트 특화 P0 정의가 있으면 `.claude/overrides/gap.md`에 보강. base 분류를 격상만 가능. 강등 금지.
+
+### Hard Gate
+
+| 조건 | 결과 |
+|---|---|
+| P0 Missing **0건** AND score ≥ 80 | review-ready (commit + code-review 가능) |
+| P0 Missing **≥ 1건** | 점수 무관 차단. P0 보완 1순위 |
+| P0 Missing 0건 AND score < 80 | P1 보완 권장 (강제 X) |
+
+**점수와 P0는 독립 신호.** score는 진행률, P0 missing은 게이트.

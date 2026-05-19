@@ -34,12 +34,16 @@ description: >-
 5. Agreed Exceptions 반영 (갭에서 제외)
 6. `[UNVERIFIED]` 항목 → Agreed Exceptions로 분류
 7. rubric §4 Forced Doubt Sampling → Implemented 중 20% (최소 2개) `Needs Confirm` 표시
-8. gap.md 생성. Follow template in [references/gap-template.md](references/gap-template.md).
+8. **Priority Classification** (rubric §6): 모든 항목을 P0/P1/P2로 분류. 근거 1줄 trace 출력 필수. `.claude/overrides/gap.md` 존재 시 격상만 적용
+9. **Gate 판정**: P0 Missing 카운트 + score로 `✅ review-ready` / `❌ blocked by P0` / `⚠️ score < 80` 결정
+10. gap.md 생성. Follow template in [references/gap-template.md](references/gap-template.md).
 
 ### 점수 산출
 ```
 Score = (Implemented + Partial*0.5) / (Total - Agreed Exceptions) * 100
 ```
+
+**점수는 진행률 신호. P0 게이트와 독립.** 가중 점수 X — 단일 점수 + 카테고리 분리.
 
 ## 검증 모드 (`--verify`)
 
@@ -50,11 +54,15 @@ Verbatim pre-scan + Evidence 강등 + Doubt sampling 모두 동일 적용.
 
 - Agreed Exceptions 항목은 갭으로 보고하지 않음
 - 구현 여부 확인 불가 시 `Unknown (코드 접근 불가)` 표기
-- 점수 80 미만: "구현 계속 필요" 명시. 80 이상: "리뷰 단계 진입 가능" 명시
+- **Gate는 P0 Missing 기반.** 점수만 보고 분기 금지:
+  - P0 Missing 0 AND score ≥ 80: "리뷰 단계 진입 가능"
+  - P0 Missing ≥ 1: "P0 보완 1순위 (점수 무관)"
+  - P0 Missing 0 AND score < 80: "P1 보완 권장"
 - Evidence는 `파일경로:라인번호` 형식. 코드 내용 인라인 출력 금지
 - 모든 판정은 [references/gap-rubric.md](references/gap-rubric.md) 기준 따름. "비슷하다" 식 자의 판단 금지
 - Verbatim 항목(따옴표/백틱/코드블록 안 텍스트)은 의미 무관 exact match. grep 0건이면 Missing 강제
 - Implemented 판정에 evidence 없으면 자동 Partial 강등
+- **모든 항목 P0/P1/P2 분류 필수.** 모호 시 conservative — P0로. rubric §6 신호 기반, 근거 1줄 trace
 
 ## 태스크 모드 (`--task TASK-ID`)
 
@@ -65,5 +73,6 @@ backlog 태스크 단위 scoped gap. `/backlog decompose` 내부에서 호출됨
 3. scope 내에서만 Grep/Glob (최대 10파일, symbol-level 선호)
 4. AC 항목 내 따옴표/백틱 텍스트 Verbatim pre-scan 적용 (scope 내 grep)
 5. 각 AC 항목별 구현 상태 확인 + rubric §3 Evidence 강등 적용
-6. 결과를 transient로 반환 (gap.md 미생성)
-7. 점수 산출 공식 동일
+6. **Priority 분류**: AC 본문 항목은 기본 P0. 명시적 후순위 표기만 P1/P2
+7. 결과를 transient로 반환 (gap.md 미생성). 점수 + P0 Missing 카운트 함께 표시
+8. 점수 산출 공식 동일
