@@ -3,12 +3,13 @@
 ## Required sequence
 
 1. Assess requirement clarity (clear vs vague) — see Clarity Gate in SKILL.md
-2. **Clear path**: brainstorming → prep (persist) → artifact
-3. **Vague path**: ooo interview → prep (persist) → optional pm/seed → artifact
+2. **Clear path**: brainstorming → prep (persist) → **AC Gate** → artifact
+3. **Vague path**: ooo interview → prep (persist) → optional pm/seed → **AC Gate** → artifact
 4. Both paths: `prep` persists to `docs/requirements.md` before artifact creation
-5. Route to ADR or RFC step only when decision record is warranted
-6. **Offer `publish-spec`** — ask user whether to publish to Confluence (dry-run → confirm → publish)
-7. Stop before implementation unless user explicitly asks to enter dev workflow
+5. **AC Gate (필수, SKILL.md 참조)**: Given-When-Then AC 작성 + 사용자 확정. AC 0개면 차단
+6. Route to ADR or RFC step only when decision record is warranted
+7. **Offer `publish-spec`** — ask user whether to publish to Confluence (dry-run → confirm → publish)
+8. Stop before implementation unless user explicitly asks to enter dev workflow
 
 ## Clarity assessment
 
@@ -75,6 +76,7 @@ Before routing onward, produce:
 - clarity assessment status
 - source-of-truth localization status (`prep`)
 - design exploration status (brainstorming or ooo interview)
+- **acceptance criteria status (count, format: Gherkin/bullet, user-confirmed)**
 - documentation artifact status
 - confluence publish status
 - implementation handoff status
@@ -90,12 +92,14 @@ Before routing onward, produce:
 - If current environment does not confirm skill or command availability, say `[UNVERIFIED: skill or command availability not confirmed]`.
 - If design recommendation depends on unstated constraints, surface those constraints explicitly.
 - Do not claim implementation readiness unless acceptance criteria and scope boundaries are explicit.
+- **Do not write AC on behalf of user without confirmation.** Propose Gherkin templates derived from brainstorm/interview, then wait for user review. Inventing AC = hallucination risk.
 
 ## Stop conditions
 
 - stop and ask when artifact type is unclear
 - stop and ask when audience materially changes document shape
 - stop and ask when clarity is ambiguous (ask the one question)
+- **stop and ask when AC count = 0 or any AC is ambiguous (re-interview if needed)**
 - continue without asking only when next gate is unambiguous
 
 ## Examples
