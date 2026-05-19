@@ -51,6 +51,15 @@ Implemented로 분류한 항목 중:
 - `Agreed Exceptions` 항목
 - `[UNVERIFIED]` 항목 (별도 처리)
 
+## 5-bis. 항목 카운트 단위
+
+- 기본 단위: requirements.md의 각 **체크리스트 bullet** (`- [ ] FR-1: ...` 등) = 1항목
+- **AC 절 처리:**
+  - AC가 다른 FR에 흡수 가능 (예: AC1의 "Then Slack과 Email 양쪽 발송" = FR-2 + FR-3) → 별도 ID 만들지 않음. FR ID에 통합
+  - AC가 FR에 없는 단독 검증 항목 (예: "응답에 `notification_id` 포함", "401 + `TOKEN_EXPIRED`", dead-letter queue) → `AC<N>-<slug>` 형식 단독 ID로 카운트
+- Total 카운트: FR 항목 수 + AC 단독 ID 수 + NFR 항목 수 + UX 항목 수 + API 항목 수
+- Agreed Exceptions는 Total에 포함하되 분모에서 제외 (점수 산출 시)
+
 ## 6. Priority Classification (P0/P1/P2)
 
 각 요구사항을 분류. **모든 항목 (Implemented / Partial / Missing) 분류 필수.** 분류 근거 1줄 출력 (trace).

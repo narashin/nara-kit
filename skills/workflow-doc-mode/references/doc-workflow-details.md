@@ -93,6 +93,8 @@ Before routing onward, produce:
 - If design recommendation depends on unstated constraints, surface those constraints explicitly.
 - Do not claim implementation readiness unless acceptance criteria and scope boundaries are explicit.
 - **Do not write AC on behalf of user without confirmation.** Propose Gherkin templates derived from brainstorm/interview, then wait for user review. Inventing AC = hallucination risk.
+- **Do not propose domain-specific AC topic hints.** Even listing "AC 후보 영역" (재시도 정책, fallback, 멱등성 등) narrows user's thinking and risks missing areas. Only present the empty Gherkin structure. interview skill is responsible for divergent question discovery, not doc-mode.
+- **Auto-invoke next skill without explicit user confirmation only when next gate is unambiguous** (per stop conditions). vague→interview transition is unambiguous; auto-invoke `ooo interview` without asking.
 
 ## Stop conditions
 
