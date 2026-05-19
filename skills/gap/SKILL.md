@@ -50,6 +50,24 @@ Score = (Implemented + Partial*0.5) / (Total - Agreed Exceptions) * 100
 기존 gap.md의 Missing/Partial 항목만 추출 → 코드 확인 → gap.md 업데이트 + 점수 재산출.
 Verbatim pre-scan + Evidence 강등 + Doubt sampling 모두 동일 적용.
 
+### Notes Reconciliation (필수)
+
+`docs/implementation-notes.md` 존재 시:
+
+1. **읽기**: 4섹션 (Design decisions / Deviations / Tradeoffs / Open questions) 모두 추출
+2. **매칭**: 각 entry를 gap.md의 Missing/Partial/Implemented 항목과 매핑
+   - Deviations entry ↔ Missing/Partial 항목 (의도된 갭 후보)
+   - Design decisions entry ↔ Implemented 항목 (evidence 보강)
+   - Open questions [revise] entry → gap.md `## Spec Revise Candidates` 섹션에 surface
+3. **사용자 확인**: 매칭된 항목을 AskUserQuestion으로 일괄 제시
+   - "이 N개를 `Agreed Exceptions`로 처리?" — 응답 YES/SELECT/NO
+4. **반영**: 확정된 항목 `Agreed Exceptions`로 이동. 점수 재산출
+5. **rubric §7 Notes Reconciliation** 룰 따름
+
+자세한 매칭 룰: [references/gap-rubric.md](references/gap-rubric.md) §7.
+
+implementation-notes.md 없으면 이 단계 skip.
+
 ## 규칙
 
 - Agreed Exceptions 항목은 갭으로 보고하지 않음

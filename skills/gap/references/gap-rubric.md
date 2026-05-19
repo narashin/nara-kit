@@ -115,3 +115,50 @@ Implemented로 분류한 항목 중:
 | P0 Missing 0건 AND score < 80 | P1 보완 권장 (강제 X) |
 
 **점수와 P0는 독립 신호.** score는 진행률, P0 missing은 게이트.
+
+## 7. Notes Reconciliation (gap --verify 전용)
+
+`docs/implementation-notes.md` 존재 시 매칭 룰. 분리된 산출물(gap = 관측, notes = 의도)을 통합.
+
+### 매칭 룰
+
+| notes 카테고리 | gap 항목 | 처리 |
+|---|---|---|
+| `Deviations` (DEV-*) | Missing 또는 Partial | **Agreed Exception 후보**. 사용자 확정 시 Agreed Exceptions로 이동. 점수 재산출 시 분모에서 제외 |
+| `Design decisions` (DD-*) | Implemented | Evidence 보강. gap.md `Implemented` 표 `Why` 컬럼에 DD-ID 인용 |
+| `Tradeoffs` (TO-*) | 모든 분류 | gap.md `Needs Confirm` 섹션에 reviewer 컨텍스트로 추가 (점수 영향 X) |
+| `Open questions [Type: revise]` | (별도) | gap.md 새 섹션 `## Spec Revise Candidates`에 surface. 다음 `/prep` 재실행 후보 |
+| `Open questions [Type: confirm]` | 모든 분류 | `Needs Confirm` 섹션에 합류 |
+
+### 매칭 규칙
+
+- **ID 기반 매칭 1차**: notes entry가 gap 항목 ID 명시 (예: "DEV-1 → FR-3") → 직접 매핑
+- **키워드 매칭 2차**: notes entry 본문 ↔ gap 항목 Requirement 텍스트 의미 일치 (LLM 판단 + 사용자 확인)
+- **매칭 실패**: notes entry는 reviewer 컨텍스트로만 보존, 점수 영향 X
+
+### 사용자 확정 흐름
+
+매칭 결과를 AskUserQuestion으로 일괄 제시:
+```
+다음 N개를 Agreed Exception으로 처리?
+- FR-3 Email 발송 (DEV-1: 다음 phase로 미룸)
+- AC2-DLQ (DEV-2: 초기 버전 범위 밖)
+선택지: yes / select (개별 선택) / no
+```
+
+`yes` → 모두 Agreed Exception 이동
+`select` → 개별 확인 모드
+`no` → 매칭만 기록, 분류 유지
+
+### 점수 영향
+
+- Agreed Exception 이동된 항목 → 분모에서 제외 → 점수 ↑
+- Reviewer 컨텍스트만 추가된 항목 → 점수 변화 X
+
+### 충돌 처리
+
+| 상황 | 처리 |
+|---|---|
+| notes에 Deviation 있는데 gap에 없음 | "notes는 deviation 주장하지만 gap이 못 발견함 — 코드 확인 필요" 경고. 사용자 결정 |
+| gap에 Missing 있는데 notes에 매칭 entry 없음 | 정상 (의도되지 않은 갭). 보완 1순위 유지 |
+| notes에 Deviation + Open Q [revise] 동시 있음 | spec revise 우선 고려 — 둘 다 surface |
