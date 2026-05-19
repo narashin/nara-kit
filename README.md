@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — 30 skills for structured software development and documentation workflows.
+Personal Claude Code workflow toolkit — 29 skills for structured software development and documentation workflows.
 
-Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 30개 스킬.
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 29개 스킬.
 
 ## Skills / 스킬 목록
 
@@ -117,9 +117,9 @@ iris-ui/
 
 ## Workflow / 워크플로우
 
-nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 30 skills work standalone — external plugins enhance automation but are **not required**.
+nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 29 skills work standalone — external plugins enhance automation but are **not required**.
 
-nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 30개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 29개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
 
 ### Mode A — Dev (Implementation / 구현)
 
