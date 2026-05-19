@@ -331,6 +331,36 @@ flowchart TD
 | 🟡 yellow | **Gate / Artifact** | Workflow 강제 지점 / 산출 파일 |
 | 🔴 red | **Block** | 게이트 미통과 시 차단 상태 |
 
+### Stage-by-stage Skill Roles / 단계별 스킬 역할
+
+워크플로우 다이어그램에 등장하는 nara-kit 스킬들의 *단계 컨텍스트* 설명. Skills 표는 카탈로그, 이 섹션은 *왜 그 단계에서 부르나*.
+
+**Setup / 준비**
+- `/now` — 세션 시작 또는 재개 시 git 브랜치/변경/문서/gap 점수/handoff 자동 점검 후 다음 행동 1-2개 추천. 질문 안 함.
+- `/prep <TICKET>` — 외부 SoT (Jira / Confluence / Figma / Linear) → `docs/requirements.md` 로컬화. **AC verbatim 보존**. Readiness 4기준 평가.
+
+**Analysis / 분석**
+- `/gap` — `requirements.md` ↔ 코드 비교, **P0/P1/P2 자동 분류**, Verbatim pre-scan, Evidence 강제, `gap.md` 생성. Hard Gate signal 박음.
+- `/gap --verify` — 기존 gap.md 경량 재검증 + **Notes Reconciliation**: `implementation-notes.md` Deviations ↔ Missing 매칭 → Agreed Exception 후보, Open Q [revise] → Spec Revise Candidates.
+
+**Implementation / 구현 (run by `workflow-dev-mode`)**
+- Execute 단계 → `docs/implementation-notes.md` 자동 생성 + 매 응답 `📝 notes:` trailing (drift running log).
+- `/spec-revision` — Open Q [revise] 결정 후 Confluence v2 append + 외부 SoT 갱신 → `/prep` 재실행 트리거.
+
+**Quality / 품질**
+- `/code-review` — 5-agent 병렬 리뷰 (Architecture / Correctness / Reliability / Security / Test). PR 전 최종 점검.
+- `/adr` — 아키텍처 결정 1건 ADR로 영속화. `implementation-notes.md`의 구조적 Deviation은 ADR 후보로 surface됨.
+
+**Session End / 세션 마무리**
+- `/reflect` — 세션 결정/컨벤션/주의사항 캡처. **`implementation-notes.md` 4섹션 자동 흡수**, auto-memory 저장, `docs/handoff.md` 작성 (Open Q 남으면).
+
+**Docs Publishing / 문서 게시 (doc mode)**
+- `/publish-spec` — 로컬 spec/plan markdown → Confluence wiki 게시 (dry-run → 확인 → 게시).
+- `/rfc <TICKET>` — 기술 결정 RFC 한국어 마크다운 작성. 대안 비교 + 선택 이유.
+
+**Post-merge / 머지 후**
+- `/pr-respond` — PR 리뷰 코멘트 분류 (accept / rebut / hold) + 기술 검증 + 답변. 코드 변경 있으면 push 후 반복.
+
 ## Artifacts / 산출물
 
 워크플로우 실행 중 생성되는 파일들:
