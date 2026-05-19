@@ -11,7 +11,7 @@
       "name": "nara-kit",
       "source": "./",
       "description": "shinnara's personal workflow toolkit — opinionated skills for RFC, PR, incident analysis, gap check, code review, and TDD.",
-      "version": "0.3.5",
+      "version": "0.3.6",
       "category": "productivity",
       "tags": ["workflow", "rfc", "incident", "code-review", "gap-analysis", "tdd", "pr", "planning"]
     }

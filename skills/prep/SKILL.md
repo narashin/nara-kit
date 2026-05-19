@@ -32,4 +32,9 @@ description: >-
   - Jira "Acceptance Criteria" 필드, Confluence 본문의 "AC" / "수락 기준" / "Given-When-Then" 블록 발견 시 verbatim 보존 → `## Acceptance Criteria` 섹션에 박음
   - 외부 SoT에 AC 없음 → 빈 섹션 + `Open Questions`에 `[blocking] AC 누락. doc-mode AC Gate에서 작성 필요` 추가
   - **AC 추론·창작 금지.** raw에 없으면 만들지 않음. gap·test-discover가 정확도 잃는 게 spec 변조보다 나음
+- **FR ↔ AC 중복 처리:**
+  - 외부 SoT가 AC만 제공하고 FR 별도 명시 없음 (대부분의 Jira 케이스) → FR 섹션을 **비우지 않고**, AC 항목과 1:1 대응되는 FR을 raw 단어 그대로 옮김 (재구성/의역 없음). 결과적으로 FR과 AC가 유사하더라도 OK
+  - 외부 SoT가 FR과 AC를 둘 다 명시 → 둘 다 그대로 보존. 중복 허용
+  - 외부 SoT가 FR만 명시하고 AC 없음 → FR만 채우고 AC 비움 + blocking Open Question
+  - 원칙: **raw에 있는 만큼만 채움. raw에 없는 걸 채우기 위해 derive 금지**
 - 덮어쓰기 전 사용자 확인. `backlog/` 존재 시 "/backlog sync 가능" 안내
