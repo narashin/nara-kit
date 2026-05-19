@@ -1,7 +1,7 @@
 {
   "name": "nara-kit",
   "version": "0.3.2",
-  "description": "@shinnara's personal workflow toolkit — opinionated skills for RFC, PR, incident analysis, gap check, code review, and TDD. Reflects one developer's conventions; fork to adapt.",
+  "description": "shinnara's personal workflow toolkit — opinionated skills for RFC, PR, incident analysis, gap check, code review, and TDD. Reflects one developer's conventions; fork to adapt.",
   "author": {
     "name": "shinnara",
     "url": "https://github.com/narashin"
@@ -22,8 +22,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "nara-kit",
-    "shortDescription": "@shinnara's opinionated workflow toolkit — fork to adapt",
-    "longDescription": "@shinnara's personal toolkit: RFC writing, PR generation, incident analysis, gap analysis, code review, TDD workflow. Conventions are opinionated and personal — use as reference or fork.",
+    "shortDescription": "shinnara's opinionated workflow toolkit — fork to adapt",
+    "longDescription": "shinnara's personal toolkit: RFC writing, PR generation, incident analysis, gap analysis, code review, TDD workflow. Conventions are opinionated and personal — use as reference or fork.",
     "developerName": "shinnara",
     "category": "Productivity",
     "capabilities": ["Write", "Read"]
