@@ -16,7 +16,10 @@ description: >-
 2. **Git diff**: `git diff main...HEAD --stat` 또는 최근 커밋 목록
 3. **gap.md 변화**: gap.md 있으면 점수 변화 확인
 4. **발견된 패턴**: 세션 중 발견한 코드 컨벤션이나 프로젝트 특이사항
-5. **`docs/implementation-notes.md` 흡수**: 존재 시 4섹션 (Design decisions / Deviations / Tradeoffs / Open questions) 모두 읽기 → 아래 분류로 매핑
+5. **`docs/implementation-notes.md` 흡수**: 존재 시 5섹션 모두 읽기
+   - 4섹션 (Design decisions / Deviations / Tradeoffs / Open questions) → 아래 분류로 매핑
+   - 5섹션 (`## Reconciliation Log`) → resolved Note ID 추출 (`Resolution ∈ {Agreed Exception, Spec Revise Candidate}`)
+   - resolved Note ID에 해당하는 4섹션 entry는 후속 처리에서 skip (중복 방지)
 
 ## 분류
 
@@ -28,12 +31,15 @@ description: >-
 
 ### implementation-notes 후속 액션
 
-흡수 후 결정:
+흡수 후 결정 (**Reconciliation Log에 resolved로 박힌 entry는 모두 skip**):
 - `Deviations` 분류:
+  - **Log에 `Agreed Exception`** → skip (gap.md Agreed Exceptions로 이미 영속화됨)
   - **구조적 변경** (새 패턴/모듈 도입, 디렉토리 배치 규약 변경 등) → Warnings + `/adr` 호출 권고
   - **정책 결정** (운영 표준에 맞춘 spec 누락 영역 보강) → Decisions (Why 보존). 후속 영향 (caller timeout 등)은 Warnings로 split
 - `Open questions` 남은 채면 → `docs/handoff.md`에 박음 (다음 세션 `/now`가 surface)
-  - In Progress 없어도 Open Questions 있으면 handoff.md 생성 (OR 조건)
+  - **Log에 `Spec Revise Candidate`** → handoff 인계 skip (이미 `/spec-revision`으로 라우팅됨)
+  - In Progress 없어도 (skip 제외 후) Open Questions 있으면 handoff.md 생성 (OR 조건)
+- `Design decisions` / `Tradeoffs`는 Log 상태와 무관하게 평소대로 평가 (메모리 승격 vs ADR 후보는 독립 결정)
 - 흡수 완료된 `docs/implementation-notes.md`는 **삭제 금지**, 그대로 보존 (PR 리뷰 참고용)
 
 ## 저장

@@ -162,3 +162,36 @@ Implemented로 분류한 항목 중:
 | notes에 Deviation 있는데 gap에 없음 | "notes는 deviation 주장하지만 gap이 못 발견함 — 코드 확인 필요" 경고. 사용자 결정 |
 | gap에 Missing 있는데 notes에 매칭 entry 없음 | 정상 (의도되지 않은 갭). 보완 1순위 유지 |
 | notes에 Deviation + Open Q [revise] 동시 있음 | spec revise 우선 고려 — 둘 다 surface |
+
+### Reconciliation Log
+
+`gap --verify`가 사용자 확정한 entry를 `implementation-notes.md`의 `## Reconciliation Log` 섹션에 append. notes 4섹션 원본은 보존(intent log) — Log만 추가.
+
+#### 스키마
+
+```markdown
+## Reconciliation Log
+
+> Written by `gap --verify`. Do not edit manually.
+
+| Note ID | Mapped Gap Item | Resolution | Date | Source |
+|---|---|---|---|---|
+| DEV-1 | FR-3 Email 발송 | Agreed Exception | 2026-05-20 | gap --verify |
+| OQ-1 | (none) | Spec Revise Candidate | 2026-05-20 | gap --verify |
+| DD-2 | AC-1 Login 흐름 | Evidence (Implemented) | 2026-05-20 | gap --verify |
+```
+
+#### Resolution 값
+
+| 값 | 의미 | reflect 동작 |
+|---|---|---|
+| `Agreed Exception` | Deviation/Open Q [confirm]이 Agreed Exceptions로 이동 | Warnings 승격 skip |
+| `Spec Revise Candidate` | Open Q [revise]가 gap.md `Spec Revise Candidates`로 surface | handoff Open Questions skip |
+| `Evidence (Implemented)` | Design decision이 Implemented evidence로 매핑 | 평소대로 처리 (메모리 승격 평가) |
+| `Reviewer Context` | Tradeoff/매칭 실패 entry가 Needs Confirm으로만 추가 | 평소대로 처리 (ADR 후보 평가) |
+
+#### 멱등성 규칙
+
+- 같은 Note ID가 이미 Log에 있으면 verify가 **재처리 skip** — 중복 append 금지
+- verify 여러 번 돌려도 Log 행은 1 Note ID당 최대 1개
+- 4섹션 원본 entry는 절대 수정하지 않음 (PR 리뷰 시 intent log 보존)
