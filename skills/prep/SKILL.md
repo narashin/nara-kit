@@ -37,4 +37,4 @@ description: >-
   - 외부 SoT가 FR과 AC를 둘 다 명시 → 둘 다 그대로 보존. 중복 허용
   - 외부 SoT가 FR만 명시하고 AC 없음 → FR만 채우고 AC 비움 + blocking Open Question
   - 원칙: **raw에 있는 만큼만 채움. raw에 없는 걸 채우기 위해 derive 금지**
-- 덮어쓰기 전 사용자 확인. `backlog/` 존재 시 "/backlog sync 가능" 안내
+- 덮어쓰기 전 사용자 확인

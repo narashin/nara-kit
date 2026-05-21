@@ -16,7 +16,6 @@ description: >-
 - `--verify` → 기존 gap.md 기준 재검증 (경량)
 - `--score` → gap.md에서 점수만 산출
 - `--doc` → requirements.md 자체 완성도 체크
-- `--task TASK-ID` → 해당 backlog 태스크 AC 기준 scoped 갭 분석 (gap.md 미생성, transient)
 
 ## 생성 모드
 
@@ -85,16 +84,3 @@ implementation-notes.md 없으면 이 단계 skip.
 - Verbatim 항목(따옴표/백틱/코드블록 안 텍스트)은 의미 무관 exact match. grep 0건이면 Missing 강제
 - Implemented 판정에 evidence 없으면 자동 Partial 강등
 - **모든 항목 P0/P1/P2 분류 필수.** 모호 시 conservative — P0로. rubric §6 신호 기반, 근거 1줄 trace
-
-## 태스크 모드 (`--task TASK-ID`)
-
-backlog 태스크 단위 scoped gap. `/backlog decompose` 내부에서 호출됨.
-
-1. `backlog task list`에서 TASK-ID의 title, description, AC 읽기
-2. task description 키워드로 관련 디렉토리/파일 scope 도출
-3. scope 내에서만 Grep/Glob (최대 10파일, symbol-level 선호)
-4. AC 항목 내 따옴표/백틱 텍스트 Verbatim pre-scan 적용 (scope 내 grep)
-5. 각 AC 항목별 구현 상태 확인 + rubric §3 Evidence 강등 적용
-6. **Priority 분류**: AC 본문 항목은 기본 P0. 명시적 후순위 표기만 P1/P2
-7. 결과를 transient로 반환 (gap.md 미생성). 점수 + P0 Missing 카운트 함께 표시
-8. 점수 산출 공식 동일

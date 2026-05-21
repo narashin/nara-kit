@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — 31 skills for structured software development and documentation workflows.
+Personal Claude Code workflow toolkit — 30 skills for structured software development and documentation workflows.
 
-Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 31개 스킬.
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 30개 스킬.
 
 ## Skills / 스킬 목록
 
@@ -38,7 +38,6 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | `pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
 | `code-review` | 5-agent parallel review (Architecture/Correctness/Reliability/Security/Test) / 5-에이전트 병렬 코드 리뷰 |
 | `pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
-| `backlog` | Decompose features into subtasks, manage task status and blocked items / 태스크 분해, 상태·블록 관리 |
 | `wt` | Create git worktree for a Jira ticket (`{repo}-{ticket}-{slug}`) — fetches summary, generates slug, asks for git type prefix / Jira 티켓 기반 worktree 생성 |
 
 ### Documentation / 문서
@@ -111,7 +110,7 @@ Hooks는 SessionStart에만 로드됨. 설치 후 **반드시 재시작** 필요
 ls ~/.claude/plugins/cache/nara-kit/nara-kit/<version>/skills/
 ```
 
-31개 스킬 디렉토리가 보이면 OK.
+30개 스킬 디렉토리가 보이면 OK.
 
 ## Usage / 사용법
 
@@ -222,9 +221,9 @@ webapp/
 
 ## Workflow / 워크플로우
 
-nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 31 skills work standalone — external plugins enhance automation but are **not required**.
+nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 30 skills work standalone — external plugins enhance automation but are **not required**.
 
-nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 31개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 30개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
 
 ### Mode A — Dev (Implementation / 구현)
 

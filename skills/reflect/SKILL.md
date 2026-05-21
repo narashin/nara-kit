@@ -47,7 +47,7 @@ description: >-
 1. **Auto-memory**: 다음 세션에도 유효한 Decisions/Warnings/Conventions → memory 저장
    - 새 메모리에는 반드시 `verified_at: <today>` + `ref_paths: [...]` (또는 `[]`) 박기 → `memory-audit` 호환
    - 기존 메모리 업데이트 시 `verified_at` 갱신
-2. **docs/handoff.md**: In Progress + Open Questions 있으면 9섹션 정식 스키마로 덮어쓰기 (없으면 파일 삭제). 단기 인계 계약. **9번 섹션은 `/backlog done` 소관 — read-only 보존**
+2. **docs/handoff.md**: In Progress + Open Questions 있으면 8섹션 정식 스키마로 덮어쓰기 (없으면 파일 삭제). 단기 인계 계약
 3. **docs/learnings.md**: 팀 공유 필요 시, 파일 존재 시만 append
 4. **gap.md**: Agreed Exceptions 변경 시 반영
 
