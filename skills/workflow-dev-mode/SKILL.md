@@ -24,11 +24,9 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 
 - External req -> `prep` (SoT fetch)
 - Readiness 4/4 -> `superpowers:brainstorming` -> `gap`; 2-3/4 -> `ooo interview` -> `/prep`; 0-1/4 -> `ooo interview` 필수
-- `backlog/` + Level 1 -> `/backlog decompose`. 없으면 `gap` full
-- plan per subtask -> Pre-execution gate -> execute
+- plan -> Pre-execution gate -> execute
 - **Execute 진입 시: `docs/implementation-notes.md` 생성 (pre-flight, 빈 템플릿)** ← Implementation Notes Gate 참조
 - Execute: `superpowers:SDD` default, `ooo run`/`auto` fallback. **각 응답 끝 trailing `📝 notes: +N` 강제**
-- Subtask 완료 -> `/backlog done` (auto-verify)
 - 완료 -> `ooo evaluate` -> `code-review` -> `reflect` (notes 흡수) -> `adr` -> branch finish
 
 ## Gates

@@ -1,8 +1,6 @@
-# handoff.md 9섹션 스키마
+# handoff.md 8섹션 스키마
 
 > `/reflect` 실행 시 In Progress/Open Questions 있으면 `docs/handoff.md`에 이 스키마로 작성. 다음 세션 `/now`가 우선 참조하는 단기 인계 계약.
->
-> 9번 섹션은 `/backlog done`이 자동 관리 — `/reflect`는 9번을 **읽기 전용**으로 보존.
 
 ## 스키마
 
@@ -41,16 +39,6 @@
 ## 8. 먼저 읽을 핵심 파일
 - `<path1>` — <이유>
 - `<path2>` — <이유>
-
-## 9. 최근 완료 태스크 컨텍스트
-<!-- /backlog done 이 자동 append. /reflect는 read-only 보존. -->
-
-### TASK-{ID} — <title>
-- Completed: <ISO 8601>
-- AC: <한 줄 요약 또는 verbatim>
-- Notes: <코드/커밋만으로 복원 불가능한 흐름. 없으면 "없음">
-- Files touched: <git diff --name-only — 최대 5개>
-- Gap verify trigger: pending | passed (<score>) | failed (<score>)
 ```
 
 ## 작성 규칙
@@ -62,7 +50,6 @@
 - **다음 안전 조치**: handoff-read 시 가장 먼저 검증할 항목
 - **하지 말 것**: "X 함수 건드리지 마라 — 다른 모듈 의존" 같은 함정 명시
 - **먼저 읽을 파일**: 다음 세션 `/now`가 우선 fetch할 파일 (1~5개)
-- **최근 완료 태스크 컨텍스트 (9)**: `/backlog done` 책임 영역. `/reflect`는 9번 섹션 **읽지도 수정하지도 않음** — 단 stale 항목(>30일)은 사용자 확인 후 제거 권고 가능
 
 ## 삭제 시점
 

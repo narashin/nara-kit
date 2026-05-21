@@ -320,6 +320,6 @@ EPT 완료 (applied).
 - ✅ 1차 (워크플로우 골격): `/now`, `/prep`, `/gap`, `/reflect`, `/handoff`
 - ✅ 2차 (코드 라이프사이클): `/commit`, `/pr`, `/code-review`, `/pr-respond`, `/publish-spec`
 - ✅ 3차 선별 (문서·메타): `/rfc`, `/adr`, `/skill-forge`, `/empirical-prompt-tuning`
-- 일반 원칙 흡수 (명시 receipt 없이 CLAUDE.md 4요소 자동 적용): `/explain`, `/incident`, `/incident-fix`, `/test-discover`, `/test-verify`, `/test-implement`, `/backlog`, `/design-md`, `/spec-revision`, `/workflow-orchestrator`, `/workflow-dev-mode`, `/workflow-doc-mode`, `/workflow-viz`
+- 일반 원칙 흡수 (명시 receipt 없이 CLAUDE.md 4요소 자동 적용): `/explain`, `/incident`, `/incident-fix`, `/test-discover`, `/test-verify`, `/test-implement`, `/design-md`, `/spec-revision`, `/workflow-orchestrator`, `/workflow-dev-mode`, `/workflow-doc-mode`, `/workflow-viz`
 
 각 스킬은 nara-kit CLAUDE.md를 통해 contract를 자동 상속 — SKILL.md에 개별 참조 라인 불필요. 명시 receipt 없는 스킬은 4요소(Outcome/Evidence/Paths/Next) + 상태 라벨만 따라 자유 생성.
