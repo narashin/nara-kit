@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — 30 skills for structured software development and documentation workflows.
+Personal Claude Code workflow toolkit — 31 skills for structured software development and documentation workflows.
 
-Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 30개 스킬.
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 31개 스킬.
 
 ## Skills / 스킬 목록
 
@@ -26,6 +26,7 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | Skill | Description / 설명 |
 |-------|---------------------|
 | `prep` | Localize external SoT (Jira/Figma/Confluence) into `docs/requirements.md` + Readiness score / 외부 SoT 로컬화 + 충분성 판정 |
+| `ac-draft` | Generate User Stories + Gherkin AC from one-line intent (no external SoT). Sister of `prep` / 한 줄 의도 → US + Gherkin AC 생성 (외부 SoT 없을 때) |
 | `gap` | Requirements vs implementation gap analysis → `docs/gap.md` (0-100 score) / 요구사항 vs 구현 갭 분석 |
 | `incident` | Structured incident analysis report (no code changes) / 장애 분석 리포트 (코드 수정 없음) |
 | `incident-fix` | TDD-based fix from `docs/incident-report.md` / 장애 리포트 기반 TDD 수정 |
@@ -110,7 +111,7 @@ Hooks는 SessionStart에만 로드됨. 설치 후 **반드시 재시작** 필요
 ls ~/.claude/plugins/cache/nara-kit/nara-kit/<version>/skills/
 ```
 
-30개 스킬 디렉토리가 보이면 OK.
+31개 스킬 디렉토리가 보이면 OK.
 
 ## Usage / 사용법
 
@@ -221,22 +222,25 @@ webapp/
 
 ## Workflow / 워크플로우
 
-nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 30 skills work standalone — external plugins enhance automation but are **not required**.
+nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 31 skills work standalone — external plugins enhance automation but are **not required**.
 
-nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 30개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 31개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
 
 ### Mode A — Dev (Implementation / 구현)
 
 ```mermaid
 flowchart TD
     START([Session Start]) --> MWHAT["/now<br>Assess state"]
-    MWHAT --> PREP["/prep<br>Localize SoT + Readiness<br>(AC verbatim 보존)"]
+    MWHAT --> SOT_CHECK{외부 SoT?}
+    SOT_CHECK -->|"있음 (URL/티켓)"| PREP["/prep<br>Localize SoT + Readiness<br>(AC verbatim 보존)"]
+    SOT_CHECK -->|"thin intent<br>(한 줄 의도)"| AC_DRAFT_DEV["/ac-draft<br>US + Gherkin AC<br>→ requirements.md"]
+    AC_DRAFT_DEV --> AC_GATE
     PREP --> READY{Readiness?}
     READY -->|"PARTIAL or<br>INSUFFICIENT<br>(AC 누락 포함)"| OOO_INT["◇ ooo interview<br>loop until READY 4/4<br>(optional)"]
     OOO_INT --> PREP
     READY -->|"READY 4/4"| AC_GATE["AC Gate<br>requirements.md<br>## Acceptance Criteria<br>≥1?"]
-    AC_GATE -->|"0"| AC_BLOCK["❌ AC 누락<br>doc-mode AC Gate handoff<br>또는 SoT 보강"]
-    AC_BLOCK --> OOO_INT
+    AC_GATE -->|"0"| AC_BLOCK["❌ AC 누락<br>ac-draft 재실행<br>또는 SoT 보강"]
+    AC_BLOCK --> AC_DRAFT_DEV
     AC_GATE -->|"≥1"| BRAIN["☆ superpowers:brainstorming<br>(optional)"]
     BRAIN --> GAP["/gap<br>P0/P1/P2 분류<br>+ Hard Gate<br>(AC 본문 = P0)"]
     GAP --> P0Q{P0 Missing?}
@@ -272,6 +276,7 @@ flowchart TD
     style CODEX fill:#fff3e0
     style OOO_INT fill:#e3f2fd
     style OOO_RUN fill:#e3f2fd
+    style AC_DRAFT_DEV fill:#fff9c4
     style NOTES fill:#fff9c4
     style AC_GATE fill:#fff9c4
     style AC_BLOCK fill:#ffcdd2
@@ -279,9 +284,11 @@ flowchart TD
     style SPEC_REV fill:#fff9c4
 ```
 
-> **ooo interview loop**: PARTIAL 또는 INSUFFICIENT readiness 시 `ooo interview`로 빠져 boundary 끌어내고 `prep`을 갱신. readiness 만족할 때까지 PREP↔OOO_INT 순환. 4/4 도달 시 AC Gate로 진입.
+> **SoT 분기 (entry)**: 외부 SoT (Jira/Confluence URL, ticket) 있으면 `prep`. 한 줄 의도만 있으면 `ac-draft`로 US + Gherkin AC 발굴 후 바로 AC Gate 진입 (prep 우회).
 >
-> **AC Gate (dev mode)**: `requirements.md`의 `## Acceptance Criteria` 섹션 비면 `gap` 진입 차단. doc-mode AC Gate와 동일 의미 — AC 없으면 P0 분류 정확도 ↓ + 후속 test-discover 1:1 매핑 불가. 외부 SoT 보강 또는 doc-mode로 handoff.
+> **ooo interview loop (legacy)**: PARTIAL/INSUFFICIENT readiness 시 fallback. `ac-draft`가 thin intent를 커버하므로 ambiguity가 ac-draft 범위 초과 시에만 manual 호출.
+>
+> **AC Gate (dev mode)**: `requirements.md`의 `## Acceptance Criteria` 섹션 비면 `gap` 진입 차단. AC 없으면 P0 분류 정확도 ↓ + 후속 test-discover 1:1 매핑 불가. `ac-draft` 재실행 또는 외부 SoT 보강.
 
 ### Mode B — Doc (Documentation / 문서화)
 
@@ -290,16 +297,13 @@ flowchart TD
     START([Session Start]) --> NOW["/now<br>Doc mode"]
     NOW --> CLARITY{Clarity?}
     CLARITY -->|clear| BRAIN["☆ brainstorming"]
-    CLARITY -->|vague| OOO_INT["◇ ooo interview"]
+    CLARITY -->|vague| AC_DRAFT["/ac-draft<br>thin intent →<br>US + Gherkin AC"]
     BRAIN --> PREP1["/prep<br>Persist to requirements.md"]
-    OOO_INT --> PREP2["/prep<br>Persist to requirements.md"]
-    PREP2 --> OOO_PM["◇ ooo pm<br>(optional)"]
-    OOO_PM --> OOO_SEED["◇ ooo seed<br>(optional)"]
-    PREP1 --> AC_GATE["AC Gate<br>(Gherkin AC 필수)<br>Given-When-Then"]
-    OOO_SEED --> AC_GATE
+    AC_DRAFT --> AC_GATE["AC Gate<br>(Gherkin AC 필수)<br>Given-When-Then"]
+    PREP1 --> AC_GATE
     AC_GATE --> AC_OK{AC<br>≥1?}
-    AC_OK -->|"0"| AC_BLOCK["❌ artifact 차단<br>AC 작성 강제<br>interview 진입"]
-    AC_BLOCK --> OOO_INT
+    AC_OK -->|"0"| AC_BLOCK["❌ artifact 차단<br>AC 작성 강제<br>ac-draft 재실행"]
+    AC_BLOCK --> AC_DRAFT
     AC_OK -->|"≥1"| SPEC["Spec artifact<br>(AC 박힌 채)"]
     SPEC --> PUB{Publish?}
     PUB -->|yes| PUBLISH["/publish-spec<br>→ Confluence"]
@@ -314,9 +318,7 @@ flowchart TD
     REFLECT --> END([END])
 
     style BRAIN fill:#e8f5e9
-    style OOO_INT fill:#e3f2fd
-    style OOO_PM fill:#e3f2fd
-    style OOO_SEED fill:#e3f2fd
+    style AC_DRAFT fill:#fff9c4
     style AC_GATE fill:#fff9c4
     style AC_BLOCK fill:#ffcdd2
 ```
@@ -447,9 +449,9 @@ All external skills are **optional enhancements**. Without them, the workflow fa
 | `superpowers:brainstorming` | superpowers | workflow-dev-mode | Design exploration / 설계 탐색 |
 | `superpowers:subagent-driven-development` | superpowers | workflow-dev-mode | Large-scale execution / 대규모 실행 |
 | `superpowers:receiving-code-review` | superpowers | pr-respond | Core principle (reference only) / 원칙 참조 |
-| `ooo interview` | ouroboros | prep, workflow-dev-mode, workflow-doc-mode | Clarify requirements / 요구사항 명확화 |
-| `ooo pm` | ouroboros | workflow-doc-mode | Product framing / 프로덕트 프레이밍 |
-| `ooo seed` | ouroboros | workflow-doc-mode | Design snapshot / 설계 스냅샷 |
+| `ooo interview` | ouroboros | (legacy — replaced by `ac-draft` as default) | Clarify requirements when ambiguity exceeds ac-draft scope / ac-draft 범위 초과 시 사용 |
+| `ooo pm` | ouroboros | workflow-doc-mode (manual escape only) | Product framing for team-shared PRD / 팀 공유 PRD 필요 시 수동 호출 |
+| `ooo seed` | ouroboros | workflow-doc-mode (manual escape only) | Design snapshot freeze / 설계 동결 필요 시 수동 호출 |
 | `ooo run` / `ooo auto` | ouroboros | workflow-dev-mode | Execution fallback / 실행 대안 |
 | `ooo evaluate` | ouroboros | workflow-dev-mode | Completion verification / 완료 검증 |
 
