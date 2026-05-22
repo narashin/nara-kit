@@ -1,10 +1,12 @@
 # Doc Mode — Workflow Details
 
+> **Migration note (2026-05)**: `ooo interview` references throughout this doc are legacy. Default vague-path is now `ac-draft` (nara-kit standalone, no external plugin). `ooo interview` / `ooo pm` / `ooo seed` remain as manual escape hatches when ambiguity exceeds ac-draft scope (e.g. team-shared PRD, design freeze).
+
 ## Required sequence
 
 1. Assess requirement clarity (clear vs vague) — see Clarity Gate in SKILL.md
 2. **Clear path**: brainstorming → prep (persist) → **AC Gate** → artifact
-3. **Vague path**: ooo interview → prep (persist) → optional pm/seed → **AC Gate** → artifact
+3. **Vague path**: `ac-draft` (default) → **AC Gate** → artifact. Legacy: ooo interview → prep → optional pm/seed.
 4. Both paths: `prep` persists to `docs/requirements.md` before artifact creation
 5. **AC Gate (필수, SKILL.md 참조)**: Given-When-Then AC 작성 + 사용자 확정. AC 0개면 차단
 6. Route to ADR or RFC step only when decision record is warranted

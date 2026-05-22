@@ -22,8 +22,11 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 
 ## Execution
 
-- External req -> `prep` (SoT fetch)
-- Readiness 4/4 -> `superpowers:brainstorming` -> `gap`; 2-3/4 -> `ooo interview` -> `/prep`; 0-1/4 -> `ooo interview` 필수
+- **외부 SoT (URL/티켓) 있음** → `prep` (SoT fetch)
+- **외부 SoT 없음, 한 줄 의도만** → `ac-draft` (US + Gherkin AC 생성) → `gap` 진입 가능
+- Readiness 4/4 → `superpowers:brainstorming` → `gap`
+- Readiness 2-3/4 → `ac-draft` (AC 보강) 또는 `ooo interview` (optional, ambiguity 크면) → `/prep` 재실행
+- Readiness 0-1/4 → 의도 자체 명확화 우선 (`ac-draft` 또는 사용자 인터뷰)
 - plan -> Pre-execution gate -> execute
 - **Execute 진입 시: `docs/implementation-notes.md` 생성 (pre-flight, 빈 템플릿)** ← Implementation Notes Gate 참조
 - Execute: `superpowers:SDD` default, `ooo run`/`auto` fallback. **각 응답 끝 trailing `📝 notes: +N` 강제**

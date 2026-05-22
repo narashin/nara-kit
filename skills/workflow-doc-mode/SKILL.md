@@ -31,13 +31,12 @@ Before routing, assess requirement clarity:
 4. Produce artifact (spec/RFC/design/plan)
 
 **Vague path** (requirements need discovery):
-1. `ooo interview` — clarify scope, audience, constraints
-2. `prep` — persist interview output to `docs/requirements.md`
-3. `ooo pm` — product framing (if trade-off comparison needed)
-4. `ooo seed` — lock design snapshot (if design must be frozen)
-5. Produce artifact
+1. `ac-draft` — thin intent → User Stories + Gherkin AC → `docs/requirements.md` (replaces ooo interview default)
+2. (선택, manual) `ooo pm` — 팀 공유 PRD 필요 시에만 사용자가 명시 호출
+3. (선택, manual) `ooo seed` — 설계 스냅샷 동결 필요 시에만
+4. Produce artifact
 
-**Both paths converge**: `prep` always persists to `docs/requirements.md` before artifact creation.
+**Both paths converge**: `docs/requirements.md` is the persisted SoT before artifact creation (written by `prep` in clear path, by `ac-draft` in vague path).
 
 ## AC Gate (필수)
 
@@ -82,7 +81,7 @@ bullet 형식도 허용 (legacy spec, 외부 SoT 형식 그대로 보존 시):
 ### 외부 SoT에 AC 없는 경우
 
 - Jira/Confluence에 AC 누락 시: doc-mode에서 작성 → 사용자가 외부 SoT에도 보강 권고 (외부와 desync 방지)
-- 외부 SoT 자체가 부재 (vague path 신규 spec) → interview 결과로 AC 후보 도출, 사용자 확정
+- 외부 SoT 자체가 부재 (vague path 신규 spec) → `ac-draft`로 US + Gherkin AC 생성 후 사용자 확정 (legacy: ooo interview)
 - 우회 금지: "AC 없어도 spec 만들어줘" 요청 시 reject + 이유 설명
 
 ### 금지: 도메인 hint 주입

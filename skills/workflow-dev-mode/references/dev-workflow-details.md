@@ -1,5 +1,7 @@
 # Dev Mode — Workflow Details
 
+> **Migration note (2026-05)**: thin one-line intent (외부 SoT 없음) is now handled by `ac-draft` instead of `ooo interview`. `ac-draft` writes `docs/requirements.md` directly (no prep needed). `ooo interview` references below remain valid as manual escape when ambiguity exceeds AC scope (e.g. FR ambiguity even with external SoT).
+
 ## Required sequence
 
 1. Confirm implementation goal, scope, and acceptance criteria
