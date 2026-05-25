@@ -1,0 +1,16 @@
+{
+  "name": "덕운 — 팬덤 타로",
+  "short_name": "덕운",
+  "description": "최애와 나의 케미, 입덕운, 영업운까지 — 덕질하는 사람을 위한 타로",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0a1a",
+  "theme_color": "#0b0a1a",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
