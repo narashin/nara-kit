@@ -317,11 +317,18 @@ flowchart TD
     ADR --> REFLECT
     REFLECT --> END([END])
 
+    PUBLISH -.->|later session<br>days/weeks gap| REV["/spec-revision<br>v2, v3 append<br>(standalone re-entry)"]
+    REV -.->|more feedback| REV
+    REV -.-> ENDLATER([Later END])
+
     style BRAIN fill:#e8f5e9
     style AC_DRAFT fill:#fff9c4
     style AC_GATE fill:#fff9c4
     style AC_BLOCK fill:#ffcdd2
+    style REV fill:#e1f5fe
 ```
+
+> **Revision loop:** `publish-spec` 이후 회의/리뷰에서 피드백 수집되면 며칠~몇 주 뒤 별개 세션에서 `/spec-revision <Confluence URL>` 호출. 라운드마다 v2, v3 ... append. 워크플로 재진입 아닌 standalone 단일 skill 호출.
 
 ### Legend / 범례
 
