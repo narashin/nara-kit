@@ -104,4 +104,13 @@ AC Gate에서 사용자에게 제시 가능한 것:
 - Implementation requested → handoff to `workflow-dev-mode`
 - Session end → `reflect`
 
+## Later Sessions (Revision Loop)
+
+`publish-spec` 이후 며칠~몇 주 갭이 정상. 회의/리뷰에서 피드백 수집되면 별개 세션에서 standalone 진입:
+
+- `spec-revision <Confluence URL>` — v2, v3 ... append. 원본 보존, 변경 섹션만 추가
+- 입력: 페이지 URL (필수) + 피드백 (user paste or Confluence inline comment 자동 수집)
+- 반복 가능 — 라운드마다 새 버전 섹션 누적
+- 워크플로 재진입 아님. 단일 skill 호출로 완결
+
 **Load** [references/doc-workflow-details.md](references/doc-workflow-details.md) for routing table, output contract, examples, and hallucination guards.

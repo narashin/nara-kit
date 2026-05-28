@@ -18,6 +18,16 @@ Append a versioned revision section to an existing Confluence specification page
 - The user wants to create a new version (v2, v3, ...) reflecting the feedback
 - The original spec must be preserved for traceability
 
+**Standalone entry point.** Invoke independently of any prior session — `publish-spec` 호출 세션과 `spec-revision` 세션 사이에 며칠~몇 주 갭이 정상. Workflow continuity 가정 X. Confluence URL + 피드백 입력만 있으면 단일 세션에서 완결.
+
+## Inputs (Required)
+
+1. **Confluence page URL** — 필수. URL 없으면 reject + 요청
+2. **Feedback source** — 둘 중 하나 (또는 병행):
+   - User-provided in conversation (paste, 요약, bullet 등 raw text 허용)
+   - Confluence inline comments — Step 1 fetch 시 `ac:inline-comment-marker` 자동 파싱
+3. 피드백 0건 = revision 차단. "피드백 paste or inline comment 확인 후 재호출" 안내
+
 ## Workflow
 
 ### Step 1: Fetch Current Page
