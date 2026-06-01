@@ -81,6 +81,8 @@ done | jq -s 'sort_by(-.score) | map(select(.score >= 2))'
 
 `## Session Reflect — {날짜}` 헤더 아래 Decisions, Conventions, Warnings, **In Progress, Open Questions**, Gap Status (이전→현재), Next Session 각 섹션 출력. 마지막에 **Memory Health** 섹션 — score>=2 메모리만 표 형태로 (없으면 생략).
 
+> See also: nara-kit **스킬 자체**가 불편했다면 `/meta-feedback` (별개 — 툴킷 개선용. reflect는 프로젝트 지식, meta-feedback은 툴킷 friction).
+
 ## 규칙
 
 - `git log`로 볼 수 있는 코드 변경 내역 나열 금지
