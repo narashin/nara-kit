@@ -6,7 +6,7 @@
 
 Personal Claude Code workflow toolkit — 31 skills for structured software development and documentation workflows.
 
-Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 31개 스킬.
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 32개 스킬.
 
 ## Skills / 스킬 목록
 
@@ -67,6 +67,7 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 |-------|---------------------|
 | `empirical-prompt-tuning` | Iteratively improve prompts via bias-free executor testing — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) / 프롬프트 경험적 튜닝 |
 | `skill-forge` | Improve and harden skills via Waza static analysis + EPT subagent execution / Waza+EPT 통합 스킬 개선 |
+| `meta-feedback` | Capture friction with nara-kit's own skills → generalized, privacy-redacted improvement proposal (feeds `skill-forge`) / nara-kit 스킬 friction → 일반화·redact된 개선안 |
 | `spec-revision` | Revise and version specs with review feedback, append to Confluence / 스펙 리비전 + Confluence 버전 관리 |
 | `memory-audit` | Score auto-memory files 0-4 by 4 signals (age/ref_validity/code_drift/conflict) and flag hallucination-risk entries / 메모리 4신호 점수화로 환각 위험 탐지 |
 | `memory-archive` | Move flagged memory to `archive/` and clean MEMORY.md index — reversible, never deletes / flag된 메모리 archive 폴더로 격리 (복구 가능, 자동 삭제 X) |
@@ -111,7 +112,7 @@ Hooks는 SessionStart에만 로드됨. 설치 후 **반드시 재시작** 필요
 ls ~/.claude/plugins/cache/nara-kit/nara-kit/<version>/skills/
 ```
 
-31개 스킬 디렉토리가 보이면 OK.
+32개 스킬 디렉토리가 보이면 OK.
 
 ## Usage / 사용법
 
@@ -224,7 +225,7 @@ webapp/
 
 nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 31 skills work standalone — external plugins enhance automation but are **not required**.
 
-nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 31개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 32개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
 
 ### Mode A — Dev (Implementation / 구현)
 
