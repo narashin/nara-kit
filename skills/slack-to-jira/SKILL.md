@@ -26,7 +26,7 @@ description: >-
 
 ## 규칙
 
-- **승인 게이트 필수** — 일괄 승인 전 `jira_create_issue`/`add_comment`/`create_issue_link` 호출 금지
+- **승인 게이트 필수** — 일괄 승인 전 `jira_create_issue`/`add_comment`/`create_issue_link` 호출 금지. 단 사용자가 명시적으로 "draft 생략/바로 생성" 요청 시 그 요청이 곧 승인 → draft 건너뛰고 생성 (기본은 draft)
 - 본문 영어 (`is_description_markdown=true`). 원문 verbatim 인용만 한국어 보존
 - 스레드에 없는 값 창작 금지 → `_not specified_`. Feature AC: 충분→`[proposed]`, 부족→`_TBD_`
 - priority/assignee/component 자동설정 안 함. profile은 스킬이 자동 성장
