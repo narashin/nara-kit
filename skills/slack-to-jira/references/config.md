@@ -12,7 +12,7 @@
 
 ```yaml
 profiles:
-  - channels: [C07E8SLQQ80]        # 학습된 값, 손으로 안 씀
+  - channels: [C0123456789]        # 학습된 값, 손으로 안 씀
     jira_project: ABC
     issue_types: { bug: Bug, feature: Story }
     default_labels: [from-slack]
