@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — 33 skills for structured software development and documentation workflows.
+Personal Claude Code workflow toolkit — 34 skills for structured software development and documentation workflows.
 
-Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 32개 스킬.
+Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 문서화를 위한 34개 스킬.
 
 ## Skills / 스킬 목록
 
@@ -61,6 +61,7 @@ Claude Code 워크플로우 툴킷 — 구조화된 소프트웨어 개발 및 �
 | `test-discover` | Discover test scenarios for a feature or file / 테스트 시나리오 발굴 |
 | `test-verify` | Review and validate test scenarios (3-persona review) / 테스트 시나리오 검증 |
 | `test-implement` | Implement tests from scenario documents / 시나리오 기반 테스트 구현 |
+| `golden-path-discover` | Discover live golden-path E2E scenarios + Playwright-ready export / 라이브 골든패스 E2E 발굴 + Playwright export |
 
 ### Meta / 메타
 
@@ -113,7 +114,7 @@ Hooks는 SessionStart에만 로드됨. 설치 후 **반드시 재시작** 필요
 ls ~/.claude/plugins/cache/nara-kit/nara-kit/<version>/skills/
 ```
 
-32개 스킬 디렉토리가 보이면 OK.
+34개 스킬 디렉토리가 보이면 OK.
 
 ## Usage / 사용법
 
@@ -224,9 +225,9 @@ webapp/
 
 ## Workflow / 워크플로우
 
-nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 33 skills work standalone — external plugins enhance automation but are **not required**.
+nara-kit skills are orchestrated in two modes. `workflow-orchestrator` classifies requests and routes to the appropriate mode. All 34 skills work standalone — external plugins enhance automation but are **not required**.
 
-nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 32개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
+nara-kit 스킬은 두 모드로 오케스트레이션됨. `workflow-orchestrator`가 요청을 분류하여 적절한 모드로 라우팅. 34개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화 수준을 높여주지만 **필수는 아님**.
 
 ### Mode A — Dev (Implementation / 구현)
 
@@ -385,6 +386,7 @@ flowchart TD
 | `docs/implementation-notes.md` | `workflow-dev-mode` (Execute) | 구현 중 running drift log. **4 카테고리**: Design decisions / Deviations / Tradeoffs / Open questions (`Type: confirm \| revise`) |
 | `docs/handoff.md` | `reflect` | 다음 세션 인계 9-섹션 스키마. In Progress + Open Questions surface |
 | `docs/test-scenarios/scenarios-detailed.md` | `test-discover` | AC ↔ 시나리오 1:1 매핑 포함 시나리오 목록 |
+| `docs/test-scenarios/golden-paths.E2E.md` | `golden-path-discover` | Playwright-ready 골든패스 E2E export (frontmatter + atomic-path coverage + SKIP/WARNING) |
 | `docs/incident-report.md` | `incident` | 장애 분석 — root cause 가설 + 증거 + 제안 수정 |
 | `docs/plan/*.md` | doc-mode artifacts | spec / RFC / design / planning artifact (AC 박힌 채) |
 
