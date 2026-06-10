@@ -51,7 +51,7 @@ These compose with test-discover's existing exclusion codes (`LOWER_LAYER_BETTER
 
 ## G2 — Live crawl (verbatim selectors)
 
-Harvest exact UI strings (labels, placeholders, toasts, dialog/confirm copy, column headers) + URL-contains asserts for each golden screen, so the export's selectors are verbatim and map 1:1 to Playwright `getByRole`/`getByText`/`getByPlaceholder`. Full operation, MCP choice, and the 3-rung degradation ladder: [live-crawl.md](live-crawl.md).
+Harvest exact UI strings (labels, placeholders, toasts, dialog/confirm copy, column headers) + URL-contains asserts for each golden screen, so the export's selectors are verbatim and map 1:1 to Playwright `getByRole`/`getByText`/`getByPlaceholder`. Full operation, crawl-tool choice (Agent CLI `playwright-cli` primary / Playwright MCP / chrome-devtools fallback), one-time auth capture, and the 3-rung degradation ladder: [live-crawl.md](live-crawl.md).
 
 ## G3 — Atomic-path stratify + coverage
 
@@ -71,6 +71,7 @@ Scan and auto-fix:
 - IDs append-only, never renumbered. ID gaps from previously dropped/merged scenarios are EXPECTED — never renumber to close a gap. (This is distinct from step numbering, which is monotonic WITHIN a scenario.)
 - frontmatter coverage recomputed against actual represented/dropped counts; assert `(Dropped S1 Paths line count, excluding Deferred) == (denominator − numerator)`.
 - every UI string that maps to a selector has crawl provenance OR `[UNVERIFIED]` — **FAIL otherwise**. This gate covers selector strings AND the FAIL-sentinel string AND the login-readiness-gate string: at rung b/c each is either crawl-confirmed or `[UNVERIFIED]` (a present-with-`[UNVERIFIED]` sentinel/gate PASSES; a guessed one FAILS).
+- every behavioral claim (`[LIVE-CONFIRMED]` modal opens / redirect target / navigation outcome / toast) is backed by an explicit step-through OR a source cross-check — NOT a lone snapshot (see live-crawl.md "Label harvest vs behavioral claims"). A behavioral claim contradicted by source is a **FAIL**.
 - FAIL sentinel vs SKIP markers present and distinct.
 - token-prefix consistency; pre-armed waits on download/new-page steps.
 
