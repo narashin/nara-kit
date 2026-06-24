@@ -295,6 +295,8 @@ flowchart TD
     style SPEC_REV fill:#fff9c4
 ```
 
+> **코어 스파인 (mandatory)**: `gap → plan → execute → verify → code-review → reflect`. 나머지는 조건부 — `small`/bugfix는 brainstorm·impl-notes·adr skip하고 코어 6단계 직행. (`ooo evaluate` 제거됨 — AI-as-judge 안티패턴.)
+>
 > **SoT 분기 (entry)**: 외부 SoT (Jira/Confluence URL, ticket) 있으면 `prep`. 한 줄 의도만 있으면 `ac-draft`로 US + Gherkin AC 발굴 후 바로 AC Gate 진입 (prep 우회).
 >
 > **ooo interview loop (legacy)**: PARTIAL/INSUFFICIENT readiness 시 fallback. `ac-draft`가 thin intent를 커버하므로 ambiguity가 ac-draft 범위 초과 시에만 manual 호출.
@@ -441,9 +443,9 @@ AC는 모든 스킬의 공유 SoT. 한 곳에 박혀 여러 곳에서 소비:
 |------|-------|-----------|------|
 | **AC Gate** | `workflow-doc-mode` (artifact 생성 전) <br>`workflow-dev-mode` (gap 진입 전) | `requirements.md`의 `## Acceptance Criteria` 섹션 비면 차단. doc-mode는 spec 생성 차단, dev-mode는 gap 진입 차단. Gherkin (Given-When-Then) 빈 템플릿만 제시, 도메인 hint 금지. **prep이 외부 SoT의 AC를 verbatim 보존하므로 SoT에 AC 있으면 자동 통과.** SoT에 없으면 doc-mode로 handoff하여 사용자 확정 후 작성 | ★★★★ |
 | **P0 Hard Gate** | `gap` | P0 Missing ≥ 1건이면 점수 무관 차단. 점수 ≥ 80 + P0 0건일 때만 review-ready | ★★★★ |
-| **Implementation Notes Gate** | `workflow-dev-mode` (Execute) | Pre-flight로 `implementation-notes.md` 생성, 매 응답 `📝 notes:` trailing, verify는 빈 notes reject | ★★★ (state gate 부분 ★★★★) |
+| **Implementation Notes Gate** (scope-scaled) | `workflow-dev-mode` (Execute, medium/large) | `medium`/`large`만: Pre-flight로 `implementation-notes.md` 생성, 매 응답 `📝 notes:` trailing, verify는 빈 notes reject. `small`은 전체 skip | ★★★ (state gate 부분 ★★★★) |
 | **Notes Reconciliation** | `gap --verify` | `implementation-notes.md` Deviations ↔ gap Missing/Partial 매칭 → Agreed Exception 후보. `Open Q [revise]` → Spec Revise Candidates surface | ★★★ |
-| **Pre-execution Gate** | `workflow-dev-mode` (plan → execute) | AskUserQuestion으로 plan 승인 받기 전 코드 변경 금지 | ★★★★ |
+| **Plan Approval** (folded) | `workflow-dev-mode` (plan 단계 내) | plan 단계에 흡수된 AskUserQuestion 승인 전 코드 변경 금지. 별도 phase 아님 | ★★★★ |
 | **Readiness Gate** | `prep` | 4기준 (Functional / UNVERIFIED / blocking-Q / Goal) 충족 여부로 다음 단계 분기 | ★★★ |
 
 ### Gate 강도 정의 / Gate Strength
@@ -472,7 +474,6 @@ All external skills are **optional enhancements**. Without them, the workflow fa
 | `ooo pm` | ouroboros | workflow-doc-mode (manual escape only) | Product framing for team-shared PRD / 팀 공유 PRD 필요 시 수동 호출 |
 | `ooo seed` | ouroboros | workflow-doc-mode (manual escape only) | Design snapshot freeze / 설계 동결 필요 시 수동 호출 |
 | `ooo run` / `ooo auto` | ouroboros | workflow-dev-mode | Execution fallback / 실행 대안 |
-| `ooo evaluate` | ouroboros | workflow-dev-mode | Completion verification / 완료 검증 |
 
 > **Note**: `ooo pm` and `ooo seed` also appear in `workflow-dev-mode/references/dev-workflow-details.md` routing table, but are only directly invoked from `workflow-doc-mode` SKILL.md. In dev mode, design discovery falls back to doc mode when requirements are unsettled.
 >

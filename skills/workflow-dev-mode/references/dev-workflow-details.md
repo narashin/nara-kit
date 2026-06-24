@@ -10,15 +10,15 @@
 4. Perform integration review against existing code and patterns
 5. Run gap analysis when current-state vs target-state delta matters
 6. Create written implementation plan before execution
-7. **Implementation Notes Gate**: Execute 진입 시 `docs/implementation-notes.md` 생성. 모든 변경 응답에 trailing `📝 notes:` 출력. (SKILL.md 참조)
+7. **Implementation Notes Gate (scope-scaled)**: `medium`/`large`만 — Execute 진입 시 `docs/implementation-notes.md` 생성 + 변경 응답에 trailing `📝 notes:`. `small`은 skip. (SKILL.md 참조)
 8. Enforce TDD for behavior-changing work where practical
-9. Run verification before claiming completion. **verify는 implementation-notes.md 비어 있으면 reject.**
-10. Route to evaluation, review, reflect (notes 흡수), ADR, and finish only after prior gates pass
+9. Run verification before claiming completion. **verify는 (medium/large) implementation-notes.md 비어 있으면 reject. small scope는 notes gate 미적용.**
+10. Route to review, reflect (notes 흡수), ADR (구조 결정 시만), and finish only after prior gates pass. (evaluation step removed — AI-as-judge anti-pattern.)
 
 ## Mandatory routing table
 
 - external or scattered requirements -> `prep`
-- design ambiguity -> `ooo interview`
+- design ambiguity (large/greenfield) -> `superpowers:brainstorming` (조건부) 또는 `ooo interview`
 - product framing or option comparison -> `ooo pm`
 - design snapshot needed -> `ooo seed`
 - current-state vs target-state delta matters -> `gap`
@@ -26,7 +26,7 @@
 - phased or broader execution -> `superpowers:subagent-driven-development`
 - lighter fallback execution intentionally chosen -> `ooo run`
 - inline-style fallback explicitly chosen -> `ooo auto`
-- before completion claim -> `ooo evaluate`, then `code-review`
+- before completion claim -> `code-review`
 - architectural decision happened -> `adr`
 - test scenario discovery needed -> `test-discover`
 - existing scenarios need review -> `test-verify`
@@ -47,7 +47,7 @@ Before routing onward, produce:
 - integration review status
 - gap status
 - planning status
-- **implementation-notes status (file existence, total entries, last trailing status)**
+- **implementation-notes status (scope; medium/large: file existence, total entries, last trailing status; small: skipped)**
 - TDD status
 - verification status
 
@@ -69,14 +69,14 @@ Before routing onward, produce:
 - stop and ask when success criteria are unclear
 - stop and ask when doc and dev paths are both plausible and materially different
 - stop and ask when required external input or credential is missing
-- **stop when verify is requested but `docs/implementation-notes.md` is missing/empty** — instruct user to fill notes first
+- **stop when verify is requested (medium/large) but `docs/implementation-notes.md` is missing/empty** — instruct user to fill notes first. (small scope: no stop.)
 - continue without asking only when next implementation gate is unambiguous
 
 ## Examples
 
 ### Example 1
 User: `Fix API rate-limit bug from analysis to code fix.`
-Route: dev -> medium -> `ooo interview` -> written implementation plan artifact -> TDD -> `superpowers:subagent-driven-development` -> `ooo evaluate`.
+Route: dev -> medium -> `ooo interview` -> written implementation plan artifact -> TDD -> `superpowers:subagent-driven-development` -> `code-review`.
 
 ### Example 2
 User: `Add audit log export API.`
