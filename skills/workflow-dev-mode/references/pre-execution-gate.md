@@ -1,6 +1,6 @@
-# Pre-execution Gate
+# Plan Approval (folded into the plan step)
 
-Written 임플리먼테이션 플랜 작성 후, 첫 코드 변경 스킬(`subagent-driven-development` / `ooo run` / `ooo auto`) 호출 직전 적용.
+Plan 단계의 일부. 별도 phase 아님. Written 임플리먼테이션 플랜 작성 직후, 첫 코드 변경 스킬(`subagent-driven-development` / `ooo run` / `ooo auto`) 호출 전에 plan 승인을 받는다.
 
 ## 절차
 
