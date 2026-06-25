@@ -148,27 +148,15 @@ flowchart LR
 ### Mode B — Doc (Documentation / 문서화)
 
 ```mermaid
-flowchart TD
-    START([Session Start]) --> CLARITY{Clarity?}
-    CLARITY -->|clear| BRAIN["☆ brainstorming"]
-    CLARITY -->|vague| AC["/ac-draft"]
-    BRAIN --> PREP["/prep"]
-    AC --> ACGATE
-    PREP --> ACGATE{AC Gate<br>≥1?}
-    ACGATE -->|0| ACBLOCK["❌ AC 강제"]
-    ACBLOCK --> AC
-    ACGATE -->|≥1| SPEC["Spec artifact"]
-    SPEC --> PUB{Publish?}
-    PUB -->|yes| PUBLISH["/publish-spec → Confluence"]
-    PUB -->|no| REFLECT
-    PUBLISH --> REFLECT["/reflect"]
-    REFLECT --> END([END])
-    PUBLISH -.->|days/weeks later| REV["/spec-revision<br>v2, v3 append"]
-    REV -.-> REV
+flowchart LR
+    C{clarity?} -->|clear| B["brainstorming"] --> PR[prep]
+    C -->|vague| AC[ac-draft]
+    PR --> AG{AC Gate}
+    AC --> AG
+    AG --> S[spec] --> PUB[publish-spec] --> RF[reflect] --> E([END])
+    PUB -. days/weeks later .-> REV[spec-revision v2,v3]
 
-    style BRAIN fill:#e8f5e9
-    style ACGATE fill:#fff9c4
-    style ACBLOCK fill:#ffcdd2
+    style AG fill:#fff9c4
     style REV fill:#e1f5fe
 ```
 
