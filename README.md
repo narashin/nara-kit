@@ -44,7 +44,7 @@ nara-kit과 함께 쓰는 플러그인:
 | `claude-mem` | `thedotmack/claude-mem` | Persistent memory across sessions |
 | `claude-hud` | `jarrodwatts/claude-hud` | Token/session HUD overlay |
 | `plannotator` | `backnotprop/plannotator` | Plan annotation and analysis |
-| `codex` | `anthropics/claude-code-codex` | Codex integration (adversarial review, rescue) |
+| `codex` | `openai/codex-plugin-cc` | Codex integration (adversarial review, rescue) |
 
 ## Inspired By / 영감
 
