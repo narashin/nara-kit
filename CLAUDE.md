@@ -1,6 +1,6 @@
 # nara-kit
 
-Claude Code plugin — 25 opinionated workflow skills by shinnara.
+Claude Code plugin — 37 opinionated workflow skills by shinnara.
 
 ## Structure
 
@@ -33,7 +33,7 @@ description: >-
 
 ## Conventions
 
-- All skills work standalone. External plugins (superpowers, ouroboros, codex) are optional enhancements with manual fallbacks
+- All skills work standalone. External plugins (superpowers, codex) are optional enhancements with manual fallbacks
 - Code comments and debug logs in English
 - User-facing text (PR body, commit message, docs) follows project language (usually Korean)
 - No `any` type in any TypeScript
@@ -69,10 +69,10 @@ Run: `waza eval <skill-name>` (requires `.waza.yaml` config at root)
 
 Two orchestrated modes — `workflow-orchestrator` routes requests:
 
-- **Dev mode** (`workflow-dev-mode`): prep → gap → plan → execute → verify → review → reflect
+- **Dev mode** (`workflow-dev-mode`): 6-step core spine `gap → plan → execute → verify → code-review → reflect` (entry: prep/ac-draft; conditional satellites: brainstorm/adr/impl-notes)
 - **Doc mode** (`workflow-doc-mode`): clarify → prep → spec → publish → reflect
 
-See README.md mermaid diagrams for full flow.
+See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagrams.
 
 ## Hooks
 
@@ -88,7 +88,7 @@ Hooks use prompt-based evaluation (semantic, not mechanical). Always `approve` �
 
 1. Create `skills/<name>/SKILL.md` with proper frontmatter
 2. Create `evals/<name>/eval.yaml` + `tasks/` + `fixtures/`
-3. Update README.md skill table — keep skill count accurate
+3. Update `skills/README.md` catalog table — keep skill count accurate (root `README.md` has no per-skill table; the catalog + mermaids live in `skills/README.md`)
 4. If skill participates in workflow, update `workflow-dev-mode` or `workflow-doc-mode` references
 5. New skill inherits output contract automatically — do not add per-skill output-contract reference (CLAUDE.md handles it)
 
@@ -104,7 +104,7 @@ Hooks use prompt-based evaluation (semantic, not mechanical). Always `approve` �
 Changes to skills, hooks, or any plugin file are **not live** until the plugin is republished and reinstalled. Local edits affect only this repo, not other projects that consume nara-kit.
 
 **Trigger this flow whenever any of these change:**
-- `skills/**/*` — SKILL.md, references, assets
+- `skills/**/*` — SKILL.md, references, assets (NOT `skills/README.md`, which is docs — see skip list)
 - `hooks/hooks.json`
 - `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`
 - `commands/**` (if added later)
@@ -123,7 +123,7 @@ Changes to skills, hooks, or any plugin file are **not live** until the plugin i
 
 **Automation:** `claude-mem:version-bump` handles steps 1-2 (bumps all manifests, tags, optionally publishes GitHub release). Prefer it over manual bumps.
 
-**Skip release when:** changes touch only `evals/**`, `README.md`, `CLAUDE.md`, or development tooling — these are not shipped to consumers.
+**Skip release when:** changes touch only `evals/**`, `README.md`, `skills/README.md`, `CLAUDE.md`, or development tooling — these are docs, not shipped skill behavior.
 
 **Verify after release:**
 - `ls ~/.claude/plugins/cache/nara-kit/nara-kit/` should show the new version directory
