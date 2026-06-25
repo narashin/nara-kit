@@ -3,7 +3,7 @@ name: ac-draft
 description: >-
   Generate User Stories + Gherkin AC from one-line intent when no external SoT exists. Sister of prep.
   USE FOR: "한 줄 기획", "thin SoT", "AC 비어 prep 막힘", "US 뽑아", "AC 초안", "ac-draft".
-  DO NOT USE FOR: 외부 SoT→/prep, 시나리오→test-discover, 코드→workflow-dev-mode, 팀 PRD→ooo pm.
+  DO NOT USE FOR: 외부 SoT→/prep, 시나리오→test-discover, 코드→workflow-dev-mode.
 ---
 
 # ac-draft
