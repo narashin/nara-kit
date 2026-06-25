@@ -37,8 +37,8 @@
 
 **Readiness = 4개 중 PASS 수**:
 - 4/4 READY → "요구사항 충분. brainstorm → gap 진행 가능"
-- 2-3/4 PARTIAL → "보완 후 진행 또는 `ooo interview`로 명확화 추천"
-- 0-1/4 INSUFFICIENT → "`ooo interview` 필요. 보완 후 `/prep` 재실행"
+- 2-3/4 PARTIAL → "보완 후 진행 또는 `ac-draft`로 명확화 추천"
+- 0-1/4 INSUFFICIENT → "`ac-draft` 필요. 보완 후 `/prep` 재실행"
 
 ## Raw 저장 규약
 

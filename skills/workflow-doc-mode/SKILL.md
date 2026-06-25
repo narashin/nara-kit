@@ -2,7 +2,7 @@
 name: workflow-doc-mode
 description: >-
   Run documentation-first workflow producing specs, RFCs, design docs, or planning artifacts.
-  Routes by requirement clarity: clear → brainstorming → prep → spec, vague → ooo interview → prep → spec.
+  Routes by requirement clarity: clear → brainstorming → prep → spec, vague → ac-draft → prep → spec.
   USE FOR: "doc mode", "기획 모드", "spec 작성", "RFC", "설계 문서".
   DO NOT USE FOR: direct code implementation, bug fixes, test writing.
 ---
@@ -31,10 +31,8 @@ Before routing, assess requirement clarity:
 4. Produce artifact (spec/RFC/design/plan)
 
 **Vague path** (requirements need discovery):
-1. `ac-draft` — thin intent → User Stories + Gherkin AC → `docs/requirements.md` (replaces ooo interview default)
-2. (선택, manual) `ooo pm` — 팀 공유 PRD 필요 시에만 사용자가 명시 호출
-3. (선택, manual) `ooo seed` — 설계 스냅샷 동결 필요 시에만
-4. Produce artifact
+1. `ac-draft` — thin intent → User Stories + Gherkin AC → `docs/requirements.md`
+2. Produce artifact
 
 **Both paths converge**: `docs/requirements.md` is the persisted SoT before artifact creation (written by `prep` in clear path, by `ac-draft` in vague path).
 
@@ -68,9 +66,9 @@ bullet 형식도 허용 (legacy spec, 외부 SoT 형식 그대로 보존 시):
 
 ### 작성 단계
 
-1. brainstorming / ooo interview 결과 → AC 후보 추출
+1. brainstorming / ac-draft 결과 → AC 후보 추출
 2. 사용자에게 Given-When-Then 템플릿 제시
-3. 사용자 검토 + 확정 (모호한 AC 발견 시 다시 interview)
+3. 사용자 검토 + 확정 (모호한 AC 발견 시 다시 ac-draft)
 4. artifact의 `## Acceptance Criteria` 섹션에 박음
 5. **AC 0개 = artifact 생성 차단.** "AC 작성하라" 안내 후 중단
 
@@ -81,21 +79,21 @@ bullet 형식도 허용 (legacy spec, 외부 SoT 형식 그대로 보존 시):
 ### 외부 SoT에 AC 없는 경우
 
 - Jira/Confluence에 AC 누락 시: doc-mode에서 작성 → 사용자가 외부 SoT에도 보강 권고 (외부와 desync 방지)
-- 외부 SoT 자체가 부재 (vague path 신규 spec) → `ac-draft`로 US + Gherkin AC 생성 후 사용자 확정 (legacy: ooo interview)
+- 외부 SoT 자체가 부재 (vague path 신규 spec) → `ac-draft`로 US + Gherkin AC 생성 후 사용자 확정
 - 우회 금지: "AC 없어도 spec 만들어줘" 요청 시 reject + 이유 설명
 
 ### 금지: 도메인 hint 주입
 
 AC Gate에서 사용자에게 제시 가능한 것:
 - ✅ Given-When-Then 빈 템플릿 구조 (`Given <...>` 형태)
-- ✅ "AC 작성하려면 interview 필요" 안내
+- ✅ "AC 작성하려면 ac-draft 필요" 안내
 
 제시 금지:
 - ❌ 도메인별 AC 후보 영역 ("재시도 종료 조건", "fallback 정책", "멱등성" 등)
-- ❌ "AC 영역 힌트" / "interview 질문축 후보"
+- ❌ "AC 영역 힌트" / "ac-draft 질문축 후보"
 - ❌ 예시 AC 본문 (실제 도메인 단어가 들어간 Given-When-Then)
 
-이유: 영역 hint도 사용자의 사고를 좁힘 → 누락된 영역 발견 차단. interview 스킬이 발산적 질문을 책임짐. doc-mode는 게이트만 강제.
+이유: 영역 hint도 사용자의 사고를 좁힘 → 누락된 영역 발견 차단. ac-draft 스킬이 발산적 질문을 책임짐. doc-mode는 게이트만 강제.
 
 ## Post-artifact
 

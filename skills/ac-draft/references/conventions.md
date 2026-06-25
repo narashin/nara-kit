@@ -62,4 +62,3 @@ prep 우회 명시: "외부 SoT 부재, internal-draft로 requirements.md 작성
 
 - nara-kit standalone 동작 — 외부 plugin 의존 없음
 - Optional 후속: `gap`, `superpowers:brainstorming`
-- ooo plugin 불필요 (interview/pm 대체 가능)

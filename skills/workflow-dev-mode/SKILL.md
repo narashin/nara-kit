@@ -3,7 +3,7 @@ name: workflow-dev-mode
 description: >-
   Implementation-first workflow with structured gates: SoT → gap → TDD → verify → branch finish.
   USE FOR: "dev mode", "구현 워크플로우", "개발 모드", "feature implementation".
-  DO NOT USE FOR: docs-only artifacts (→ workflow-doc-mode), unstable requirements (→ interview), simple edits.
+  DO NOT USE FOR: docs-only artifacts (→ workflow-doc-mode), unstable requirements (→ ac-draft), simple edits.
 ---
 
 # Workflow Dev Mode
@@ -25,7 +25,7 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 **Entry (conditional):**
 - **외부 SoT (URL/티켓) 있음** → `prep` (SoT fetch)
 - **외부 SoT 없음, 한 줄 의도만** → `ac-draft` (US + Gherkin AC 생성)
-- Readiness 2-3/4 → `ac-draft` (AC 보강) 또는 `ooo interview` (optional, ambiguity 크면) → `/prep` 재실행
+- Readiness 2-3/4 → `ac-draft` (AC 보강) → `/prep` 재실행
 - Readiness 0-1/4 → 의도 자체 명확화 우선 (`ac-draft` 또는 사용자 인터뷰)
 - **`superpowers:brainstorming` (조건부)** — scope `large` 또는 greenfield/design 불안정일 때만. `small`/bugfix는 skip. (선택, superpowers; visual companion 포함)
 
@@ -34,10 +34,10 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 **Core spine (mandatory) — 항상 `gap`부터 순서대로:**
 - `gap` → `plan` → `execute` → `verify` → `code-review` → `reflect`
 - **plan**: 작성 후 AskUserQuestion 승인을 plan 단계에서 흡수 (별도 pre-execution phase 없음). 승인 후 execute.
-- **execute**: `superpowers:SDD` default, `ooo run`/`auto` fallback. Implementation Notes Gate 적용 (scope-scaled, 아래).
+- **execute**: `superpowers:SDD`. Implementation Notes Gate 적용 (scope-scaled, 아래).
 - **reflect** 이후: `adr` (구조 결정 있었을 때만) → branch finish.
 
-**제거됨**: `ooo evaluate` (완료 전 AI 점수 판정 = AI-as-judge 안티패턴). `verify` + `code-review`가 검증 담당.
+**제거됨**: 완료 전 AI 점수 판정 단계 (AI-as-judge 안티패턴). `verify` + `code-review`가 검증 담당.
 
 ## Gates
 

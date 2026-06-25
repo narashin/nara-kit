@@ -1,6 +1,6 @@
 # Dev Mode — Workflow Details
 
-> **Migration note (2026-05)**: thin one-line intent (외부 SoT 없음) is now handled by `ac-draft` instead of `ooo interview`. `ac-draft` writes `docs/requirements.md` directly (no prep needed). `ooo interview` references below remain valid as manual escape when ambiguity exceeds AC scope (e.g. FR ambiguity even with external SoT).
+Thin one-line intent (외부 SoT 없음) is handled by `ac-draft`, which writes `docs/requirements.md` directly (no prep needed).
 
 ## Required sequence
 
@@ -18,14 +18,10 @@
 ## Mandatory routing table
 
 - external or scattered requirements -> `prep`
-- design ambiguity (large/greenfield) -> `superpowers:brainstorming` (조건부) 또는 `ooo interview`
-- product framing or option comparison -> `ooo pm`
-- design snapshot needed -> `ooo seed`
+- design ambiguity (large/greenfield) -> `superpowers:brainstorming` (조건부)
 - current-state vs target-state delta matters -> `gap`
 - implementation about to start -> written implementation plan artifact
 - phased or broader execution -> `superpowers:subagent-driven-development`
-- lighter fallback execution intentionally chosen -> `ooo run`
-- inline-style fallback explicitly chosen -> `ooo auto`
 - before completion claim -> `code-review`
 - architectural decision happened -> `adr`
 - test scenario discovery needed -> `test-discover`
@@ -76,7 +72,7 @@ Before routing onward, produce:
 
 ### Example 1
 User: `Fix API rate-limit bug from analysis to code fix.`
-Route: dev -> medium -> `ooo interview` -> written implementation plan artifact -> TDD -> `superpowers:subagent-driven-development` -> `code-review`.
+Route: dev -> medium -> `ac-draft` -> written implementation plan artifact -> TDD -> `superpowers:subagent-driven-development` -> `code-review`.
 
 ### Example 2
 User: `Add audit log export API.`
@@ -84,4 +80,4 @@ Route: dev -> `gap` -> written implementation plan artifact -> `superpowers:suba
 
 ### Example 3
 User: `Implement multi-tenant rollout across services.`
-Route: dev -> large -> stronger `ooo interview` / `ooo pm` discovery -> phased plan -> `superpowers:subagent-driven-development`.
+Route: dev -> large -> stronger `ac-draft` discovery -> phased plan -> `superpowers:subagent-driven-development`.
