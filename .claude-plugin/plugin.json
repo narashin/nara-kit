@@ -1,6 +1,6 @@
 {
   "name": "nara-kit",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "shinnara's personal workflow toolkit — opinionated skills for RFC, PR, incident analysis, gap check, code review, and TDD. Reflects one developer's conventions; fork to adapt.",
   "author": {
     "name": "shinnara",
