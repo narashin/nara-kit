@@ -30,6 +30,7 @@ description: >-
    - LLM 판단 거치지 않음
 3. 각 요구사항별 코드베이스 구현 상태 확인 (Grep/Glob, 핵심 로직만)
 4. rubric §3 Evidence 강제 룰 적용 → Implemented 주장 중 매핑 불가 항목 Partial 강등
+4-bis. rubric §3-bis 적용 → 다수면 요구사항 중 일부 수면만 구현·권한/보안 테스트 부재 항목 Partial 강등, 수면 간 불일치는 Missing 강제
 5. Agreed Exceptions 반영 (갭에서 제외)
 6. `[UNVERIFIED]` 항목 → Agreed Exceptions로 분류
 7. rubric §4 Forced Doubt Sampling → Implemented 중 20% (최소 2개) `Needs Confirm` 표시
@@ -48,6 +49,7 @@ Score = (Implemented + Partial*0.5) / (Total - Agreed Exceptions) * 100
 
 기존 gap.md의 Missing/Partial 항목만 추출 → 코드 확인 → gap.md 업데이트 + 점수 재산출.
 Verbatim pre-scan + Evidence 강등 + Doubt sampling 모두 동일 적용.
+**예외 — 권한·보안 항목**: rubric §3-bis에 따라 이전 Implemented여도 실제 각 수면(서버·클라이언트·테스트) 재확인. gap.md 캐시 상태로 complete 이월 금지.
 
 ### Notes Reconciliation (필수)
 
