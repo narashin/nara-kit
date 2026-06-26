@@ -140,6 +140,12 @@ Focus: **security vulnerabilities and performance bottlenecks.**
 - Sensitive data exposure (logs, error messages, hardcoded secrets)
 - Missing input validation/sanitization
 
+**Authorization consistency (cross-layer)** — when a change alters server-side permission/capability semantics:
+- **Single source of truth**: every consuming layer (client gating, other services) must derive authorization from the SAME server signal. Flag client-side recomputation of permissions that can diverge from the server guard.
+- **Overloaded capability flag**: one boolean gating multiple actions whose server rules differ (e.g., edit vs delete) — recommend splitting into per-action flags mapped 1:1 to each backend guard.
+- **Unreferenced destructive control**: a component/branch rendering a destructive action but never imported/reached — flag as footgun (auth bypass if later wired) and recommend removal or correct gating.
+- **One-sided permission tests**: a permission change tested only at the server guard (or only at the client) — require both the server-guard test and the consuming-layer gating test.
+
 **Performance — Unnecessary Work**:
 - Redundant computations, repeated file reads, duplicate network/API calls, N+1 patterns
 - **Missed concurrency**: independent sequential operations that could run in parallel (Promise.all, CompletableFuture, etc.)
