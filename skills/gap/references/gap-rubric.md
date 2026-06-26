@@ -38,6 +38,20 @@ LLM 자의 판단 방지용. 모든 gap 분석에서 이 룰을 기계적으로 
 | 요구사항 문장 ↔ 코드 라인 1:1 매핑 불가 | **Partial 강등** |
 | Evidence 라인이 실제 요구사항 만족 입증 불가 | **Partial 강등** |
 
+## 3-bis. Multi-surface & Security Evidence
+
+요구사항이 여러 수면(서버 강제 / 클라이언트 게이팅 / 테스트)에 걸치면, 일부 수면만 구현돼도 Implemented 금지.
+
+| 상황 | 처리 |
+|---|---|
+| 요구사항이 둘 이상의 수면(예: 서버 enforcement + 클라이언트 노출/게이팅)에 걸치는데 일부 수면만 구현 | **Partial 강등** + 누락 수면 명시 (예: "server O / client gating X") |
+| 권한·보안·인증·데이터무결성 요구사항이 코드만 있고 테스트 증거 없음 | **Partial 강등** (guard 테스트 + 소비 계층 게이팅 테스트 둘 다 있어야 Implemented) |
+| 권한·보안 요구의 동작이 수면 간 불일치 (한쪽 의미 ≠ 다른쪽) | **Missing 강제** (불일치는 미구현으로 취급) |
+
+### --verify 재확인 강제
+
+`--verify`는 권한·보안 항목에 대해 캐시된 gap.md 상태를 신뢰하지 말고 **실제 각 수면 코드 + 테스트를 재확인**. 재확인 없이 Implemented/complete 이월 금지. (다른 항목은 기존대로 Missing/Partial만 재검토.)
+
 ## 4. Forced Doubt Sampling
 
 Implemented로 분류한 항목 중:
