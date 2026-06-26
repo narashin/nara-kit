@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**37 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**38 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -66,6 +66,7 @@
 | Skill | Description / 설명 |
 |-------|---------------------|
 | `trending-digest` | Crawl GitHub Trending weekly, LLM-filter for AI/LLM + DX tools, post digest to Slack DM + Obsidian / GitHub 트렌딩 주간 크롤 → 필터링 → Slack DM + Obsidian |
+| `jira-triage` | Poll Jira for tickets assigned to you, classify 구현/버그픽스/기획/기타, emit a Multica issue with a ready-to-run launch kit (never executes code) / 내 Jira 티켓 폴링 → 분류 → 런치킷 Multica 이슈 발급 |
 
 ### Meta / 메타
 
@@ -90,7 +91,7 @@
 
 ## Workflow / 워크플로우
 
-`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 37개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 38개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
 
 ### Mode A — Dev (Implementation / 구현)
 
