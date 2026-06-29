@@ -12,41 +12,48 @@
 
 ```yaml
 defaults:
-  assignee: currentUser()           # autopilot jira MCP 본인 인증 시
-  mention: <SHINNARA_MEMBER_UUID>   # Multica member id (선택)
-  ready_statuses:                   # 큐 대상 status (Backlog/In Progress 제외)
-    - To Do
-    - Selected for Development
+  assignee: currentUser()
+  mention: <SHINNARA_MEMBER_UUID>
+  ready_statuses: [To Do, Selected for Development]
+  misc_session_group: nara-kit        # 기타 타입 세션그룹
 profiles:
   - jira_project: SANDY
-    git_host: git.linecorp.com
-    repo: LINE-SRE/sandbox-dns
+    pr_language: ko
+    repos:
+      default: { repo: LINE-SRE/sandbox-dns, git_host: git.linecorp.com, session_group: Sandy, local_path: "" }
   - jira_project: LYRIS
-    git_host: git.linecorp.com
-    repo: LINE-SRE/iris-ui
+    pr_language: en
+    repos:
+      fe: { repo: LINE-SRE/iris-ui,         git_host: git.linecorp.com, session_group: iris-ui,         local_path: "" }
+      be: { repo: LINE-SRE/iris-api-server, git_host: git.linecorp.com, session_group: iris-api-server, local_path: "" }
 ```
 
 ## 라우팅
 
-1. 티켓 key에서 project 추출 (`SANDY-123` → `SANDY`)
-2. `profiles[].jira_project` 매칭 profile 선택
-3. 매칭된 `git_host` / `repo` 를 dev 런치킷에 사용
-4. 매칭 없음 → notify-only (repo 모르면 진입 커맨드 제안 불가) + `[UNVERIFIED: project <KEY> repo 매핑 없음]`
+1. 티켓 key → project (`SANDY-123` → `SANDY`)
+2. project profile 선택
+3. **sub-repo 선택:**
+   - SANDY → `repos.default`
+   - LYRIS → FE/BE 분류로 `repos.fe` 또는 `repos.be` (분류 규칙은 SKILL.md classify)
+4. 매칭된 `repo` / `session_group` / `git_host` / `pr_language` 를 이슈 본문·metadata에 기재
+5. project 매핑 없음 → 큐 이슈 생성 + `[UNVERIFIED: project <KEY> repo 매핑 없음]`, session_group=`misc_session_group`
 
-> **cross-repo 예외:** project→repo는 거의 항상 맞다 (LYRIS=iris-ui 등). 본문이 드물게 *다른* repo(예: lyris-ai-workbench)를 명시해도 **라우팅은 기본 매핑 유지** — 본문에 `[note: 본문이 <repo> 언급 — 확인]` caveat만 달고 넘어간다. 휴리스틱 오라우팅보다 일관성이 낫다.
+> `local_path` 는 사용자가 각 repo 체크아웃 경로로 채운다 (Stage 2 실행기가 cd할 위치). 빈 값이면 Stage 2가 경고.
 
 ## 학습 플로우 (신규 project 1회만)
 
 1. 매핑 없는 project key 발견
 2. notify-only 이슈로 발급하면서 본문에 매핑 요청 표기
-3. 사용자가 `~/.claude/jira-triage.md` 의 `profiles` 에 `{jira_project, git_host, repo}` append
+3. 사용자가 `~/.claude/jira-triage.md` 의 `profiles` 에 `{jira_project, pr_language, repos}` append
 4. 이후 같은 project 티켓은 dev/doc 런치킷으로 정상 라우팅
 
 > autopilot은 무인 실행이므로 신규 project를 자동 학습하지 않는다 — notify-only로 떨어뜨려 사람이 매핑을 추가하게 한다 (잘못된 repo 추측 방지).
 
 ## 시드 매핑
 
-| Jira project | repo |
-|--------------|------|
-| `SANDY` | `git.linecorp.com/LINE-SRE/sandbox-dns` |
-| `LYRIS` | `git.linecorp.com/LINE-SRE/iris-ui` |
+| Jira project | 분류 | repo | session_group |
+|--------------|------|------|---------------|
+| SANDY | (전체) | sandbox-dns | Sandy |
+| LYRIS | FE | iris-ui | iris-ui |
+| LYRIS | BE | iris-api-server | iris-api-server |
+| (기타) | — | — | nara-kit |

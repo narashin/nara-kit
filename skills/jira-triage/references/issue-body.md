@@ -7,13 +7,16 @@
 ```markdown
 **Jira:** <ticket url>
 **타입:** 구현 | 버그픽스 · **repo:** <host>/<owner>/<repo>
+**세션그룹:** <session_group> · **PR 언어:** <ko|en>
 
 <summary 한 줄 + description 핵심 요약>
 
----
-**착수:** 이 이슈를 **Dev agent** 에 assign + status In Progress
-→ Dev agent가 repo에서 dev-mode 실행 (wt→prep→gap→TDD→verify) → PR 생성 후 인계
-(Dev agent 미구축 단계에선 직접: `/nara-kit:wt <KEY>` → `/nara-kit:prep <KEY>` → dev-mode)
+**접근법:**
+- 버그픽스: 재현 → 실패 테스트(Red) → 수정 → 회귀 테스트 → verify
+- 구현: prep(AC) → gap → plan → TDD → verify
+
+**착수:** 판단 후 Stage 2 트리거 (aoe가 <session_group> 그룹·워크트리에서 실행)
+(수동: `/nara-kit:wt <KEY>` → `/nara-kit:prep <KEY>` → dev-mode)
 ```
 
 ## doc 큐 이슈 (기획)
@@ -24,10 +27,8 @@
 
 <summary 한 줄 + description 핵심 요약>
 
----
-**착수:** 이 이슈를 **Planner agent** 에 assign + status In Progress
-→ Planner agent가 doc-mode 실행 (clarify→prep→spec→publish) → 산출물 인계
-(Planner agent 미구축 단계에선 직접: `/nara-kit:prep <KEY>` → doc-mode)
+**접근법:** 조사 → spec 초안 → 리뷰 (publish는 사람)
+**착수:** Stage 2 트리거 또는 `/nara-kit:prep <KEY>` → doc-mode
 ```
 
 ## 기타 / repo 매핑 없음
@@ -49,3 +50,6 @@
 | `jira_key` | `<KEY>` | dedup + Stage 2 agent가 읽음 |
 | `triage_type` | 구현/버그픽스/기획/기타 | 착수 agent 라우팅 힌트 |
 | `repo` | `<host>/<owner>/<repo>` | Stage 2 agent가 작업할 repo |
+| `session_group` | Sandy / iris-ui / iris-api-server / nara-kit | Stage 2 aoe 라우팅 |
+| `pr_language` | ko / en | Stage 2 PR 작성 언어 |
+| `sub_repo` | default / fe / be | LYRIS FE/BE 구분 |
