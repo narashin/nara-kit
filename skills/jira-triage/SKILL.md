@@ -1,7 +1,7 @@
 ---
 name: jira-triage
 description: >-
-  Triage your ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues, classified by type and routed to a repo — ready for you to dispatch to a Dev/Planner agent. Never runs code.
+  Triage your ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues, classified by type and routed to a repo — ready for you to trigger into a Stage 2 aoe session (human-judged). Stage 1 never runs code.
   USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", Multica Jira autopilot.
   DO NOT USE FOR: 티켓 생성 (→ slack-to-jira), 버그 원인 분석 (→ /incident).
 ---
@@ -10,17 +10,17 @@ description: >-
 
 내게 할당된 **착수 가능(To Do / Selected for Development)** Jira 티켓을 폴링해 **구현/버그픽스/기획/기타**로 분류하고, **티켓당 Multica 이슈**(UNASSIGNED, status To Do)로 만들어 watching 큐를 채운다.
 
-> **테제 가드:** autopilot은 코드를 실행하지 않는다. 큐만 채운다. 네가 큐에서 골라 **역할 agent에 assign + In Progress**로 바꾸는 순간이 착수 결정(심사) — 그때부터 [Stage 2](#stage-2--착수-네가-트리거)가 돈다.
+> **테제 가드:** autopilot은 코드를 실행하지 않는다. 큐만 채운다. 네가 **큐에서 골라 착수 트리거(판단)**하는 순간이 착수 결정(심사) — 그때부터 [Stage 2](#stage-2--착수-네가-트리거)가 돈다.
 
-참조: [Config](references/config.md) (project→repo·ready 상태) · [Issue body](references/issue-body.md) (타입별 큐 이슈 본문) · [Deploy](references/deploy.md) (Multica autopilot + Dev/Planner agent 셋업)
+참조: [Config](references/config.md) (project→repo·ready 상태) · [Issue body](references/issue-body.md) (타입별 큐 이슈 본문) · [Deploy](references/deploy.md) (Multica autopilot + aoe Stage 2 셋업)
 
 ## 2-stage 루프
 
 ```
-[Stage 1] jira-triage 크론 → ready 티켓 → 티켓당 Multica 이슈(큐, UNASSIGNED)
-[Stage 2] 너: 큐에서 골라 Dev/Planner agent에 assign + In Progress
-          → agent가 headless Claude Code shell out (네 머신, repo) → PR까지 → 머지 X
-[Stage 3] review-reminder/review-queue → PR 리뷰 → 너: merge
+[Stage 1] jira-triage 크론 → ready 티켓 → 티켓당 Multica 이슈(큐, UNASSIGNED) + 멘션
+[Stage 2] 너: 큐 판단 → /nara-kit:jira-drain <KEY> → aoe가 세션그룹·워크트리에 Claude Code 세션
+          → dev-mode/doc-mode PR까지 (게이트 미달→정지+리포트) · 인터랙티브 $0
+[Stage 3] review-queue → PR 리뷰 → 너: merge → aoe worktree cleanup
 ```
 
 사람 게이트 2곳: **착수 선택** + **merge**.
@@ -59,14 +59,23 @@ ready 상태 목록은 config `ready_statuses` 로 조정. 폴링 윈도우 없�
 
 **issuetype 필드는 보통 비어 온다.** summary(+있으면 description)를 LLM이 **의미로 판단**한다.
 
-| 타입 | 판정 (의미 기준) | 착수 agent |
+| 타입 | 판정 (의미 기준) | 착수 트랙 |
 |------|------|------|
-| **버그픽스** | 결함·회귀·보안 누락·오작동 | Dev |
-| **구현** | 신규 동작·기능·제거·마이그레이션·테스트 추가 | Dev |
-| **기획** | 타당성·조사·scope·설계·PRD·방법론 — 코드 아님 | Planner |
-| **기타** | 운영·질문·판단 불가 | (무 — 수동) |
+| **버그픽스** | 결함·회귀·보안 누락·오작동 | dev-mode |
+| **구현** | 신규 동작·기능·제거·마이그레이션·테스트 추가 | dev-mode |
+| **기획** | 타당성·조사·scope·설계·PRD·방법론 — 코드 아님 | doc-mode |
+| **기타** | 운영·질문·판단 불가 | 수동 |
 
 모호 → **기타 + `[UNVERIFIED: 분류 모호]`**, 추측 금지.
+
+### PRODUCT FE/BE 판정
+
+PRODUCT 구현/버그픽스는 sub-repo를 정한다:
+- `[FE]` 말머리 또는 UI/컴포넌트/프론트 내용 → **fe** (webapp, session_group webapp)
+- `[BE]`/`[API]` 또는 서버/엔드포인트/DB 내용 → **be** (api-server, session_group api-server)
+- 모호 → 본문에 `[그룹 확인 필요: FE/BE 불명]` 표기, 사람이 트리거 시 선택 (자동 추측 금지)
+
+PROJ는 항상 default repo. 기획/기타는 sub-repo 무관.
 
 ### subtask 게이트
 
@@ -78,16 +87,19 @@ parent는 epic처럼 컨테이너로 열고 실제 작업은 subtask에 적는 �
 
 ### emit (Multica 큐 이슈)
 
-티켓당 1개, **UNASSIGNED** (네가 나중에 역할 agent에 assign):
+티켓당 1개, **UNASSIGNED** (네가 나중에 jira-drain으로 트리거):
 
 ```bash
 multica issue create \
   --title "[<KEY>] <타입>: <summary>" \
   --description "<이슈 본문 — Issue body 참조>" \
   --priority medium --output json
-multica issue metadata set <issue_id> --key jira_key   --value "<KEY>"
-multica issue metadata set <issue_id> --key triage_type --value "<타입>"
-multica issue metadata set <issue_id> --key repo        --value "<host/owner/repo>"
+multica issue metadata set <issue_id> --key jira_key      --value "<KEY>"
+multica issue metadata set <issue_id> --key triage_type  --value "<타입>"
+multica issue metadata set <issue_id> --key repo          --value "<host/owner/repo>"
+multica issue metadata set <issue_id> --key session_group --value "<group>"
+multica issue metadata set <issue_id> --key pr_language   --value "<ko|en>"
+multica issue metadata set <issue_id> --key sub_repo      --value "<default|fe|be>"
 # --mention 지정 시 신규 이슈에만:
 multica issue comment add <issue_id> \
   --content "[@<표시명>](mention://member/<MEMBER_ID>) <KEY> 큐에 추가됨 (<타입>)" --output json
@@ -97,25 +109,25 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 
 ## Stage 2 — 착수 (네가 트리거)
 
-큐 이슈를 **Dev/Planner agent에 assign + status In Progress**로 바꾸면 그 agent의 task가 enqueue된다 (review-reminder의 "assign→자동실행"과 동일 메커닉). agent는:
+큐 이슈를 판단 후 `/nara-kit:jira-drain <KEY>` 로 트리거하면 jira-drain 스킬이:
+1. 이슈 metadata(session_group/repo/local_path/pr_language/sub_repo/type) 읽음
+2. `aoe add`로 해당 그룹·워크트리에 Claude Code 세션 생성·런치
+3. `aoe send`로 dev-mode(구현/버그픽스) 또는 doc-mode(기획) 프롬프트 주입 — **PR까지, 머지 X, 게이트 미달→정지+리포트, PR 언어 프로젝트별**
+4. 이슈 → In Progress. 완료 시 PR 링크/정지 사유 코멘트
 
-1. 이슈 metadata에서 `jira_key` / `repo` 읽음
-2. bash로 headless Claude Code shell out (네 머신, repo 디렉터리):
-   `claude -p "/nara-kit:wt <KEY> → /nara-kit:prep <KEY> → dev-mode(또는 doc-mode)"`
-3. **PR까지만. 머지 금지.** dev-mode 내부 게이트(gap<80 등) 미달 시 **강행 말고 멈춰 이슈에 리포트**
-4. PR 링크를 이슈 코멘트로 남기고 done → Stage 3(PR 리뷰 루프)로 인계
-
-> Stage 2 agent/실행 환경 셋업은 [Deploy](references/deploy.md). agent 런타임 전제: 네 머신에 `git`·`claude` CLI + repo + creds.
+> 인터랙티브(구독) 실행 = $200 헤드리스 풀 안 씀. 헤드리스는 예산 내 선택적(별도).
 
 ## 규칙
 
-- **Stage 1은 코드 실행 금지** — 큐만 채운다. 착수는 사람이 assign으로 결정
+- **Stage 1은 코드 실행 금지** — 큐만 채운다. 착수는 사람이 jira-drain 트리거로 결정
 - 분류는 summary/description **LLM 의미 판단** — issuetype 필드 기대 안 함
 - 큐 대상 = ready 상태(To Do/Selected)만. Backlog·In Progress·Done·컨테이너 제외
-- 큐 이슈는 **UNASSIGNED 생성** — autopilot이 agent에 자동 assign하지 않음 (사람 게이트)
+- 큐 이슈는 **UNASSIGNED 생성** — autopilot이 자동 착수하지 않음 (사람 게이트)
 - dedup = metadata `jira_key`. 스킵 이슈엔 멘션 안 단다
 - `--dry-run` 이면 Multica 쓰기 전체 스킵
 - config에 비밀값 없음 — Jira 인증은 MCP 레이어
+- PRODUCT는 FE/BE 판정해 sub-repo·session_group 라우팅. 모호하면 사람이 선택 (자동 추측 금지)
+- 이슈 본문에 타입별 접근법 + 라우팅(그룹/repo/PR언어) 기재 — Stage 2 입력
 
 ## 오류 처리
 
@@ -123,6 +135,6 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 |------|------|
 | `jira_search` 실패 | 3회 재시도 후 `❌ 실패: Jira 조회 실패` |
 | 조회 0건 | `✅ 신규 ready 티켓 없음` |
-| project repo 매핑 없음 | 큐 이슈는 생성하되 `[UNVERIFIED: repo 매핑 없음]` (Dev assign 전 수동 확인) |
+| project repo 매핑 없음 | 큐 이슈는 생성하되 `[UNVERIFIED: repo 매핑 없음]` (트리거 전 수동 확인) |
 | `multica issue create` 실패 | 해당 티켓 격리, 다음 계속, `→ ESCALATE` |
 | 멘션 차단 (classifier) | 이슈는 생성, 멘션만 `→ ESCALATE: 멘션 차단` |
