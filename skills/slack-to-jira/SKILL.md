@@ -21,7 +21,7 @@ description: >-
 5. **dedup** — `jira_search` → known / related / new ([Dedup](references/dedup.md))
 6. **draft** — 테이블 + 행별 펼침 영어 draft (1행이어도)
 7. **approve** — 일괄 승인 / 수정·드롭 / class 변경 / new↔link
-8. **execute** — new→`create_issue`, related→+relates link, known→`add_comment`. 행별 실패 격리
+8. **execute** — new→`create_issue` (label = classification: `bug`|`feature` + profile `extra_labels`), related→+relates link, known→`add_comment`. 행별 실패 격리
 9. **receipt** — output contract + side effects
 
 ## 규칙
@@ -30,6 +30,7 @@ description: >-
 - 본문 영어 (`is_description_markdown=true`). 원문 verbatim 인용만 한국어 보존
 - 스레드에 없는 값 창작 금지 → `_not specified_`. Feature AC: 충분→`[proposed]`, 부족→`_TBD_`
 - priority/assignee/component 자동설정 안 함. profile은 스킬이 자동 성장
+- label = classification (`bug`|`feature`) + profile `extra_labels`. `from-slack` 같은 출처 label 안 씀 ([Config](references/config.md) 라벨링)
 - 멀티워크스페이스: 첫 fetch 실패 시 caveat (Slack MCP 팀 연결 확인)
 
 ## 출력
