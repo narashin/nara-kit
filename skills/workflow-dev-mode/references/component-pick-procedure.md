@@ -8,7 +8,7 @@ Frontend 작업(UI 컴포넌트 신규 작성 또는 수정)에서 **카탈로�
 
 - 작업이 React/Vue/Svelte/Solid 등 컴포넌트 라이브러리 코드 신규 추가/수정
 - `*.tsx`, `*.jsx`, `*.vue`, `*.svelte` 파일 신규 작성
-- 디자인 시스템/UI 키트가 프로젝트에 존재 (package.json에 `webapp`, `@chakra-ui`, `mui`, `radix`, 자체 `ui-kit` 등)
+- 디자인 시스템/UI 키트가 프로젝트에 존재 (package.json에 `app-fe`, `@chakra-ui`, `mui`, `radix`, 자체 `ui-kit` 등)
 - 프로젝트에 `DESIGN.md` 또는 `component-catalog.md` 존재
 
 조건 미해당 시(예: utility/hook/state 코드만 변경) 본 절차 skip 가능.
@@ -89,7 +89,7 @@ frontend 작업 완료 후 응답에 한 줄 추가:
 
 ```
 요구: 모달로 사용자 정보 표시
-Step 1: webapp `<Modal>` 존재 → 사용
+Step 1: app-fe `<Modal>` 존재 → 사용
 [COMPONENT-PICK] catalog_hits=1 | optional_props=0 | new_components=0 | catalog_updates=0
 ```
 

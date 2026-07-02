@@ -49,7 +49,7 @@ jira-triage [--assignee <currentUser|ACCOUNT_ID>] [--projects <KEY,KEY>] [--ment
 
 ```bash
 # Step 1 — poll. ready 상태만 (Backlog/In Progress/Done 제외)
-jira_search jql='assignee = currentUser() AND status in ("To Do", "Selected for Development") AND project IN (PROJ, PRODUCT) ORDER BY updated DESC' \
+jira_search jql='assignee = currentUser() AND status in ("To Do", "Selected for Development") AND project IN (SVC, APP) ORDER BY updated DESC' \
   fields='key,summary,status,description,labels,subtasks,parent'   # issuetype 보통 빈값 — 의미로 분류
 ```
 
@@ -68,14 +68,14 @@ ready 상태 목록은 config `ready_statuses` 로 조정. 폴링 윈도우 없�
 
 모호 → **기타 + `[UNVERIFIED: 분류 모호]`**, 추측 금지.
 
-### PRODUCT FE/BE 판정
+### APP FE/BE 판정
 
-PRODUCT 구현/버그픽스는 sub-repo를 정한다:
-- `[FE]` 말머리 또는 UI/컴포넌트/프론트 내용 → **fe** (webapp, session_group webapp)
-- `[BE]`/`[API]` 또는 서버/엔드포인트/DB 내용 → **be** (api-server, session_group api-server)
+APP 구현/버그픽스는 sub-repo를 정한다:
+- `[FE]` 말머리 또는 UI/컴포넌트/프론트 내용 → **fe** (app-fe, session_group app-fe)
+- `[BE]`/`[API]` 또는 서버/엔드포인트/DB 내용 → **be** (app-be, session_group app-be)
 - 모호 → 본문에 `[그룹 확인 필요: FE/BE 불명]` 표기, 사람이 트리거 시 선택 (자동 추측 금지)
 
-PROJ는 항상 default repo. 기획/기타는 sub-repo 무관.
+SVC는 항상 default repo. 기획/기타는 sub-repo 무관.
 
 ### subtask 게이트
 
@@ -126,7 +126,7 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 - dedup = metadata `jira_key`. 스킵 이슈엔 멘션 안 단다
 - `--dry-run` 이면 Multica 쓰기 전체 스킵
 - config에 비밀값 없음 — Jira 인증은 MCP 레이어
-- PRODUCT는 FE/BE 판정해 sub-repo 라우팅. 모호하면 사람이 선택 (자동 추측 금지)
+- APP는 FE/BE 판정해 sub-repo 라우팅. 모호하면 사람이 선택 (자동 추측 금지)
 - `session_group` metadata는 **legacy** — Stage 2가 herdr로 이관된 뒤(space=repo@branch가 group 역할) jira-drain은 이를 **무시**한다. 하위 호환/참고용으로만 남김 (라우팅은 `repo`+`sub_repo`가 결정)
 - 이슈 본문에 타입별 접근법 + 라우팅(repo/sub_repo/PR언어) 기재 — Stage 2 입력
 
