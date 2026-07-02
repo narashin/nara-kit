@@ -19,16 +19,51 @@ fi
 target="${1:?memory file path required}"
 [[ -f "$target" ]] || { echo "{\"error\":\"file not found: $target\"}"; exit 1; }
 
+# Read a scalar frontmatter field's value. Indentation-tolerant so it also
+# reads keys nested under a `metadata:` block (canonical schema), not just
+# top-level keys. Returns the trailing value (empty when the field heads a
+# multi-line YAML list).
 parse_frontmatter_field() {
   awk -v field="$1" '
-    /^---$/ {c++; next}
-    c==1 && $0 ~ "^"field":" {
-      sub("^"field":[[:space:]]*", "")
-      print
+    /^---[[:space:]]*$/ {c++; next}
+    c==1 && $0 ~ "^[[:space:]]*"field":" {
+      line=$0
+      sub("^[[:space:]]*"field":[[:space:]]*", "", line)
+      print line
       exit
     }
     c>=2 {exit}
   ' "$target"
+}
+
+# Exit 0 if the frontmatter declares the given key at any indentation.
+# Distinguishes "key absent" from "key present but empty" (multi-line list).
+has_frontmatter_key() {
+  awk -v field="$1" '
+    /^---[[:space:]]*$/ {c++; next}
+    c==1 && $0 ~ "^[[:space:]]*"field":" {found=1; exit}
+    c>=2 {exit}
+    END {exit(found?0:1)}
+  ' "$target"
+}
+
+# Emit each item of a multi-line YAML list frontmatter field, one per line.
+# Handles the canonical form where `ref_paths:` heads an indented `- item` list.
+extract_frontmatter_list() {
+  awk -v field="$1" '
+    /^---[[:space:]]*$/ {c++; if(c>=2) exit; next}
+    c!=1 {next}
+    inlist==1 {
+      if ($0 ~ /^[[:space:]]+-[[:space:]]*/) {
+        item=$0
+        sub(/^[[:space:]]+-[[:space:]]*/, "", item)
+        print item
+        next
+      }
+      inlist=0
+    }
+    $0 ~ "^[[:space:]]*"field":[[:space:]]*$" {inlist=1}
+  ' "$target" | tr -d '[]"'"'"' '
 }
 
 # Signal 1: age
@@ -48,23 +83,32 @@ age_hit=$(( age_days >= THRESHOLD_AGE_DAYS ? 1 : 0 ))
 ref_paths_raw=$(parse_frontmatter_field "ref_paths")
 declare -a paths=()
 ref_paths_declared=0
-if [[ -n "$ref_paths_raw" ]]; then
+if has_frontmatter_key "ref_paths"; then
   ref_paths_declared=1
-  cleaned="${ref_paths_raw//[\[\]\"\']/}"
-  if [[ -n "${cleaned// /}" ]]; then
-    IFS=',' read -ra arr <<< "$cleaned"
-    for p in "${arr[@]+"${arr[@]}"}"; do
-      p="${p#"${p%%[![:space:]]*}"}"
-      p="${p%"${p##*[![:space:]]}"}"
+  if [[ -n "${ref_paths_raw// /}" ]]; then
+    # Inline array or scalar on the same line: `ref_paths: [a, b]` / `ref_paths: []`
+    cleaned="${ref_paths_raw//[\[\]\"\']/}"
+    if [[ -n "${cleaned// /}" ]]; then
+      IFS=',' read -ra arr <<< "$cleaned"
+      for p in "${arr[@]+"${arr[@]}"}"; do
+        p="${p#"${p%%[![:space:]]*}"}"
+        p="${p%"${p##*[![:space:]]}"}"
+        [[ -n "$p" ]] && paths+=("$p")
+      done
+    fi
+  else
+    # Key heads a multi-line YAML list (canonical nested schema)
+    while IFS= read -r p; do
       [[ -n "$p" ]] && paths+=("$p")
-    done
+    done < <(extract_frontmatter_list "ref_paths")
   fi
 fi
-# Only grep-fallback when ref_paths field is absent (not when explicitly empty)
+# Only grep-fallback when ref_paths field is absent (not when explicitly empty).
+# Optional leading '/' so absolute paths are captured intact (not slash-stripped).
 if [[ $ref_paths_declared -eq 0 ]]; then
   while IFS= read -r p; do
     [[ -n "$p" ]] && paths+=("$p")
-  done < <(grep -oE '[a-zA-Z_][a-zA-Z0-9_/.-]*/[a-zA-Z0-9_./-]+\.(md|ts|tsx|py|json|yaml|yml|sh|html)' "$target" | sort -u)
+  done < <(grep -oE '/?[a-zA-Z_][a-zA-Z0-9_/.-]*/[a-zA-Z0-9_./-]+\.(md|ts|tsx|py|json|yaml|yml|sh|html)' "$target" | sort -u)
 fi
 
 valid=0
