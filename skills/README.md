@@ -49,7 +49,7 @@
 | `explain` | Shareable explanations for different audiences / 대상별 설명 문서 생성 |
 | `publish-spec` | Publish spec to Confluence wiki / 스펙 → Confluence 게시 |
 | `reflect` | Capture session learnings (decisions, conventions, warnings) / 세션 학습 캡처 |
-| `humanizer` | Detect AI writing patterns in Korean text and rewrite as natural prose (KatFishNet 94.88% AUC, 40 patterns) / 한국어 AI 작문 패턴 감지 + 윤문 |
+| `humanizer` | Detect AI writing patterns in Korean text and rewrite as natural prose (KatFishNet 94.88% AUC, 41 patterns) / 한국어 AI 작문 패턴 감지 + 윤문 |
 
 ### Testing / 테스트
 
