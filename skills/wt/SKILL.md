@@ -18,7 +18,7 @@ Bridges Jira ticket → branch name → shell `wt` helper, producing a worktree 
 
 `<ticket-id> [type-prefix]`
 
-- `<ticket-id>` (required): Jira key, e.g. `LYRIS-346`.
+- `<ticket-id>` (required): Jira key, e.g. `APP-346`.
 - `[type-prefix]` (optional): git branch type. Allowed: `feature`, `fix`, `hotfix`, `chore`, `release`, `test`, or `none`. If omitted, the skill asks via `AskUserQuestion`. **Never auto-derive from Jira issue type.**
 
 ## Steps
@@ -37,8 +37,8 @@ Bridges Jira ticket → branch name → shell `wt` helper, producing a worktree 
    - If `TYPE` provided as 2nd arg → use it as-is.
    - If omitted → `AskUserQuestion` with options: `feature`, `fix`, `hotfix`, `chore`, `release`, `test`, `none (no prefix)`.
 6. **Compose branch name**:
-   - With prefix: `<TYPE>/<TICKET>-<slug>` (e.g. `feature/LYRIS-346-edit-planned-date`)
-   - With `none`: `<TICKET>-<slug>` (e.g. `LYRIS-346-edit-planned-date`)
+   - With prefix: `<TYPE>/<TICKET>-<slug>` (e.g. `feature/APP-346-edit-planned-date`)
+   - With `none`: `<TICKET>-<slug>` (e.g. `APP-346-edit-planned-date`)
 7. **Show plan** as a single line: `branch: <branch>  →  dir: ../<repo>-<TICKET>-<slug>`. Wait for explicit confirm (`ok`/`yes`/`go`). If the user proposes a different slug, regenerate and re-confirm.
 8. **Execute via Bash**:
    ```bash
@@ -56,22 +56,22 @@ Bridges Jira ticket → branch name → shell `wt` helper, producing a worktree 
 
 ## Examples
 
-User: `/wt LYRIS-346 feature`
+User: `/wt APP-346 feature`
 - Summary: "Edit Planned Date After Approval"
 - Slug: `edit-planned-date`
-- Plan: `branch: feature/LYRIS-346-edit-planned-date  →  dir: ../iris-ui-LYRIS-346-edit-planned-date`
-- Confirm → `wt feature/LYRIS-346-edit-planned-date` → ready at `../iris-ui-LYRIS-346-edit-planned-date`
+- Plan: `branch: feature/APP-346-edit-planned-date  →  dir: ../app-fe-APP-346-edit-planned-date`
+- Confirm → `wt feature/APP-346-edit-planned-date` → ready at `../app-fe-APP-346-edit-planned-date`
 
-User: `/wt LYRIS-432 fix`
+User: `/wt APP-432 fix`
 - Summary: "Pin pnpm version to prevent Docker build failure"
 - Slug: `pin-pnpm-version`
-- Plan: `branch: fix/LYRIS-432-pin-pnpm-version  →  dir: ../iris-ui-LYRIS-432-pin-pnpm-version`
+- Plan: `branch: fix/APP-432-pin-pnpm-version  →  dir: ../app-fe-APP-432-pin-pnpm-version`
 
-User: `/wt LYRIS-346`
+User: `/wt APP-346`
 - Summary: "Edit Planned Date After Approval"
 - Skill asks: pick prefix (feature/fix/hotfix/chore/release/test/none).
 - User picks `feature` → continues as above.
 
-User: `/wt LYRIS-999 feature`
+User: `/wt APP-999 feature`
 - Summary: "TBD"
 - Skill asks user for a manual slug — does not guess.

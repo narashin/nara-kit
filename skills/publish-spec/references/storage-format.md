@@ -58,7 +58,7 @@ Confluence는 자체 storage format (XHTML + Atlassian macro)을 사용한다. m
 <ac:structured-macro ac:name="jira" ac:schema-version="1">
   <ac:parameter ac:name="server">Jira</ac:parameter>
   <ac:parameter ac:name="serverId">fd8fda8e-f52c-3c30-9024-3257ba6f1611</ac:parameter>
-  <ac:parameter ac:name="key">LYRIS-XXX</ac:parameter>
+  <ac:parameter ac:name="key">APP-XXX</ac:parameter>
 </ac:structured-macro>
 ```
 
@@ -66,14 +66,14 @@ Confluence는 자체 storage format (XHTML + Atlassian macro)을 사용한다. m
 **Paragraph:** `<p>text</p>`
 **Empty line:** `<p><br/></p>`
 
-**Reference (LYRIS-337 page):** 실제 팀 페이지의 storage format을 `confluence_get_page(convert_to_markdown=false)`로 조회하여 패턴을 따를 것.
+**Reference (APP-337 page):** 실제 팀 페이지의 storage format을 `confluence_get_page(convert_to_markdown=false)`로 조회하여 패턴을 따를 것.
 
 ## MCP API Call
 
 ```
 mcp__confluence__confluence_create_page(
   space_key: "<space>",
-  title: "LYRIS-XXX 설명",
+  title: "APP-XXX 설명",
   content: "<Confluence storage format XHTML>",
   content_format: "storage",
   parent_id: "<parent page ID>"

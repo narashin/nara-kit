@@ -12,7 +12,7 @@
 
 1. spec.md 읽기
 2. 7개 섹션 템플릿으로 재구성 (see references/template.md)
-3. 제목 포맷 적용: `LYRIS-XXX [RfC] 설명`
+3. 제목 포맷 적용: `APP-XXX [RfC] 설명`
 4. `confluence-draft.md`로 로컬 저장 (같은 디렉토리)
 5. Dry-run 프리뷰 출력:
    - 제목

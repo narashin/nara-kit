@@ -17,24 +17,24 @@ defaults:
   ready_statuses: [To Do, Selected for Development]
   misc_session_group: nara-kit        # 기타 타입 세션그룹
 profiles:
-  - jira_project: SANDY
+  - jira_project: SVC
     pr_language: ko
     repos:
-      default: { repo: LINE-SRE/sandbox-dns, git_host: git.linecorp.com, session_group: Sandy, local_path: "" }
-  - jira_project: LYRIS
+      default: { repo: your-org/svc, git_host: git.example.com, session_group: svc, local_path: "" }
+  - jira_project: APP
     pr_language: en
     repos:
-      fe: { repo: LINE-SRE/iris-ui,         git_host: git.linecorp.com, session_group: iris-ui,         local_path: "" }
-      be: { repo: LINE-SRE/iris-api-server, git_host: git.linecorp.com, session_group: iris-api-server, local_path: "" }
+      fe: { repo: your-org/app-fe,         git_host: git.example.com, session_group: app-fe,         local_path: "" }
+      be: { repo: your-org/app-be, git_host: git.example.com, session_group: app-be, local_path: "" }
 ```
 
 ## 라우팅
 
-1. 티켓 key → project (`SANDY-123` → `SANDY`)
+1. 티켓 key → project (`SVC-123` → `SVC`)
 2. project profile 선택
 3. **sub-repo 선택:**
-   - SANDY → `repos.default`
-   - LYRIS → FE/BE 분류로 `repos.fe` 또는 `repos.be` (분류 규칙은 SKILL.md classify)
+   - SVC → `repos.default`
+   - APP → FE/BE 분류로 `repos.fe` 또는 `repos.be` (분류 규칙은 SKILL.md classify)
 4. 매칭된 `repo` / `session_group` / `git_host` / `pr_language` 를 이슈 본문·metadata에 기재
 5. project 매핑 없음 → 큐 이슈 생성 + `[UNVERIFIED: project <KEY> repo 매핑 없음]`, session_group=`misc_session_group`
 
@@ -53,7 +53,7 @@ profiles:
 
 | Jira project | 분류 | repo | session_group |
 |--------------|------|------|---------------|
-| SANDY | (전체) | sandbox-dns | Sandy |
-| LYRIS | FE | iris-ui | iris-ui |
-| LYRIS | BE | iris-api-server | iris-api-server |
+| SVC | (전체) | svc | svc |
+| APP | FE | app-fe | app-fe |
+| APP | BE | app-be | app-be |
 | (기타) | — | — | nara-kit |

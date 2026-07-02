@@ -25,10 +25,10 @@ jira-drain <KEY|issue_id> [--dry-run]
 ## 파이프라인
 
 1. **resolve** — KEY/issue_id로 Multica 이슈를 찾고(`multica issue list --output json` → `jira_key` metadata 매칭 또는 직접 `multica issue get <id>`) metadata 읽음: `jira_key · triage_type · repo · pr_language · sub_repo`. `local_path`는 **로컬 config(`~/.claude/jira-triage.md`)** 에서 조회:
-   - KEY 접두로 jira_project 도출 (`LYRIS-425` → `LYRIS`)
+   - KEY 접두로 jira_project 도출 (`APP-425` → `APP`)
    - `profiles[].jira_project == jira_project` 인 profile 선택
    - `sub_repo` 값(`default|fe|be`)으로 `profile.repos.<sub_repo>.local_path` 읽음
-   - `<summary>` 추출: 이슈 title에서 `[<KEY>] <타입>: ` 접두 제거 (`[LYRIS-425] 구현: 편집 기능` → `편집 기능`). jira-triage가 세팅한 title 형식에 의존. `summary` metadata 키는 없음 — title에서만 파싱.
+   - `<summary>` 추출: 이슈 title에서 `[<KEY>] <타입>: ` 접두 제거 (`[APP-425] 구현: 편집 기능` → `편집 기능`). jira-triage가 세팅한 title 형식에 의존. `summary` metadata 키는 없음 — title에서만 파싱.
    - `default_branch` = repo 기본 브랜치 (`git -C <local_path> symbolic-ref --short refs/remotes/origin/HEAD` 실패 시 `main`)
    - `jira_key` 매칭이 여러 건이면 가장 최근 `created_at` 1건 선택, 나머지는 → `ESCALATE: <KEY> 중복 큐 이슈 N건`
    - **`session_group`은 읽지 않는다** — herdr엔 group 개념 없음(space=repo@branch가 그룹 역할). jira-triage가 넣은 `session_group` metadata는 무시.

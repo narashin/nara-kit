@@ -8,7 +8,7 @@ description: >-
 
 # Publish Spec to Confluence
 
-Convert a local markdown spec/plan to the **LYRIS Confluence RfC template** (7 mandatory sections) and publish. Strict dry-run -> confirm -> publish flow.
+Convert a local markdown spec/plan to the **APP Confluence RfC template** (7 mandatory sections) and publish. Strict dry-run -> confirm -> publish flow.
 
 ## Execution Flow
 

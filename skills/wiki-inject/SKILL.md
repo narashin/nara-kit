@@ -18,9 +18,9 @@ description: >-
 │   ├── raw/sources/     # 모든 raw 원천 (이 스킬이 다루는 층)
 │   ├── raw/assets/      # 이미지·바이너리
 │   └── wiki/...         # LLM-wiki 도구 ingest 자동 생성
-├── LINE-common/         # 회사 전사·공통 (전사 회의, 릴리스 프로세스, 인프라 공통)
-├── LYRIS/               # LYRIS 프로젝트
-├── Sandy/               # Sandy 프로젝트
+├── org-common/         # 회사 전사·공통 (전사 회의, 릴리스 프로세스, 인프라 공통)
+├── APP/               # APP 프로젝트
+├── svc/               # svc 프로젝트
 └── <new-project>/       # 신규 도메인 발견 시 사용자가 bootstrap
 ```
 
@@ -37,9 +37,9 @@ iCloud 동기화. **Karpathy LLM-wiki 컨벤션** ([gist](https://gist.github.co
 | Project | Path | When |
 |---------|------|------|
 | `tech-notes` | `llm-wiki/tech-notes/` | 외부 학습 자료 (영상·블로그·논문·책·트윗) |
-| `LINE-common` | `llm-wiki/LINE-common/` | 회사 전사·공통 (전사 회의, 릴리스 프로세스, 인프라 공통 결정) |
-| `LYRIS` | `llm-wiki/LYRIS/` | LYRIS 프로젝트 (회의록·결정·인프라·코드 컨셉) |
-| `Sandy` | `llm-wiki/Sandy/` | Sandy 프로젝트 (회의록·결정·인프라·코드 컨셉) |
+| `org-common` | `llm-wiki/org-common/` | 회사 전사·공통 (전사 회의, 릴리스 프로세스, 인프라 공통 결정) |
+| `APP` | `llm-wiki/APP/` | APP 프로젝트 (회의록·결정·인프라·코드 컨셉) |
+| `svc` | `llm-wiki/svc/` | svc 프로젝트 (회의록·결정·인프라·코드 컨셉) |
 | `<other>` | `llm-wiki/<other>/` | 신규 도메인. 사용자가 직접 bootstrap (디렉토리 생성 + schema/purpose 복사) |
 
 가용 프로젝트 항상 `ls llm-wiki/`로 동적 확인. 디렉토리 없으면 escalate.
@@ -51,10 +51,10 @@ iCloud 동기화. **Karpathy LLM-wiki 컨벤션** ([gist](https://gist.github.co
 | 상황 | 위치 |
 |------|------|
 | 한 프로젝트 전용 회의·결정 | 해당 프로젝트 |
-| 전사·여러 프로젝트 공통 | `LINE-common` |
+| 전사·여러 프로젝트 공통 | `org-common` |
 | 외부 학습 자료 (영상·블로그·논문) | `tech-notes` |
 | 한 프로젝트에서 발견된 일반 기술 인사이트 | `tech-notes` (도메인 지식 승격) + 해당 프로젝트에서 backlink |
-| 두 프로젝트 공통 적용되는 가이드 | `tech-notes` 또는 `LINE-common`, 양쪽에서 backlink |
+| 두 프로젝트 공통 적용되는 가이드 | `tech-notes` 또는 `org-common`, 양쪽에서 backlink |
 
 ## Content Types (모두 raw/sources/ 행)
 
@@ -78,10 +78,10 @@ frontmatter `type` 필드로 source 종류 구분 (source / meeting-summary / me
 
 ```
 질문 1: 어느 프로젝트?
-  - 사용자 명시 (LYRIS/Sandy/LINE-common/tech-notes/기타) → 그 프로젝트
+  - 사용자 명시 (APP/svc/org-common/tech-notes/기타) → 그 프로젝트
   - 콘텐츠 안에 프로젝트 코드명·Jira 키 → 추론 후 사용자 확인
   - 영상 URL/블로그/논문/책 등 외부 학습 자료 → tech-notes
-  - 전사·여러 팀 공통 (전사 회의, 릴리스 정책 등) → LINE-common
+  - 전사·여러 팀 공통 (전사 회의, 릴리스 정책 등) → org-common
   - 모호 → 반드시 사용자에게 확인
 
 질문 2: 어떤 타입?
@@ -94,7 +94,7 @@ frontmatter `type` 필드로 source 종류 구분 (source / meeting-summary / me
   - 유사 주제 존재? → backlink로 연결
 ```
 
-**원칙: 회의록 ≠ LINE-common 자동.** 프로젝트별 회의(LYRIS H1, Sandy 인프라 등)는 해당 프로젝트로. LINE-common은 **전사 공통**(릴리스 정책, 인프라 표준 등) 전용.
+**원칙: 회의록 ≠ org-common 자동.** 프로젝트별 회의(APP H1, svc 인프라 등)는 해당 프로젝트로. org-common은 **전사 공통**(릴리스 정책, 인프라 표준 등) 전용.
 
 ## Steps
 
@@ -179,7 +179,7 @@ source:
 created: 2026-05-18T10:00
 updated: 2026-05-18T10:00
 date: 2026-05-18                 # 회의 일자
-project: LINE-common
+project: org-common
 type: meeting-summary
 tags:
   - meeting
@@ -231,7 +231,7 @@ related-tickets:                 # 선택
 created: 2026-05-18T10:00
 updated: 2026-05-18T10:00
 date: 2026-05-18
-project: LINE-common
+project: org-common
 type: meeting-raw
 tags:
   - meeting
@@ -289,7 +289,7 @@ summary-link: [[2026-05-18-<topic>]]   # 요약본 링크 (있으면)
 Outcome: wiki note injected | duplicate detected | escalate
 Evidence: <project>/raw/<type>/<filename>.md (<bytes>)
 Artifact Paths: <전체 경로>
-Project: tech-notes | LINE-common | LYRIS | Sandy | <other>
+Project: tech-notes | org-common | APP | svc | <other>
 Type: source | meeting-summary | meeting-raw
 Backlinks: [[note-1]], [[note-2]]
 Next Action: <연관 노트 갱신 / 컨셉 승격 / 후속 회의록 / Jira 티켓>
@@ -336,14 +336,14 @@ schema.md / purpose.md   ← 프로젝트 설정. 사용자가 직접 작성. in
 "이 영상 위키에 박아 https://youtube.com/..."
   → project=tech-notes, type=source
 
-"LYRIS H1 회의록 정리한거 박아"
-  → project=LYRIS, type=meeting-summary
+"APP H1 회의록 정리한거 박아"
+  → project=APP, type=meeting-summary
 
-"Sandy 인프라 회의 원문 raw로"
-  → project=Sandy, type=meeting-raw
+"svc 인프라 회의 원문 raw로"
+  → project=svc, type=meeting-raw
 
 "전사 릴리스 프로세스 회의록"
-  → project=LINE-common, type=meeting-summary
+  → project=org-common, type=meeting-summary
 
 "이거 위키 어디 박지?"
   → 키워드 분석 + 모호하면 사용자 확인

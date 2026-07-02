@@ -50,6 +50,6 @@
 | `jira_key` | `<KEY>` | dedup + Stage 2 agent가 읽음 |
 | `triage_type` | 구현/버그픽스/기획/기타 | 착수 agent 라우팅 힌트 |
 | `repo` | `<host>/<owner>/<repo>` | Stage 2 agent가 작업할 repo |
-| `session_group` | Sandy / iris-ui / iris-api-server / nara-kit | legacy — herdr Stage 2는 무시 (참고용) |
+| `session_group` | svc / app-fe / app-be / nara-kit | legacy — herdr Stage 2는 무시 (참고용) |
 | `pr_language` | ko / en | Stage 2 PR 작성 언어 |
-| `sub_repo` | default / fe / be | LYRIS FE/BE 구분 |
+| `sub_repo` | default / fe / be | APP FE/BE 구분 |

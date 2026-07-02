@@ -29,7 +29,7 @@ multica agent update <agent_id> --mcp-config-file <jira-mcp.json>
 ```
 assignee = currentUser()
 mention  = <SHINNARA_MEMBER_UUID>
-projects = SANDY,LYRIS
+projects = SVC,APP
 ```
 
 ## Stage 2 — herdr 세션 (사람이 jira-drain으로 트리거)

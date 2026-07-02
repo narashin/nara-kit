@@ -3,13 +3,13 @@
 ## Title Format
 
 ```
-LYRIS-XXX 한줄 설명
+APP-XXX 한줄 설명
 ```
 
 Examples:
-- `LYRIS-337 Additional Dashboard for Release PIC/Master`
-- `LYRIS-272 [RfC] 복수의 Manager 할당 시 AND 승인 조건 추가`
-- `LYRIS-323 [RfC] Add a comment to the post-approval task history of a ChangeRequest`
+- `APP-337 Additional Dashboard for Release PIC/Master`
+- `APP-272 [RfC] 복수의 Manager 할당 시 AND 승인 조건 추가`
+- `APP-323 [RfC] Add a comment to the post-approval task history of a ChangeRequest`
 
 Rules:
 - Jira ticket ID **필수** — 없으면 유저에게 물어볼 것
@@ -21,9 +21,9 @@ Rules:
 spec.md 내용을 아래 7개 섹션 구조로 **반드시 변환**. 원본 spec의 섹션 구조가 다르면 매핑해서 재구성할 것. 빈 섹션이라도 헤딩은 유지.
 
 ```markdown
-# LYRIS-XXX Jira Ticket Summary
+# APP-XXX Jira Ticket Summary
 
-Jira Ticket Link: LYRIS-XXX
+Jira Ticket Link: APP-XXX
 
 ## 1. Background
 
