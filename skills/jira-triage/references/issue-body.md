@@ -15,7 +15,7 @@
 - 버그픽스: 재현 → 실패 테스트(Red) → 수정 → 회귀 테스트 → verify
 - 구현: prep(AC) → gap → plan → TDD → verify
 
-**착수:** 판단 후 Stage 2 트리거 (aoe가 <session_group> 그룹·워크트리에서 실행)
+**착수:** 판단 후 Stage 2 트리거 (herdr가 space=repo@branch 워크트리에서 실행)
 (수동: `/nara-kit:wt <KEY>` → `/nara-kit:prep <KEY>` → dev-mode)
 ```
 
@@ -50,6 +50,6 @@
 | `jira_key` | `<KEY>` | dedup + Stage 2 agent가 읽음 |
 | `triage_type` | 구현/버그픽스/기획/기타 | 착수 agent 라우팅 힌트 |
 | `repo` | `<host>/<owner>/<repo>` | Stage 2 agent가 작업할 repo |
-| `session_group` | Sandy / iris-ui / iris-api-server / nara-kit | Stage 2 aoe 라우팅 |
+| `session_group` | Sandy / iris-ui / iris-api-server / nara-kit | legacy — herdr Stage 2는 무시 (참고용) |
 | `pr_language` | ko / en | Stage 2 PR 작성 언어 |
 | `sub_repo` | default / fe / be | LYRIS FE/BE 구분 |

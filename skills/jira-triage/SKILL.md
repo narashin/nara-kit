@@ -1,7 +1,7 @@
 ---
 name: jira-triage
 description: >-
-  Triage your ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues, classified by type and routed to a repo — ready for you to trigger into a Stage 2 aoe session (human-judged). Stage 1 never runs code.
+  Triage your ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues, classified by type and routed to a repo — ready for you to trigger into a Stage 2 herdr session (human-judged). Stage 1 never runs code.
   USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", Multica Jira autopilot.
   DO NOT USE FOR: 티켓 생성 (→ slack-to-jira), 버그 원인 분석 (→ /incident).
 ---
@@ -12,15 +12,15 @@ description: >-
 
 > **테제 가드:** autopilot은 코드를 실행하지 않는다. 큐만 채운다. 네가 **큐에서 골라 착수 트리거(판단)**하는 순간이 착수 결정(심사) — 그때부터 [Stage 2](#stage-2--착수-네가-트리거)가 돈다.
 
-참조: [Config](references/config.md) (project→repo·ready 상태) · [Issue body](references/issue-body.md) (타입별 큐 이슈 본문) · [Deploy](references/deploy.md) (Multica autopilot + aoe Stage 2 셋업)
+참조: [Config](references/config.md) (project→repo·ready 상태) · [Issue body](references/issue-body.md) (타입별 큐 이슈 본문) · [Deploy](references/deploy.md) (Multica autopilot + herdr Stage 2 셋업)
 
 ## 2-stage 루프
 
 ```
 [Stage 1] jira-triage 크론 → ready 티켓 → 티켓당 Multica 이슈(큐, UNASSIGNED) + 멘션
-[Stage 2] 너: 큐 판단 → /nara-kit:jira-drain <KEY> → aoe가 세션그룹·워크트리에 Claude Code 세션
+[Stage 2] 너: 큐 판단 → /nara-kit:jira-drain <KEY> → herdr worktree(space=repo@branch)에 Claude Code 세션
           → dev-mode/doc-mode PR까지 (게이트 미달→정지+리포트) · 인터랙티브 $0
-[Stage 3] review-queue → PR 리뷰 → 너: merge → aoe worktree cleanup
+[Stage 3] review-queue → PR 리뷰 → 너: merge → herdr worktree cleanup
 ```
 
 사람 게이트 2곳: **착수 선택** + **merge**.
@@ -110,9 +110,9 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 ## Stage 2 — 착수 (네가 트리거)
 
 큐 이슈를 판단 후 `/nara-kit:jira-drain <KEY>` 로 트리거하면 jira-drain 스킬이:
-1. 이슈 metadata(session_group/repo/local_path/pr_language/sub_repo/type) 읽음
-2. `aoe add`로 해당 그룹·워크트리에 Claude Code 세션 생성·런치
-3. `aoe send`로 dev-mode(구현/버그픽스) 또는 doc-mode(기획) 프롬프트 주입 — **PR까지, 머지 X, 게이트 미달→정지+리포트, PR 언어 프로젝트별**
+1. 이슈 metadata(`jira_key`/`triage_type`/`repo`/`pr_language`/`sub_repo`) 읽음. `local_path`는 로컬 config(`~/.claude/jira-triage.md`)에서 조회 — 이슈 metadata엔 없음. (`session_group`은 herdr가 무시 — 아래 규칙 참조)
+2. `herdr worktree create`로 **space=repo@branch** 워크트리 + claude pane 생성 (herdr엔 group 개념 없음 — space 자체가 티켓 단위)
+3. dev-mode(구현/버그픽스) 또는 doc-mode(기획) 프롬프트를 claude 초기 인자로 주입 — **PR까지, 머지 X, 게이트 미달→정지+리포트, PR 언어 프로젝트별**
 4. 이슈 → In Progress. 완료 시 PR 링크/정지 사유 코멘트
 
 > 인터랙티브(구독) 실행 = $200 헤드리스 풀 안 씀. 헤드리스는 예산 내 선택적(별도).
@@ -126,8 +126,9 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 - dedup = metadata `jira_key`. 스킵 이슈엔 멘션 안 단다
 - `--dry-run` 이면 Multica 쓰기 전체 스킵
 - config에 비밀값 없음 — Jira 인증은 MCP 레이어
-- LYRIS는 FE/BE 판정해 sub-repo·session_group 라우팅. 모호하면 사람이 선택 (자동 추측 금지)
-- 이슈 본문에 타입별 접근법 + 라우팅(그룹/repo/PR언어) 기재 — Stage 2 입력
+- LYRIS는 FE/BE 판정해 sub-repo 라우팅. 모호하면 사람이 선택 (자동 추측 금지)
+- `session_group` metadata는 **legacy** — Stage 2가 herdr로 이관된 뒤(space=repo@branch가 group 역할) jira-drain은 이를 **무시**한다. 하위 호환/참고용으로만 남김 (라우팅은 `repo`+`sub_repo`가 결정)
+- 이슈 본문에 타입별 접근법 + 라우팅(repo/sub_repo/PR언어) 기재 — Stage 2 입력
 
 ## 오류 처리
 
