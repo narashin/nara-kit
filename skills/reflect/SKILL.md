@@ -45,8 +45,22 @@ description: >-
 ## 저장
 
 1. **Auto-memory**: 다음 세션에도 유효한 Decisions/Warnings/Conventions → memory 저장
-   - 새 메모리에는 반드시 `verified_at: <today>` + `ref_paths: [...]` (또는 `[]`) 박기 → `memory-audit` 호환
-   - 기존 메모리 업데이트 시 `verified_at` 갱신
+   - **Canonical frontmatter (단일 스키마 — flat/nested 혼용 금지).** `verified_at`/`ref_paths`는 반드시 `metadata:` 블록 **안**에 둔다 (top-level 금지). user 글로벌 CLAUDE.md memory 스키마 + `memory-audit` 파서와 정확히 일치:
+
+     ```yaml
+     ---
+     name: <short-kebab-case-slug>
+     description: <one-line summary>
+     metadata:
+       type: user | feedback | project | reference
+       verified_at: <YYYY-MM-DD>
+       ref_paths: [<repo-relative path>, ...]   # 또는 []
+     ---
+     ```
+
+   - **ref_paths는 type-aware.** 코드에 앵커된 메모리(convention/reference, 특정 파일 기반 project)만 실제 경로를 넣는다. user/feedback 처럼 파일 앵커가 없으면 `ref_paths: []` — **경로를 지어내지 말 것** (없는 경로는 audit에서 죽은 참조로 오탐).
+   - **repo-relative만.** 절대경로(`/Users/...`)·worktree 경로 금지 — worktree 제거나 머신 이동 시 즉시 rot. git root 기준 상대경로로 변환해 기록.
+   - 기존 메모리 업데이트 시 `verified_at` 갱신 + `ref_paths` 실존 재확인 (사라진 경로는 갱신 또는 제거).
 2. **docs/handoff.md**: In Progress + Open Questions 있으면 8섹션 정식 스키마로 덮어쓰기 (없으면 파일 삭제). 단기 인계 계약
 3. **docs/learnings.md**: 팀 공유 필요 시, 파일 존재 시만 append
 4. **gap.md**: Agreed Exceptions 변경 시 반영
