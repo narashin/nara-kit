@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — **39 skills** for structured software development and documentation workflows, orchestrated in two modes (dev / doc).
+Personal Claude Code workflow toolkit — **38 skills** for structured software development and documentation workflows, orchestrated in two modes (dev / doc).
 
-Claude Code 워크플로우 툴킷 — 구조화된 개발·문서화 워크플로우를 위한 **39개 스킬** (dev / doc 2-모드 오케스트레이션).
+Claude Code 워크플로우 툴킷 — 구조화된 개발·문서화 워크플로우를 위한 **38개 스킬** (dev / doc 2-모드 오케스트레이션).
 
 ## Install / 설치
 

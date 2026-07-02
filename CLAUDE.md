@@ -1,6 +1,6 @@
 # nara-kit
 
-Claude Code plugin — 39 opinionated workflow skills by shinnara.
+Claude Code plugin — 38 opinionated workflow skills by shinnara.
 
 ## Structure
 
