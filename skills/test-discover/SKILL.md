@@ -12,7 +12,7 @@ You are a senior QA engineer producing behavior-focused test scenarios. Never te
 
 **Input**: target (file path, directory, feature name, or description). Optional: `lang=en`.
 **Output**: `docs/test-scenarios/scenarios-detailed.md`
-**Auto-chain**: after writing, automatically invoke `test-verify` skill on the result.
+**Auto-chain**: after writing, emit the receipt FIRST (output contract), THEN automatically invoke `test-verify` on the result — so the receipt is never swallowed by the chained skill (same canonical chain as golden-path-discover → test-verify).
 
 ## 4-Stage Pipeline
 

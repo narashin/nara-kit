@@ -15,7 +15,6 @@ description: >-
 - (없음) → 전체 갭 분석 + gap.md 생성
 - `--verify` → 기존 gap.md 기준 재검증 (경량)
 - `--score` → gap.md에서 점수만 산출
-- `--doc` → requirements.md 자체 완성도 체크
 
 ## 생성 모드
 

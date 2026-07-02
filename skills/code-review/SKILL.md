@@ -76,11 +76,11 @@ overrides: none                                          # when missing
 
 This is a contract enforcement gate — without trailing status, the review is considered incomplete.
 
-## Auto-chain: Adversarial Review
+## Adversarial Review (manual follow-up)
 
-After the final report, automatically invoke `codex:adversarial-review` (if codex plugin available):
-1. Pass the review report as context
-2. Codex challenges findings — looking for missed issues, false negatives, overly generous assessments
+After the final report, **suggest the user run `/codex:adversarial-review` themselves** — it cannot be auto-invoked (that command sets `disable-model-invocation`). If they run it:
+1. It receives the review report as context
+2. Codex challenges findings — missed issues, false negatives, overly generous assessments
 3. Append adversarial findings to the report
 
-If codex unavailable, skip silently and note "adversarial review skipped" in report.
+If codex is unavailable, skip and note "adversarial review skipped" in the report.

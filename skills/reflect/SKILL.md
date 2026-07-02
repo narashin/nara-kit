@@ -62,8 +62,7 @@ description: >-
    - **repo-relative만.** 절대경로(`/Users/...`)·worktree 경로 금지 — worktree 제거나 머신 이동 시 즉시 rot. git root 기준 상대경로로 변환해 기록.
    - 기존 메모리 업데이트 시 `verified_at` 갱신 + `ref_paths` 실존 재확인 (사라진 경로는 갱신 또는 제거).
 2. **docs/handoff.md**: In Progress + Open Questions 있으면 8섹션 정식 스키마로 덮어쓰기 (없으면 파일 삭제). 단기 인계 계약
-3. **docs/learnings.md**: 팀 공유 필요 시, 파일 존재 시만 append
-4. **gap.md**: Agreed Exceptions 변경 시 반영
+3. **gap.md**: Agreed Exceptions 변경 시 반영
 
 ## Memory Health Check
 
@@ -74,7 +73,7 @@ PROJECT_SLUG=$(echo "$PWD" | sed 's|/|-|g')
 MEM=~/.claude/projects/$PROJECT_SLUG/memory
 for f in "$MEM"/*.md; do
   [[ "$(basename "$f")" == "MEMORY.md" ]] && continue
-  bash skills/memory-audit/scripts/audit.sh --log "$f"
+  bash "${CLAUDE_PLUGIN_ROOT:-.}/skills/memory-audit/scripts/audit.sh" --log "$f"
 done | jq -s 'sort_by(-.score) | map(select(.score >= 2))'
 ```
 
@@ -89,7 +88,7 @@ done | jq -s 'sort_by(-.score) | map(select(.score >= 2))'
 
 ### docs/handoff.md 작성
 
-9섹션 정식 스키마. Load [references/handoff-schema.md](references/handoff-schema.md) for full schema + writing rules.
+8섹션 정식 스키마. Load [references/handoff-schema.md](references/handoff-schema.md) for full schema + writing rules.
 
 ## 출력
 

@@ -29,7 +29,7 @@ description: >-
 
 ## Run
 
-Iterate memory files under `~/.claude/projects/<slug>/memory/` (skip `MEMORY.md`). Run `scripts/audit.sh` per file. Aggregate JSON, sort by score desc.
+Iterate memory files under `~/.claude/projects/<slug>/memory/` (skip `MEMORY.md`). Run `"${CLAUDE_PLUGIN_ROOT:-.}/skills/memory-audit/scripts/audit.sh"` per file (the plugin-root prefix makes it resolve from any consuming project's cwd). Aggregate JSON, sort by score desc.
 
 Full algorithm + script contract → [scoring.md](references/scoring.md).
 

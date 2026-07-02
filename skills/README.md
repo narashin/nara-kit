@@ -161,7 +161,7 @@ flowchart LR
 | `docs/sources/<id>.raw.md` | `prep` | 외부 SoT verbatim 원문 (AC 원본 보존) |
 | `docs/gap.md` | `gap` | 요구 vs 구현 갭. P0/P1/P2 + Score + Hard Gate. AC 본문 = 자동 P0 |
 | `docs/implementation-notes.md` | dev-mode (Execute, medium/large) | 구현 중 drift log. 4 카테고리: Design / Deviations / Tradeoffs / Open Q. `small`은 skip |
-| `docs/handoff.md` | `reflect` | 다음 세션 인계 9-섹션. In Progress + Open Questions surface |
+| `docs/handoff.md` | `reflect` | 다음 세션 인계 8-섹션. In Progress + Open Questions surface |
 | `docs/test-scenarios/*.md` | `test-discover` / `golden-path-discover` | AC↔시나리오 1:1 매핑, Playwright-ready E2E export |
 | `docs/incident-report.md` | `incident` | root cause 가설 + 증거 + 제안 수정 |
 | `docs/plan/*.md` | doc-mode | spec / RFC / design artifact (AC 박힌 채) |
