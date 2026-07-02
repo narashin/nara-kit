@@ -1,6 +1,6 @@
-# deploy — Multica 셋업 (Stage 1 autopilot + Stage 2 aoe)
+# deploy — Multica 셋업 (Stage 1 autopilot + Stage 2 herdr)
 
-Stage 1(jira-triage)은 autopilot 크론, Stage 2(착수)는 사람이 jira-drain으로 트리거하는 aoe 세션이다. autopilot은 *등록된 스킬 복사본*을 실행하므로, repo SKILL.md 수정 후엔 복사본 동기화 필수 (repo 변경만으론 autopilot 안 바뀜).
+Stage 1(jira-triage)은 autopilot 크론, Stage 2(착수)는 사람이 jira-drain으로 트리거하는 herdr 세션이다. autopilot은 *등록된 스킬 복사본*을 실행하므로, repo SKILL.md 수정 후엔 복사본 동기화 필수 (repo 변경만으론 autopilot 안 바뀜).
 
 ## Stage 1 — jira-triage autopilot
 
@@ -32,22 +32,13 @@ mention  = <SHINNARA_MEMBER_UUID>
 projects = PROJ,PRODUCT
 ```
 
-## Stage 2 — aoe 세션 (사람이 jira-drain으로 트리거)
+## Stage 2 — herdr 세션 (사람이 jira-drain으로 트리거)
 
-큐 이슈를 사람이 판단 후 `/nara-kit:jira-drain <KEY>` 로 트리거한다. jira-drain이 metadata(`session_group`/`repo`/`local_path`/`pr_language`/`sub_repo`/`triage_type`)를 읽고 aoe로 인터랙티브 Claude Code 세션을 띄운다.
+큐 이슈를 사람이 판단 후 `/nara-kit:jira-drain <KEY>` 로 트리거한다. jira-drain이 metadata(`jira_key`/`triage_type`/`repo`/`pr_language`/`sub_repo`)를 읽고(`local_path`는 로컬 config에서 조회, `session_group`은 무시) herdr로 **space=repo@branch** 워크트리를 띄워 인터랙티브 Claude Code 세션을 실행한다. herdr 커맨드(`herdr worktree create`/`herdr pane run` 등) 상세는 `jira-drain` 스킬이 소유한다 — 여기서 중복하지 않는다.
 
-**전제:** 실행 머신에 `aoe`(tmux 세션매니저) + `claude` + `git` CLI가 PATH에 있고, 각 repo의 `local_path`가 config(`~/.claude/jira-triage.md`)에 채워져 있어야 한다.
+**전제:** 실행 머신에 `herdr` + `claude` + `git` CLI가 PATH에 있고, 각 repo의 `local_path`가 config(`~/.claude/jira-triage.md`)에 채워져 있어야 한다.
 
-```
-aoe add [PATH] -t <title> -g <group> -w <branch> -b --base-branch <base> -c claude -l [-y]
-aoe send <ID|title> "<message>"          # 세션에 프롬프트 주입 (auto-revive)
-aoe session show|capture <ID>            # 상태·tmux pane 캡처(PR 링크 회수)
-aoe session archive <ID>                 # tmux teardown (worktree 보존)
-aoe group list|create|move               # 세션그룹
-aoe worktree list|cleanup                # 머지 후 orphaned 워크트리 제거
-```
-
-**실행 규약 (jira-drain이 aoe send로 주입):**
+**실행 규약 (jira-drain이 herdr pane run으로 주입):**
 - 종료점 = **PR 생성까지. 머지 금지.**
 - dev-mode 내부 게이트(gap<80, AC, code-review 미해결) 미달 → **강행 금지, 멈추고 사유 리포트**
 - 완료 시 PR 링크/정지 사유를 이슈 코멘트로 → Stage 3(review-queue) 인계
@@ -60,4 +51,4 @@ aoe worktree list|cleanup                # 머지 후 orphaned 워크트리 제�
 - [ ] SKILL.md 변경 → `multica skill update` 재실행
 - [ ] config(`~/.claude/jira-triage.md`) profiles에 신규 project 매핑 추가
 - [ ] jira MCP 토큰 = 대상 assignee 본인
-- [ ] 실행 머신에 `aoe`·`claude`·`git` CLI + repo `local_path` 확인
+- [ ] 실행 머신에 `herdr`·`claude`·`git` CLI + repo `local_path` 확인
