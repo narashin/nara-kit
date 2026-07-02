@@ -38,14 +38,14 @@ Use Confluence storage format (see references/storage-format.md).
 
 ## Configuration
 
-`~/.claude/plugins/personal/workflow-orchestrator/confluence.local.md`:
+`~/.claude/confluence.local.md`:
 
 ```yaml
 ---
-confluence_base_url: https://wiki.workers-hub.com
-default_space_key: lysre
-default_parent_page_id: "2735095793"
-default_parent_page_name: Development
+confluence_base_url: https://wiki.example.com
+default_space_key: SPACE
+default_parent_page_id: "PARENT_PAGE_ID"
+default_parent_page_name: Parent Page
 ---
 ```
 
