@@ -14,7 +14,7 @@ description: >-
 2. `git diff --cached`로 변경 내용 분석 — 변경 의도(feat/fix/refactor 등)와 범위 파악.
 3. 아래 Format 규칙에 따라 커밋 메시지 생성.
 4. 복수 관심사가 섞여 있으면 커밋 분리 제안.
-5. 유저 확인 후 `git commit -m "<message>"` 실행.
+5. 생성한 커밋 메시지를 출력하고 종료한다 (`recorded only`). **`git commit`은 Claude가 실행하지 않는다** — 사용자가 확인 후 직접 실행한다. (output-contract + 글로벌 규칙 "NEVER auto-commit")
 
 ## Commit Message Format
 
