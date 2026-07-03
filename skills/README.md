@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**39 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**40 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -60,6 +60,7 @@
 | `test-verify` | Review and validate test scenarios (3-persona review) / 테스트 시나리오 검증 |
 | `test-implement` | Implement tests from scenario documents / 시나리오 기반 테스트 구현 |
 | `golden-path-discover` | Discover live golden-path E2E scenarios + Playwright-ready export / 라이브 골든패스 E2E 발굴 + Playwright export |
+| `ui-diff` | Env-diff visual regression: QA/Prod baseline vs local target computed-style + rect diff (candidates only) / 환경 간 UI 회귀 비교 — computed-style·bounding-rect 차이 후보 |
 
 ### Automation / 자동화
 
@@ -92,7 +93,7 @@
 
 ## Workflow / 워크플로우
 
-`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 39개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 40개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
 
 ### Mode A — Dev (Implementation / 구현)
 

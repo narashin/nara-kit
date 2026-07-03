@@ -1,0 +1,7 @@
+# ui-diff 크레덴셜 — 이 파일을 login.local.md 로 복사 (login.local.md 는 gitignore됨)
+# 이건 placeholder 템플릿. 실제 값은 login.local.md 에만. 절대 커밋 금지, 스킬이 출력 안 함.
+
+- username: you@example.com
+- password: REPLACE-ME
+- local_url_override:
+- notes: login.local.md 는 커밋 금지 · 스킬이 어디에도 출력 안 함 · 가능하면 storageState 선호
