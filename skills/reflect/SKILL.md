@@ -1,72 +1,87 @@
 ---
 name: reflect
 description: >-
-  Capture session learnings — technical decisions, conventions, and warnings — and save to memory.
-  USE FOR: "reflect", "세션 마무리", "오늘 배운 것", "결정 기록", "session end learnings".
+  Route session learnings to the right durable surface — write memory/handoff directly, recommend a skill/hook/ADR/CLAUDE.md rule, or discard.
+  USE FOR: "reflect", "세션 마무리", "오늘 배운 것", "결정 기록", "이거 어디 저장", "스킬로 만들까", "session end learnings".
   DO NOT USE FOR: code review, gap analysis, commit message generation.
 ---
 
-# reflect — 세션 학습 캡처
+# reflect — 세션 학습 라우터
 
-세션에서 내린 결정, 발견한 컨벤션, 주의사항을 구조화하여 프로젝트 지식으로 저장한다.
+세션에서 나온 학습을 분류해 **알맞은 durable surface로 라우팅**한다. memory·handoff는 직접 쓰고(preview), skill·hook·ADR·CLAUDE.md는 **추천 + 실행 명령만** 낸다 (실제 생성은 기존 스킬 담당). 저장 가치 없으면 discard.
 
-## 수집 (병렬 실행)
+> 트랜잭션·롤백 없음 — memory·handoff는 저위험·단일소유·되돌리기 쉬운(`memory-archive`) 파일. 안전장치 = preview + git. (고위험 공유 파일용 sha256/apply-plan은 nara 범위 밖)
 
-1. **세션 히스토리**: 이번 대화에서 내린 기술 결정 회고
-2. **Git diff**: `git diff main...HEAD --stat` 또는 최근 커밋 목록
-3. **gap.md 변화**: gap.md 있으면 점수 변화 확인
-4. **발견된 패턴**: 세션 중 발견한 코드 컨벤션이나 프로젝트 특이사항
-5. **`docs/implementation-notes.md` 흡수**: 존재 시 5섹션 모두 읽기
-   - 4섹션 (Design decisions / Deviations / Tradeoffs / Open questions) → 아래 분류로 매핑
-   - 5섹션 (`## Reconciliation Log`) → resolved Note ID 추출 (`Resolution ∈ {Agreed Exception, Spec Revise Candidate}`)
-   - resolved Note ID에 해당하는 4섹션 entry는 후속 처리에서 skip (중복 방지)
+## 1. 수집 (병렬)
 
-## 분류
+1. **세션 히스토리**: 이번 대화의 결정·발견·시행착오 회고
+2. **Git diff**: `git diff main...HEAD --stat` — 코드 변경 나열 X, 사고 흐름만
+3. **gap.md 변화**: 있으면 점수 변화 확인
+4. **`docs/implementation-notes.md` 흡수**: 존재 시 전 섹션 읽기
+   - 4섹션 (Design decisions / Deviations / Tradeoffs / Open questions) → 학습 후보로 (구조적 Deviation은 ADR 타깃 + Why 보존, Open questions는 handoff)
+   - `## Reconciliation Log`의 resolved entry (`Agreed Exception` / `Spec Revise Candidate`) → skip (중복 방지)
+   - 흡수 후에도 파일 **삭제 금지** (PR 리뷰 참고용)
 
-- **Decisions**: 기술적/설계적 결정 + 이유 (← notes의 `Design decisions` + `Tradeoffs` 매핑)
-- **Conventions**: 발견하거나 확립한 코드 컨벤션
-- **Warnings**: 다음 세션 주의사항 (코드만 봐서 알 수 없는 것) (← notes의 `Deviations` 일부)
-- **In Progress**: 미완료 작업의 현재 위치 + 다음에 이어서 할 일 (이번 세션에 끝나지 않은 것)
-- **Open Questions**: 보류된 결정, 디버깅 가설, 검증 못 한 가정 (사용자/다음 세션에 답이 필요한 것) (← notes의 `Open questions` 그대로)
+## 2. 분류 → 라우팅
 
-### implementation-notes 후속 액션
+각 학습 후보를 **정확히 하나의 타깃**으로 라우팅. 근거 못 대는 후보는 discard.
 
-흡수 후 결정 (**Reconciliation Log에 resolved로 박힌 entry는 모두 skip**):
-- `Deviations` 분류:
-  - **Log에 `Agreed Exception`** → skip (gap.md Agreed Exceptions로 이미 영속화됨)
-  - **구조적 변경** (새 패턴/모듈 도입, 디렉토리 배치 규약 변경 등) → Warnings + `/adr` 호출 권고
-  - **정책 결정** (운영 표준에 맞춘 spec 누락 영역 보강) → Decisions (Why 보존). 후속 영향 (caller timeout 등)은 Warnings로 split
-- `Open questions` 남은 채면 → `docs/handoff.md`에 박음 (다음 세션 `/now`가 surface)
-  - **Log에 `Spec Revise Candidate`** → handoff 인계 skip (이미 `/spec-revision`으로 라우팅됨)
-  - In Progress 없어도 (skip 제외 후) Open Questions 있으면 handoff.md 생성 (OR 조건)
-- `Design decisions` / `Tradeoffs`는 Log 상태와 무관하게 평소대로 평가 (메모리 승격 vs ADR 후보는 독립 결정)
-- 흡수 완료된 `docs/implementation-notes.md`는 **삭제 금지**, 그대로 보존 (PR 리뷰 참고용)
+| 학습 모양 | 타깃 | reflect 동작 |
+|---|---|---|
+| 영속 지식 — 결정(+이유)·컨벤션·주의사항 | **auto-memory** | 직접 write (preview) |
+| 미완 흐름 **또는** 미해결 질문 (In Progress 또는 Open Q — 하나라도) | **handoff.md** | 직접 write (preview) |
+| 아키텍처 결정 (대안 비교·구조 변경·외부 제약) | **ADR** | 추천 → `/nara-kit:adr` |
+| 반복 절차/루틴 (§skill 트리거) | **skill** | 추천 → `skill-development`(신규) · `/nara-kit:skill-forge`(개선) |
+| lifecycle 자동화 ("매번 X 하면 Y") | **hook** | 추천 → `hook-development` |
+| 이 repo 팀 durable rule | repo `CLAUDE.md` | 추천 (suggest-only, 직접 수정 X) |
+| 모든 repo 개인 가이드 | user `CLAUDE.md` | 추천 (suggest-only) |
+| 일회성·branch 한정·근거 없음·이미 코드/문서에 있음 | **discard** | 버림 + 사유 |
 
-## 저장
+**write = memory·handoff 둘뿐.** 나머지는 추천 + 명령만 낸다 (surface 생성은 그 스킬이).
 
-1. **Auto-memory**: 다음 세션에도 유효한 Decisions/Warnings/Conventions → memory 저장
-   - **Canonical frontmatter (단일 스키마 — flat/nested 혼용 금지).** `verified_at`/`ref_paths`는 반드시 `metadata:` 블록 **안**에 둔다 (top-level 금지). user 글로벌 CLAUDE.md memory 스키마 + `memory-audit` 파서와 정확히 일치:
+### skill 추천 트리거 (고정밀 — 노이즈 방지)
 
-     ```yaml
-     ---
-     name: <short-kebab-case-slug>
-     description: <one-line summary>
-     metadata:
-       type: user | feedback | project | reference
-       verified_at: <YYYY-MM-DD>
-       ref_paths: [<repo-relative path>, ...]   # 또는 []
-     ---
-     ```
+매 세션 묻지 않는다. **아래 둘 다** 만족할 때만 skill 후보로 표면화:
 
-   - **ref_paths는 type-aware.** 코드에 앵커된 메모리(convention/reference, 특정 파일 기반 project)만 실제 경로를 넣는다. user/feedback 처럼 파일 앵커가 없으면 `ref_paths: []` — **경로를 지어내지 말 것** (없는 경로는 audit에서 죽은 참조로 오탐).
-   - **repo-relative만.** 절대경로(`/Users/...`)·worktree 경로 금지 — worktree 제거나 머신 이동 시 즉시 rot. git root 기준 상대경로로 변환해 기록.
-   - 기존 메모리 업데이트 시 `verified_at` 갱신 + `ref_paths` 실존 재확인 (사라진 경로는 갱신 또는 제거).
-2. **docs/handoff.md**: In Progress + Open Questions 있으면 8섹션 정식 스키마로 덮어쓰기 (없으면 파일 삭제). 단기 인계 계약
-3. **gap.md**: Agreed Exceptions 변경 시 반영
+1. **절차형** — 재실행 가능한 multi-step 루틴 (결정→ADR, 사실→memory, **절차→skill**)
+2. **반복** — 이번 세션 2회+ 수동 반복 OR 관련 memory 이미 존재(재발)
 
-## Memory Health Check
+아니면 침묵. (드물게·믿을 만하게 > 매번·무시됨. 무차별 추천은 안 눌린다.)
 
-저장 끝나면 `memory-audit` 호출 (`--log` 모드 = `.audit-log.jsonl` append). score>=2 메모리만 surface.
+## 3. write 타깃 실행
+
+### auto-memory
+
+- **dedup 먼저** — 새로 만들기 전 memory dir + `MEMORY.md`를 slug/topic으로 grep. 겹치면 CREATE 대신 **기존 파일 UPDATE** (`verified_at` 갱신). 근사 중복 파일 금지.
+- **evidence 필수** — 본문에 세션에서 실제 관찰한 근거(파일·커밋·사용자 발언) 명시. 못 대면 저장 X → discard.
+- **canonical frontmatter (단일 스키마)** — `verified_at`/`ref_paths`는 `metadata:` 블록 **안**. user 글로벌 CLAUDE.md 스키마 + `memory-audit` 파서와 정확히 일치:
+
+  ```yaml
+  ---
+  name: <short-kebab-case-slug>
+  description: <one-line summary>
+  metadata:
+    type: user | feedback | project | reference
+    verified_at: <YYYY-MM-DD>
+    ref_paths: [<repo-relative path>, ...]   # 또는 []
+  ---
+  ```
+
+- **ref_paths type-aware** — code-anchored(convention/reference)만 실제 repo-relative 경로. user/feedback은 `[]`. 절대경로(`/Users/...`)·worktree 경로·지어낸 경로 금지.
+- write 전 **preview** — 무엇을 create/update 하는지 보여주고 진행.
+
+### handoff.md
+
+- In Progress **또는** Open Questions 중 **하나라도** 있으면 8섹션 스키마로 덮어쓰기 (OR 조건 — **둘 다 없을 때만** 파일 삭제). 단기 인계 계약.
+- 8섹션 스키마: [references/handoff-schema.md](references/handoff-schema.md).
+
+### gap.md (조건부)
+
+- gap.md 존재 + Agreed Exceptions 변경 시에만 반영. 없으면 skip.
+
+## 4. Memory Health Check
+
+write 끝나면 `memory-audit` 호출 (`--log` = `.audit-log.jsonl` append). score>=2만 surface.
 
 ```bash
 PROJECT_SLUG=$(echo "$PWD" | sed 's|/|-|g')
@@ -77,32 +92,31 @@ for f in "$MEM"/*.md; do
 done | jq -s 'sort_by(-.score) | map(select(.score >= 2))'
 ```
 
-**flag 결과 처리 (A1: flag 1회 → 즉시 archive 제안):**
-- score>=2 메모리 발견 시 사용자에게 AskUserQuestion으로 4지선다 제시:
-  1. `update` — 메모리 본문 수정 + `verified_at` 갱신
-  2. `keep` — 무시 (다음 audit에서 또 surface됨)
-  3. `archive` — `memory-archive` 스킬 호출 (move to `archive/` + MEMORY.md 정리)
-  4. `skip` — 이번 세션 결정 보류
+score>=2 발견 시 AskUserQuestion 4지선다: `update` / `keep` / `archive`(→ `memory-archive`) / `skip`. **자동 archive·삭제 금지 — 사용자 명시 승인.**
 
-자동 archive/삭제 금지. **반드시 사용자 명시 승인**.
+## 5. 출력 (receipt)
 
-### docs/handoff.md 작성
+`## Session Reflect — {날짜}` 아래:
 
-8섹션 정식 스키마. Load [references/handoff-schema.md](references/handoff-schema.md) for full schema + writing rules.
+1. **라우팅 표** — `학습 | 타깃 | 동작(write/추천/discard) | 근거`
+2. write된 memory/handoff 경로
+3. 추천 항목의 **실행 명령** (예: `/nara-kit:adr`, `skill-development`)
+4. Gap Status (이전→현재)
+5. **Memory Health** — score>=2만 (없으면 생략)
 
-## 출력
+- 모든 후보가 discard/no-op → **"특이사항 없음"** 한 줄로 종료
+- 추천은 receipt 줄일 뿐 — **인터랙티브 게이트 없음** (보고 실행/무시)
 
-`## Session Reflect — {날짜}` 헤더 아래 Decisions, Conventions, Warnings, **In Progress, Open Questions**, Gap Status (이전→현재), Next Session 각 섹션 출력. 마지막에 **Memory Health** 섹션 — score>=2 메모리만 표 형태로 (없으면 생략).
-
-> See also: nara-kit **스킬 자체**가 불편했다면 `/meta-feedback` (별개 — 툴킷 개선용. reflect는 프로젝트 지식, meta-feedback은 툴킷 friction).
+> 외부 스킬(`skill-development`·`hook-development`) 없으면 수동 fallback 안내 (CLAUDE.md "When Adding a New Skill" 등). 의존 아님.
+> nara-kit **스킬 자체**가 불편했다면 `/meta-feedback` (별개 — reflect는 프로젝트 지식, meta-feedback은 툴킷 friction).
 
 ## 규칙
 
-- `git log`로 볼 수 있는 코드 변경 내역 나열 금지
-- 결정의 **이유** 필수
-- Conventions는 프로젝트 전반 적용 가능한 것만
-- Warnings는 코드만 봐서 알 수 없는 것만
-- **In Progress는 코드/커밋만 봐서 복원 불가능한 흐름만** — "X 파일 수정함"은 git이 보여줌. "X 함수 시그니처 A vs B 고민 중, A로 가다가 호환성 문제 발견" 같은 사고 흐름만
-- **Open Questions는 답 없이 남은 것만** — 이미 결정된 건 Decisions로
-- 모든 섹션 비면 "특이사항 없음" 출력 후 종료
-- In Progress/Open Questions 있으면 다음 세션 `/now`가 `docs/handoff.md` 우선 참조하도록 안내
+- **write는 memory·handoff만.** skill/hook/ADR/CLAUDE.md는 추천만 — 직접 수정 금지
+- 근거 못 대는 학습 **저장 금지** — discard가 기본 sink
+- 같은 주제 메모리 새로 만들지 말고 **기존 UPDATE**
+- skill 추천은 **절차형 + 반복 둘 다**일 때만 (per-session 프롬프트 금지)
+- `git log`로 볼 수 있는 코드 변경 나열 금지 / 결정은 **이유** 필수
+- Conventions는 프로젝트 전반 적용 가능한 것만 / Warnings는 코드만 봐선 모르는 것만
+- In Progress는 코드·커밋으로 복원 불가한 흐름만 / Open Questions는 답 없이 남은 것만
+- In Progress·Open Q 있으면 다음 세션 `/now`가 `docs/handoff.md` 우선 참조하도록 안내
