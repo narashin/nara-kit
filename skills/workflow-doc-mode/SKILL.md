@@ -72,6 +72,8 @@ bullet 형식도 허용 (legacy spec, 외부 SoT 형식 그대로 보존 시):
 4. artifact의 `## Acceptance Criteria` 섹션에 박음
 5. **AC 0개 = artifact 생성 차단.** "AC 작성하라" 안내 후 중단
 
+> **수렴 규율** (질문할 때): 코드베이스 먼저 확인해 검증 가능한 전제는 스스로 답하고, **미검증 전제만** 질문한다. 한 번에 하나씩. 이미 확정된 항목 재질문 금지. "생각나는 것 다 묻기"(interview mode) 금지. 같은 항목 5회+ 왕복 시 "가정하고 진행 vs 멈춤"을 제안 (무한 hard-cap 금지).
+
 ### 분류 신호
 
 작성된 AC는 자동 P0 (gap rubric §6 기준). spec 작성자가 명시적으로 P1/P2 표기 시만 격하.
@@ -94,6 +96,16 @@ AC Gate에서 사용자에게 제시 가능한 것:
 - ❌ 예시 AC 본문 (실제 도메인 단어가 들어간 Given-When-Then)
 
 이유: 영역 hint도 사용자의 사고를 좁힘 → 누락된 영역 발견 차단. ac-draft 스킬이 발산적 질문을 책임짐. doc-mode는 게이트만 강제.
+
+## 마무리 — 결정 / 가정 / 리스크 (D/A/R)
+
+artifact 산출 직전, 이번 게이트에서 확정된 것을 세 줄로 닫는다 (gap.md + reflect로 전달):
+
+- **결정 (Decisions)**: 무엇을 어떻게 하기로 확정했는가
+- **가정 (Assumptions)**: 확정 못 하고 가정한 것 — 각 항목 `[UNVERIFIED]` 병기
+- **남은 리스크 (Remaining Risks)**: 미해결 항목 → blocking `Open Questions`로 남김 (별도 machinery 재발명 금지)
+
+세 섹션 모두 비어도 헤더 + "없음" 출력.
 
 ## Post-artifact
 

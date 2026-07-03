@@ -72,9 +72,22 @@ Final report must end with:
 ```
 overrides: applied (.claude/overrides/code-review.md)   # when loaded
 overrides: none                                          # when missing
+claimed-vs-observed: match | MISMATCH (<n> claimed-but-unchanged, <m> changed-but-unclaimed)
 ```
 
 This is a contract enforcement gate — without trailing status, the review is considered incomplete.
+
+## Claimed-vs-Observed Gate (auto-fix 검증)
+
+auto-fix 라운드(Flow step 5)에서 에이전트가 "고쳤다"고 보고한 것을 그대로 믿지 않는다. 각 라운드 종료 후:
+
+1. `git diff --name-only` → **관측된** 변경 경로 집합
+2. 에이전트가 fix했다고 **주장한** 경로 집합과 대조
+3. 불일치 시 escalate (applied로 보고 금지):
+   - 주장했으나 미변경 (claimed-but-unchanged) → fix 실패 또는 환각
+   - 변경됐으나 미주장 (changed-but-unclaimed) → scope 이탈 / 의도치 않은 변경
+
+self-report는 후보, `git diff`가 심판. 불일치는 최종 리포트에 `→ ESCALATE:`로 표면화하고 위 trailing status에 반영.
 
 ## Adversarial Review (manual follow-up)
 

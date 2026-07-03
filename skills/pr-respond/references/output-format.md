@@ -30,6 +30,7 @@ Receipt header 출력 후 아래 표 이어서:
 - Accepted (implemented): N
 - Rebutted (replied): N
 - Questions answered: N
+- Asked (posed to reviewer): N
 - Skipped (praise): N
 - On hold: N (user confirmation needed)
 
@@ -52,6 +53,11 @@ Receipt header 출력 후 아래 표 이어서:
 | # | File:Line | Reviewer | Question | Answer |
 |---|-----------|----------|----------|--------|
 | 1 | src/hooks.ts:20 | @reviewer | why useMemo? | render optimization -- parent re-renders frequently |
+
+### Asked (posed to reviewer)
+| # | File:Line | Reviewer | Category | Our Recommendation | Evidence |
+|---|-----------|----------|----------|--------------------|----------|
+| 1 | src/x.ts:10 | @reviewer | source-conflict | keep current -- matches spec §3 | requirements.md:42, src/x.ts:10 |
 ```
 
 ## --status Mode Output

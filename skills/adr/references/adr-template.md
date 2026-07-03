@@ -49,6 +49,7 @@ What was chosen and the primary reasoning.
 - **Options Considered is mandatory** — even if choice was obvious, state why alternatives were rejected. This prevents re-discussion.
 - **Status transitions**: `accepted` -> `superseded by ADR-NNNN` or `deprecated (see ADR-NNNN)`. Always include the related ADR number. Never delete ADRs.
 - **Follow-up section** — include when the decision creates concrete future work. Omit if no follow-up exists. List actionable items, not vague intentions.
+- **Smallest safe next step** — when the decision defers a structural change, state the smallest reversible increment toward it, not a big-bang plan. Human decides when to take it.
 - **Conciseness** — "2-5 sentences" applies to prose paragraphs. Bullet lists in Consequences count per-item, not per-bullet.
 - **One decision per ADR** — if two decisions are coupled, write two ADRs and cross-reference.
 - **Date format** — always YYYY-MM-DD, never relative dates.

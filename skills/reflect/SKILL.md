@@ -39,6 +39,10 @@ description: >-
 
 **write = memory·handoff 둘뿐.** 나머지는 추천 + 명령만 낸다 (surface 생성은 그 스킬이).
 
+**추천 lane 표현 계약** (suggest-only 행 — skill/hook/ADR/CLAUDE.md):
+- 금지어: "설치됨", "활성화됨", "자동 적용됨", "settings 갱신됨", "반영 완료" — reflect는 이 surface들을 **생성·적용하지 않는다**
+- 필수어: "추천", "suggest-only", "실행 명령만" — 사용자가 해당 스킬을 직접 실행해야 함을 명시
+
 ### skill 추천 트리거 (고정밀 — 노이즈 방지)
 
 매 세션 묻지 않는다. **아래 둘 다** 만족할 때만 skill 후보로 표면화:
@@ -53,6 +57,7 @@ description: >-
 ### auto-memory
 
 - **dedup 먼저** — 새로 만들기 전 memory dir + `MEMORY.md`를 slug/topic으로 grep. 겹치면 CREATE 대신 **기존 파일 UPDATE** (`verified_at` 갱신). 근사 중복 파일 금지.
+  - memory dir / 타 repo `CLAUDE.md`를 **실제로 grep 못 하면** new-vs-UPDATE 단정 금지 — `duplicate_status: unknown`으로 표시하고 CREATE/UPDATE 결정을 사용자 확인으로 넘긴다.
 - **evidence 필수** — 본문에 세션에서 실제 관찰한 근거(파일·커밋·사용자 발언) 명시. 못 대면 저장 X → discard.
 - **canonical frontmatter (단일 스키마)** — `verified_at`/`ref_paths`는 `metadata:` 블록 **안**. user 글로벌 CLAUDE.md 스키마 + `memory-audit` 파서와 정확히 일치:
 
@@ -72,8 +77,8 @@ description: >-
 
 ### handoff.md
 
-- In Progress **또는** Open Questions 중 **하나라도** 있으면 8섹션 스키마로 덮어쓰기 (OR 조건 — **둘 다 없을 때만** 파일 삭제). 단기 인계 계약.
-- 8섹션 스키마: [references/handoff-schema.md](references/handoff-schema.md).
+- In Progress **또는** Open Questions 중 **하나라도** 있으면 9섹션 스키마로 덮어쓰기 (OR 조건 — **둘 다 없을 때만** 파일 삭제). 단기 인계 계약.
+- 9섹션 스키마: [references/handoff-schema.md](references/handoff-schema.md).
 
 ### gap.md (조건부)
 
