@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — **38 skills** for structured software development and documentation workflows, orchestrated in two modes (dev / doc).
+Personal Claude Code workflow toolkit — **39 skills** for structured software development and documentation workflows, orchestrated in two modes (dev / doc).
 
-Claude Code 워크플로우 툴킷 — 구조화된 개발·문서화 워크플로우를 위한 **38개 스킬** (dev / doc 2-모드 오케스트레이션).
+Claude Code 워크플로우 툴킷 — 구조화된 개발·문서화 워크플로우를 위한 **39개 스킬** (dev / doc 2-모드 오케스트레이션).
 
 ## Install / 설치
 
@@ -48,11 +48,8 @@ nara-kit과 함께 쓰는 플러그인:
 
 ## Inspired By / 영감
 
-| Source | What |
-|--------|------|
-| [tiger-kit](https://github.com/MTGVim/tiger-kit) by @MTGVim | Core workflow loop (`now`, `prep`, `gap`, `reflect`), gap-driven development |
-| [empirical-prompt-tuning](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) by @mizchi | EPT methodology (bias-free executor + two-sided evaluation) |
-| [superpowers](https://github.com/obra/superpowers) by @obra | Brainstorming, SDD, TDD, plan/finish patterns |
+- [empirical-prompt-tuning](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) by @mizchi
+- [superpowers](https://github.com/obra/superpowers) by @obra
 
 ## Configuration / 설정
 

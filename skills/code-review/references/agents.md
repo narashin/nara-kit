@@ -128,6 +128,13 @@ Focus: **codebase compatibility and design quality.**
 - Spring: Bean scope misuse, circular dependencies
 - React: component split granularity, props drilling vs context
 
+**Structural lens (report-only, auto-detected)**:
+Auto-detect trigger — 리뷰 스코프가 다중 커밋이거나 리팩터 직전 의도가 감지될 때만 (플래그 아님). 그 외엔 skip.
+- 반복되는 cross-file coupling / boundary leak / ownership 혼란을 **후보로 표면화** (단일 diff 결함이 아니라 누적 friction)
+- **report-only** — auto-fix 금지. 구조 findings는 `auto_fixable: false` 고정 (refactor/rename/move 자동 실행 안 함)
+- **anti-claim**: 구조 문제는 리포트/문서 작성만으로 "해결됐다"고 주장 금지
+- 각 구조 finding의 `suggestion`에 **smallest-safe-next-step** (가장 작은 안전한 다음 단계) 포함 — big-bang 리라이트 제안 금지. 최종 판단은 사람이.
+
 ---
 
 ## Agent 5: Security & Performance Sentinel (reviewer: "security-performance")

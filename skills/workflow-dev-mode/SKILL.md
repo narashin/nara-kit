@@ -34,7 +34,7 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 **Core spine (mandatory) — 항상 `gap`부터 순서대로:**
 - `gap` → `plan` → `execute` → `verify` → `code-review` → `reflect`
 - **plan**: 작성 후 AskUserQuestion 승인을 plan 단계에서 흡수 (별도 pre-execution phase 없음). 승인 후 execute.
-- **execute**: `superpowers:SDD`. Implementation Notes Gate 적용 (scope-scaled, 아래).
+- **execute**: `superpowers:SDD`. Implementation Notes Gate 적용 (scope-scaled, 아래). 머지/리베이스 중 충돌 발생 시 → `/nara-kit:merge-conflict` (ad-hoc 호출, 자동 라우팅 아님).
 - **reflect** 이후: `adr` (구조 결정 있었을 때만) → branch finish.
 
 **제거됨**: 완료 전 AI 점수 판정 단계 (AI-as-judge 안티패턴). `verify` + `code-review`가 검증 담당.

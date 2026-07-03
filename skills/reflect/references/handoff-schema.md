@@ -1,4 +1,4 @@
-# handoff.md 8섹션 스키마
+# handoff.md 9섹션 스키마
 
 > `/reflect` 실행 시 In Progress/Open Questions 있으면 `docs/handoff.md`에 이 스키마로 작성. 다음 세션 `/now`가 우선 참조하는 단기 인계 계약.
 
@@ -29,14 +29,21 @@
 - Q1: <답 없이 남은 질문>
 - Q2: ...
 
-## 6. 다음 안전 조치
+## 6. 검증 상태 (Verification status)
+- **검증됨 (VERIFIED)**: <항목> — 입증한 check/명령 (예: `pnpm test auth` 통과, `tsc --noEmit` 0 errors)
+- **미검증 (NOT-YET-VERIFIED)**: <항목> — 사유. §7 다음 안전 조치의 입력. 미검증을 done으로 쓰지 않음
+
+### 재현 명령 (Commands to reproduce)
+- <다음 세션이 가장 먼저 돌릴 1~3개 명령: 실패 테스트 / 빌드 / repro>
+
+## 7. 다음 안전 조치
 - <검증 필요 항목 1>
 - <검증 필요 항목 2>
 
-## 7. 하지 말 것
+## 8. 하지 말 것
 - <명시적 안티패턴 / 함정>
 
-## 8. 먼저 읽을 핵심 파일
+## 9. 먼저 읽을 핵심 파일
 - `<path1>` — <이유>
 - `<path2>` — <이유>
 ```
@@ -47,6 +54,7 @@
 - **context**: stale check 가능하도록 baseline SHA 필수
 - **In Progress**: 코드/커밋만 봐서 복원 불가능한 사고 흐름만. "X 함수 시그니처 A vs B 고민 중, A로 가다가 호환성 문제 발견" 같은 흐름
 - **Open Questions**: 이미 결정된 건 Decisions로 격상, 답 없는 것만
+- **검증 상태**: 이번 세션에서 입증한 것 / 가정한 것 분리 — 미검증을 done으로 쓰지 않음. 재현 명령은 다음 세션이 먼저 돌릴 것
 - **다음 안전 조치**: handoff-read 시 가장 먼저 검증할 항목
 - **하지 말 것**: "X 함수 건드리지 마라 — 다른 모듈 의존" 같은 함정 명시
 - **먼저 읽을 파일**: 다음 세션 `/now`가 우선 fetch할 파일 (1~5개)
