@@ -39,7 +39,7 @@ Format ref: [template](references/design-md-template.md)
 ## Audit
 
 1. Parse DESIGN.md tokens. Scan code usage
-2. Report: Undocumented / Unused / Deviated / Don't violations
+2. Report: Undocumented / Unused / Deviated / Don't violations / Ambiguous (검증 불가 → `[UNVERIFIED]`, Score 분모 제외)
 
 ## Rules
 
