@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**38 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**39 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -39,6 +39,7 @@
 | `review-reminder` | Find PRs where you are a requested reviewer but haven't reviewed yet → create Multica reminder issues / 미리뷰 PR 탐지 |
 | `review-queue` | Drain Multica "리뷰 필요" reminder issues → trigger built-in `/review` per PR, write verdict back as issue comment (read-only). Consumer pair of `review-reminder` / 멀티카 리뷰 큐 드레인 |
 | `wt` | Create git worktree for a Jira ticket (`{repo}-{ticket}-{slug}`) — fetches summary, generates slug, asks for git type prefix / Jira 티켓 기반 worktree 생성 |
+| `merge-conflict` | Resolve merge/rebase conflicts by reconstructing ours/theirs intent per hunk, human-decided / 머지·리베이스 충돌 의도 기반 해결 |
 
 ### Documentation / 문서
 
@@ -91,7 +92,7 @@
 
 ## Workflow / 워크플로우
 
-`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 38개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 39개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
 
 ### Mode A — Dev (Implementation / 구현)
 

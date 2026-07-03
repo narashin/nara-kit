@@ -30,12 +30,14 @@ description: >-
 3. 각 요구사항별 코드베이스 구현 상태 확인 (Grep/Glob, 핵심 로직만)
 4. rubric §3 Evidence 강제 룰 적용 → Implemented 주장 중 매핑 불가 항목 Partial 강등
 4-bis. rubric §3-bis 적용 → 다수면 요구사항 중 일부 수면만 구현·권한/보안 테스트 부재 항목 Partial 강등, 수면 간 불일치는 Missing 강제
+4-ter. rubric §3-ter 적용 → producer(backend/API/serializer/DTO) 부재 주장이 consumer-side 단서뿐이면 Missing 확정 금지, `Needs Confirm` "missing producer evidence"로 강등
 5. Agreed Exceptions 반영 (갭에서 제외)
 6. `[UNVERIFIED]` 항목 → Agreed Exceptions로 분류
 7. rubric §4 Forced Doubt Sampling → Implemented 중 20% (최소 2개) `Needs Confirm` 표시
 8. **Priority Classification** (rubric §6): 모든 항목을 P0/P1/P2로 분류. 근거 1줄 trace 출력 필수. `.claude/overrides/gap.md` 존재 시 격상만 적용
 9. **Gate 판정**: P0 Missing 카운트 + score로 `✅ review-ready` / `❌ blocked by P0` / `⚠️ score < 80` 결정
 10. gap.md 생성. Follow template in [references/gap-template.md](references/gap-template.md).
+11. **Score history append** (`docs/gap-history.md`): 이번 실행 결과 1행 append (파일 없으면 헤더 + 생성). gap.md는 매 실행 덮어써지므로 점수 추이는 이 파일에 누적 (§Score History).
 
 ### 점수 산출
 ```
@@ -44,10 +46,28 @@ Score = (Implemented + Partial*0.5) / (Total - Agreed Exceptions) * 100
 
 **점수는 진행률 신호. P0 게이트와 독립.** 가중 점수 X — 단일 점수 + 카테고리 분리.
 
+### Score History (`docs/gap-history.md`)
+
+gap.md는 현재 스냅샷(매 실행 덮어쓰기). 점수 추이는 append-only `docs/gap-history.md`에 보존 — `/now`가 추세 파악, `--verify` 반복 시 직전 점수 소실 방지.
+
+```markdown
+# Gap Score History
+
+| Date | Mode | Score | P0 Missing | Note |
+|---|---|---|---|---|
+| 2026-07-03 | gen | 72 | 2 | initial |
+| 2026-07-03 | verify | 85 | 0 | P0 resolved |
+```
+
+- append-only — 기존 행 수정/삭제 금지
+- `Mode`: `gen`(전체 분석) / `verify`(--verify 재검증)
+- `Date`: 실행일 YYYY-MM-DD
+
 ## 검증 모드 (`--verify`)
 
 기존 gap.md의 Missing/Partial 항목만 추출 → 코드 확인 → gap.md 업데이트 + 점수 재산출.
 Verbatim pre-scan + Evidence 강등 + Doubt sampling 모두 동일 적용.
+점수 재산출 후 `docs/gap-history.md`에 `verify` 행 append (§Score History) — 재검증마다 추이 누적.
 **예외 — 권한·보안 항목**: rubric §3-bis에 따라 이전 Implemented여도 실제 각 수면(서버·클라이언트·테스트) 재확인. gap.md 캐시 상태로 complete 이월 금지.
 
 ### Notes Reconciliation (필수)

@@ -20,6 +20,12 @@
 - mixed request with unstable design -> `workflow-doc-mode`
 - mixed request with stable design and explicit implementation ask -> `workflow-dev-mode`
 
+### Terminal outcomes (route may refuse)
+
+- external SoT not yet localized -> `need-sot`: recommend `/prep` first (promotes the "source-of-truth localization status" gate to a labeled outcome)
+- blocking decision unresolved (owner/product judgment, alternatives not chosen) -> `decision`: recommend owner decision or `superpowers:brainstorming`; do not force a workflow
+- no matching nara-kit skill/mode -> recommend direct execution (no-force-fit); never force a request into doc/dev
+
 ## Output contract
 
 Before routing onward, produce:

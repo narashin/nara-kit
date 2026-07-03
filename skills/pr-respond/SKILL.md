@@ -29,6 +29,7 @@ Systematically analyze and respond to PR review comments. Verify each comment te
    - Technically valid -> **ACCEPT** (but side-effect analysis first, then implement one at a time)
    - Reviewer lacks context or technically inaccurate -> **REBUT** (evidence-based, no defensive tone)
    - Uncertain or architecture decision needed -> **HOLD** (present analysis, delegate to user)
+   - Conflicts with spec/source-of-truth, or cannot be verified either way -> **ASK** (reply to the reviewer as a question: category + your recommendation + evidence — not a confirmed fix or rebuttal). Distinct from HOLD: HOLD delegates to the *user*, ASK posts to the *reviewer* thread.
 4. **Reply** in comment thread (`gh api .../comments/{id}/replies`), never top-level
 
 ## Hard Rules
@@ -38,7 +39,7 @@ Systematically analyze and respond to PR review comments. Verify each comment te
 - Implement one comment at a time, verify, then next
 - No auto-commit -- suggest commit message only
 - Related comments -> holistic judgment, no partial accepts
-- Cannot verify -> mark "검증 불가 -- [reason]" and HOLD
+- Cannot verify or conflicts with source-of-truth -> ASK the reviewer (question + recommendation + evidence), never assert as confirmed defect or rebuttal
 
 ## References
 

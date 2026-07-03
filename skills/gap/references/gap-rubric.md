@@ -52,6 +52,17 @@ LLM 자의 판단 방지용. 모든 gap 분석에서 이 룰을 기계적으로 
 
 `--verify`는 권한·보안 항목에 대해 캐시된 gap.md 상태를 신뢰하지 말고 **실제 각 수면 코드 + 테스트를 재확인**. 재확인 없이 Implemented/complete 이월 금지. (다른 항목은 기존대로 Missing/Partial만 재검토.)
 
+## 3-ter. Producer-absence Evidence (거짓 Missing 방지)
+
+"backend / API / serializer / DTO / 데이터 계층이 X를 제공·저장·노출하지 않는다"는 **부재 주장**은 producer-side 증거가 있어야 Missing 확정. 소비 계층에서 "안 보인다"는 producer 부재의 증거가 아니다 (가장 흔한 거짓 Missing 원인).
+
+| 상황 | 처리 |
+|---|---|
+| producer 부재 주장에 producer-side 증거 (스키마 · 엔드포인트 응답 · serializer · 데이터 모델 · 백엔드 테스트) 있음 | Missing 확정 가능 |
+| 부재 주장 근거가 consumer-side 단서뿐 (UI 형태 · fallback 분기 · empty state · mock · fixture · mapper · 호출부 부재) | **Needs Confirm 강등** — "missing producer evidence" 표기. Missing 확정 금지 |
+
+producer 코드를 직접 확인하거나, 확인 불가면 사용자 판단(§4 Needs Confirm)으로 넘긴다.
+
 ## 4. Forced Doubt Sampling
 
 Implemented로 분류한 항목 중:
