@@ -146,6 +146,7 @@ flowchart LR
 | **P0 Hard Gate** | `gap` | P0 Missing ≥ 1이면 점수 무관 차단. 점수 ≥ 80 + P0 0건만 review-ready | ★★★★ |
 | **Plan Approval** (folded) | dev-mode (plan 단계 내) | plan에 흡수된 AskUserQuestion 승인 전 코드 변경 금지. 별도 phase 아님 | ★★★★ |
 | **Implementation Notes Gate** (scope-scaled) | dev-mode (Execute, medium/large) | medium/large만: impl-notes 생성 + `📝 notes:` trailing + verify 빈 notes reject. `small` skip | ★★★ |
+| **Claimed-vs-Observed** | `code-review` (auto-fix 후) | `git diff --name-only` 관측 경로 vs 주장 경로 대조, mismatch → escalate + trailing status | ★★★ |
 | **Notes Reconciliation** | `gap --verify` | impl-notes Deviations ↔ gap Missing 매칭 → Agreed Exception 후보. Open Q [revise] → Spec Revise Candidates | ★★★ |
 | **Readiness Gate** | `prep` | 4기준 (Functional / UNVERIFIED / blocking-Q / Goal) 충족으로 다음 단계 분기 | ★★★ |
 
@@ -160,8 +161,9 @@ flowchart LR
 | `docs/requirements.md` | `prep` / `ac-draft` | 외부 SoT 로컬화 + `## Acceptance Criteria`. 모든 후속 스킬의 입력 SoT |
 | `docs/sources/<id>.raw.md` | `prep` | 외부 SoT verbatim 원문 (AC 원본 보존) |
 | `docs/gap.md` | `gap` | 요구 vs 구현 갭. P0/P1/P2 + Score + Hard Gate. AC 본문 = 자동 P0 |
+| `docs/gap-history.md` | `gap` | append-only score-trend 로그 (gen/verify). gap.md 덮어써져도 점수 추이 보존 |
 | `docs/implementation-notes.md` | dev-mode (Execute, medium/large) | 구현 중 drift log. 4 카테고리: Design / Deviations / Tradeoffs / Open Q. `small`은 skip |
-| `docs/handoff.md` | `reflect` | 다음 세션 인계 8-섹션. In Progress + Open Questions surface |
+| `docs/handoff.md` | `reflect` | 다음 세션 인계 9-섹션 (검증 상태 + 재현 명령 포함). In Progress + Open Questions surface |
 | `docs/test-scenarios/*.md` | `test-discover` / `golden-path-discover` | AC↔시나리오 1:1 매핑, Playwright-ready E2E export |
 | `docs/incident-report.md` | `incident` | root cause 가설 + 증거 + 제안 수정 |
 | `docs/plan/*.md` | doc-mode | spec / RFC / design artifact (AC 박힌 채) |
