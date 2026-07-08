@@ -3,7 +3,7 @@ name: humanizer
 description: >-
   Detect AI writing patterns in Korean text and rewrite as natural human prose. Based on KatFishNet (94.88% AUC) + empirical patterns.
   USE FOR: "humanizer", "윤문", "AI 티 제거", "한국어 자연스럽게", "humanize", "ai-detection 회피".
-  DO NOT USE FOR: 영어 텍스트, 코드 리뷰 (use code-review), 번역, 사실 검증.
+  DO NOT USE FOR: 개인 말투/페르소나 적용 (use naranizer), 영어 텍스트, 코드 리뷰 (use code-review), 번역, 사실 검증.
 license: MIT
 ---
 

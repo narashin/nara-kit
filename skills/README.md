@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**41 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**42 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -52,6 +52,7 @@
 | `publish-spec` | Publish spec to Confluence wiki / 스펙 → Confluence 게시 |
 | `reflect` | Capture session learnings (decisions, conventions, warnings) / 세션 학습 캡처 |
 | `humanizer` | Detect AI writing patterns in Korean text and rewrite as natural prose (KatFishNet 94.88% AUC, 41 patterns) / 한국어 AI 작문 패턴 감지 + 윤문 |
+| `naranizer` | Rewrite AI-drafted Korean text into the user's own measured style from a local profile (register auto-detect, fact-preserving) / 실측 프로필 기반 개인 말투 변환 |
 
 ### Testing / 테스트
 
@@ -94,7 +95,7 @@
 
 ## Workflow / 워크플로우
 
-`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 41개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 42개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
 
 ### Mode A — Dev (Implementation / 구현)
 
