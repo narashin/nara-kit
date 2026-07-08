@@ -1,0 +1,36 @@
+id: first-run-no-spam-001
+name: "최초 실행 — cursor 없음 → 무알림, cursor만 초기화"
+description: |
+  추적 이슈가 아직 없는 PR. inline review comment 목록에는 이미 과거에 달린
+  대댓글이 섞여 있지만, cursor가 없으므로 스킬은 알림을 보내지 않고
+  cursor 초기화만 준비해야 한다 (백로그 스팸 방지).
+tags:
+  - cursor
+  - first-run
+inputs:
+  prompt: |
+    review-reply-reminder --host github.com --repo acme/widgets --reviewer alice 로 실행해줘.
+
+    아래는 이미 조회한 gh 결과다 (실제 gh 호출은 이 데이터를 쓴 것으로 간주):
+
+    PR 목록 (gh pr list):
+    [
+      {"number": 42, "title": "Add retry logic", "url": "https://github.com/acme/widgets/pull/42",
+       "state": "OPEN", "reviewRequests": [], "reviews": [{"author": {"login": "alice"}}]}
+    ]
+
+    PR #42 inline review comments (gh api pulls/42/comments):
+    [
+      {"id": 100, "user": {"login": "alice"}, "in_reply_to_id": null, "body": "이 부분 왜 이렇게 짰나요?", "html_url": "https://github.com/acme/widgets/pull/42#discussion_r100", "created_at": "2026-06-01T00:00:00Z"},
+      {"id": 101, "user": {"login": "bob"}, "in_reply_to_id": 100, "body": "레거시 호환 때문입니다", "html_url": "https://github.com/acme/widgets/pull/42#discussion_r101", "created_at": "2026-06-01T01:00:00Z"}
+    ]
+
+    multica issue list 결과: PR #42에 대한 추적 이슈 없음 (빈 배열).
+  files: []
+expected:
+  output_contains:
+    - "최초 실행"
+  output_not_contains:
+    - "multica issue comment add"
+  regex_match:
+    - "(?i)(cursor|커서).*(초기화|기록)"

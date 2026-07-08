@@ -1,0 +1,23 @@
+id: pr-closed-auto-done-001
+name: "PR closed → 추적 이슈 자동 done, 이후 로직 스킵"
+description: |
+  PR이 MERGED 상태이고 해당 PR의 추적 이슈가 이미 존재한다.
+  스킬은 신규 대댓글 여부와 무관하게 이슈를 done으로 전환해야 한다.
+tags:
+  - lifecycle
+inputs:
+  prompt: |
+    review-reply-reminder --host github.com --repo acme/widgets --reviewer alice 로 실행해줘.
+
+    PR 목록:
+    [
+      {"number": 3, "title": "Refactor auth", "url": "https://github.com/acme/widgets/pull/3",
+       "state": "MERGED", "reviewRequests": [], "reviews": [{"author": {"login": "alice"}}]}
+    ]
+
+    기존 추적 이슈: id=tracker-3, title="PR 활동 추적: Refactor auth",
+    metadata={"pr_url": "https://github.com/acme/widgets/pull/3", "tracker_type": "reply", "last_comment_id": "50"}
+  files: []
+expected:
+  regex_match:
+    - "multica issue status tracker-3 done"

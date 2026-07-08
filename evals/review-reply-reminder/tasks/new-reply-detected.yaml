@@ -1,0 +1,36 @@
+id: new-reply-detected-001
+name: "cursor 존재 + 신규 대댓글 → 이슈 생성/코멘트/멘션"
+description: |
+  추적 이슈가 이미 있고 last_comment_id=101로 cursor가 잡혀 있다.
+  id=102인 새 대댓글(내 댓글 100에 대한 답글)이 감지되면 코멘트를 추가하고,
+  --mention이 지정됐으므로 멘션 코멘트도 매번 추가해야 한다.
+tags:
+  - cursor
+  - detect
+inputs:
+  prompt: |
+    review-reply-reminder --host github.com --repo acme/widgets --reviewer alice --mention 11111111-1111-1111-1111-111111111111 로 실행해줘.
+
+    PR 목록:
+    [
+      {"number": 42, "title": "Add retry logic", "url": "https://github.com/acme/widgets/pull/42",
+       "state": "OPEN", "reviewRequests": [], "reviews": [{"author": {"login": "alice"}}]}
+    ]
+
+    PR #42 inline review comments:
+    [
+      {"id": 100, "user": {"login": "alice"}, "in_reply_to_id": null, "body": "이 부분 왜 이렇게 짰나요?", "html_url": "https://github.com/acme/widgets/pull/42#discussion_r100", "created_at": "2026-06-01T00:00:00Z"},
+      {"id": 101, "user": {"login": "bob"}, "in_reply_to_id": 100, "body": "레거시 호환 때문입니다", "html_url": "https://github.com/acme/widgets/pull/42#discussion_r101", "created_at": "2026-06-01T01:00:00Z"},
+      {"id": 102, "user": {"login": "bob"}, "in_reply_to_id": 100, "body": "테스트도 추가했습니다", "html_url": "https://github.com/acme/widgets/pull/42#discussion_r102", "created_at": "2026-06-02T00:00:00Z"}
+    ]
+
+    기존 추적 이슈: id=tracker-42, title="PR 활동 추적: Add retry logic",
+    metadata={"pr_url": "https://github.com/acme/widgets/pull/42", "tracker_type": "reply", "last_comment_id": "101"}
+  files: []
+expected:
+  output_contains:
+    - "tracker-42"
+  regex_match:
+    - "multica issue comment add"
+    - "(?i)(mention://member/11111111-1111-1111-1111-111111111111)"
+    - "last_comment_id.*102"

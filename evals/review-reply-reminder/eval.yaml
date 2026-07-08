@@ -1,0 +1,28 @@
+name: review-reply-reminder-eval
+description: Evaluation suite for the review-reply-reminder skill.
+skill: review-reply-reminder
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Correct cursor logic + no spam on first run + correct Multica calls.
+graders:
+  - type: code
+    name: has_output
+    config:
+      assertions:
+        - "len(output) > 0"
+  - type: text
+    name: cursor_semantics
+    config:
+      regex_match:
+        - "(?i)(cursor|커서|last_comment_id|신규 대댓글 없음)"
+tasks:
+  - "tasks/*.yaml"
