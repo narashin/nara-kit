@@ -75,9 +75,9 @@ multica issue status <issue_id> done
 
 ## Step 4 — Multica 반영
 
-cursor는 추적 이슈의 metadata에만 저장된다. 따라서 **최초 실행에도 이슈는 반드시 생성해야 한다** — 이슈 없이 cursor를 저장할 곳이 없고, 이슈 생성을 다음 실행(신규 커밋 발생 시)으로 미루면 그 실행도 "이슈 없음 = 최초 실행"으로 오판해 cursor를 영원히 못 만든다 (무한 무알림 루프). 알림(코멘트/멘션)만 최초 실행에서 생략하고, 이슈+cursor는 항상 즉시 만든다.
+cursor는 추적 이슈의 metadata에만 저장된다. 따라서 **최초 실행에도 이슈는 반드시 생성해야 한다** — 이슈 없이 cursor를 저장할 곳이 없고, 이슈 생성을 다음 실행(신규 커밋 발생 시)으로 미루면 그 실행도 "이슈 없음 = 최초 실행"으로 오판해 cursor를 영원히 못 만든다 (무한 무알림 루프). 이슈+cursor는 최초 실행에서 항상 즉시 만든다.
 
-### 추적 이슈가 아직 없음 (최초 실행) — 이슈 생성 + cursor 초기화, 알림 없음
+### 추적 이슈가 아직 없음 (최초 실행) — 이슈 생성 + cursor 초기화 + 1회성 추적-시작 알림
 
 ```bash
 multica issue create \
@@ -90,7 +90,15 @@ multica issue metadata set <issue_id> --key tracker_type --value "commit"
 multica issue metadata set <issue_id> --key last_commit_sha --value "<latest_sha>"
 ```
 
-코멘트/멘션은 달지 않는다 (과거분 소급 알림 방지).
+과거에 이미 있던 커밋 하나하나를 소급 알리지는 않는다(그건 여전히 스팸). 대신 `--mention` 지정 시, "지금부터 이 PR을 지켜본다"는 1회성 추적-시작 알림만 보낸다:
+
+```bash
+multica issue comment add <issue_id> \
+  --content "[@<reviewer>](mention://member/<MEMBER_ID>) 이 PR 리뷰 활동 추적을 시작합니다. 새 커밋이 감지되면 알려드립니다." \
+  --output json
+```
+
+`--mention` 미지정 시 이 코멘트는 생략한다 (다른 모든 멘션 코멘트와 동일한 조건).
 
 ### 추적 이슈는 있는데 cursor 메타데이터만 없음 (과거 버전 호환 등 예외 상황)
 
@@ -123,7 +131,7 @@ multica issue comment add <issue_id> \
 
 ## 규칙
 
-- 최초 실행은 이슈+cursor를 생성하되 알림(코멘트/멘션)은 생략한다. 이슈 자체를 안 만들면 cursor를 저장할 곳이 없어 다음 실행도 영원히 "최초 실행"으로 오판한다 (Step 4 참고).
+- 최초 실행은 이슈+cursor를 생성한다. `--mention` 지정 시 "추적 시작" 알림을 1회 보낸다 — 과거에 이미 있던 커밋 각각을 소급 알리는 것과는 다르다(그건 여전히 스팸이라 안 함). 이슈 자체를 안 만들면 cursor를 저장할 곳이 없어 다음 실행도 영원히 "최초 실행"으로 오판한다 (Step 4 참고).
 - force-push로 cursor sha가 히스토리에서 사라지면, 배열 마지막 1개 커밋만 신규로 취급.
 - 한 PR 내 여러 신규 커밋은 코멘트 1개로 묶는다.
 - dedup 키 = `(pr_url, tracker_type="commit")` — title은 매칭에 쓰지 않는다 (PR 제목 변경에 안전).
@@ -132,10 +140,16 @@ multica issue comment add <issue_id> \
 - `GH_HOST` 환경변수로 gh CLI 라우팅 제어.
 - `gh`, `multica` CLI PATH에 존재해야 함.
 
-## 출력 — 최초 실행 (cursor 초기화)
+## 출력 — 최초 실행, `--mention` 없음
 
 ```
-✅ 최초 실행 — cursor 초기화 (알림 생략)
+✅ 최초 실행 — cursor 초기화 (알림 없음)
+```
+
+## 출력 — 최초 실행, `--mention` 지정 (추적 시작 알림)
+
+```
+🔔 추적 시작 — <PR 제목> (<PR URL>) → 이슈 <issue_id>
 ```
 
 ## 출력 — 신규 커밋 없음

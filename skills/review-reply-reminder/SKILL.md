@@ -76,9 +76,9 @@ multica issue status <issue_id> done
 
 ## Step 4 — Multica 반영
 
-cursor는 추적 이슈의 metadata에만 저장된다. 따라서 **최초 실행에도 이슈는 반드시 생성해야 한다** — 이슈 없이 cursor를 저장할 곳이 없고, 이슈 생성을 다음 실행(신규 대댓글 발생 시)으로 미루면 그 실행도 "이슈 없음 = 최초 실행"으로 오판해 cursor를 영원히 못 만든다 (무한 무알림 루프). 알림(코멘트/멘션)만 최초 실행에서 생략하고, 이슈+cursor는 항상 즉시 만든다.
+cursor는 추적 이슈의 metadata에만 저장된다. 따라서 **최초 실행에도 이슈는 반드시 생성해야 한다** — 이슈 없이 cursor를 저장할 곳이 없고, 이슈 생성을 다음 실행(신규 대댓글 발생 시)으로 미루면 그 실행도 "이슈 없음 = 최초 실행"으로 오판해 cursor를 영원히 못 만든다 (무한 무알림 루프). 이슈+cursor는 최초 실행에서 항상 즉시 만든다.
 
-### 추적 이슈가 아직 없음 (최초 실행) — 이슈 생성 + cursor 초기화, 알림 없음
+### 추적 이슈가 아직 없음 (최초 실행) — 이슈 생성 + cursor 초기화 + 1회성 추적-시작 알림
 
 ```bash
 multica issue create \
@@ -92,7 +92,15 @@ multica issue metadata set <issue_id> --key tracker_type --value "reply"
 multica issue metadata set <issue_id> --key last_comment_id --value "<전체 댓글 중 최댓값 id>"
 ```
 
-코멘트/멘션은 달지 않는다 (과거분 소급 알림 방지).
+과거에 이미 달려있던 대댓글 하나하나를 소급 알리지는 않는다(그건 여전히 스팸). 대신 `--mention` 지정 시, "지금부터 이 PR을 지켜본다"는 1회성 추적-시작 알림만 보낸다:
+
+```bash
+multica issue comment add <issue_id> \
+  --content "[@<reviewer>](mention://member/<MEMBER_ID>) 이 PR 리뷰 활동 추적을 시작합니다. 새 대댓글이 감지되면 알려드립니다." \
+  --output json
+```
+
+`--mention` 미지정 시 이 코멘트는 생략한다 (다른 모든 멘션 코멘트와 동일한 조건).
 
 ### 추적 이슈는 있는데 cursor 메타데이터만 없음 (과거 버전 호환 등 예외 상황)
 
@@ -126,7 +134,7 @@ multica issue comment add <issue_id> \
 ## 규칙
 
 - inline(diff) review comment만 대상. GitHub top-level PR 코멘트는 스레드 구조가 없어 대댓글 개념이 성립하지 않는다.
-- 최초 실행은 이슈+cursor를 생성하되 알림(코멘트/멘션)은 생략한다 — 과거 이력 소급 알림 금지. 이슈 자체를 안 만들면 cursor를 저장할 곳이 없어 다음 실행도 영원히 "최초 실행"으로 오판한다 (Step 4 참고).
+- 최초 실행은 이슈+cursor를 생성한다. `--mention` 지정 시 "추적 시작" 알림을 1회 보낸다 — 과거에 이미 달려있던 대댓글 각각을 소급 알리는 것과는 다르다(그건 여전히 스팸이라 안 함). 이슈 자체를 안 만들면 cursor를 저장할 곳이 없어 다음 실행도 영원히 "최초 실행"으로 오판한다 (Step 4 참고).
 - 한 실행에서 여러 PR에 신규 대댓글이 있어도 PR별로 각자의 추적 이슈에 기록한다 (PR 간 합치지 않음).
 - 한 PR 내 여러 신규 대댓글은 코멘트 1개로 묶는다.
 - dedup 키 = `(pr_url, tracker_type="reply")` — title은 매칭에 쓰지 않는다 (PR 제목 변경에 안전). review-reminder의 "리뷰 필요:" 이슈와는 title이 달라 애초에 섞이지 않는다.
@@ -135,10 +143,16 @@ multica issue comment add <issue_id> \
 - `GH_HOST` 환경변수로 gh CLI 라우팅 제어.
 - `gh`, `multica` CLI PATH에 존재해야 함.
 
-## 출력 — 최초 실행 (cursor 초기화)
+## 출력 — 최초 실행, `--mention` 없음
 
 ```
-✅ 최초 실행 — cursor 초기화 (알림 생략)
+✅ 최초 실행 — cursor 초기화 (알림 없음)
+```
+
+## 출력 — 최초 실행, `--mention` 지정 (추적 시작 알림)
+
+```
+🔔 추적 시작 — <PR 제목> (<PR URL>) → 이슈 <issue_id>
 ```
 
 ## 출력 — 신규 대댓글 없음
