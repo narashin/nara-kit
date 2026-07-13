@@ -3,7 +3,7 @@ name: naranizer
 description: >-
   Rewrite AI-drafted Korean text (Slack messages, review comments, announcements) into the user's own measured writing style, loaded from a local style profile built from real message history.
   USE FOR: "나라나이저", "naranize", "내 말투로", "내 스타일로 바꿔", "말투 프로필 만들어", "말투 프로필 갱신".
-  DO NOT USE FOR: 일반 AI 티 제거 without persona (use humanizer), 영어 텍스트, 내용 요약·사실 수정 (문체만 다룸), 코드 리뷰 (use code-review).
+  DO NOT USE FOR: 일반 AI 티 제거 without persona (use nara-humanizer), 영어 텍스트, 내용 요약·사실 수정 (문체만 다룸), 코드 리뷰 (use nara-code-review).
 license: MIT
 ---
 
@@ -55,7 +55,7 @@ humanizer와의 관계: naranizer = humanizer 선행 적용 + 페르소나. tran
 
 ### Step 3 — 재작성
 
-**Pre-pass (humanizer 인라인 실행)**: 같은 플러그인의 `../humanizer/SKILL.md` (이 스킬 디렉토리 기준 상대 경로)를 Read하고 그 워크플로우로 1차 윤문. 카테고리별 reference 파일은 humanizer 자체 규칙대로 해당 패턴이 감지될 때만 로드 — 짧은 텍스트는 대부분 스킵. 스킬 재호출이 아니라 같은 플러그인 내 파일 참조.
+**Pre-pass (humanizer 인라인 실행)**: 같이 설치된 `../nara-humanizer/SKILL.md` (이 스킬 디렉토리 기준 상대 경로)를 Read하고 그 워크플로우로 1차 윤문. 카테고리별 reference 파일은 humanizer 자체 규칙대로 해당 패턴이 감지될 때만 로드 — 짧은 텍스트는 대부분 스킵. 스킬 재호출이 아니라 같이 설치된 스킬의 파일 참조. 해당 파일이 없으면(단독 설치) humanizer pre-pass는 스킵하고 진행.
 
 그 위에 프로필의 해당 register 규칙 + 전역 규칙(어미 분포, 이모지 사전, 구조 습관)을 적용해 재작성.
 

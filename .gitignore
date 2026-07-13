@@ -1,10 +1,14 @@
-# Project-specific working docs (generated per-project, not plugin content)
+# Project-specific working docs (generated per-project, not shipped)
 docs/
 evals/
 
-# Local plugin config (contains company-specific URLs and page IDs)
+# Local config (contains company-specific URLs and page IDs)
 confluence.local.md
 *.local.md
+
+# Local scratch (claude-mem context dump, slide outputs)
+AGENTS.md
+outputs/
 
 # macOS
 .DS_Store
