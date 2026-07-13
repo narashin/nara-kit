@@ -4,32 +4,41 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal Claude Code workflow toolkit — **42 skills** for structured software development and documentation workflows, orchestrated in two modes (dev / doc).
+Personal workflow toolkit in the [Agent Skills](https://github.com/vercel-labs/skills) format — **41 skills** for structured software development and documentation workflows, orchestrated in two modes (dev / doc). Works with Claude Code and Codex.
 
-Claude Code 워크플로우 툴킷 — 구조화된 개발·문서화 워크플로우를 위한 **42개 스킬** (dev / doc 2-모드 오케스트레이션).
+Agent Skills 포맷 워크플로우 툴킷 — 구조화된 개발·문서화 워크플로우를 위한 **41개 스킬** (dev / doc 2-모드 오케스트레이션). Claude Code + Codex 지원.
 
 ## Install / 설치
 
-```
-/plugin marketplace add <repo-url>     # 1. 마켓플레이스 등록 (git URL 또는 로컬 clone 경로)
-/plugin install nara-kit@nara-kit      # 2. 설치 (<plugin>@<marketplace> — 양쪽 동일)
-# 3. Claude Code 재시작 — hooks는 SessionStart에만 로드됨 (필수)
-/plugin list                           # 4. 검증 — nara-kit: Status Enabled, 에러 0
+```bash
+npx skills add narashin/nara-kit --global --agent claude-code --agent codex --skill '*'
 ```
 
-캐시 확인: `ls ~/.claude/plugins/cache/nara-kit/nara-kit/<version>/skills/` → 42개 디렉토리면 OK.
+- `--global`: 모든 프로젝트에서 사용. 특정 스킬만: `--skill nara-gap --skill nara-code-review`
+- 호출: `/nara-<skill>` (예: `/nara-prep PROJ-1234`), Codex는 `$nara-<skill>`, 또는 자연어 트리거
+- **Update**: `npx skills update`
+- 검증: `ls ~/.claude/skills | grep -c '^nara-'` → 40 (+ `naranizer` = 41)
 
-**Update**: `/plugin marketplace update nara-kit` → `/plugin update nara-kit` → 재시작.
-**Uninstall**: `/plugin uninstall nara-kit` (캐시까지: `rm -rf ~/.claude/plugins/cache/nara-kit/`).
+### 플러그인에서 이전 / Migrating from the plugin
+
+v0.16까지는 Claude Code 플러그인으로 배포. 스킬 포맷 전환에 따라 기존 플러그인 제거 후 위 명령으로 재설치:
+
+```
+/plugin uninstall nara-kit@nara-kit
+/plugin marketplace remove nara-kit
+```
+
+- 캐시 정리(선택): `rm -rf ~/.claude/plugins/cache/nara-kit/`
+- 호출 이름 변경: `/nara-kit:<skill>` → `/nara-<skill>` — CronCreate 등 자동화에 등록한 프롬프트도 새 이름으로 재등록
+- SessionStart hook(memory-audit)은 스킬 포맷에 없어 제거됨 — memory-audit/memory-archive 스킬 자체도 폐기
 
 ## What's inside / 구성
 
 | 위치 | 내용 |
 |------|------|
-| **[skills/README.md](skills/README.md)** | 42개 스킬 카탈로그 + 사용법 + 워크플로우(dev/doc mermaid) + Gates + Artifacts + Override 규약 |
+| **[skills/README.md](skills/README.md)** | 41개 스킬 카탈로그 + 사용법 + 워크플로우(dev/doc mermaid) + Gates + Artifacts + Override 규약 |
 | **[references/output-contract.md](references/output-contract.md)** | 모든 스킬이 따르는 공통 출력 규약 (영수증 형식, 상태 라벨, 격상 신호) |
-| **hooks/** | SessionStart `memory-audit` hook (auto-memory 건강도 점검) |
-| `docs/`, `evals/` | per-project 작업물·평가 (gitignore — 플러그인 배포 대상 아님) |
+| `docs/`, `evals/` | per-project 작업물·평가 (gitignore — 설치 대상 아님) |
 
 스킬 한눈에 보기 + 워크플로우 다이어그램 → **[skills/README.md](skills/README.md)**.
 
@@ -53,7 +62,7 @@ nara-kit과 함께 쓰는 플러그인:
 
 ## Configuration / 설정
 
-`publish-spec` 사용 시 플러그인 루트에 `confluence.local.md` 생성:
+`nara-publish-spec` 사용 시 `~/.claude/confluence.local.md` 생성:
 
 ```yaml
 ---

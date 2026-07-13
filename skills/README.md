@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**42 skills**, grouped below. Invoke explicitly (`/nara-kit:<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**41 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -10,92 +10,93 @@
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `now` | Session state assessment + next action / 세션 상황 판단 + 다음 행동 추천 |
-| `design-md` | Adopt, update, or audit a DESIGN.md — AI-readable design spec / AI용 디자인 스펙 생성·갱신·감사 |
-| `workflow-orchestrator` | Route requests to dev or doc mode / 요청을 dev/doc 모드로 라우팅 |
-| `workflow-dev-mode` | Implementation workflow (core spine: gap → plan → execute → verify → code-review → reflect) / 구현 워크플로우 |
-| `workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
-| `workflow-viz` | Generate self-contained HTML flow visualization from workflow.json / 워크플로우 시각화 HTML 생성 |
+| `nara-now` | Session state assessment + next action / 세션 상황 판단 + 다음 행동 추천 |
+| `nara-design-md` | Adopt, update, or audit a DESIGN.md — AI-readable design spec / AI용 디자인 스펙 생성·갱신·감사 |
+| `nara-workflow-orchestrator` | Route requests to dev or doc mode / 요청을 dev/doc 모드로 라우팅 |
+| `nara-workflow-dev-mode` | Implementation workflow (core spine: gap → plan → execute → verify → code-review → reflect) / 구현 워크플로우 |
+| `nara-workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
+| `nara-workflow-viz` | Generate self-contained HTML flow visualization from workflow.json / 워크플로우 시각화 HTML 생성 |
 
 ### Requirements & Analysis / 요구사항 & 분석
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `prep` | Localize external SoT (Jira/Figma/Confluence) into `docs/requirements.md` + Readiness score / 외부 SoT 로컬화 + 충분성 판정 |
-| `ac-draft` | Generate User Stories + Gherkin AC from one-line intent (no external SoT). Sister of `prep` / 한 줄 의도 → US + Gherkin AC 생성 (외부 SoT 없을 때) |
-| `gap` | Requirements vs implementation gap analysis → `docs/gap.md` (0-100 score) / 요구사항 vs 구현 갭 분석 |
-| `incident` | Structured incident analysis report (no code changes) / 장애 분석 리포트 (코드 수정 없음) |
-| `incident-fix` | TDD-based fix from `docs/incident-report.md` / 장애 리포트 기반 TDD 수정 |
-| `slack-to-jira` | Turn Slack thread permalinks into Jira tickets (classify Bug/Feature, dedup, draft → approve → create, English content) / 슬랙 스레드 → Jira 티켓 |
+| `nara-prep` | Localize external SoT (Jira/Figma/Confluence) into `docs/requirements.md` + Readiness score / 외부 SoT 로컬화 + 충분성 판정 |
+| `nara-ac-draft` | Generate User Stories + Gherkin AC from one-line intent (no external SoT). Sister of `prep` / 한 줄 의도 → US + Gherkin AC 생성 (외부 SoT 없을 때) |
+| `nara-gap` | Requirements vs implementation gap analysis → `docs/gap.md` (0-100 score) / 요구사항 vs 구현 갭 분석 |
+| `nara-incident` | Structured incident analysis report (no code changes) / 장애 분석 리포트 (코드 수정 없음) |
+| `nara-incident-fix` | TDD-based fix from `docs/incident-report.md` / 장애 리포트 기반 TDD 수정 |
+| `nara-slack-to-jira` | Turn Slack thread permalinks into Jira tickets (classify Bug/Feature, dedup, draft → approve → create, English content) / 슬랙 스레드 → Jira 티켓 |
 
 ### Code Lifecycle / 코드 라이프사이클
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `commit` | Generate conventional commit message with ticket ID / 커밋 메시지 생성 |
-| `pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
-| `code-review` | 5-agent parallel review (Architecture/Correctness/Reliability/Security/Test) / 5-에이전트 병렬 코드 리뷰 |
-| `pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
-| `review-reminder` | Find PRs where you are a requested reviewer but haven't reviewed yet → create Multica reminder issues / 미리뷰 PR 탐지 |
-| `review-queue` | Drain Multica "리뷰 필요" reminder issues → trigger built-in `/review` per PR, write verdict back as issue comment (read-only). Consumer pair of `review-reminder` / 멀티카 리뷰 큐 드레인 |
-| `wt` | Create git worktree for a Jira ticket (`{repo}-{ticket}-{slug}`) — fetches summary, generates slug, asks for git type prefix / Jira 티켓 기반 worktree 생성 |
-| `merge-conflict` | Resolve merge/rebase conflicts by reconstructing ours/theirs intent per hunk, human-decided / 머지·리베이스 충돌 의도 기반 해결 |
-| `release-prep` | One-shot release prep: merged-PR diff → release branch recreate → QA deploy dispatch → Jira Fix Version append / 원샷 릴리즈 준비 (PR 수집 → pre-release 재생성 → QA 배포 → Fix Version) |
+| `nara-commit` | Generate conventional commit message with ticket ID / 커밋 메시지 생성 |
+| `nara-pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
+| `nara-code-review` | 5-agent parallel review (Architecture/Correctness/Reliability/Security/Test) / 5-에이전트 병렬 코드 리뷰 |
+| `nara-pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
+| `nara-review-reminder` | Find PRs where you are a requested reviewer but haven't reviewed yet → create Multica reminder issues / 미리뷰 PR 탐지 |
+| `nara-review-queue` | Drain Multica "리뷰 필요" reminder issues → trigger built-in `/review` per PR, write verdict back as issue comment (read-only). Consumer pair of `review-reminder` / 멀티카 리뷰 큐 드레인 |
+| `nara-wt` | Create git worktree for a Jira ticket (`{repo}-{ticket}-{slug}`) — fetches summary, generates slug, asks for git type prefix / Jira 티켓 기반 worktree 생성 |
+| `nara-merge-conflict` | Resolve merge/rebase conflicts by reconstructing ours/theirs intent per hunk, human-decided / 머지·리베이스 충돌 의도 기반 해결 |
+| `nara-release-prep` | One-shot release prep: merged-PR diff → release branch recreate → QA deploy dispatch → Jira Fix Version append / 원샷 릴리즈 준비 (PR 수집 → pre-release 재생성 → QA 배포 → Fix Version) |
+| `nara-release-finalize` | Merge PR open + release note draft, then tag + push gated behind explicit confirm (triggers prod deploy). Sister of `release-prep` / 머지 PR + release note 초안, 태그 push는 확인 게이트 (prod 배포 트리거) |
 
 ### Documentation / 문서
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `rfc` | Write RFC document in Korean Markdown / RFC 문서 작성 |
-| `adr` | Architecture Decision Record / 아키텍처 결정 기록 |
-| `explain` | Shareable explanations for different audiences / 대상별 설명 문서 생성 |
-| `publish-spec` | Publish spec to Confluence wiki / 스펙 → Confluence 게시 |
-| `reflect` | Capture session learnings (decisions, conventions, warnings) / 세션 학습 캡처 |
-| `humanizer` | Detect AI writing patterns in Korean text and rewrite as natural prose (KatFishNet 94.88% AUC, 41 patterns) / 한국어 AI 작문 패턴 감지 + 윤문 |
+| `nara-rfc` | Write RFC document in Korean Markdown / RFC 문서 작성 |
+| `nara-adr` | Architecture Decision Record / 아키텍처 결정 기록 |
+| `nara-explain` | Shareable explanations for different audiences / 대상별 설명 문서 생성 |
+| `nara-publish-spec` | Publish spec to Confluence wiki / 스펙 → Confluence 게시 |
+| `nara-reflect` | Capture session learnings (decisions, conventions, warnings) / 세션 학습 캡처 |
+| `nara-humanizer` | Detect AI writing patterns in Korean text and rewrite as natural prose (KatFishNet 94.88% AUC, 41 patterns) / 한국어 AI 작문 패턴 감지 + 윤문 |
 | `naranizer` | Rewrite AI-drafted Korean text into the user's own measured style from a local profile (register auto-detect, fact-preserving) / 실측 프로필 기반 개인 말투 변환 |
 
 ### Testing / 테스트
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `test-discover` | Discover test scenarios for a feature or file / 테스트 시나리오 발굴 |
-| `test-verify` | Review and validate test scenarios (3-persona review) / 테스트 시나리오 검증 |
-| `test-implement` | Implement tests from scenario documents / 시나리오 기반 테스트 구현 |
-| `golden-path-discover` | Discover live golden-path E2E scenarios + Playwright-ready export / 라이브 골든패스 E2E 발굴 + Playwright export |
-| `ui-diff` | Env-diff visual regression: QA/Prod baseline vs local target computed-style + rect diff (candidates only) / 환경 간 UI 회귀 비교 — computed-style·bounding-rect 차이 후보 |
+| `nara-test-discover` | Discover test scenarios for a feature or file / 테스트 시나리오 발굴 |
+| `nara-test-verify` | Review and validate test scenarios (3-persona review) / 테스트 시나리오 검증 |
+| `nara-test-implement` | Implement tests from scenario documents / 시나리오 기반 테스트 구현 |
+| `nara-golden-path-discover` | Discover live golden-path E2E scenarios + Playwright-ready export / 라이브 골든패스 E2E 발굴 + Playwright export |
+| `nara-ui-diff` | Env-diff visual regression: QA/Prod baseline vs local target computed-style + rect diff (candidates only) / 환경 간 UI 회귀 비교 — computed-style·bounding-rect 차이 후보 |
 
 ### Automation / 자동화
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `trending-digest` | Crawl GitHub Trending weekly, LLM-filter for AI/LLM + DX tools, post digest to Slack DM + Obsidian / GitHub 트렌딩 주간 크롤 → 필터링 → Slack DM + Obsidian |
-| `jira-triage` | Poll Jira for tickets assigned to you, classify 구현/버그픽스/기획/기타, emit a Multica issue with a ready-to-run launch kit (never executes code) / 내 Jira 티켓 폴링 → 분류 → 런치킷 Multica 이슈 발급 |
-| `jira-drain` | Launch a chosen jira-triage queue ticket into an aoe session (group + worktree), drive dev-mode/doc-mode to a PR — interactive ($0), human-triggered / 큐 티켓 1건 → aoe 세션 착수 → PR까지 자율 (인터랙티브 $0) |
+| `nara-trending-digest` | Crawl GitHub Trending weekly, LLM-filter for AI/LLM + DX tools, post digest to Slack DM + Obsidian / GitHub 트렌딩 주간 크롤 → 필터링 → Slack DM + Obsidian |
+| `nara-jira-triage` | Poll Jira for tickets assigned to you, classify 구현/버그픽스/기획/기타, emit a Multica issue with a ready-to-run launch kit (never executes code) / 내 Jira 티켓 폴링 → 분류 → 런치킷 Multica 이슈 발급 |
+| `nara-jira-drain` | Launch a chosen jira-triage queue ticket into an aoe session (group + worktree), drive dev-mode/doc-mode to a PR — interactive ($0), human-triggered / 큐 티켓 1건 → aoe 세션 착수 → PR까지 자율 (인터랙티브 $0) |
 
 ### Meta / 메타
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `empirical-prompt-tuning` | Iteratively improve prompts via bias-free executor testing — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) / 프롬프트 경험적 튜닝 |
-| `skill-forge` | Improve and harden skills via Waza static analysis + EPT subagent execution / Waza+EPT 통합 스킬 개선 |
-| `meta-feedback` | Capture friction with nara-kit's own skills → generalized, privacy-redacted improvement proposal (feeds `skill-forge`) / nara-kit 스킬 friction → 개선안 |
-| `spec-revision` | Revise and version specs with review feedback, append to Confluence / 스펙 리비전 + Confluence 버전 관리 |
-| `memory-audit` | Score auto-memory files 0-4 by 4 signals (age/ref_validity/code_drift/conflict) and flag hallucination-risk entries / 메모리 4신호 점수화로 환각 위험 탐지 |
-| `memory-archive` | Move flagged memory to `archive/` and clean MEMORY.md index — reversible, never deletes / flag된 메모리 archive 격리 (복구 가능) |
+| `nara-empirical-prompt-tuning` | Iteratively improve prompts via bias-free executor testing — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) / 프롬프트 경험적 튜닝 |
+| `nara-skill-forge` | Improve and harden skills via Waza static analysis + EPT subagent execution / Waza+EPT 통합 스킬 개선 |
+| `nara-meta-feedback` | Capture friction with nara-kit's own skills → generalized, privacy-redacted improvement proposal (feeds `skill-forge`) / nara-kit 스킬 friction → 개선안 |
+| `nara-spec-revision` | Revise and version specs with review feedback, append to Confluence / 스펙 리비전 + Confluence 버전 관리 |
 
 ## Usage / 사용법
 
-**Slash command (명시 호출)** — 정확히 그 스킬만: `/nara-kit:now`, `/nara-kit:prep PROJ-1234`, `/nara-kit:code-review`.
+**Slash command (명시 호출)** — 정확히 그 스킬만: `/nara-now`, `/nara-prep PROJ-1234`, `/nara-code-review`.
 
-**자연어 트리거 (라우팅)** — Claude가 `description`의 `USE FOR` 키워드로 자동 매칭: `"어디까지 했지"` → now, `"요구사항 정리해줘"` → prep, `"리뷰해줘"` → code-review.
+**자연어 트리거 (라우팅)** — Claude가 `description`의 `USE FOR` 키워드로 자동 매칭: `"어디까지 했지"` → nara-now, `"요구사항 정리해줘"` → nara-prep, `"리뷰해줘"` → nara-code-review.
 
 **워크플로우 진입**: `"개발 모드로 시작"` → dev-mode / `"기획 모드로 시작"` → doc-mode / `"workflow"` → orchestrator (자동 분류).
 
-**첫 사용 권장 순서**: `now` (상태 점검) → `prep <TICKET>` (요구사항 로컬화) → `gap` (갭 점수) → 구현 → `code-review` → `pr`.
+**첫 사용 권장 순서**: `nara-now` (상태 점검) → `nara-prep <TICKET>` (요구사항 로컬화) → `nara-gap` (갭 점수) → 구현 → `nara-code-review` → `nara-pr`.
 
 ## Workflow / 워크플로우
 
-`workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 42개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+`nara-workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 41개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+
+> 아래 다이어그램·표의 스킬 이름은 짧은 표기 — 실제 설치·호출명은 `nara-<name>` (예: `gap` = `nara-gap`).
 
 ### Mode A — Dev (Implementation / 구현)
 
@@ -134,7 +135,7 @@ flowchart LR
     style REV fill:#e1f5fe
 ```
 
-- **Revision loop**: `publish-spec` 이후 피드백 수집되면 별개 세션에서 `/spec-revision <URL>` — 라운드마다 버전 append (워크플로 재진입 아닌 standalone).
+- **Revision loop**: `publish-spec` 이후 피드백 수집되면 별개 세션에서 `/nara-spec-revision <URL>` — 라운드마다 버전 append (워크플로 재진입 아닌 standalone).
 - `adr`(구조 결정), `rfc`(기술 결정)는 필요 시 spec 산출 후 호출.
 
 **Legend**: (no symbol) **nara-kit** required · ☆ **superpowers** optional · 🟢 green border **core spine** · 🟡/🔴 **gate / block**.
@@ -179,11 +180,11 @@ flowchart LR
 
 ## Project Override Convention / 프로젝트 오버라이드
 
-nara-kit 스킬은 **제너럴 워크플로우 엔진**. 프로젝트 특화 룰은 소비 repo의 `.claude/overrides/<skill>.md`에 둠. 스킬이 Step 0에서 로드하여 base에 병합 (존재 시). Override는 base check 비활성화 불가 — **추가 / 격상 / 범위 축소만**. Trailing status에 `overrides: applied (path)` 또는 `none` 명시. 지원: `code-review`.
+nara-kit 스킬은 **제너럴 워크플로우 엔진**. 프로젝트 특화 룰은 소비 repo의 `.claude/overrides/` 아래에 둠. 스킬이 Step 0에서 로드하여 base에 병합 (존재 시). Override는 base check 비활성화 불가 — **추가 / 격상 / 범위 축소만**. Trailing status에 `overrides: applied (path)` 또는 `none` 명시. 지원: `nara-code-review` (파일명은 rename 전 그대로 `.claude/overrides/code-review.md` — 기존 소비 repo 무파손).
 
 ## External Plugin Dependencies / 외부 의존성
 
-모든 외부 스킬은 **선택적 강화** — 없으면 수동 대안으로 동작.
+모든 외부 스킬은 **선택적 강화** — 없으면 수동 대안으로 동작. 아래는 Claude Code 플러그인이라 Codex 환경엔 없음 — Codex에서는 항상 수동 fallback.
 
 | External Skill | Plugin | Referenced By | Stage |
 |----------------|--------|---------------|-------|
