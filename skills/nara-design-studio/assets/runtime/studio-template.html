@@ -1,0 +1,186 @@
+<!-- @dsCard group="Design Studio" viewport="1440x900" name="Design Studio" subtitle="Candidates · pick · comment" -->
+<!--
+  nara-design-studio OUTPUT TEMPLATE.
+
+  PATTERN: each candidate renders a <Body>. With a token-only pack (T1 — the bundled starter pack
+  has no components, namespace = "") the Body renders straight from CSS tokens: no design-system
+  components involved, nothing to mount. With a real T2+ pack (a component bundle exposed at
+  window[namespace]) you instead wrap the Body in a <Shell> built from the pack's own components
+  (header / left nav / whatever it exposes), fed by the pack's data — see the commented "T2+ REAL
+  PACK MOUNT" block below the two sample candidates. Either way you author ONLY the Body content.
+
+  FROZEN vs DESIGNED: "frozen" chrome — the app shell already built by the design system (header,
+  left nav, etc.) — comes from the pack's real components and pack data; never hand-build it from
+  tokens. "Designed" content is the Body: genuinely-new UI for this screen. Only token-build what
+  does not already exist as a reusable component.
+
+  The studio chrome (candidate switcher, fidelity badge, comment mode, Send-to-Agent) comes from
+  studio.js + studio.css — do NOT reinvent it. Serve with `serve.py --pack <packDir> --out <outDir>`
+  so /_studio (engine runtime) and /_pack (design-system pack) resolve.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Design Studio</title>
+<link rel="stylesheet" href="/_pack/tokens/tokens.css" />
+<link rel="stylesheet" href="/_studio/studio.css" />
+<!-- REAL DS bundle + React + babel + icons + pack data. Must precede the render script. -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="/_pack/_ds_bundle.js"></script>
+<!-- Pack data (nav/enums) — T3 packs only; omit for T1/T2. -->
+<!-- <script src="/_pack/data.js"></script> -->
+<script>
+  // Pack wiring — set from the pack manifest's "namespace" field when the studio (or an agent)
+  // generates a real screen. Empty string = token-only pack: no window global to read, so the
+  // render guard below skips DS/K entirely and renders the token-only sample body as-is.
+  window.STUDIO_PACK_NAMESPACE = "";
+  window.STUDIO_PACK_DATA = null;   // e.g. window.PACK_DATA exposed by /_pack/data.js on T3 packs
+</script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--lyris-canvas, #fff); font-family: var(--lyris-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif); color: var(--lyris-ink, #18181b); }
+  #root { height: 100%; }
+  /* .lyris-shell / .lyris-shell-mid / .lyris-content / .lyris-page come from studio.css */
+
+  /* ---- token-only sample body (no pack components required) ---- */
+  .page-title { margin: 0 0 16px; font-size: 20px; font-weight: 700; color: var(--lyris-ink, #18181b); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { border: 1px solid var(--lyris-hairline, #e4e4e7); border-radius: var(--lyris-radius-200, 6px); background: var(--lyris-surface, #fafafa); padding: 16px; }
+  .card h3 { margin: 0 0 6px; font-size: 15px; color: var(--lyris-ink, #18181b); }
+  .card p { margin: 0; font-size: 13px; color: var(--lyris-steel, #71717a); }
+  .plain-table { width: 100%; border-collapse: collapse; }
+  .plain-table th, .plain-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--lyris-hairline, #e4e4e7); font-size: 13px; }
+  .plain-table th { color: var(--lyris-steel, #71717a); font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="root" class="studio-root">
+  <div class="studio-stage">
+    <section class="studio-candidate" data-id="A"><div id="mnt-A"></div></section>
+    <section class="studio-candidate" data-id="B"><div id="mnt-B"></div></section>
+  </div>
+</div>
+
+<!-- KIT helpers (window.KIT) — must load before the render script. Commented out here because the
+     starter pack ships no kit helpers (kitHelpersPath: "" below). Uncomment for a pack that has one. -->
+<!-- <script type="text/babel" src="/_pack/kit/_shared.jsx"></script> -->
+
+<!-- render each direction -->
+<script type="text/babel" data-presets="react">
+(function () {
+  // NAMESPACE is filled from the pack manifest's "namespace" field by the studio when generating.
+  const DS = window[window.STUDIO_PACK_NAMESPACE] || {};
+  const K = window.KIT || {};
+  const D = window.STUDIO_PACK_DATA || null;   // null for token-only (T1/T2) packs
+
+  /* Sample rows — replace with the real data shape for the screen you're designing. */
+  const ITEMS = [
+    { id: "ITEM-101", title: "Item 1", detail: "Sample detail text for the first row", meta: "Updated 2h ago" },
+    { id: "ITEM-102", title: "Item 2", detail: "Sample detail text for the second row", meta: "Updated 1d ago" },
+    { id: "ITEM-103", title: "Item 3", detail: "Sample detail text for the third row", meta: "Updated 3d ago" },
+  ];
+
+  /* ===== Direction A — plain table, token-built (works out of the box with the starter pack) ===== */
+  function TableBody() {
+    return (
+      <div className="lyris-page">
+        <h1 className="page-title">Sample List</h1>
+        <table className="plain-table" data-studio-label="item table">
+          <thead><tr><th>ID</th><th>Title</th><th>Detail</th><th>Meta</th></tr></thead>
+          <tbody>
+            {ITEMS.map((it) => (
+              <tr key={it.id}>
+                <td>{it.id}</td><td>{it.title}</td><td>{it.detail}</td><td>{it.meta}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  /* ===== Direction B — card grid, token-built ===== */
+  function CardsBody() {
+    return (
+      <div className="lyris-page">
+        <h1 className="page-title">Sample List</h1>
+        <div className="grid" data-studio-label="item card grid">
+          {ITEMS.map((it) => (
+            <div className="card" key={it.id}>
+              <h3>{it.title}</h3>
+              <p>{it.detail}</p>
+              <p style={{ marginTop: 8 }}>{it.meta}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("mnt-A")).render(<TableBody />);
+  ReactDOM.createRoot(document.getElementById("mnt-B")).render(<CardsBody />);
+  setTimeout(() => window.lucide && window.lucide.createIcons(), 90);
+
+  /*
+   * ===== T2+ REAL PACK MOUNT (guidance only — not active while STUDIO_PACK_NAMESPACE is "") =====
+   * When designing against a real component pack (T2/T3 — DS above is non-empty), wrap the sample
+   * bodies in a <Shell> built from the pack's actual components instead of rendering them bare, e.g.:
+   *
+   *   function Shell({ children }) {
+   *     return (
+   *       <div className="lyris-shell">
+   *         <DS.Header ... />
+   *         <div className="lyris-shell-mid">
+   *           <DS.LeftNav items={D.nav} activeId={"..."} onNavigate={() => {}} />
+   *           <main className="lyris-content"><div className="lyris-page">{children}</div></main>
+   *         </div>
+   *       </div>
+   *     );
+   *   }
+   *   ReactDOM.createRoot(document.getElementById("mnt-A")).render(<Shell><TableBody /></Shell>);
+   *   ReactDOM.createRoot(document.getElementById("mnt-B")).render(<Shell><CardsBody /></Shell>);
+   *
+   * Component/prop names above are illustrative only — read the pack's actual API (bundle + docs)
+   * and match it; there is no fixed cross-pack contract for Header/LeftNav props. Use K.* for any
+   * KIT helpers the pack ships (kitHelpersPath in STUDIO_CONFIG.pack). Every element that already
+   * exists as a DS component or KIT helper is reused, never redrawn from tokens — only genuinely-new
+   * UI belongs in the Body as token-built markup.
+   */
+})();
+</script>
+
+<script>
+  window.STUDIO_CONFIG = {
+    title: "Sample List",
+    brief: "A token-only sample screen — two candidate layouts for the same list.",
+    pack: {
+      name: "Starter",
+      namespace: "",              // window global the bundle exposes (empty for token-only starter)
+      sourceRepo: "",
+      sourcePackages: [],
+      kitHelpersPath: "",
+      reuseRule: "Reuse the design system's components; do not recreate from tokens."
+    },
+    candidates: [
+      // interactions: element → result. `target` = a data-studio-label on the element; the runtime
+      // renders a numbered "Interactions" legend (part of the page, so it lands in screenshots) +
+      // a numbered hotspot badge on each target. This is how planning-behavior is made visible.
+      { id: "A", label: "Direction A — Table", note: "Dense table, information-first. Best for scanning many items.",
+        interactions: [
+          { target: "item table", action: "A row opens the item detail" },
+        ] },
+      { id: "B", label: "Direction B — Cards", note: "Card grid, scannable at a glance. Fewer rows, more breathing room.",
+        interactions: [
+          { target: "item card grid", action: "A card opens the item detail" },
+        ] },
+    ],
+    fidelity: "styled",   // "styled" or "wireframe" — chosen at build time, shown as a badge (no live toggle)
+  };
+</script>
+<script src="/_studio/studio.js"></script>
+<script>NaraStudio.init(); setTimeout(function(){ window.lucide && window.lucide.createIcons(); }, 160);</script>
+</body>
+</html>
