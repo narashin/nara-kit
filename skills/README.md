@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**44 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**45 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -84,6 +84,7 @@
 | `nara-skill-forge` | Improve and harden skills via Waza static analysis + EPT subagent execution / Waza+EPT 통합 스킬 개선 |
 | `nara-meta-feedback` | Capture friction with nara-kit's own skills → generalized, privacy-redacted improvement proposal (feeds `skill-forge`) / nara-kit 스킬 friction → 개선안 |
 | `nara-spec-revision` | Revise and version specs with review feedback, append to Confluence / 스펙 리비전 + Confluence 버전 관리 |
+| `nara-memory-audit` | Two-tier staleness audit of durable memory files — bash prefilter → subagent verify → human-approved fix/archive / 메모리 파일 stale 감사 (기계 prefilter → 의미검증 → 승인 후 수정·archive) |
 
 ## Usage / 사용법
 
@@ -97,7 +98,7 @@
 
 ## Workflow / 워크플로우
 
-`nara-workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 44개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+`nara-workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 45개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
 
 > 아래 다이어그램·표의 스킬 이름은 짧은 표기 — 실제 설치·호출명은 `nara-<name>` (예: `gap` = `nara-gap`).
 
