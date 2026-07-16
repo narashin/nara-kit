@@ -27,9 +27,7 @@ packPath set in references/settings.local.md (gitignored — copy from settings.
  ├─ YES → load that pack, proceed. The user never sees this gate again.
  └─ NO  → ask the user, one of three options:
       (a) Build a pack from your design-system codebase
-          → invoke the `nara-design-pack-builder` skill. It writes a pack and sets packPath,
-            then hand back to this skill to resume the interview. (Not yet shipped in this
-            pass of the project — if it isn't available, fall through to (b) or (c).)
+          → invoke the [nara-design-pack-builder](../nara-design-pack-builder/SKILL.md) skill. It writes a pack and sets packPath in `references/settings.local.md`, then hand back to this skill to resume the interview.
       (b) Point at an existing pack
           → ask for its path, write `packPath: <path>` into references/settings.local.md.
       (c) Use the bundled neutral starter pack (assets/starter-pack/, tier T1)
