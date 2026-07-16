@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**45 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**47 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -12,6 +12,8 @@
 |-------|---------------------|
 | `nara-now` | Session state assessment + next action / 세션 상황 판단 + 다음 행동 추천 |
 | `nara-design-md` | Adopt, update, or audit a DESIGN.md — AI-readable design spec / AI용 디자인 스펙 생성·갱신·감사 |
+| `nara-design-studio` | Design/prototype product screens on any design system via a pluggable pack: interview → Studio candidates → element-comment refine → implementer handoff (real pack components, anti-drift) / 팩 교체형 디자인 스튜디오 — 인터뷰→후보→코멘트 리파인→핸드오프 |
+| `nara-design-pack-builder` | Extract a design-studio DS pack (tokens + standalone component bundle + manifest) from a React design system, guided React-first protocol / React 디자인시스템에서 design-studio 팩 추출(가이드 프로토콜) |
 | `nara-workflow-orchestrator` | Route requests to dev or doc mode / 요청을 dev/doc 모드로 라우팅 |
 | `nara-workflow-dev-mode` | Implementation workflow (core spine: gap → plan → execute → verify → code-review → reflect) / 구현 워크플로우 |
 | `nara-workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
@@ -98,7 +100,7 @@
 
 ## Workflow / 워크플로우
 
-`nara-workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 45개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+`nara-workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 47개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
 
 > 아래 다이어그램·표의 스킬 이름은 짧은 표기 — 실제 설치·호출명은 `nara-<name>` (예: `gap` = `nara-gap`).
 
