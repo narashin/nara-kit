@@ -3,7 +3,7 @@ name: nara-merge-conflict
 description: >-
   Resolve merge/rebase conflicts by reconstructing ours-intent vs theirs-intent per hunk, surfacing both as candidates for human decision.
   USE FOR: "머지 충돌", "merge conflict", "rebase 충돌", "충돌 해결", "resolve conflict", "conflict marker".
-  DO NOT USE FOR: conflict-free PR merge (use pr), branch teardown (use superpowers:finishing-a-development-branch), general git ops.
+  DO NOT USE FOR: conflict-free PR merge (use pr), branch teardown (native finish sequence — see Rules), general git ops.
 ---
 
 # merge-conflict — 의도 기반 충돌 해결
@@ -49,5 +49,5 @@ merge-conflict: no destructive git op (no reset --hard / clean / force-push / ma
 - ours/theirs 기계 선택은 **한쪽이 자명할 때만**. 애매하면 사람에게 넘긴다
 - 충돌 해결 범위 밖 변경 금지 (scope creep — "겸사겸사 리팩터" 금지)
 - PreToolUse prompt hook 아님 — NL 트리거로 직접 호출 (`/nara-merge-conflict`)
-- branch finish/teardown은 별개 → `superpowers:finishing-a-development-branch`
+- branch finish/teardown은 별개 (네이티브): clean tree 확인 → `/nara-pr` (또는 로컬 머지) → 머지 후 base 브랜치로 복귀 + 병합된 브랜치 삭제. 별도 스킬 아님 — 일반 git 시퀀스
 - 충돌 원인이 잘못된 rebase 대상 등 구조 문제로 의심되면 해결 전 사용자 확인

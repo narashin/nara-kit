@@ -18,10 +18,10 @@ Thin one-line intent (외부 SoT 없음) is handled by `nara-ac-draft`, which wr
 ## Mandatory routing table
 
 - external or scattered requirements -> `nara-prep`
-- design ambiguity (large/greenfield) -> `superpowers:brainstorming` (조건부)
+- design ambiguity (large/greenfield) -> `nara-grill` (조건부)
 - current-state vs target-state delta matters -> `nara-gap`
-- implementation about to start -> written implementation plan artifact
-- phased or broader execution -> `superpowers:subagent-driven-development`
+- implementation about to start -> `nara-plan` (`docs/plan.md` 수직 작업 단위)
+- phased or broader execution -> `nara-implement` (delegated 모드)
 - before completion claim -> `nara-code-review`
 - architectural decision happened -> `nara-adr`
 - test scenario discovery needed -> `nara-test-discover`
@@ -72,12 +72,12 @@ Before routing onward, produce:
 
 ### Example 1
 User: `Fix API rate-limit bug from analysis to code fix.`
-Route: dev -> medium -> `nara-ac-draft` -> written implementation plan artifact -> TDD -> `superpowers:subagent-driven-development` -> `nara-code-review`.
+Route: dev -> medium -> `nara-ac-draft` -> `nara-plan` -> TDD -> `nara-implement` -> `nara-code-review`.
 
 ### Example 2
 User: `Add audit log export API.`
-Route: dev -> `nara-gap` -> written implementation plan artifact -> `superpowers:subagent-driven-development` -> verification.
+Route: dev -> `nara-gap` -> `nara-plan` -> `nara-implement` -> verification.
 
 ### Example 3
 User: `Implement multi-tenant rollout across services.`
-Route: dev -> large -> stronger `nara-ac-draft` discovery -> phased plan -> `superpowers:subagent-driven-development`.
+Route: dev -> large -> stronger `nara-ac-draft` discovery -> `nara-plan` (phased) -> `nara-implement` (delegated).

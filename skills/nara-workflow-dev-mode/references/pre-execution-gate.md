@@ -1,6 +1,6 @@
 # Plan Approval (folded into the plan step)
 
-Plan 단계의 일부. 별도 phase 아님. Written 임플리먼테이션 플랜 작성 직후, 첫 코드 변경 스킬(`subagent-driven-development`) 호출 전에 plan 승인을 받는다.
+Plan 단계의 일부. 별도 phase 아님. `nara-plan`로 플랜(수직 작업 단위)을 작성한 직후, 첫 코드 변경 스킬(`nara-implement`) 호출 전에 plan 승인을 받는다.
 
 ## 절차
 

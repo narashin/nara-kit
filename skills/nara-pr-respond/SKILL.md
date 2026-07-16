@@ -10,7 +10,7 @@ description: >-
 
 Systematically analyze and respond to PR review comments. Verify each comment technically before deciding accept, rebut, or hold.
 
-**Core principle**: `receiving-code-review` superpowers -- no performative agreement, no unverified acceptance, technical accuracy first.
+**Core principle**: no performative agreement, no unverified acceptance, technical accuracy first — verify each comment against the code before accepting or rebutting.
 
 ## Input
 

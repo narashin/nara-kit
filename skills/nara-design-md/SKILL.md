@@ -4,7 +4,7 @@ description: >-
   Adopt, update, or audit a DESIGN.md — AI-readable design spec (Stitch format).
   USE FOR: "design.md 만들어줘", "디자인 스펙 생성", "DESIGN.md 갱신", "디자인 감사",
   "adopt design.md", "update design spec", "audit design drift".
-  DO NOT USE FOR: code implementation (use brainstorming → plan), component library creation.
+  DO NOT USE FOR: code implementation (use nara-grill → nara-plan → nara-implement), component library creation.
 ---
 
 # design-md
