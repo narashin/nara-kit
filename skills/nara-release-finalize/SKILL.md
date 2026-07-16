@@ -52,16 +52,26 @@ Entered only when the config file does not exist.
 1. **Preflight** — before any remote mutation: parse config (abort on missing keys, point to
    template); version argument present (else abort); `gh auth status` (honor `gh_host`);
    `origin/<release_branch>` exists.
-2. **Detect stage** — `gh pr list --head <release_branch> --base <base_branch> --state all --json number,state,mergeCommit,url,body --limit 5`, take the most recent:
-   - **No PR** → Stage A.
-   - **PR open** → report URL + state, zero side effects, stop. Next: 승인/머지 대기.
-   - **PR merged** → Stage B.
+2. **Detect stage** — decide by *release content*, not PR recency. The release branch is often
+   **recreated each cycle**, so prior-cycle PRs share the same `<release_branch>`→`<base_branch>`
+   pair and the newest merged one would masquerade as the current release (→ tagging the new
+   version at an old release's commit). Gate on commit delta + tag existence first:
+   - `git rev-list origin/<base_branch>..origin/<release_branch>` empty → nothing to release, stop.
+   - Tag `<tag_prefix><version>` already exists remotely → Stage B (idempotent path).
+   - Else `gh pr list --head <release_branch> --base <base_branch> --state all --json number,state,mergeCommit,url,body,title --limit 5`. A most-recent PR whose title does **not** carry `<version>` is a prior-cycle PR → treat as no matching PR. Trust only a PR matching the current `<version>`:
+     - **No matching PR** → Stage A.
+     - **Matching PR open** → report URL + state, zero side effects, stop. Next: 승인/머지 대기.
+     - **Matching PR merged** → Stage B.
 3. **Stage A — open merge PR**:
    - Draft the release note: if `develop_branch` is known, reuse `release-prep`'s matching
      algorithm (`git rev-list origin/<base_branch>..origin/<release_branch>`, then
      `gh pr list --state merged --base <develop_branch> --json number,title,headRefName,mergeCommit`,
-     keep PRs whose `mergeCommit.oid` is in the commit set) to build a ticket/PR table. Unknown
-     `develop_branch` → fall back to `git log origin/<base_branch>..origin/<release_branch> --oneline`
+     keep PRs whose `mergeCommit.oid` is in the commit set) to build a ticket/PR table. Then
+     **reconcile against the commit log**: extract `(#NN)` refs from
+     `git log origin/<base_branch>..origin/<release_branch>` and add any PR not already matched —
+     PRs merged into an intermediate feature branch that reached the release via another PR are
+     missed by the `<develop_branch>` match. Log each PR added this way; never silently drop.
+     Unknown `develop_branch` → fall back to `git log origin/<base_branch>..origin/<release_branch> --oneline`
      as a flat commit list.
    - `gh pr create --base <base_branch> --head <release_branch> --title "Release v<version>" --body <drafted note>`.
    - Receipt, stop. Next: 승인 + 머지 대기 — 머지 완료 후 동일 커맨드 재실행.
@@ -95,6 +105,7 @@ Entered only when the config file does not exist.
 |-----------|--------|
 | Config missing | Bootstrap mode (not an error) |
 | No merge PR yet | Stage A: create it |
+| Most-recent PR is a prior-cycle release (title ≠ `<version>`) | Treat as no matching PR → Stage A |
 | Merge PR still open | Report + stop, zero side effects |
 | Tag already exists remotely | Stop, report existing release, zero side effects |
 | PR `mergeCommit.oid` not an ancestor of `base_branch` | Stop — stale PR data, ask user to refresh |
