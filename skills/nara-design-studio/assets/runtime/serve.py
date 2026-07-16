@@ -16,7 +16,6 @@ import argparse
 import http.server
 import json
 import os
-import sys
 
 RUNTIME_PREFIX = "/_studio/"
 PACK_PREFIX = "/_pack/"
@@ -68,7 +67,7 @@ def make_handler(runtime_dir, pack_dir, out_dir):
 
         def do_POST(self):
             route = self.path.rstrip("/")
-            if route == "/__comments": return self._append("comments.jsonl", key="comments")
+            if route == "/__comments": return self._append("comments.jsonl")
             if route == "/__capture": return self._append("capture-requests.jsonl")
             if route == "/__interactions": return self._save_sidecar(".interactions.json", "interactions")
             if route == "/__spec": return self._save_sidecar(".spec.md", "markdown")
@@ -83,7 +82,7 @@ def make_handler(runtime_dir, pack_dir, out_dir):
             self.send_header("Content-Type", "application/json"); self.end_headers()
             self.wfile.write(json.dumps(obj).encode("utf-8"))
 
-        def _append(self, filename, key=None):
+        def _append(self, filename):
             raw = self._read_body()
             os.makedirs(out_dir, exist_ok=True)
             with open(os.path.join(out_dir, filename), "a") as f:
