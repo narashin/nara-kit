@@ -1,13 +1,15 @@
 /*
  * design-studio runtime (plain Claude Code, vanilla DOM — no build/React).
  * Reads window.STUDIO_CONFIG + .studio-candidate[data-id] slots, renders the
- * top bar (candidate switcher, wireframe/styled toggle, comment mode, copy, tweaks)
- * and owns all interaction state. Colors via CSS custom properties (design tokens) only.
+ * top bar (candidate switcher, fidelity badge, comment mode, interaction mode,
+ * Send to Agent, export) and owns all interaction state. Colors via CSS custom
+ * properties (design tokens) only.
  *
  * Config shape:
  *   window.STUDIO_CONFIG = {
  *     title, brief,
- *     candidates: [{ id, label, note }],
+ *     pack: { name, namespace, sourceRepo, sourcePackages, kitHelpersPath, reuseRule },
+ *     candidates: [{ id, label, note, interactions: [{ target, action }] }],
  *     fidelity: "wireframe" | "styled"
  *   }
  *
@@ -15,8 +17,8 @@
  * Send-to-Agent) and candidate show/hide + comment pins. It does NOT render the app shell.
  * Each candidate mounts a <Shell> built from the REAL DS bundle (window[pack.namespace], per the pack config):
  * DS.Header + DS.LeftNav fed the pack's nav data (data.js), so the header/left-nav are the
- * actual product components, never a token recreation. See studio-template.html and
- * ui_kits/studio/out/pending-approval.html for the pattern.
+ * actual product components, never a token recreation. See studio-template.html and the
+ * template's own "T2+ REAL PACK MOUNT" guidance block for the pattern.
  */
 (function () {
   "use strict";

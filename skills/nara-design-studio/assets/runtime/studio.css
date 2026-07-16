@@ -11,7 +11,7 @@
   --studio-radius: var(--ds-radius-200, 5px);
   --studio-hairline: var(--ds-hairline, #dfdfdf);
   --studio-surface: var(--ds-surface, #fcfcfc);
-  --studio-accent: var(--ds-primary, #3659ff);
+  --studio-accent: var(--ds-primary, #2563eb);
 }
 
 /* ---- shell ---- */
@@ -52,7 +52,7 @@
 .studio-candidate { display: none; }
 .studio-candidate.is-active { display: block; }
 
-/* ---- FROZEN app shell (built by studio.js buildShell from the real DS components) ----
+/* ---- FROZEN app shell (the pack's shell is mounted by the template's render script) ----
    studio.js mounts DS.Header + DS.LeftNav (from _ds_bundle.js) into these containers, then moves
    each content-only candidate into .ds-content. The shell components self-style; we only lay
    out the frame + the content page. Do not hand-author header/nav markup in a candidate. */
@@ -86,7 +86,7 @@ body.spec-mode .studio-hover { outline: 2px solid #383878 !important; outline-of
 /* ---- comment mode ---- */
 body.comment-mode .studio-candidate.is-active { cursor: crosshair; }
 /* hover preview: the element that a click would attach a note to */
-body.comment-mode .studio-hover { outline: 2px solid var(--studio-accent) !important; outline-offset: 1px; background: rgba(54, 89, 255, 0.06) !important; }
+body.comment-mode .studio-hover { outline: 2px solid var(--studio-accent) !important; outline-offset: 1px; background: rgba(37, 99, 235, 0.06) !important; }
 .studio-pin {
   position: absolute; z-index: 55; transform: translate(-50%, -50%);
   width: 22px; height: 22px; border-radius: 50%; background: var(--studio-accent);
