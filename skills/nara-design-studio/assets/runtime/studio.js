@@ -1,20 +1,20 @@
 /*
- * LYRIS design-studio runtime (plain Claude Code, vanilla DOM — no build/React).
- * Reads window.LYRIS_STUDIO config + .studio-candidate[data-id] slots, renders the
+ * design-studio runtime (plain Claude Code, vanilla DOM — no build/React).
+ * Reads window.STUDIO_CONFIG + .studio-candidate[data-id] slots, renders the
  * top bar (candidate switcher, wireframe/styled toggle, comment mode, copy, tweaks)
  * and owns all interaction state. Colors via CSS custom properties (design tokens) only.
  *
  * Config shape:
- *   window.LYRIS_STUDIO = {
+ *   window.STUDIO_CONFIG = {
  *     title, brief,
  *     candidates: [{ id, label, note }],
  *     fidelity: "wireframe" | "styled"
  *   }
  *
  * studio.js owns ONLY the studio chrome (candidate switcher, fidelity badge, comment mode,
- * Send-to-Agent) and candidate show/hide + comment pins. It does NOT render the LYRIS app shell.
+ * Send-to-Agent) and candidate show/hide + comment pins. It does NOT render the app shell.
  * Each candidate mounts a <Shell> built from the REAL DS bundle (window[pack.namespace], per the pack config):
- * DS.Header + DS.LeftNav fed window.LYRIS_DATA.nav (data.js), so the header/left-nav are the
+ * DS.Header + DS.LeftNav fed the pack's nav data (data.js), so the header/left-nav are the
  * actual product components, never a token recreation. See studio-template.html and
  * ui_kits/studio/out/pending-approval.html for the pattern.
  */
@@ -479,7 +479,7 @@
   }
 
   function init() {
-    cfg = window.STUDIO_CONFIG || window.LYRIS_STUDIO || { candidates: [] };
+    cfg = window.STUDIO_CONFIG || { candidates: [] };
     root = document.querySelector(".studio-root") || document.body;
     stage = root.querySelector(".studio-stage");
     if (!stage) { stage = h("div", { class: "studio-stage" }); while (root.firstChild) stage.appendChild(root.firstChild); root.appendChild(stage); }
@@ -507,5 +507,4 @@
   }
 
   window.NaraStudio = { init: init };
-  window.LyrisStudio = window.NaraStudio;   // back-compat alias
 })();

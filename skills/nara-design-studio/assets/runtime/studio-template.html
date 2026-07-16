@@ -41,19 +41,19 @@
   window.STUDIO_PACK_DATA = null;   // e.g. window.PACK_DATA exposed by /_pack/data.js on T3 packs
 </script>
 <style>
-  html, body { margin: 0; height: 100%; background: var(--lyris-canvas, #fff); font-family: var(--lyris-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif); color: var(--lyris-ink, #18181b); }
+  html, body { margin: 0; height: 100%; background: var(--ds-canvas, #fff); font-family: var(--ds-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif); color: var(--ds-ink, #18181b); }
   #root { height: 100%; }
-  /* .lyris-shell / .lyris-shell-mid / .lyris-content / .lyris-page come from studio.css */
+  /* .ds-shell / .ds-shell-mid / .ds-content / .ds-page come from studio.css */
 
   /* ---- token-only sample body (no pack components required) ---- */
-  .page-title { margin: 0 0 16px; font-size: 20px; font-weight: 700; color: var(--lyris-ink, #18181b); }
+  .page-title { margin: 0 0 16px; font-size: 20px; font-weight: 700; color: var(--ds-ink, #18181b); }
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .card { border: 1px solid var(--lyris-hairline, #e4e4e7); border-radius: var(--lyris-radius-200, 6px); background: var(--lyris-surface, #fafafa); padding: 16px; }
-  .card h3 { margin: 0 0 6px; font-size: 15px; color: var(--lyris-ink, #18181b); }
-  .card p { margin: 0; font-size: 13px; color: var(--lyris-steel, #71717a); }
+  .card { border: 1px solid var(--ds-hairline, #e4e4e7); border-radius: var(--ds-radius-200, 6px); background: var(--ds-surface, #fafafa); padding: 16px; }
+  .card h3 { margin: 0 0 6px; font-size: 15px; color: var(--ds-ink, #18181b); }
+  .card p { margin: 0; font-size: 13px; color: var(--ds-steel, #71717a); }
   .plain-table { width: 100%; border-collapse: collapse; }
-  .plain-table th, .plain-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--lyris-hairline, #e4e4e7); font-size: 13px; }
-  .plain-table th { color: var(--lyris-steel, #71717a); font-weight: 600; }
+  .plain-table th, .plain-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--ds-hairline, #e4e4e7); font-size: 13px; }
+  .plain-table th { color: var(--ds-steel, #71717a); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -86,7 +86,7 @@
   /* ===== Direction A — plain table, token-built (works out of the box with the starter pack) ===== */
   function TableBody() {
     return (
-      <div className="lyris-page">
+      <div className="ds-page">
         <h1 className="page-title">Sample List</h1>
         <table className="plain-table" data-studio-label="item table">
           <thead><tr><th>ID</th><th>Title</th><th>Detail</th><th>Meta</th></tr></thead>
@@ -105,7 +105,7 @@
   /* ===== Direction B — card grid, token-built ===== */
   function CardsBody() {
     return (
-      <div className="lyris-page">
+      <div className="ds-page">
         <h1 className="page-title">Sample List</h1>
         <div className="grid" data-studio-label="item card grid">
           {ITEMS.map((it) => (
@@ -131,11 +131,11 @@
    *
    *   function Shell({ children }) {
    *     return (
-   *       <div className="lyris-shell">
+   *       <div className="ds-shell">
    *         <DS.Header ... />
-   *         <div className="lyris-shell-mid">
+   *         <div className="ds-shell-mid">
    *           <DS.LeftNav items={D.nav} activeId={"..."} onNavigate={() => {}} />
-   *           <main className="lyris-content"><div className="lyris-page">{children}</div></main>
+   *           <main className="ds-content"><div className="ds-page">{children}</div></main>
    *         </div>
    *       </div>
    *     );

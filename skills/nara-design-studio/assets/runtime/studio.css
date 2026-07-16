@@ -1,86 +1,86 @@
 /*
- * LYRIS design-studio chrome styles.
- * Paired with studio.js. All colors via --lyris-* tokens (link styles.css first).
+ * design-studio chrome styles.
+ * Paired with studio.js. All colors via --ds-* tokens (link styles.css first).
  * Classes are produced/consumed by studio.js; body modifiers drive fidelity/comment/density.
  */
 
 /* Studio chrome tokens — self-sufficient so the chrome renders even with a token-light pack.
-   Fall back to pack --lyris-*/pack tokens when present. */
+   Fall back to pack --ds-*/pack tokens when present. */
 :root {
-  --studio-ink: var(--lyris-ink, #111);
-  --studio-radius: var(--lyris-radius-200, 5px);
-  --studio-hairline: var(--lyris-hairline, #dfdfdf);
-  --studio-surface: var(--lyris-surface, #fcfcfc);
-  --studio-accent: var(--lyris-primary, #3659ff);
+  --studio-ink: var(--ds-ink, #111);
+  --studio-radius: var(--ds-radius-200, 5px);
+  --studio-hairline: var(--ds-hairline, #dfdfdf);
+  --studio-surface: var(--ds-surface, #fcfcfc);
+  --studio-accent: var(--ds-primary, #3659ff);
 }
 
 /* ---- shell ---- */
-.studio-root { display: flex; flex-direction: column; height: 100%; font-family: var(--lyris-font-sans); }
+.studio-root { display: flex; flex-direction: column; height: 100%; font-family: var(--ds-font-sans); }
 
 .studio-bar {
   display: flex; align-items: center; gap: 8px;
   height: 44px; flex-shrink: 0; padding: 0 12px;
   border-bottom: 1px solid var(--studio-hairline);
-  background: var(--lyris-canvas);
+  background: var(--ds-canvas);
 }
 .studio-bar .spacer { flex: 1; }
 
 .studio-tabs { display: flex; align-items: center; gap: 2px; }
 .studio-tab {
   appearance: none; border: none; background: none; cursor: pointer;
-  font: inherit; font-size: 13px; font-weight: 500; color: var(--lyris-stone);
+  font: inherit; font-size: 13px; font-weight: 500; color: var(--ds-stone);
   padding: 6px 10px; border-radius: var(--studio-radius); position: relative;
 }
-.studio-tab:hover { background: var(--lyris-surface-elevated); }
+.studio-tab:hover { background: var(--ds-surface-elevated); }
 .studio-tab.is-active { color: var(--studio-accent); font-weight: 600; }
-.studio-tab.is-picked::after { content: "✓"; margin-left: 6px; color: var(--lyris-positive); }
+.studio-tab.is-picked::after { content: "✓"; margin-left: 6px; color: var(--ds-positive); }
 
 /* static fidelity badge (fidelity is fixed at build time, not toggled) */
-.studio-fidelity { font-size: 11px; font-weight: 600; color: var(--lyris-slate); background: var(--lyris-surface-soft); border: 1px solid var(--studio-hairline); border-radius: 999px; padding: 3px 10px; }
+.studio-fidelity { font-size: 11px; font-weight: 600; color: var(--ds-slate); background: var(--ds-surface-soft); border: 1px solid var(--studio-hairline); border-radius: 999px; padding: 3px 10px; }
 
 .studio-btn {
   appearance: none; cursor: pointer; font: inherit; font-size: 12px; font-weight: 500;
-  color: var(--lyris-slate); background: var(--lyris-canvas);
+  color: var(--ds-slate); background: var(--ds-canvas);
   border: 1px solid var(--studio-hairline); border-radius: var(--studio-radius);
   padding: 5px 10px; display: inline-flex; align-items: center; gap: 5px;
 }
-.studio-btn:hover { background: var(--lyris-surface-elevated); }
+.studio-btn:hover { background: var(--ds-surface-elevated); }
 .studio-btn.is-active { border-color: var(--studio-accent); color: var(--studio-accent); }
 
 /* ---- candidates ---- */
-.studio-stage { flex: 1; min-height: 0; overflow: auto; position: relative; background: var(--lyris-canvas); }
+.studio-stage { flex: 1; min-height: 0; overflow: auto; position: relative; background: var(--ds-canvas); }
 .studio-candidate { display: none; }
 .studio-candidate.is-active { display: block; }
 
-/* ---- FROZEN LYRIS app shell (built by studio.js buildShell from the real DS components) ----
+/* ---- FROZEN app shell (built by studio.js buildShell from the real DS components) ----
    studio.js mounts DS.Header + DS.LeftNav (from _ds_bundle.js) into these containers, then moves
-   each content-only candidate into .lyris-content. The shell components self-style; we only lay
+   each content-only candidate into .ds-content. The shell components self-style; we only lay
    out the frame + the content page. Do not hand-author header/nav markup in a candidate. */
-.lyris-shell { display: flex; flex-direction: column; min-height: 100%; }
-.lyris-shell-mid { display: flex; flex: 1; min-height: 0; }
-.lyris-content { flex: 1; min-width: 0; overflow-y: auto; background: var(--lyris-canvas); }
-.lyris-page { min-width: 1010px; max-width: 1620px; margin: 0 auto; padding: 24px; box-sizing: border-box; }
+.ds-shell { display: flex; flex-direction: column; min-height: 100%; }
+.ds-shell-mid { display: flex; flex: 1; min-height: 0; }
+.ds-content { flex: 1; min-width: 0; overflow-y: auto; background: var(--ds-canvas); }
+.ds-page { min-width: 1010px; max-width: 1620px; margin: 0 auto; padding: 24px; box-sizing: border-box; }
 
 /* ---- interaction spec (config.candidates[i].interactions) ----
    Legend renders as part of the candidate (captured in screenshots); hotspots are numbered
    badges anchored to each target element. Indigo, to stay distinct from blue comment pins. */
 .studio-interactions { max-width: 1058px; margin: 0 auto; padding: 20px 24px 44px; box-sizing: border-box; }
-.studio-int-h { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--lyris-stone); margin-bottom: 12px; }
+.studio-int-h { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ds-stone); margin-bottom: 12px; }
 .studio-int-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
-.studio-int-list li { display: flex; align-items: baseline; gap: 10px; font-size: 13px; color: var(--lyris-ink-soft); line-height: 1.5; }
-.studio-int-n { flex-shrink: 0; align-self: flex-start; width: 20px; height: 20px; border-radius: 50%; background: var(--lyris-indigo-100, #E0E0FD); color: #383878; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-.studio-int-tgt { font-weight: 600; color: var(--lyris-charcoal); white-space: nowrap; }
-.studio-int-arrow { color: var(--lyris-stone); }
-.studio-hotspot { position: absolute; z-index: 54; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; background: var(--lyris-indigo-100, #E0E0FD); color: #383878; border: 1.5px solid #383878; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: var(--lyris-shadow-popover); pointer-events: none; }
-.studio-int-editing { margin-left: 10px; font-size: 10px; font-weight: 700; letter-spacing: 0; text-transform: none; color: #383878; background: var(--lyris-indigo-100, #E0E0FD); border-radius: 999px; padding: 2px 8px; }
+.studio-int-list li { display: flex; align-items: baseline; gap: 10px; font-size: 13px; color: var(--ds-ink-soft); line-height: 1.5; }
+.studio-int-n { flex-shrink: 0; align-self: flex-start; width: 20px; height: 20px; border-radius: 50%; background: var(--ds-indigo-100, #E0E0FD); color: #383878; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.studio-int-tgt { font-weight: 600; color: var(--ds-charcoal); white-space: nowrap; }
+.studio-int-arrow { color: var(--ds-stone); }
+.studio-hotspot { position: absolute; z-index: 54; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; background: var(--ds-indigo-100, #E0E0FD); color: #383878; border: 1.5px solid #383878; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: var(--ds-shadow-popover); pointer-events: none; }
+.studio-int-editing { margin-left: 10px; font-size: 10px; font-weight: 700; letter-spacing: 0; text-transform: none; color: #383878; background: var(--ds-indigo-100, #E0E0FD); border-radius: 999px; padding: 2px 8px; }
 
 /* ---- interaction (spec) mode: author element → result, like comment mode but indigo ---- */
 body.spec-mode .studio-candidate.is-active { cursor: crosshair; }
 body.spec-mode .studio-hover { outline: 2px solid #383878 !important; outline-offset: 1px; background: rgba(56, 56, 120, 0.06) !important; }
 .studio-note[data-spec] .target { color: #383878; font-weight: 600; }
 .studio-note-strip {
-  font-size: 12px; color: var(--lyris-steel); padding: 8px 24px;
-  border-bottom: 1px solid var(--lyris-hairline-soft); background: var(--studio-surface);
+  font-size: 12px; color: var(--ds-steel); padding: 8px 24px;
+  border-bottom: 1px solid var(--ds-hairline-soft); background: var(--studio-surface);
 }
 
 /* ---- comment mode ---- */
@@ -91,14 +91,14 @@ body.comment-mode .studio-hover { outline: 2px solid var(--studio-accent) !impor
   position: absolute; z-index: 55; transform: translate(-50%, -50%);
   width: 22px; height: 22px; border-radius: 50%; background: var(--studio-accent);
   color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--lyris-shadow-popover); cursor: default;
+  box-shadow: var(--ds-shadow-popover); cursor: default;
 }
 .studio-note {
-  position: absolute; z-index: 56; width: 220px; background: var(--lyris-canvas);
+  position: absolute; z-index: 56; width: 220px; background: var(--ds-canvas);
   border: 1px solid var(--studio-hairline); border-radius: var(--studio-radius);
-  box-shadow: var(--lyris-shadow-popover); padding: 8px;
+  box-shadow: var(--ds-shadow-popover); padding: 8px;
 }
-.studio-note .target { font-size: 11px; color: var(--lyris-stone); margin-bottom: 4px; }
+.studio-note .target { font-size: 11px; color: var(--ds-stone); margin-bottom: 4px; }
 .studio-note textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--studio-hairline); border-radius: 4px; font: inherit; font-size: 12px; padding: 5px; resize: vertical; }
 .studio-note .row { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
 
@@ -109,20 +109,20 @@ body.comment-mode .studio-hover { outline: 2px solid var(--studio-accent) !impor
 .studio-copied {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 210;
   width: 560px; max-width: calc(100% - 40px); max-height: 45vh; overflow: auto;
-  background: var(--lyris-canvas); border: 1px solid var(--studio-hairline);
-  border-radius: var(--studio-radius); box-shadow: var(--lyris-shadow-popover); padding: 14px 16px;
+  background: var(--ds-canvas); border: 1px solid var(--studio-hairline);
+  border-radius: var(--studio-radius); box-shadow: var(--ds-shadow-popover); padding: 14px 16px;
 }
 .studio-copied-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .studio-copied-head strong { font-size: 14px; color: var(--studio-ink); }
-.studio-copied-hint { margin: 8px 0 6px; font-size: 12px; color: var(--lyris-steel); }
-.studio-copied pre { margin: 0; padding: 10px; background: var(--studio-surface); border: 1px solid var(--lyris-hairline-soft); border-radius: 5px; font-size: 12px; color: var(--lyris-ink-soft); white-space: pre-wrap; }
+.studio-copied-hint { margin: 8px 0 6px; font-size: 12px; color: var(--ds-steel); }
+.studio-copied pre { margin: 0; padding: 10px; background: var(--studio-surface); border: 1px solid var(--ds-hairline-soft); border-radius: 5px; font-size: 12px; color: var(--ds-ink-soft); white-space: pre-wrap; }
 
 /* ---- wireframe fidelity: a structural skeleton, NOT just a desaturated screen ---- */
 /* Remap brand tokens to gray at the source (recolors token-based UI), grayscale backs it up. */
 body.wireframe .studio-candidate {
   filter: grayscale(1);
-  --lyris-primary: #c8c8c8; --lyris-primary-hover: #b7b7b7; --lyris-link: #777777; --lyris-on-primary: #fff;
-  color: var(--lyris-slate);
+  --ds-primary: #c8c8c8; --ds-primary-hover: #b7b7b7; --ds-link: #777777; --ds-on-primary: #fff;
+  color: var(--ds-slate);
 }
 /* flatten every surface: no shadows, no fills, no bold */
 body.wireframe .studio-candidate * { box-shadow: none !important; background-image: none !important; font-weight: 400 !important; }
@@ -133,13 +133,13 @@ body.wireframe .studio-candidate [class*="card"],
 body.wireframe .studio-candidate input,
 body.wireframe .studio-candidate textarea,
 body.wireframe .studio-candidate select {
-  border: 1px dashed var(--lyris-hairline-strong) !important;
+  border: 1px dashed var(--ds-hairline-strong) !important;
   background: transparent !important;
   border-radius: var(--studio-radius) !important;
 }
 /* accent surfaces (blue header, etc.) → flat light-gray blocks */
 body.wireframe .studio-candidate .scr-head,
-body.wireframe .studio-candidate [style*="--lyris-primary"] { background: var(--lyris-surface-elevated) !important; color: var(--lyris-slate) !important; }
+body.wireframe .studio-candidate [style*="--ds-primary"] { background: var(--ds-surface-elevated) !important; color: var(--ds-slate) !important; }
 /* buttons / pills / badges / labels / chips → outlined gray silhouettes */
 body.wireframe .studio-candidate button,
 body.wireframe .studio-candidate .pill,
@@ -148,35 +148,35 @@ body.wireframe .studio-candidate [class*="badge"],
 body.wireframe .studio-candidate [class*="label"],
 body.wireframe .studio-candidate [class*="chip"],
 body.wireframe .studio-candidate [class*="tag"] {
-  background: var(--lyris-surface-soft) !important;
-  border: 1px dashed var(--lyris-hairline-strong) !important;
-  color: var(--lyris-slate) !important;
+  background: var(--ds-surface-soft) !important;
+  border: 1px dashed var(--ds-hairline-strong) !important;
+  color: var(--ds-slate) !important;
   border-radius: var(--studio-radius) !important;
 }
 /* links become plain gray text (no accent) */
-body.wireframe .studio-candidate a { color: var(--lyris-slate) !important; text-decoration: none; }
+body.wireframe .studio-candidate a { color: var(--ds-slate) !important; text-decoration: none; }
 /* images / avatars → empty placeholder boxes */
 body.wireframe .studio-candidate img { visibility: hidden; }
-body.wireframe .studio-candidate [class*="avatar"] { background: var(--lyris-surface-soft) !important; color: transparent !important; }
+body.wireframe .studio-candidate [class*="avatar"] { background: var(--ds-surface-soft) !important; color: transparent !important; }
 /* frozen shell (real DS components): desaturate as a whole — the wireframe pass is about the
    content layout, and the shell is fixed product chrome, so a flat grayscale read is enough. */
-body.wireframe .lyris-shell > div:first-child,
-body.wireframe .lyris-shell-mid > div:first-child { filter: grayscale(1); }
+body.wireframe .ds-shell > div:first-child,
+body.wireframe .ds-shell-mid > div:first-child { filter: grayscale(1); }
 
 /* ---- export menu (bar → Export) ---- */
 .studio-export {
   position: fixed; z-index: 220; min-width: 300px;
-  background: var(--lyris-canvas); border: 1px solid var(--studio-hairline);
-  border-radius: var(--studio-radius); box-shadow: var(--lyris-shadow-popover); padding: 6px;
+  background: var(--ds-canvas); border: 1px solid var(--studio-hairline);
+  border-radius: var(--studio-radius); box-shadow: var(--ds-shadow-popover); padding: 6px;
 }
 .studio-export-item {
   width: 100%; appearance: none; cursor: pointer; font: inherit; font-size: 13px; text-align: left;
-  color: var(--lyris-ink-soft); background: none; border: none; border-radius: var(--studio-radius);
+  color: var(--ds-ink-soft); background: none; border: none; border-radius: var(--studio-radius);
   padding: 9px 10px; display: flex; align-items: center; gap: 9px;
 }
-.studio-export-item:hover { background: var(--lyris-surface-elevated); }
-.studio-export-item i { width: 15px; height: 15px; color: var(--lyris-steel); }
-.studio-export-note { font-size: 11.5px; color: var(--lyris-stone); line-height: 1.45; padding: 8px 10px 4px; border-top: 1px solid var(--lyris-hairline-soft); margin-top: 4px; }
+.studio-export-item:hover { background: var(--ds-surface-elevated); }
+.studio-export-item i { width: 15px; height: 15px; color: var(--ds-steel); }
+.studio-export-note { font-size: 11.5px; color: var(--ds-stone); line-height: 1.45; padding: 8px 10px 4px; border-top: 1px solid var(--ds-hairline-soft); margin-top: 4px; }
 
 /* ---- print (Export → PDF): show ALL candidates, drop the studio + overlay chrome ---- */
 @media print {
@@ -187,8 +187,8 @@ body.wireframe .lyris-shell-mid > div:first-child { filter: grayscale(1); }
   .studio-root, .studio-stage { height: auto !important; overflow: visible !important; display: block !important; }
   .studio-candidate { display: block !important; }
   .studio-candidate + .studio-candidate { break-before: page; page-break-before: always; }
-  .studio-candidate main, .lyris-content, .shell-main { overflow: visible !important; height: auto !important; }
-  .lyris-header, .shell header { position: static !important; }
+  .studio-candidate main, .ds-content, .shell-main { overflow: visible !important; height: auto !important; }
+  .ds-header, .shell header { position: static !important; }
 }
 /* Also set it on the always-on tree so "Save as PDF" from any context keeps the brand colors. */
 .studio-candidate { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -200,5 +200,5 @@ body.wireframe .lyris-shell-mid > div:first-child { filter: grayscale(1); }
    shot. (Toggle it, dispatch a resize so hotspots re-anchor, screenshot, then remove it.) */
 body.capturing .studio-bar, body.capturing .studio-note-strip { display: none !important; }
 body.capturing .studio-root, body.capturing .studio-stage { height: auto !important; overflow: visible !important; display: block !important; }
-body.capturing .studio-candidate main, body.capturing .lyris-content, body.capturing .shell-main { overflow: visible !important; height: auto !important; }
-body.capturing .lyris-header, body.capturing .shell header { position: static !important; }
+body.capturing .studio-candidate main, body.capturing .ds-content, body.capturing .shell-main { overflow: visible !important; height: auto !important; }
+body.capturing .ds-header, body.capturing .shell header { position: static !important; }

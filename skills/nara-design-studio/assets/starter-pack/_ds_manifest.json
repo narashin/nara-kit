@@ -12,9 +12,9 @@
   "components": [],
   "globalCssPaths": ["tokens/tokens.css"],
   "tokens": [
-    { "name": "--lyris-primary", "value": "#2563eb", "kind": "color", "definedIn": "tokens/tokens.css" },
-    { "name": "--lyris-ink", "value": "#18181b", "kind": "color", "definedIn": "tokens/tokens.css" },
-    { "name": "--lyris-radius-200", "value": "6px", "kind": "radius", "definedIn": "tokens/tokens.css" }
+    { "name": "--ds-primary", "value": "#2563eb", "kind": "color", "definedIn": "tokens/tokens.css" },
+    { "name": "--ds-ink", "value": "#18181b", "kind": "color", "definedIn": "tokens/tokens.css" },
+    { "name": "--ds-radius-200", "value": "6px", "kind": "radius", "definedIn": "tokens/tokens.css" }
   ],
   "cards": [{ "path": "guidelines/foundations.card.html", "group": "Foundations", "name": "Neutral tokens" }]
 }

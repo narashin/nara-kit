@@ -1,0 +1,29 @@
+/* LYRIS-pack bridge adapter for nara-design-studio.
+   The engine's chrome consumes generic --ds-* tokens. The external LYRIS pack ships --lyris-* tokens
+   (kept as-is, its repo is untouched). Load THIS adapter alongside the LYRIS pack so its tokens map
+   onto the engine vocabulary. Other packs that already provide --ds-* need no adapter. */
+:root {
+  --ds-ink: var(--lyris-ink);
+  --ds-ink-soft: var(--lyris-ink-soft);
+  --ds-charcoal: var(--lyris-charcoal);
+  --ds-slate: var(--lyris-slate);
+  --ds-steel: var(--lyris-steel);
+  --ds-stone: var(--lyris-stone);
+  --ds-canvas: var(--lyris-canvas);
+  --ds-surface: var(--lyris-surface);
+  --ds-surface-elevated: var(--lyris-surface-elevated);
+  --ds-surface-soft: var(--lyris-surface-soft);
+  --ds-hairline: var(--lyris-hairline);
+  --ds-hairline-soft: var(--lyris-hairline-soft);
+  --ds-hairline-strong: var(--lyris-hairline-strong);
+  --ds-primary: var(--lyris-primary);
+  --ds-positive: var(--lyris-positive);
+  --ds-radius-200: var(--lyris-radius-200);
+  --ds-shadow-popover: var(--lyris-shadow-popover);
+  --ds-font-sans: var(--lyris-font-sans);
+  /* --ds-indigo-100 is intentionally NOT mapped: studio.css uses it as var(--ds-indigo-100, #E0E0FD)
+     with an inline fallback, and the LYRIS pack ships no --lyris-indigo-100. Mapping it to an
+     undefined property would make --ds-indigo-100 a defined-but-invalid value — and CSS does NOT
+     apply the inline #E0E0FD fallback for defined-but-invalid, only for entirely-undefined. Leaving
+     it unmapped lets studio.css's inline #E0E0FD fallback resolve correctly. */
+}

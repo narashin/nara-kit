@@ -63,6 +63,16 @@ a screen from a pack) needs to parse to understand what the pack offers.
 | `cards` | array of `{ path, group, name }` | studio's specimen browser | Guideline / specimen HTML pages (foundations, component demos) the studio can show. Each card file also self-declares the same metadata in a leading `<!-- @dsCard group="..." name="..." subtitle="..." viewport="WxH" -->` comment, so a card is browsable standalone even without the manifest entry. |
 | `startingPoints` | array (optional) | interview stage | Pack-provided example screens/templates used as jump-off points when interviewing for a new design. Not required — omit or leave empty for packs that don't curate any. |
 
+**Token vocabulary:** the engine's chrome (`studio.js` + `studio.css`) consumes design tokens under a single,
+generic **`--ds-*`** prefix (e.g. `--ds-ink`, `--ds-primary`, `--ds-canvas`, `--ds-radius-200`) — the bundled
+starter pack's `tokens/tokens.css` is the authoritative reference for the full set the chrome depends on. A pack
+**SHOULD** name its own custom properties `--ds-*` directly so the chrome renders with zero extra wiring. A pack
+that ships tokens under a different prefix (for example, the external LYRIS pack's `--lyris-*` tokens, kept
+as-is since that pack's repo is untouched) instead ships or loads a small **adapter stylesheet** that maps its
+prefix onto `--ds-*` — one `:root { --ds-x: var(--lyris-x); }` line per chrome-used token. See
+`assets/runtime/adapters/lyris-pack.css` for the reference example. List the adapter in the pack's
+`globalCssPaths` (after the pack's own token file) so it loads on every generated screen.
+
 ### 3.2 The `pack.*` block
 
 ```jsonc
