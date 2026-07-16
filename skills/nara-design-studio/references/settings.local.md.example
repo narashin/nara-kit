@@ -1,0 +1,6 @@
+# nara-design-studio settings — copy this file to `settings.local.md` (gitignored).
+# Points the studio at a DS pack. Without it, the bundled neutral starter pack (T1) is used.
+
+- packPath: /absolute/path/to/your/design-system/pack
+- outDir: ./design-studio-out
+- notes: settings.local.md is never committed and never printed by the skill.

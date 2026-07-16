@@ -5,6 +5,7 @@ evals/
 # Local config (contains company-specific URLs and page IDs)
 confluence.local.md
 *.local.md
+skills/*/settings.local.md
 
 # Local scratch (claude-mem context dump, slide outputs)
 AGENTS.md
