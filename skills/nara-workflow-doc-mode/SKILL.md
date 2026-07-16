@@ -2,7 +2,7 @@
 name: nara-workflow-doc-mode
 description: >-
   Run documentation-first workflow producing specs, RFCs, design docs, or planning artifacts.
-  Routes by requirement clarity: clear → brainstorming → nara-prep → spec, vague → nara-ac-draft → nara-prep → spec.
+  Routes by requirement clarity: clear → nara-grill → nara-prep → spec, vague → nara-ac-draft → nara-prep → spec.
   USE FOR: "doc mode", "기획 모드", "spec 작성", "RFC", "설계 문서".
   DO NOT USE FOR: direct code implementation, bug fixes, test writing.
 ---
@@ -26,8 +26,8 @@ Before routing, assess requirement clarity:
 
 **Clear path** (requirements stable):
 1. External SoT exists → `nara-prep` first
-2. `superpowers:brainstorming` — explore design options
-3. `nara-prep` — persist brainstorm output to `docs/requirements.md`
+2. `nara-grill` — explore and validate design options (fact-first, one question at a time)
+3. `nara-prep` — persist grill output to `docs/requirements.md`
 4. Produce artifact (spec/RFC/design/plan)
 
 **Vague path** (requirements need discovery):
@@ -66,7 +66,7 @@ bullet 형식도 허용 (legacy spec, 외부 SoT 형식 그대로 보존 시):
 
 ### 작성 단계
 
-1. brainstorming / nara-ac-draft 결과 → AC 후보 추출
+1. nara-grill / nara-ac-draft 결과 → AC 후보 추출
 2. 사용자에게 Given-When-Then 템플릿 제시
 3. 사용자 검토 + 확정 (모호한 AC 발견 시 다시 nara-ac-draft)
 4. artifact의 `## Acceptance Criteria` 섹션에 박음

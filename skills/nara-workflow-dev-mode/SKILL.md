@@ -18,7 +18,7 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 
 1. Confirm implementation workflow.
 2. Classify scope (모호 시 상향): `small` (1-2 files, single concern) / `medium` (3-10 files, single domain) / `large` (10+ files, multi-domain).
-3. Walk the **mandatory core spine** (each step emits human-verifiable material): `gap → plan → execute → verify → code-review → reflect`. Pull conditional satellites (`nara-prep` / `nara-ac-draft` / `brainstorming` / `nara-adr`) only by trigger — see Execution.
+3. Walk the **mandatory core spine** (each step emits human-verifiable material): `gap → plan → execute → verify → code-review → reflect`. Pull conditional satellites (`nara-prep` / `nara-ac-draft` / `nara-grill` / `nara-adr`) only by trigger — see Execution.
 
 ## Execution
 
@@ -27,15 +27,15 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 - **외부 SoT 없음, 한 줄 의도만** → `nara-ac-draft` (US + Gherkin AC 생성)
 - Readiness 2-3/4 → `nara-ac-draft` (AC 보강) → `/nara-prep` 재실행
 - Readiness 0-1/4 → 의도 자체 명확화 우선 (`nara-ac-draft` 또는 사용자 인터뷰)
-- **`superpowers:brainstorming` (조건부)** — scope `large` 또는 greenfield/design 불안정일 때만. `small`/bugfix는 skip. (선택, superpowers; visual companion 포함)
+- **`nara-grill` (조건부)** — scope `large` 또는 greenfield/design 불안정일 때만. 사실 조사 후 한 번에 한 질문씩 설계 검증. `small`/bugfix는 skip.
 
 **Entry 완료(SoT면 `nara-prep`, thin intent면 `nara-ac-draft`로 AC 확정 — Readiness 4/4) → 아래 core spine 진입.**
 
 **Core spine (mandatory) — 항상 `gap`부터 순서대로:**
 - `gap` → `plan` → `execute` → `verify` → `code-review` → `reflect`
-- **plan**: 작성 후 AskUserQuestion 승인을 plan 단계에서 흡수 (별도 pre-execution phase 없음). 승인 후 execute.
-- **execute**: `superpowers:SDD`. Implementation Notes Gate 적용 (scope-scaled, 아래). 머지/리베이스 중 충돌 발생 시 → `/nara-merge-conflict` (ad-hoc 호출, 자동 라우팅 아님).
-- **reflect** 이후: `nara-adr` (구조 결정 있었을 때만) → branch finish.
+- **plan**: `nara-plan`로 `docs/plan.md`(독립 검증 가능한 수직 작업 단위)를 산출한다. 작성 후 AskUserQuestion 승인을 plan 단계에서 흡수 (별도 pre-execution phase 없음). 승인 후 execute.
+- **execute**: `nara-implement` (전략 승인 게이트 + TDD 옵션 + direct/delegated; **자동 커밋 없음** — staged 상태로 정지 후 `/nara-commit`). Implementation Notes Gate 적용 (scope-scaled, 아래). 머지/리베이스 중 충돌 발생 시 → `/nara-merge-conflict` (ad-hoc 호출, 자동 라우팅 아님).
+- **reflect** 이후: `nara-adr` (구조 결정 있었을 때만) → **branch finish** (네이티브 시퀀스, 별도 스킬 아님): clean tree 확인 → `/nara-pr` (또는 로컬 머지) → 머지 후 base 브랜치 복귀 + 병합된 브랜치 삭제.
 
 **제거됨**: 완료 전 AI 점수 판정 단계 (AI-as-judge 안티패턴). `verify` + `code-review`가 검증 담당.
 

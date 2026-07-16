@@ -34,4 +34,4 @@ description: >-
 
 ## Handoff
 
-산출 후 `nara-gap` or `superpowers:brainstorming`. prep 우회. `test-discover`가 AC-ID로 매핑. Standalone.
+산출 후 `nara-gap` or `nara-grill`. prep 우회. `test-discover`가 AC-ID로 매핑. Standalone.

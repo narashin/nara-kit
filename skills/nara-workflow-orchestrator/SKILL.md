@@ -35,7 +35,7 @@ Classify natural-language workflow requests, then route to `nara-workflow-doc-mo
 Not every request routes to a workflow. Name the outcome instead of forcing a fit:
 
 - `need-sot` -> recommend `/nara-prep` first (external SoT not yet localized; doc/dev can't start on unstable requirements)
-- `decision` -> owner/product judgment or `superpowers:brainstorming` needed before routing (a blocking decision, not implementation)
+- `decision` -> owner/product judgment or `nara-grill` needed before routing (a blocking decision, not implementation)
 - **no-force-fit** — 맞는 nara-kit 스킬/모드가 없으면 직접 실행을 추천하고 억지로 doc/dev 워크플로에 끼워넣지 않는다
 
 ## Execution

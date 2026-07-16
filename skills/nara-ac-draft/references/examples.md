@@ -102,7 +102,7 @@ Then 저장이 거부되고 사용자에게 오류 메시지가 표시된다 [UN
 - Outcome: docs/requirements.md 생성 (recorded only)
 - Evidence: US 2개, AC 3개 (Happy 2 / Sad 1 / Edge 0), Unknown 4개, [UNVERIFIED] 2건
 - Artifact: docs/requirements.md
-- Next: nara-gap 또는 superpowers:brainstorming
+- Next: nara-gap 또는 nara-grill
 - 비고: 외부 SoT 부재, internal-draft로 작성됨. prep 우회.
 ```
 

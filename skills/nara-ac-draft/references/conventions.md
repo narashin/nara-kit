@@ -42,7 +42,7 @@
 - **Outcome**: `docs/requirements.md` 생성/갱신 (recorded only)
 - **Evidence**: US 수, AC 수 (Happy/Sad/Edge 분포), Unknown 수, `[UNVERIFIED]` 마크 수
 - **Artifact Paths**: `docs/requirements.md`
-- **Next Action**: `nara-gap` 또는 `superpowers:brainstorming`
+- **Next Action**: `nara-gap` 또는 `nara-grill`
 
 prep 우회 명시: "외부 SoT 부재, internal-draft로 requirements.md 작성됨. prep 단계 건너뜀."
 
@@ -61,4 +61,4 @@ prep 우회 명시: "외부 SoT 부재, internal-draft로 requirements.md 작성
 ## 외부 의존 정책
 
 - nara-kit standalone 동작 — 외부 plugin 의존 없음
-- Optional 후속: `nara-gap`, `superpowers:brainstorming`
+- Optional 후속: `nara-gap`, `nara-grill`

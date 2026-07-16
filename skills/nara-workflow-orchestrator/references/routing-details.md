@@ -23,7 +23,7 @@
 ### Terminal outcomes (route may refuse)
 
 - external SoT not yet localized -> `need-sot`: recommend `/nara-prep` first (promotes the "source-of-truth localization status" gate to a labeled outcome)
-- blocking decision unresolved (owner/product judgment, alternatives not chosen) -> `decision`: recommend owner decision or `superpowers:brainstorming`; do not force a workflow
+- blocking decision unresolved (owner/product judgment, alternatives not chosen) -> `decision`: recommend owner decision or `nara-grill`; do not force a workflow
 - no matching nara-kit skill/mode -> recommend direct execution (no-force-fit); never force a request into doc/dev
 
 ## Output contract

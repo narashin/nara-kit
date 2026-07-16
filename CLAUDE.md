@@ -1,6 +1,6 @@
 # nara-kit
 
-Agent Skills repo — 41 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
+Agent Skills repo — 44 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
 
 ## Structure
 
@@ -92,21 +92,22 @@ See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagram
 
 ## Release / Redeploy
 
-nara-kit ships as plain Agent Skills — no version manifest, no marketplace, no restart cycle. The GitHub repo's `main` branch IS the release.
+nara-kit ships as plain Agent Skills — no version manifest, no marketplace, no restart cycle. The GitHub repo's `main` branch IS the release. Git tags (`vMAJOR.MINOR.PATCH`) are immutable snapshots and, together with `CHANGELOG.md`, are the version source of truth.
 
 **Flow:**
 
 1. Commit on `main` (user commits manually — never auto-commit).
-2. Push to BOTH remotes: `git push origin main && git push github main`
+2. Record notable changes under `CHANGELOG.md` `[Unreleased]` (Added/Changed/Removed/Fixed). On release, move `[Unreleased]` under the new `vX.Y.Z` heading and tag the commit. Version bump: skill rename/removal or invocation/artifact-path change = **major**; new skill or additive behavior = **minor**; fix/doc = **patch**.
+3. Push to BOTH remotes: `git push origin main && git push github main && git push --tags` (both).
    (`origin` = LINE internal; `github` = github.com/narashin/nara-kit — consumers install from github).
-3. Consumer side: `npx skills update` (or re-run `npx skills add narashin/nara-kit --global --agent claude-code --agent codex --skill '*'`).
+4. Consumer side: `npx skills update` (or re-run `npx skills add narashin/nara-kit --global --agent claude-code --agent codex --skill '*'`).
 
-**What ships:** only `skills/<name>/` directories. `README.md`, `skills/README.md`, `CLAUDE.md`, `references/`, and `evals/` (gitignored) never reach consumers — pushes touching only those need no consumer action.
+**What ships:** only `skills/<name>/` directories. `README.md`, `skills/README.md`, `CLAUDE.md`, `CHANGELOG.md`, `references/`, and `evals/` (gitignored) never reach consumers — pushes touching only those need no consumer action.
 
 **Renaming a skill is breaking:** consumers keep the old copy under the old name; they must remove it and reinstall.
 
 **Verify after release (consumer side):**
-- `ls ~/.claude/skills | grep -c '^nara-'` → 40 (+ `naranizer` = 41)
+- `ls ~/.claude/skills | grep -c '^nara-'` → 43 (+ `naranizer` = 44)
 - Run a quick smoke test of the changed skill in a fresh session
 
 Note: `claude-mem:version-bump` no longer applies — there are no manifests to bump.
