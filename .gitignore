@@ -28,3 +28,4 @@ skills/*/.waza.yaml
 skills/*/README.md
 skills/*/evals/
 skills/*/skills/
+__pycache__/
