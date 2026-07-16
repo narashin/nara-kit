@@ -2,7 +2,7 @@
  * LYRIS design-studio runtime (plain Claude Code, vanilla DOM — no build/React).
  * Reads window.LYRIS_STUDIO config + .studio-candidate[data-id] slots, renders the
  * top bar (candidate switcher, wireframe/styled toggle, comment mode, copy, tweaks)
- * and owns all interaction state. Colors via --lyris-* tokens only.
+ * and owns all interaction state. Colors via CSS custom properties (design tokens) only.
  *
  * Config shape:
  *   window.LYRIS_STUDIO = {
@@ -13,7 +13,7 @@
  *
  * studio.js owns ONLY the studio chrome (candidate switcher, fidelity badge, comment mode,
  * Send-to-Agent) and candidate show/hide + comment pins. It does NOT render the LYRIS app shell.
- * Each candidate mounts a <Shell> built from the REAL DS bundle (window.LYRISDesignSystem_ebbf5c):
+ * Each candidate mounts a <Shell> built from the REAL DS bundle (window[pack.namespace], per the pack config):
  * DS.Header + DS.LeftNav fed window.LYRIS_DATA.nav (data.js), so the header/left-nav are the
  * actual product components, never a token recreation. See studio-template.html and
  * ui_kits/studio/out/pending-approval.html for the pattern.
@@ -362,7 +362,7 @@
   /* ---- export (handoff) ----
      PDF = window.print() (dep-free, universal; print CSS stacks all candidates, hides chrome).
      Spec.md = a structured handoff that POINTS AT the real code (this HTML built from real DS
-     components + iris-ui) so implementers reuse, not recreate — the md is an index, not a
+     components + the pack's source repo) so implementers reuse, not recreate — the md is an index, not a
      standalone that can drift. PNG is intentionally not a button (needs agent/playwright; PDF +
      OS screenshot cover it). */
   function exportPDF() { window.print(); }
@@ -397,7 +397,7 @@
 
   function generateSpecMarkdown() {
     var L = [];
-    L.push("# " + (cfg.title || "LYRIS screen") + " — Interaction & Implementation Spec");
+    L.push("# " + (cfg.title || (cfg.pack && cfg.pack.name ? cfg.pack.name + " screen" : "Design") ) + " — Interaction & Implementation Spec");
     L.push("");
     if (cfg.brief) { L.push("_" + cfg.brief + "_"); L.push(""); }
     L.push("## How to use this spec (implementer)");
@@ -406,8 +406,11 @@
     L.push("");
     L.push("1. **Visual reference = the exported PNG / PDF** (from this design's Export → PNG/PDF, handed off alongside this file). It opens anywhere and shows the screen plus the Interactions legend — no repo needed.");
     L.push("2. **Behavior = the Interactions list below** (element → result): what each button/link/row does, which modal opens, where it navigates.");
-    L.push("3. **Implement by REUSING iris-ui components** — do NOT recreate from `--lyris-*` tokens. Real source of truth: **`SRE/iris-ui`** (`@linecorp/landpress-ui-react` + `components/layout` / `my-approvals` / `common` / …). The **Components** section below lists what this screen composes.");
-    L.push("4. **Live prototype (you have the workbench repo):** `git pull`, then in the lyris-design skill tree run `python3 ui_kits/studio/serve.py` and open `" + location.pathname + "` — the live, interactive render with the real DS components. Finalized designs live in the committed `ui_kits/studio/handoff/` (they ship); scratch under `out/` is gitignored, so if a file isn't in your checkout, ask for the `handoff/` copy or regenerate it with the lyris-design skill.");
+    var pk = cfg.pack || {};
+    var repo = pk.sourceRepo || "the design system source";
+    var pkgs = (pk.sourcePackages && pk.sourcePackages.length) ? " (" + pk.sourcePackages.join(", ") + ")" : "";
+    L.push("3. **Implement by REUSING the design system's real components** — do NOT recreate from tokens. " + (pk.reuseRule || "Reuse the DS components; do not recreate.") + " Real source of truth: **" + repo + "**" + pkgs + ". The **Components** section below lists what this screen composes.");
+    L.push("4. **Live prototype:** serve this design with the nara-design-studio runtime (`serve.py --pack <packDir> --out <outDir>`) and open this file — the live, interactive render with the real DS components. Finalized handoffs live under the output dir's `handoff/`.");
     candidateEls().forEach(function (cand) {
       var id = cand.getAttribute("data-id");
       L.push(""); L.push("## " + labelOf(id));
@@ -421,7 +424,9 @@
       L.push(""); L.push("### Labeled regions"); L.push(labels.length ? labels.map(function (l) { return "`" + l + "`"; }).join(", ") : "_none_");
     });
     L.push(""); L.push("## Components");
-    L.push("Composed from the DS bundle (`window.LYRISDesignSystem_ebbf5c`) — Header, LeftNav, Table, Pagination, StateLabel, UserBadge, EmptyState, Breadcrumb, Button, Icon, … plus the `KIT` helpers in `ui_kits/lyris/screens/_shared.jsx`. Read the JSX in the source file for the exact components + props, and reuse them. Genuinely-new UI (token-built) is the only thing to implement from scratch.");
+    var ns = pk.namespace ? "`window." + pk.namespace + "`" : "the DS bundle";
+    var kit = pk.kitHelpersPath ? " plus the `KIT` helpers in `" + pk.kitHelpersPath + "`" : "";
+    L.push("Composed from " + ns + kit + ". Read the JSX in the source file for the exact components + props, and reuse them. Genuinely-new UI (token-built) is the only thing to implement from scratch.");
     return L.join("\n");
   }
   function exportSpec() {
