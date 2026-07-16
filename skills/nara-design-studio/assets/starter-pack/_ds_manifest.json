@@ -1,0 +1,20 @@
+{
+  "namespace": "",
+  "source": "starter",
+  "pack": {
+    "name": "Starter",
+    "tier": "T1",
+    "sourceRepo": "",
+    "sourcePackages": [],
+    "kitHelpersPath": "",
+    "reuseRule": "Reuse the design system's components; do not recreate from tokens."
+  },
+  "components": [],
+  "globalCssPaths": ["tokens/tokens.css"],
+  "tokens": [
+    { "name": "--lyris-primary", "value": "#2563eb", "kind": "color", "definedIn": "tokens/tokens.css" },
+    { "name": "--lyris-ink", "value": "#18181b", "kind": "color", "definedIn": "tokens/tokens.css" },
+    { "name": "--lyris-radius-200", "value": "6px", "kind": "radius", "definedIn": "tokens/tokens.css" }
+  ],
+  "cards": [{ "path": "guidelines/foundations.card.html", "group": "Foundations", "name": "Neutral tokens" }]
+}

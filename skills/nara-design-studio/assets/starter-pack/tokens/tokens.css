@@ -1,0 +1,43 @@
+/*
+ * Neutral, brand-agnostic starter tokens (T1).
+ * Grays + one neutral blue accent. No product/brand values.
+ * This file is the source of truth for every --lyris-* custom property the
+ * studio chrome (studio.css) depends on, either directly or via its
+ * --studio-*-fallback chain (--studio-ink -> --lyris-ink, etc.).
+ */
+:root {
+  /* accent */
+  --lyris-primary: #2563eb;
+  --lyris-primary-hover: #1d4ed8;
+  --lyris-on-primary: #ffffff;
+  --lyris-link: #2563eb;
+
+  /* surfaces */
+  --lyris-canvas: #ffffff;
+  --lyris-surface: #fafafa;
+  --lyris-surface-elevated: #f4f4f5;
+  --lyris-surface-soft: #f6f6f7;
+
+  /* hairlines */
+  --lyris-hairline: #e4e4e7;
+  --lyris-hairline-soft: #eeeef0;
+  --lyris-hairline-strong: #d4d4d8;
+
+  /* text / ink ramp */
+  --lyris-ink: #18181b;
+  --lyris-ink-soft: #3f3f46;
+  --lyris-charcoal: #27272a;
+  --lyris-slate: #52525b;
+  --lyris-steel: #71717a;
+  --lyris-stone: #a1a1aa;
+
+  /* status */
+  --lyris-positive: #16a34a;
+
+  /* shape / elevation */
+  --lyris-radius-200: 6px;
+  --lyris-shadow-popover: 0 8px 24px rgba(24, 24, 27, 0.12);
+
+  /* type */
+  --lyris-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
