@@ -41,3 +41,17 @@ def test_three_mounts_and_comment_write():
     finally:
         p.send_signal(signal.SIGTERM); p.wait(timeout=5)
         shutil.rmtree(tmp, ignore_errors=True)
+
+def test_pack_traversal_is_contained():
+    tmp = tempfile.mkdtemp()
+    p, out = _start(tmp)
+    try:
+        # A traversal attempt must not escape the pack mount (served content stays within roots).
+        try:
+            body = _get("/_pack/../runtime/studio.js")
+        except urllib.error.HTTPError as e:
+            body = str(e.code)
+        assert body != "RUNTIME_JS"   # must NOT leak the runtime file via /_pack traversal
+    finally:
+        p.send_signal(signal.SIGTERM); p.wait(timeout=5)
+        shutil.rmtree(tmp, ignore_errors=True)
