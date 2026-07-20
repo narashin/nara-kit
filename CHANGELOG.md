@@ -10,6 +10,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Changed
+- `nara-skill-forge` — Darwin Skill의 두 메커니즘 이식(reference-모듈 리팩터): **회귀 래칫**(fix→재채점→prior-passing grader 회귀 또는 토큰 증가 시 워킹트리 복원, no-auto-commit에 맞춰 각색) + **runtime-neutrality gate**(Claude Code/Codex 양쪽 배포 대비 single-runtime lock grep 스캔). 세부는 `references/ratchet.md`·`references/runtime-gate.md`로 분리. body 리팩터로 waza advisory 통과(links 0→5, module-count 0→2, body-structure ❌→✓).
+
 ## [0.17.0] - 2026-07-16
 
 ### Added
