@@ -23,10 +23,10 @@ outputs/
 .serena/
 
 # Waza artifacts nested inside skills (waza init duplicate)
+# NOTE: skills/*/README.md is intentionally tracked (per-skill human guide) — not ignored.
 skills/*/.github/
 skills/*/.gitignore
 skills/*/.waza.yaml
-skills/*/README.md
 skills/*/evals/
 skills/*/skills/
 __pycache__/
