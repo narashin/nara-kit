@@ -78,15 +78,16 @@ See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagram
 ## When Adding a New Skill
 
 1. Create `skills/nara-<name>/SKILL.md` with proper frontmatter — `nara-` prefix mandatory, `name:` field must equal the directory name
-2. Create `evals/<name>/eval.yaml` + `tasks/` + `fixtures/`
-3. Update `skills/README.md` catalog table — keep skill count accurate (root `README.md` has no per-skill table; the catalog + mermaids live in `skills/README.md`)
-4. If skill participates in workflow, update `workflow-dev-mode` or `workflow-doc-mode` references
-5. New skill inherits output contract automatically — do not add per-skill output-contract reference (CLAUDE.md handles it)
+2. Create `skills/nara-<name>/README.md` — thin human guide (Claude does NOT read it at runtime): purpose + invocation (`/nara-<name>`, `$nara-<name>`) + USE FOR / DO NOT USE FOR + backlinks to `../README.md` and `SKILL.md`. Derive from SKILL.md frontmatter to avoid drift. Every skill folder has one — `skills/*/README.md` is tracked (not gitignored). Setup-heavy skills (config/MCP) may add a rich hand-written guide instead (see `nara-slack-to-jira/README.md`)
+3. Create `evals/<name>/eval.yaml` + `tasks/` + `fixtures/`
+4. Update `skills/README.md` catalog table — keep skill count accurate (root `README.md` has no per-skill table; the catalog + mermaids live in `skills/README.md`)
+5. If skill participates in workflow, update `workflow-dev-mode` or `workflow-doc-mode` references
+6. New skill inherits output contract automatically — do not add per-skill output-contract reference (CLAUDE.md handles it)
 
 ## When Modifying a Skill
 
 1. Run `waza check skills/<name>` before and after — verify no regression on tokens, links, advisories
-2. If changing `description` field, verify routing doesn't break (test with `workflow-orchestrator` eval)
+2. If changing `description` field, verify routing doesn't break (test with `workflow-orchestrator` eval) — and regenerate `README.md` (purpose/USE FOR/DO NOT lines derive from `description`)
 3. For substantive behavior changes, use `/nara-skill-forge <name>` — EPT subagent loop with iterative fixes
 4. Check cross-references — other skills may link to this one via `references/`
 
