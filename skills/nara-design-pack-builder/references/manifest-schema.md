@@ -14,9 +14,8 @@ own tokens directly under `--ds-*` — see `adapt-guide.md` §2 and `SKILL.md` S
 source design system's own custom-property prefix (because adapted components' runtime styles reference it
 directly, and renaming every reference isn't worth this pass) instead ships a small bridge adapter stylesheet
 that maps its own prefix onto `--ds-*`, one `:root` line per chrome-used token, and lists that adapter file in
-`globalCssPaths` right after the pack's own token file. The LYRIS pack is the reference example of this bridge
-pattern — its custom properties keep their own prefix (its source repo is intentionally left untouched), and a
-small adapter stylesheet maps them onto `--ds-*` for the engine. Do not reach for a bridge as the default path;
+`globalCssPaths` right after the pack's own token file. The pack keeps its own prefix (e.g. `--acme-*`) and the
+adapter maps each chrome-used token onto `--ds-*` for the engine. Do not reach for a bridge as the default path;
 it exists for exactly that one case, not as a shortcut around renaming.
 
 ---

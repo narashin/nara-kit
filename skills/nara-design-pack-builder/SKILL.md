@@ -66,9 +66,8 @@ path to prefer.
 reference the source's own custom-property names directly (e.g. inline `style={{ color: 'var(--acme-ink)' }}`)
 and renaming every reference isn't worth doing this pass, keep the original prefix and add a small adapter
 stylesheet — one `:root { --ds-x: var(--acme-x); }` line per chrome-used token — listed in `globalCssPaths`
-right after the token file. `nara-design-studio/assets/runtime/adapters/lyris-pack.css` is the worked reference
-example for this pattern (the LYRIS pack's own custom-property prefix, bridged rather than renamed, because its
-source repo is intentionally left untouched).
+right after the token file. The adapter ships with the pack (keeping the source's own prefix rather than
+renaming every reference) and maps each chrome-used token onto `--ds-*` for the engine.
 
 Record every extracted token — name, value, kind (`color` / `spacing` / `radius` / `type` / `shadow` / …), and
 which file defines it — you'll need this list verbatim for the manifest's `tokens[]` array in Step 5.
@@ -154,4 +153,3 @@ that codebase — treat early passes as calibration, not as proof the next codeb
   builder targets, including the `components[]` entry schema (`status: "flagged"` and all) that this skill owns.
 - `nara-design-studio/references/pack-contract.md` — the engine-side contract: fidelity tiers, required files
   per tier, and every manifest field the studio's runtime actually reads.
-- `nara-design-studio/assets/runtime/adapters/lyris-pack.css` — a worked bridge-adapter example (Step 3).
