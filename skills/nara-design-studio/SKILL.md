@@ -105,6 +105,7 @@ If any A/B/C item is unknown, it is an open blocker — keep interviewing.
 
 ## 8. Reference index
 
+- `references/getting-started.md` — human-facing quick start: what it is, how it works, zero-setup starter-pack run, connecting a real design system, the refine loop, and handoff.
 - `references/pack-contract.md` — the pack contract: fidelity tiers (T0–T3), required files per tier, every manifest field the engine reads, and the `/_studio` / `/_pack` / `/` serve topology.
 - `references/settings.local.md.example` — template for the gitignored `settings.local.md` that sets `packPath` (copy it, fill in a path, or omit it to use the starter pack).
 - `assets/runtime/` — the engine itself: `studio.js` + `studio.css` (the studio chrome — candidate switcher, comment mode, Interaction mode, Export), `serve.py` (the three-mount dev server), `studio-template.html` (the pack-neutral output skeleton), and `watch-comments.sh` / `watch-captures.sh` / `open-design.sh` (the auto-loop and reopen helpers).
