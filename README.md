@@ -48,9 +48,8 @@ nara-kit과 함께 쓰는 플러그인:
 
 | Plugin | Source | Purpose |
 |--------|--------|---------|
-| `superpowers` | `obra/superpowers` | Skill framework (brainstorming, SDD, plans, worktrees) |
 | `caveman` | `JuliusBrussee/caveman` | Terse response style |
-| `claude-mem` | `thedotmack/claude-mem` | Persistent memory across sessions |
+| `engram` | `Gentleman-Programming/engram` | Persistent memory across sessions (worktree 지원 — claude-mem 대체) |
 | `claude-hud` | `jarrodwatts/claude-hud` | Token/session HUD overlay |
 | `plannotator` | `backnotprop/plannotator` | Plan annotation and analysis |
 | `codex` | `openai/codex-plugin-cc` | Codex integration (adversarial review, rescue) |

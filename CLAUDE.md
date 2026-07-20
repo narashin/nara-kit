@@ -1,6 +1,6 @@
 # nara-kit
 
-Agent Skills repo — 44 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
+Agent Skills repo — 47 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
 
 ## Structure
 
@@ -34,7 +34,7 @@ description: >-
 
 ## Conventions
 
-- All skills work standalone. External plugins (superpowers, codex) are optional enhancements with manual fallbacks
+- All skills work standalone. External plugins (codex) are optional enhancements with manual fallbacks
 - Code comments and debug logs in English
 - User-facing text (PR body, commit message, docs) follows project language (usually Korean)
 - No `any` type in any TypeScript
@@ -107,7 +107,7 @@ nara-kit ships as plain Agent Skills — no version manifest, no marketplace, no
 **Renaming a skill is breaking:** consumers keep the old copy under the old name; they must remove it and reinstall.
 
 **Verify after release (consumer side):**
-- `ls ~/.claude/skills | grep -c '^nara-'` → 43 (+ `naranizer` = 44)
+- `ls ~/.claude/skills | grep -c '^nara-'` → 46 (+ `naranizer` = 47)
 - Run a quick smoke test of the changed skill in a fresh session
 
 Note: `claude-mem:version-bump` no longer applies — there are no manifests to bump.
