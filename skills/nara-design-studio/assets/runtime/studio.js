@@ -397,6 +397,73 @@
         recipe); });
   }
 
+  /* ---- rendered-component introspection (React fiber) for the Spec.md handoff ----
+     Reads the REAL component names + key props off the live React tree that the pack
+     mounted, so the handoff doc carries a structural map without opening the HTML.
+     Pack-agnostic: works for any React-rendered pack; degrades to null for a
+     token-only pack (namespace "") or when React isn't present. */
+  function reactRootFiber(container) {
+    if (!container) return null;
+    var ck = Object.keys(container).find(function (x) { return x.indexOf("__reactContainer$") === 0; });
+    if (ck && container[ck] && container[ck].current) return container[ck].current;
+    var child = container.firstElementChild;                       // fallback: climb from a child fiber to the root
+    var fk = child && Object.keys(child).find(function (x) { return x.indexOf("__reactFiber$") === 0 || x.indexOf("__reactInternalInstance$") === 0; });
+    var f = fk ? child[fk] : null;
+    while (f && f.return) f = f.return;
+    return f;
+  }
+  function fiberCompName(type) {
+    if (!type || typeof type === "string") return null;           // null / host component (div, span…) → skip
+    if (typeof type === "function") return type.displayName || type.name || null;
+    if (typeof type === "object") {                               // memo / forwardRef wrappers
+      if (type.displayName) return type.displayName;
+      if (type.render) return type.render.displayName || type.render.name || null;
+      if (type.type) return fiberCompName(type.type);
+    }
+    return null;
+  }
+  function fiberKeyProps(props) {
+    if (!props) return "";
+    var out = [];
+    Object.keys(props).forEach(function (k) {
+      if (out.length >= 4) return;                                 // cap: a handoff wants signal, not every prop
+      if (k === "children" || k === "className" || k === "style" || k === "key" || k === "ref") return;
+      var v = props[k], t = typeof v;
+      if (t === "string") out.push(k + '="' + (v.length <= 32 ? v : v.slice(0, 29) + "…") + '"');
+      else if (t === "number" || t === "boolean") out.push(k + "=" + v);
+      /* skip functions / objects / arrays — too noisy for a handoff */
+    });
+    return out.join(" ");
+  }
+  function walkFiber(fiber, depth, acc, budget) {
+    while (fiber) {                                                // siblings via loop, children via recursion; fiber trees are acyclic
+      if (budget.n >= budget.max) { budget.truncated = true; return; }
+      var name = fiberCompName(fiber.type), nextDepth = depth;
+      if (name) {                                                  // host nodes descend without emitting/indenting
+        budget.n++;
+        var props = fiberKeyProps(fiber.memoizedProps);
+        acc.push(new Array(depth + 1).join("  ") + "- " + name + (props ? "  " + props : ""));
+        nextDepth = depth + 1;
+      }
+      if (fiber.child) walkFiber(fiber.child, nextDepth, acc, budget);
+      fiber = fiber.sibling;
+    }
+  }
+  function componentTreeFor(id) {
+    var mount = document.getElementById("mnt-" + id);
+    if (!mount) {
+      var sec = candidateEls().find(function (el) { return el.getAttribute("data-id") === id; });
+      mount = sec ? (sec.querySelector("[id^='mnt-']") || sec) : null;
+    }
+    var rootFiber = reactRootFiber(mount);
+    if (!rootFiber) return null;
+    var acc = [], budget = { n: 0, max: 120, truncated: false };
+    walkFiber(rootFiber.child || rootFiber, 0, acc, budget);
+    if (!acc.length) return null;
+    if (budget.truncated) acc.push("  … (tree truncated at " + budget.max + " components)");
+    return acc.join("\n");
+  }
+
   function generateSpecMarkdown() {
     var L = [];
     L.push("# " + (cfg.title || (cfg.pack && cfg.pack.name ? cfg.pack.name + " screen" : "Design") ) + " — Interaction & Implementation Spec");
@@ -411,11 +478,27 @@
     var pk = cfg.pack || {};
     var repo = pk.sourceRepo || "the design system source";
     var pkgs = (pk.sourcePackages && pk.sourcePackages.length) ? " (" + pk.sourcePackages.join(", ") + ")" : "";
-    L.push("3. **Implement by REUSING the design system's real components** — do NOT recreate from tokens. " + (pk.reuseRule || "Reuse the DS components; do not recreate.") + " Real source of truth: **" + repo + "**" + pkgs + ". The **Components** section below lists what this screen composes.");
+    if (pk.sourceRepo) {
+      L.push("3. **Implement by REUSING the design system's real components** — do NOT recreate from tokens. " + (pk.reuseRule || "Reuse the DS components; do not recreate.") + " Real source of truth: **" + repo + "**" + pkgs + ". The **Component tree** under each direction names the real components to map to your imports.");
+    } else {
+      L.push("3. **Implement by REUSING the design system's real components** — do NOT recreate from tokens. ⚠️ **Pack metadata missing**: this pack's manifest has no `pack.sourceRepo` / `sourcePackages` / `reuseRule`, so the real import source can't be named here — populate the pack manifest's `pack.*` block (see the nara-design-pack-builder skill) for a correct source-of-truth line. Meanwhile, map from the **Component tree** under each direction (real rendered component names) to your design system's imports.");
+    }
     L.push("4. **Live prototype:** serve this design with the nara-design-studio runtime (`serve.py --pack <packDir> --out <outDir>`) and open this file — the live, interactive render with the real DS components. Finalized handoffs live under the output dir's `handoff/`.");
-    candidateEls().forEach(function (cand) {
+    /* Emphasize the chosen direction: emit the Selected candidate first, mark the rest as alternatives. */
+    var pickedId = state.pickedId;
+    var ordered = candidateEls();
+    if (pickedId) {
+      ordered = ordered.slice().sort(function (a, b) {
+        return (b.getAttribute("data-id") === pickedId ? 1 : 0) - (a.getAttribute("data-id") === pickedId ? 1 : 0);
+      });
+      L.push(""); L.push("> **Selected direction: " + labelOf(pickedId) + "** — the other candidate(s) below are alternatives considered, kept for context.");
+    } else {
+      L.push(""); L.push("> _No candidate selected in the studio — all directions below are still open. Use a tab's **Select** to mark the chosen one before final handoff._");
+    }
+    ordered.forEach(function (cand) {
       var id = cand.getAttribute("data-id");
-      L.push(""); L.push("## " + labelOf(id));
+      var tag = pickedId ? (id === pickedId ? "  _(selected)_" : "  _(alternative)_") : "";
+      L.push(""); L.push("## " + labelOf(id) + tag);
       var note = noteOf(id); if (note) { L.push(""); L.push(note); }
       L.push(""); L.push("### Interactions (element → result)");
       var list = interactionsOf(id);
@@ -424,6 +507,14 @@
       var labels = [];
       cand.querySelectorAll("[data-studio-label]").forEach(function (el) { var l = el.getAttribute("data-studio-label"); if (l && labels.indexOf(l) < 0) labels.push(l); });
       L.push(""); L.push("### Labeled regions"); L.push(labels.length ? labels.map(function (l) { return "`" + l + "`"; }).join(", ") : "_none_");
+      var tree = componentTreeFor(id);
+      L.push(""); L.push("### Component tree (as rendered)");
+      if (tree) {
+        L.push("Real component names + key props read from the live React render — map these to your design system's imports.");
+        L.push(""); L.push("```"); L.push(tree); L.push("```");
+      } else {
+        L.push("_Token-built (no mounted components) or React unavailable — see the HTML source for structure._");
+      }
     });
     L.push(""); L.push("## Components");
     var ns = pk.namespace ? "`window." + pk.namespace + "`" : "the DS bundle";
