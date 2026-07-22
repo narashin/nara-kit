@@ -2,7 +2,7 @@
 
 > 사람용 문서. Claude는 런타임에 이 파일을 읽지 않음 (SKILL.md + references만 로드). 호출·용도 안내.
 
-Implementation-first workflow with structured gates: SoT → gap → TDD → verify → branch finish.
+Implementation-first workflow: conditional entry (SoT/AC) → core spine gap → plan → execute → verify → code-review → reflect → branch finish. TDD optional inside execute.
 
 ## 호출
 

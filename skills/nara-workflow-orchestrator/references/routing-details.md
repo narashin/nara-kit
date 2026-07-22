@@ -15,16 +15,7 @@
 
 ## Routing table
 
-- documentation-first request -> `nara-workflow-doc-mode`
-- implementation-first request -> `nara-workflow-dev-mode`
-- mixed request with unstable design -> `nara-workflow-doc-mode`
-- mixed request with stable design and explicit implementation ask -> `nara-workflow-dev-mode`
-
-### Terminal outcomes (route may refuse)
-
-- external SoT not yet localized -> `need-sot`: recommend `/nara-prep` first (promotes the "source-of-truth localization status" gate to a labeled outcome)
-- blocking decision unresolved (owner/product judgment, alternatives not chosen) -> `decision`: recommend owner decision or `nara-grill`; do not force a workflow
-- no matching nara-kit skill/mode -> recommend direct execution (no-force-fit); never force a request into doc/dev
+라우팅 규칙 + Terminal outcomes는 SKILL.md `### Routing` / `### Terminal outcomes`가 단일 출처(SoT). 여기서 재나열하지 않는다 (중복 = drift 위험). 이 파일은 출력 계약·stop 조건·예시·환각 가드만 담는다.
 
 ## Output contract
 
@@ -32,7 +23,6 @@ Before routing onward, produce:
 
 ### Workflow Intake
 - Mode
-- Scope
 - Reasoning bullets
 
 ### Gate Status

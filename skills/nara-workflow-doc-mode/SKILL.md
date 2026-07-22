@@ -2,7 +2,7 @@
 name: nara-workflow-doc-mode
 description: >-
   Run documentation-first workflow producing specs, RFCs, design docs, or planning artifacts.
-  Routes by requirement clarity: clear → nara-grill → nara-prep → spec, vague → nara-ac-draft → nara-prep → spec.
+  Routes by requirement clarity: clear → (nara-prep if external SoT) → nara-grill → persist → spec, vague → nara-ac-draft → spec.
   USE FOR: "doc mode", "기획 모드", "spec 작성", "RFC", "설계 문서".
   DO NOT USE FOR: direct code implementation, bug fixes, test writing.
 ---
@@ -24,17 +24,19 @@ Before routing, assess requirement clarity:
 
 ## Routes
 
-**Clear path** (requirements stable):
-1. External SoT exists → `nara-prep` first
-2. `nara-grill` — explore and validate design options (fact-first, one question at a time)
-3. `nara-prep` — persist grill output to `docs/requirements.md`
-4. Produce artifact (spec/RFC/design/plan)
+**Clear path** (requirements stable), 순서 고정:
+0. **(조건부 pre-step)** 외부 SoT(Jira/Figma/PRD) 존재 시에만 → `nara-prep`로 **로컬화**하여 `docs/requirements.md` 초안 확보. 외부 SoT 없으면 skip.
+1. `nara-grill` — 설계 옵션 탐색·검증 (fact-first, 한 번에 하나씩)
+2. **doc-mode가 직접 persist** — grill에서 확정된 결정 + 아래 AC Gate로 확정한 AC를 `docs/requirements.md`에 기록 (스텝 0 초안 있으면 그 위에 갱신, 없으면 신규 작성). ⚠️ 이 단계에 `nara-prep`를 쓰지 않는다 — prep은 *외부 SoT 로컬화* 전용이라 grill 산출 입력을 거부하고 재실행 시 stale-gate로 종료된다.
+3. Produce artifact (spec/RFC/design/plan)
+
+> frontmatter의 clear 흐름 `(prep if SoT) → grill → persist`가 스텝 0→1→2와 정확히 일치. prep은 외부 SoT 있을 때만 도는 조건부 로컬화(스텝 0), grill 이후 persist는 doc-mode 자체 책임(스텝 2, prep 아님).
 
 **Vague path** (requirements need discovery):
 1. `nara-ac-draft` — thin intent → User Stories + Gherkin AC → `docs/requirements.md`
 2. Produce artifact
 
-**Both paths converge**: `docs/requirements.md` is the persisted SoT before artifact creation (written by `nara-prep` in clear path, by `nara-ac-draft` in vague path).
+**Both paths converge**: `docs/requirements.md` is the persisted SoT before artifact creation (clear path: doc-mode 스텝 2가 기록, vague path: `nara-ac-draft`).
 
 ## AC Gate (필수)
 
@@ -69,7 +71,7 @@ bullet 형식도 허용 (legacy spec, 외부 SoT 형식 그대로 보존 시):
 1. nara-grill / nara-ac-draft 결과 → AC 후보 추출
 2. 사용자에게 Given-When-Then 템플릿 제시
 3. 사용자 검토 + 확정 (모호한 AC 발견 시 다시 nara-ac-draft)
-4. artifact의 `## Acceptance Criteria` 섹션에 박음
+4. 확정된 AC는 먼저 `docs/requirements.md`(SoT)에 기록(clear path 스텝 2) → artifact의 `## Acceptance Criteria` 섹션으로 복사. 두 곳 동일 내용 유지
 5. **AC 0개 = artifact 생성 차단.** "AC 작성하라" 안내 후 중단
 
 > **수렴 규율** (질문할 때): 코드베이스 먼저 확인해 검증 가능한 전제는 스스로 답하고, **미검증 전제만** 질문한다. 한 번에 하나씩. 이미 확정된 항목 재질문 금지. "생각나는 것 다 묻기"(interview mode) 금지. 같은 항목 5회+ 왕복 시 "가정하고 진행 vs 멈춤"을 제안 (무한 hard-cap 금지).

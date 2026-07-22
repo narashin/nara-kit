@@ -41,8 +41,12 @@ description: >-
 
 ### 점수 산출
 ```
-Score = (Implemented + Partial*0.5) / (Total - Agreed Exceptions) * 100
+Scoreable = Total - Agreed Exceptions          # 평가 대상 요구사항
+Score     = (Implemented + Partial*0.5) / Scoreable * 100
 ```
+
+- **분모 가드**: `Scoreable == 0` (전 항목이 Agreed Exception) → 점수 `N/A ("평가할 요구사항 없음")` 출력, div-by-zero 금지. Gate만 보고.
+- **분자 구성 명시** (silent deflation 금지): `Needs Confirm`·`Unknown`은 Implemented로 안 세므로 분모엔 남고 분자엔 안 들어가 점수를 낮춘다 — 이는 **의도된 conservative 처리** (미확인 = 미구현 취급). gap.md에 `Scoreable / Implemented / Partial / Needs Confirm / Unknown` 카운트를 나열해 점수 근거를 투명하게 보인다.
 
 **점수는 진행률 신호. P0 게이트와 독립.** 가중 점수 X — 단일 점수 + 카테고리 분리.
 
@@ -100,6 +104,7 @@ implementation-notes.md 없으면 이 단계 skip.
   - P0 Missing 0 AND score ≥ 80: "리뷰 단계 진입 가능"
   - P0 Missing ≥ 1: "P0 보완 1순위 (점수 무관)"
   - P0 Missing 0 AND score < 80: "P1 보완 권장"
+  - score `N/A` (Scoreable 0 — 전 항목 Agreed Exception): P0 Missing 0이 자명 → "리뷰 단계 진입 가능 (평가 대상 요구사항 없음)"
 - Evidence는 `파일경로:라인번호` 형식. 코드 내용 인라인 출력 금지
 - 모든 판정은 [references/gap-rubric.md](references/gap-rubric.md) 기준 따름. "비슷하다" 식 자의 판단 금지
 - Verbatim 항목(따옴표/백틱/코드블록 안 텍스트)은 의미 무관 exact match. grep 0건이면 Missing 강제
