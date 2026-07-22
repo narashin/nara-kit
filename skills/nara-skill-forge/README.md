@@ -2,7 +2,7 @@
 
 > 사람용 문서. Claude는 런타임에 이 파일을 읽지 않음 (SKILL.md + references만 로드). 호출·용도 안내.
 
-"Use when improving, hardening, or benchmarking a Claude Code skill. Combines Waza static analysis + eval graders with EPT subagent execution and a working-tree regression ratchet for iterative skill improvement. Triggers on: 'skill 개선해줘', '스킬 강화', 'improve skill', 'harden skill', 'benchmark skill', 'forge skill'."
+스킬 개선·강화·벤치마크: Waza 정적 분석 + eval grader + EPT subagent 실행 + working-tree regression ratchet.
 
 ## 호출
 
@@ -12,7 +12,8 @@
 
 ## 언제 쓰나
 
-- **USE FOR:** (SKILL.md 참고)
+- **USE FOR:** "skill 개선해줘", "스킬 개선해줘", "스킬 강화", "improve skill", "harden skill", "benchmark skill", "forge skill"
+- **DO NOT USE FOR:** 툴킷 friction 리포트 (→ nara-meta-feedback), 스킬 아닌 프롬프트 튜닝 (→ nara-empirical-prompt-tuning), 신규 스킬 작성
 
 ## 더 보기
 

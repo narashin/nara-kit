@@ -2,8 +2,8 @@
 name: nara-empirical-prompt-tuning
 description: >-
   Iterate and improve agent-facing instructions by dispatching bias-free executors and evaluating two-sidedly until improvements plateau.
-  USE FOR: "프롬프트 튜닝", "EPT", "prompt tuning", "스킬 개선", "improve prompt".
-  DO NOT USE FOR: one-off throwaway prompts, subjective style preferences, direct skill authoring (use skill-development).
+  USE FOR: "프롬프트 튜닝", "EPT", "prompt tuning", "improve prompt".
+  DO NOT USE FOR: skill improvement/hardening/benchmark (use nara-skill-forge), one-off throwaway prompts, subjective style preferences, direct skill authoring (use skill-development).
 ---
 
 # Empirical Prompt Tuning
