@@ -115,20 +115,38 @@ mcp__obsidian-mcp-tools__create_vault_file
 Claude Code CronCreate로 주간 자동 실행 설정:
 
 ```
-cron: "0 9 * * 1"       # 매주 월요일 09:00 로컬 시간
+cron: "3 9 * * 1"       # 매주 월요일 09:03 로컬 (off-minute — jitter 만료경계 완화)
 prompt: "/nara-trending-digest --since weekly"
-durable: true           # 세션 재시작 후에도 유지 (7일 후 자동 만료)
+durable: true           # 세션 재시작 후에도 유지 (7일 후 자동 만료 → Step 0 self-renew로 연장)
 recurring: true
 ```
 
 설정 명령어:
 ```
 CronCreate(
-  cron="0 9 * * 1",
+  cron="3 9 * * 1",
   prompt="/nara-trending-digest --since weekly",
   durable=true,
   recurring=true
 )
 ```
 
-> **주의:** CronCreate 크론잡은 7일 후 자동 만료됨. 매주 갱신 필요.
+> **7일 만료 vs 주간 실행 = 자기모순.** CronCreate 크론잡은 7일 후 자동 만료되는데 스케줄은 주간(월요일)이라, 갱신 없으면 다음 발화 직전/직후 만료돼 스케줄이 죽을 수 있다.
+
+### Step 0 — 크론 self-renew (헤드리스 실행 시 **가장 먼저**, crawl 전)
+
+CronCreate는 dedup하지 않는다 — 호출마다 **새 job ID**를 만든다. 따라서 단순 재생성은 **중복 크론**을 낳는다(주간 DM 2번). 반드시 **삭제 후 재생성**:
+
+```
+CronList()                                  # 기존 trending-digest job 조회
+CronDelete(<matching job id(s)>)            # prompt에 "nara-trending-digest" 포함된 기존 job 전부 삭제
+CronCreate(cron="3 9 * * 1", prompt="/nara-trending-digest --since weekly", durable=true, recurring=true)
+```
+
+- **crawl보다 먼저, 어떤 결과에도 묶지 않고 실행** — self-renew는 digest 내용이 필요 없다. crawl/Slack/Obsidian이 실패해도 스케줄은 살아남아야 하므로 Step 1~5 성공에 **의존하지 않는다** (crawl 실패로 체인이 죽는 것 방지). 그래서 Step 4/5가 아니라 맨 앞 Step 0.
+- **스코프 한계(솔직)**: LLM은 크론-트리거인지 수동 실행인지 확실히 구분 못 한다(프롬프트 동일). 판별 신호는 `--dry-run`(수동)뿐 — dry-run이면 self-renew 생략. dry-run 아닌 수동 실행은 self-renew를 돌려도 CronList→Delete→Create라 중복은 안 생기고 스케줄만 갱신됨(무해).
+- **잔여 리스크(플랫폼)**: recurring job의 마지막(7일째) 발화가 jitter로 만료 경계를 넘겨 스킵되면 재생성 체인이 끊길 수 있다. off-minute cron(`3 9`)으로 완화하되 완전 제거는 불가 — 끊기면 수동 재설정.
+
+## 실행 맥락 (fire-and-forget)
+
+이 스킬은 **주간 크론 헤드리스 실행**이 기본. Slack DM(본인) + Obsidian(개인 vault) write는 인터랙티브 confirm 게이트 없이 실행된다 — 헤드리스라 확인할 사람이 없기 때문. 안전은 **side effect의 저위험·가역성**(본인 DM·개인 노트, 삭제 가능)으로 확보. 게시 전 확인이 필요하면 `--dry-run`으로 수동 실행해 터미널 출력만 검토한다.

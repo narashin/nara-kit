@@ -16,7 +16,7 @@ description: >-
 2. **작업 문서**: `docs/requirements.md`, `docs/gap.md` 존재 확인. gap.md 있으면 점수 추출. `docs/gap-history.md` 있으면 최근 점수 추이(직전→현재) 1줄 표면화
 3. **Requirements stale 검증**: `docs/requirements.md` 존재 시 frontmatter `sources[].fetched_at` 확인. 가장 오래된 source의 경과시간 측정
 4. **Handoff**: `docs/handoff.md` 존재 확인. 있으면 9섹션 스키마로 파싱 — baseline SHA로 stale 검증, 현재 목표/In Progress/Open Questions/검증 상태/다음 안전 조치/먼저 읽을 파일 우선 표면화
-5. **프로젝트 메모리**: claude-mem observations 최근 항목 조회
+5. **프로젝트 메모리**: 설치된 memory 도구로 최근 세션·관련 관찰 조회 (예: engram `mem_context` / `mem_search`). 도구 없으면 이 단계 skip — 없는 백엔드 호출 금지
 6. **미완료 작업**: task 목록 확인 (판단용, 출력 안 함)
 
 ## Stale 판정

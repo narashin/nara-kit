@@ -56,13 +56,15 @@ jira-drain <KEY|issue_id> [--dry-run]
    herdr agent wait "$PANE" --status idle --timeout 90000 2>/dev/null || sleep 20
    herdr pane run "$PANE" "1"
    ```
+   - `worktree create` / `pane run` 이 **non-zero exit** → 그 단계에서 즉시 ESCALATE, §4 mark로 진행하지 않는다 (launch 자체가 실패 = working 상태 남기면 안 됨).
+   - **trust-"1" 타이밍은 best-effort**: `agent wait --status idle`는 미검증이라 `|| sleep 20` fallback에 의존한다. "1"이 dialog 표시 전에 도착하면 빗나갈 수 있다 — herdr에 pane 출력을 읽어 dialog를 확정하는 검증된 커맨드가 없어 여기서 기계적으로 감지하지 못한다. 따라서 §4 mark 세만틱을 "launched(실행 확정 아님)"으로 낮추고, 오발은 **다운스트림에서 감지**한다 (space에 `PR_RESULT`/`SPEC_RESULT`가 안 나오면 미기동 → review-queue/cleanup 단계에서 드러남).
    - `worktree create` 실패(브랜치/워크트리 이미 존재 등) → `ESCALATE: herdr worktree create 실패 <stderr>`
    - **프롬프트에 작은따옴표(`'`) 금지** — pane run 바깥 `"..."` 안 claude 인자 `'...'`로 감싸므로. gate-as-stop 프롬프트는 작은따옴표 없이 유지.
    - `--base`로 스택 지정 가능 (진행 중 PR 위 스택 필요 시 다른 브랜치).
 
-4. **mark** — 이슈 metadata + 상태 전환:
+4. **mark** — §3 launch 커맨드(`worktree create`·`pane run`)가 모두 성공했을 때만. 실패로 ESCALATE했으면 이 단계 건너뜀. `drain_state=working` = **"launched"** 의미(트리거됨) — claude가 실제로 프롬프트를 완주 중이라는 확정 아님(trust 타이밍 best-effort, §3). 오발은 다운스트림 `PR_RESULT` 부재로 감지.
    ```bash
-   multica issue metadata set <id> --key drain_state --value working
+   multica issue metadata set <id> --key drain_state --value working   # working = launched (not productivity-confirmed)
    multica issue status <id> in_progress
    ```
 
@@ -92,7 +94,7 @@ jira-drain <KEY|issue_id> [--dry-run]
 - PR까지만. 머지·publish는 사람
 - `--dry-run`이면 herdr/Multica 쓰기 없이 조립된 커맨드만 출력
 - claude는 `--permission-mode auto`로 자율 실행 — gate-as-stop이 안전망. `--dangerously-skip-permissions`는 **쓰지 않는다**
-- **folder trust 게이트**: 새 워크트리 첫 실행 시 "trust this folder?" 뜸 → `pane run "1"`(Yes)로 통과(§launch). `--permission-mode auto`론 안 넘어가며, 통과 후 초기 프롬프트 인자가 자동 실행됨 (검증됨)
+- **folder trust 게이트**: 새 워크트리 첫 실행 시 "trust this folder?" 뜸 → `pane run "1"`(Yes)로 통과(§launch). `--permission-mode auto`론 안 넘어감. 통과되면 초기 프롬프트 인자가 자동 실행되는 동작은 확인됨 — 단 "1" 전송 **타이밍**은 best-effort(§3): dialog 표시 전 도착 시 빗나갈 수 있고 기계적 감지 수단이 없다
 - `triage_type` 값은 jira-triage classify 4종(구현/버그픽스/기획/기타)에 의존 — 변경 시 함께 갱신
 - metadata 확장 — `drain_state: working`(착수) = jira-drain이 write, `done`(머지·정리 완료)은 [cleanup](references/cleanup.md)에서 write. (jira-triage 6키 외 추가 키)
 - 머지 후 space·워크트리 정리 = [cleanup](references/cleanup.md) (PR `MERGED` 확인 후 `herdr worktree remove --workspace <WS> --force`)
@@ -105,7 +107,9 @@ jira-drain <KEY|issue_id> [--dry-run]
 | project 매핑 없음 | `❌ 실패: <KEY> project 매핑 없음 (~/.claude/jira-triage.md 보완)` |
 | local_path 미설정 | `❌ 실패: <repo> local_path 미설정 (~/.claude/jira-triage.md 보완)` |
 | triage_type=기타 | `수동 처리 — drain 안 함` 중단 |
-| worktree create 실패 | `→ ESCALATE: herdr worktree create 실패 <stderr>` (브랜치/워크트리 중복 가능) |
+| worktree create 실패 | `→ ESCALATE: herdr worktree create 실패 <stderr>` (브랜치/워크트리 중복 가능). §4 mark 안 함 |
+| pane run 실패 (claude 미기동) | `→ ESCALATE: claude 실행 실패 <stderr>`. §4 mark 안 함 — working 상태 남기지 않음 |
+| trust-"1" 오발 (기계 감지 불가) | mark는 `working=launched`로만. space에 `PR_RESULT` 부재 시 미기동 판정 → 수동 확인/재착수 |
 | mark 실패 (space는 실행 중) | `→ ESCALATE: mark 실패 — 수동 상태 전환 필요` |
 
 ## Receipt
@@ -117,7 +121,7 @@ jira-drain 착수 완료 (applied | recorded only — dry-run).
 - space: "[<KEY>] <summary>" (workspace <WS>) · branch: <prefix>/<KEY>-<slug>
 - local_path: <local_path>
 - side effects:
-  - multica: drain_state=working, status → in_progress (<id>)
+  - multica: drain_state=working (launched, 실행 확정 아님), status → in_progress (<id>)
   - herdr: 1 worktree(space) created + claude launched
 - next: herdr space에서 PR_RESULT 확인 → /nara-review-queue → 머지 후 cleanup
 ```
