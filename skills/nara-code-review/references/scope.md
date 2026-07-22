@@ -4,7 +4,7 @@
 
 ```
 working tree dirty  → staged + unstaged + untracked 전체 리뷰
-working tree clean  → HEAD~1..HEAD
+working tree clean  → HEAD~1..HEAD (단, HEAD가 base 브랜치에 이미 포함되면 빈 스코프)
 숫자 N              → HEAD~N..HEAD
 branch 이름          → <branch>..HEAD
 ```
@@ -21,8 +21,19 @@ git ls-files --others --exclude-standard    # untracked files — read directly
 git log <range> --pretty=format:"%H %s"     # commit messages → context-map
 ```
 
-If no git changes found at all, review files the user mentioned or files edited
-earlier in this conversation, and record that in the manifest.
+## Empty scope (defined stop)
+
+Scope is EMPTY when: tree is clean AND HEAD is already contained in the base branch
+(`git merge-base --is-ancestor HEAD <base>` succeeds) — never silently re-review an
+already-merged commit. On empty scope, fall back in order: (1) files the user
+explicitly mentioned, (2) files edited earlier in this conversation — record the
+fallback source in the manifest. If both are empty too: STOP before launching any
+reviewer. Output (Korean): state there is nothing to review, list re-run options
+(`/nara-code-review 1|N|<branch>` or explicit file paths), save NO report file, and
+emit the FULL trailing status block: `overrides:` as resolved in Step 0 (which
+still runs before scope), then `fix-ledger: n/a`, `fix-verification: n/a`,
+`scope-integrity: n/a (empty scope)`, `validation: n/a`. Zero findings — never
+fabricate.
 
 ## Review manifest (frozen at start)
 

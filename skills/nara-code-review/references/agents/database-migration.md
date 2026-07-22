@@ -38,4 +38,6 @@ or query code. Read-only — never edit code.
 ## Not yours
 
 Transaction rollback in application code → resilience-data-integrity. General perf
-outside DB → performance-resources.
+outside DB → performance-resources. Wire/serialization deploy-window compatibility
+(mixed-version clients, rollback deserialization) → contracts-compatibility; you
+own the schema side.

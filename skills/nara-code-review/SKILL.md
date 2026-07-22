@@ -3,16 +3,16 @@ name: nara-code-review
 description: >-
   Multi-agent parallel code review + auto-fix for local commits.
   USE FOR: "리뷰해줘", "코드 검수", "버그 찾아줘", "review code", "check for bugs",
-  "audit code", "cleanup", or after finishing code changes before committing.
-  DO NOT USE FOR: PR review on remote (→ nara-pr-review), general refactoring,
-  or documentation-only changes.
+  "audit code", "cleanup", or before committing.
+  DO NOT USE FOR: PR review on remote (→ nara-pr-review), production incident
+  root-cause (→ nara-incident), refactoring, or documentation-only changes.
 ---
 
 # Code Review — Evidence-Based Multi-Agent Review & Controlled Fix
 
-Orthogonal reviewer agents (4 core + conditional specialists) review in parallel.
-Findings pass a blind Judge; one central Fixer applies risk-gated fixes serially;
-a Verifier proves each fix at issue level. Loop until convergence.
+Orthogonal reviewers (4 core + conditional) run in parallel. Findings pass a
+blind Judge; a single Fixer applies risk-gated fixes serially; a Verifier proves
+each fix. Loop until convergence.
 
 ## Role separation (strict)
 
@@ -25,7 +25,7 @@ a Verifier proves each fix at issue level. Loop until convergence.
 
 ## Flow
 
-0. **Load project override** (if `.claude/overrides/code-review.md` exists) — below
+0. **Load project override** (`.claude/overrides/code-review.md`) — below
 1. **Scope**: git collection + frozen review manifest + args — [scope](references/scope.md)
 2. **Context map**: code context + change intent/spec — [context-map](references/context-map.md)
 3. **Route reviewers**: 4 core always + conditionals by trigger — [routing](references/routing.md)
@@ -42,15 +42,14 @@ a Verifier proves each fix at issue level. Loop until convergence.
 ## Key rules
 
 - **All report output MUST be in Korean (한국어)**
-- Finding accepted only if `evidence_level >= E2 AND confidence >= threshold`.
-  E1 이하는 finding이 아니라 "미검토 리스크 / 확인 질문"으로 분리
+- E1 이하는 finding이 아니라 "미검토 리스크 / 확인 질문"으로 분리 (게이트는 Flow 5)
 - Severity = impact only; never blended with confidence
 - Reviewers/Judge/Verifier never edit code; suggestions never auto-fixed;
   R3 never auto-fixed in any mode
 - Fixer self-reports are candidates — the Verifier's hash/hunk + validation proof
   is the judge. Nothing is "applied" while unverified
-- Convergence: clean, max rounds, no progress (same fingerprints), or
-  suggestions-only
+- Convergence: clean, manual-only (잔존 전부 R2/R3), max rounds, no progress,
+  or suggestions-only
 
 ## Project Override (Step 0)
 

@@ -18,8 +18,8 @@ issue 단위 Verifier(hash/hunk + validation proof).
 
 ## 언제 쓰나
 
-- **USE FOR:** "리뷰해줘", "코드 검수", "버그 찾아줘", "review code", "check for bugs", "audit code", "cleanup", or after finishing code changes before committing.
-- **DO NOT USE FOR:** PR review on remote (→ nara-pr-review), general refactoring, or documentation-only changes.
+- **USE FOR:** "리뷰해줘", "코드 검수", "버그 찾아줘", "review code", "check for bugs", "audit code", "cleanup", or before committing.
+- **DO NOT USE FOR:** PR review on remote (→ nara-pr-review), production incident root-cause (→ nara-incident), refactoring, or documentation-only changes.
 
 ## 더 보기
 

@@ -21,7 +21,7 @@ reviewers run only when their trigger matches the manifest + diff content.
 | [architecture-reuse](agents/architecture-reuse.md) | 새 모듈·추상화·dependency 추가, 여러 레이어 동시 변경, 공통 코드 중복 |
 | [frontend-ux-a11y](agents/frontend-ux-a11y.md) | `*.tsx` `*.jsx` `*.css` `*.scss`, `components/`, `pages/`, styles |
 | [database-migration](agents/database-migration.md) | schema, entity, repository, migration, query |
-| [operations-config](agents/operations-config.md) | config, logging, metrics, Dockerfile/Helm/CI, feature flag, env, rollback, deployment docs |
+| [operations-config](agents/operations-config.md) | config, logging, metrics, Dockerfile/Helm/CI, feature flag, env, rollback, deployment docs, 신규 failure path(새 catch/error branch, 새 외부 호출) |
 
 Routing decisions go in the report header: which conditional agents ran and which
 triggers fired. When in doubt on a trigger, run the agent — false-positive routing
@@ -29,7 +29,7 @@ costs tokens; false-negative routing costs coverage.
 
 ## Launch rules
 
-- Launch all selected reviewers concurrently via the Agent tool in a single message.
+- Dispatch all selected reviewers concurrently as parallel subagents (one batch).
 - Each reviewer prompt = [reviewer-contract](reviewer-contract.md)
   + its own `agents/<name>.md` + relevant [stack-specific](stack-specific.md) section
   + project override block (if loaded) + manifest + diff + context map.

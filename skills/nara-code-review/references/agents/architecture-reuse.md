@@ -31,6 +31,10 @@ layers, or duplicates common code. Read-only — never edit code.
 - Parameter sprawl: adding parameters instead of generalizing/restructuring.
 - Copy-paste with slight variation: near-duplicate blocks that should be unified.
 - Leaky abstractions: exposing internals or breaking existing abstraction boundaries.
+- Add-without-delete: new code path added while the old path it replaces stays
+  alive with no removal plan — both must be maintained forever.
+- Temporary compatibility code (shims, dual-write, legacy branches) without an
+  explicit removal condition or date.
 
 **Stack-specific**
 - Spring: Bean scope misuse, circular dependencies.

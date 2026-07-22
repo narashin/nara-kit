@@ -10,6 +10,19 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Changed
+- `nara-code-review` — 리뷰 관점 15종 검토 후 14종을 기존 10 agent에 흡수(신규 agent 0 — 직교성 유지, 체크당 owner 1명):
+  - 신규 섹션: deploy-window/시간축 호환(contracts, mixed-version·rollback deserialize) / business abuse(security, rate-limit·자원 독점) / failure aftermath(resilience, DLQ·재처리·수동 복구) / data lifecycle(resilience, cascade delete·soft-delete 누출) / i18n(frontend, 하드코딩 문자열·조사/복수형) / observability 심화(operations, 추적성·retry-vs-영구실패·alert actionability).
+  - 라우팅 구멍 수리: 순수 코드의 신규 failure path(새 catch/외부 호출)도 operations-config 트리거.
+  - context-map에 조건부 historical-context 단계(의문 guard/legacy 주석 → `git log -p`/`blame`).
+  - P2 불릿: AC 완전성·temporal 경계(behavior), caller sweep 의무화(contracts), 과금 API(performance), mock fidelity(tests), add-without-delete·temp compat 기한(architecture), double-submit·dead-end 에러(frontend), 위험 기본값(operations).
+- `nara-code-review` — skill-forge 5 iter (전부 kept):
+  - 빈 스코프 정의: clean tree에서 base에 이미 머지된 커밋 재리뷰 방지(merge-base 가드) + fallback 순서 + n/a trailing status 규정.
+  - `manual-only` 수렴 라벨 신설(confirmed 잔존이 전부 R2/R3) + fix 0건 시 trailing status 규칙(`match`/`0,0,0`, n/a는 `--fix=none` 전용).
+  - description에 DO NOT redirect 추가: production incident root-cause → nara-incident (토큰 패리티 1097→1096).
+  - routing.md 런타임 중립화("Agent tool" → "parallel subagents").
+  - eval 수리: 구 5-agent 체계 잔재 assertion("High") 및 과광폭 not_contains("요구사항") 교정.
+
 ## [0.19.0] - 2026-07-22
 
 ### Fixed

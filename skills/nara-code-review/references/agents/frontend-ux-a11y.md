@@ -20,6 +20,18 @@
 - Optimistic updates without rollback on failure.
 - Focus loss after dialog/modal open-close; scroll position jumps on rerender.
 - Destructive actions without confirmation where sibling flows have one.
+- Double-submit: buttons triggering mutations without disable/debounce during the
+  in-flight request — duplicate requests on rapid clicks.
+- Error messages that don't tell the user what to do next (dead-end errors).
+
+**Internationalization (when the project is localized or has an i18n setup)**
+- Hardcoded user-facing strings bypassing the project's i18n mechanism.
+- String concatenation for grammar: Korean particles (조사) or English plurals
+  built by concatenation/ternary instead of i18n plural/format APIs.
+- Date/number/currency formatted without locale awareness where the project
+  handles multiple locales; timezone conversion done at inconsistent layers.
+- Layout assuming source-language string length (fixed widths that break on
+  longer translations).
 
 **Accessibility**
 - Interactive elements that aren't focusable/keyboard-operable (div-with-onClick).
