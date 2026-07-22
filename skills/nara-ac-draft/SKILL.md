@@ -14,6 +14,7 @@ description: >-
 
 ## 실행
 
+0. **덮어쓰기 가드** — `docs/requirements.md` 이미 존재하면 write 전 사용자 확인 필수. 특히 `sources:`가 `[internal-draft]`가 **아닌** 경우(= prep이 외부 SoT로 로컬화한 산출물) 무단 덮어쓰기 금지 — clobber 시 데이터 손실. 확인 없이 진행 금지. 자기 `[internal-draft]` 산출물 재생성이 승인되면 기존 파일의 AC-ID를 로드해 재사용한다 (규칙 "AC-ID 안정" 준수).
 1. **Context** — intent verbatim. 코드 scan으로 actor/domain. 못 찾으면 `[NOT FOUND]`
 2. **Decomposition** — Who/What/Why 3축. 불확실 `[NEEDS_CONFIRMATION]`. Why 없으면 US 거부
 3. **S2 Discovery** — US 1.5~2.5x 과생성. Tag Happy/Sad/Edge. Gherkin AC 1~3. 근거 없는 구체값 `[UNVERIFIED]`

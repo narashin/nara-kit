@@ -2,7 +2,7 @@
 
 > 사람용 문서. Claude는 런타임에 이 파일을 읽지 않음 (SKILL.md + references만 로드). 호출·용도 안내.
 
-Run documentation-first workflow producing specs, RFCs, design docs, or planning artifacts. Routes by requirement clarity: clear → nara-grill → nara-prep → spec, vague → nara-ac-draft → nara-prep → spec.
+Run documentation-first workflow producing specs, RFCs, design docs, or planning artifacts. Routes by requirement clarity: clear → (nara-prep if external SoT) → nara-grill → persist → spec, vague → nara-ac-draft → spec.
 
 ## 호출
 

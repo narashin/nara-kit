@@ -2,7 +2,7 @@
 name: nara-workflow-orchestrator
 description: >-
   Classify natural-language workflow requests into doc or dev mode and route to the correct downstream workflow skill.
-  USE FOR: "now", "워크플로우", "workflow", "어떤 모드", "start work".
+  USE FOR: "워크플로우", "workflow", "어떤 모드", "doc냐 dev냐", "start work", "이 작업 어떻게 진행".
   DO NOT USE FOR: direct implementation tasks, standalone documentation edits, simple bug fixes.
 ---
 
@@ -13,9 +13,10 @@ Classify natural-language workflow requests, then route to `nara-workflow-doc-mo
 ## Decision rules
 
 1. Classify request into `doc` or `dev`.
-2. Classify scope: `small`, `medium`, or `large` (choose higher when ambiguous).
-3. Check if source-of-truth localization is needed before downstream work.
-4. If ambiguous, ask one focused question. Otherwise route in same turn.
+2. Check if source-of-truth localization is needed before downstream work.
+3. If ambiguous, ask one focused question. Otherwise route in same turn.
+
+> Scope(small/medium/large) 분류는 여기서 하지 않는다 — `nara-workflow-dev-mode`가 자체 기준으로 산출·소비. orchestrator는 mode(doc/dev)로만 라우팅.
 
 ### Mode
 

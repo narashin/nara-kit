@@ -12,7 +12,7 @@ Classify natural-language workflow requests into doc or dev mode and route to th
 
 ## 언제 쓰나
 
-- **USE FOR:** "now", "워크플로우", "workflow", "어떤 모드", "start work".
+- **USE FOR:** "워크플로우", "workflow", "어떤 모드", "doc냐 dev냐", "start work", "이 작업 어떻게 진행".
 - **DO NOT USE FOR:** direct implementation tasks, standalone documentation edits, simple bug fixes.
 
 ## 더 보기

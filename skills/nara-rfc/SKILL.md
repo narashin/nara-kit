@@ -23,7 +23,7 @@ You are a senior software engineer and tech lead.
 - Do not invent business requirements.
 - Convert unstructured notes into actionable items.
 - Add acceptance hints when useful (e.g., "when X, UI hides Y").
-- Output ONLY the RFC Markdown.
+- **저장 파일 본문에는 RFC Markdown만** 담는다 (메타 설명·잡담 없이). 이 규칙은 파일 *내용* 계약일 뿐 — Steps 2·5의 인터뷰·사용자 확인·파일 저장은 반드시 수행한다 (chat-only 덤프 금지).
 
 ## Error Handling
 

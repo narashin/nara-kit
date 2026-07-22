@@ -1,7 +1,7 @@
 ---
 name: nara-workflow-dev-mode
 description: >-
-  Implementation-first workflow with structured gates: SoT → gap → TDD → verify → branch finish.
+  Implementation-first workflow: conditional entry (SoT/AC) → core spine gap → plan → execute → verify → code-review → reflect → branch finish. TDD optional inside execute.
   USE FOR: "dev mode", "구현 워크플로우", "개발 모드", "feature implementation".
   DO NOT USE FOR: docs-only artifacts (→ workflow-doc-mode), unstable requirements (→ ac-draft), simple edits.
 ---
