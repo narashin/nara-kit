@@ -26,7 +26,7 @@ description: >-
    기준 (foreign repo 포함). 전체 파일 컨텍스트는 `gh api contents`로.
 2. **Code-plane 리뷰**: nara-code-review와 같은 리뷰어 체계 — 설치돼 있으면
    `nara-code-review/references/`의 reviewer-contract + finding-schema +
-   agents/*.md를 그대로 재사용 (core 4 + 조건부 라우팅). 없으면
+   routing + agents/*.md 재사용 (core 4 + 조건부 라우팅). 없으면
    [pr-plane](references/pr-plane.md)의 lane 요약으로 대체 (standalone fallback).
 3. **PR-plane 리뷰** (4 lane, 병렬) — [pr-plane](references/pr-plane.md):
    description↔diff 정합 / commit 구성 / CI 신호 / discussion 커버리지.
@@ -34,7 +34,7 @@ description: >-
    독립 Judge 재확인 (원 confidence·fix 은닉).
 5. **Report** (한국어) → `./docs/review/YYMMDD-pr<번호>.md`.
 6. **Post (승인 게이트)**: 사용자가 승인한 finding만 `gh pr review --comment`로
-   게시. 승인 없이는 아무것도 게시하지 않는다. approve/request-changes verdict는
+   게시. 승인 없이는 게시하지 않는다. approve/request-changes verdict는
    항상 사람 몫 — 이 스킬은 제안만 한다.
 
 ## Key rules
@@ -50,6 +50,6 @@ description: >-
 ```
 report: <path>
 comments-posted: none | N개 (승인 근거: 사용자 응답 인용)
-ci: pass | fail (<check>) | pending
+ci: pass | fail (<checks>) | pending
 unresolved-threads: N
 ```

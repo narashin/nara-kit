@@ -12,6 +12,8 @@ gh pr view <n> --repo <owner/repo> --json comments  # conversation
 ```
 
 - GHES면 `GH_HOST` 설정 확인. 체크아웃하지 않는다 — 로컬 워킹트리 불변.
+- 수집 실패(GH_HOST 미설정, 권한, 404)는 `❌ 실패:` 블록으로 즉시 중단 —
+  부분 데이터로 리뷰를 진행하지 않는다.
 - 변경 파일의 전체 컨텍스트: `gh api repos/<o>/<r>/contents/<path>?ref=<headRef>`
   (base 비교 필요 시 `ref=<baseRef>`도).
 - diff가 큰 경우(>~50 files) 리뷰 범위를 디렉터리 단위로 분할해 lane당 배분하고,
@@ -31,6 +33,15 @@ finding 최소 필드: location(path+symbol) / invariant / preconditions /
 failure_path / impact / counterevidence_checked.
 
 ## PR-plane lanes (항상 4개, 병렬)
+
+Lane 산출물은 lane 요약(프로세스 평면)으로만 리포트에 실린다 — finding-schema로
+변환하지 않으며 fingerprint dedup·Judge 대상이 아니다. lane이 코드 결함을
+발견하면 직접 finding으로 보고하지 않고 code-plane으로 넘겨 finding화한 뒤,
+lane 요약에서 해당 finding ID를 참조한다 (같은 사실의 이중 보고 금지).
+
+리포트 파일 구성: code-plane finding 섹션(code-review report 형식 준용) +
+PR-plane lane 요약 4개 + trailing status. Judge 절차는 nara-code-review
+설치 시 adjudication.md 준용, 미설치 시 SKILL.md Step 4의 요약 규칙만.
 
 **1. description-alignment**
 - PR 본문이 주장하는 변경 vs 실제 diff: 미신고 변경(diff에 있는데 설명 없음),
@@ -54,6 +65,8 @@ failure_path / impact / counterevidence_checked.
 
 ## Posting rules
 
+- 리뷰 완료 시 콘솔 응답은 output contract의 receipt (상세는 리포트 파일).
+  초안 전체 표시는 사용자가 게시 의사를 밝힌 시점에 수행한다.
 - 게시 전 초안 전체를 사용자에게 표시 → finding ID 단위 승인 → 승인분만
   `gh pr review --comment --body ...` 또는 inline (`gh api pulls/<n>/comments`).
 - approve / request-changes는 절대 이 스킬이 실행하지 않는다.
