@@ -54,9 +54,11 @@ GH_HOST=<host> gh pr list \
 각 PR에 대해 Multica 이슈 생성:
 
 ```bash
+# description의 개행은 셸에서 실제 개행으로 만들어 전달 (인라인 리터럴 "\n"은 백슬래시-n으로 렌더됨)
+DESC=$(printf 'PR: %s\n\n리뷰 요청을 받았으나 아직 리뷰를 남기지 않은 PR입니다.' "<PR URL>")
 multica issue create \
   --title "리뷰 필요: <PR 제목>" \
-  --description "PR: <PR URL>\n\n리뷰 요청을 받았으나 아직 리뷰를 남기지 않은 PR입니다." \
+  --description "$DESC" \
   --priority medium \
   --assignee "<reviewer-agent>" \   # 기본 PR-Reviewer. assign 순간 자동 리뷰(nara-review-queue) 실행. 빈 값이면 생략
   --output json
@@ -88,6 +90,7 @@ multica issue comment add <issue_id> \
 
 ## 규칙
 
+- **fire-and-forget 자동화** — 헤드리스(Multica autopilot)로 도므로 인터랙티브 confirm 게이트 없음. 안전은 **dedup(중복 이슈/알림 방지) + 가역성(이슈는 삭제 가능, 코드 변경 없음)**으로 확보. 인간 확인이 필요한 실행이면 이 스킬 대신 수동 리뷰.
 - `GH_HOST` 환경변수로 gh CLI 라우팅 제어
 - 인자 누락 시 agent instructions 기본값 사용. 그것도 없으면 오류 안내 후 중단
 - `gh` CLI PATH에 존재해야 함

@@ -37,7 +37,7 @@ gap.md Next Actions의 **상위 1~2개 항목**을 보고 판단:
 - 변경사항: {modified/untracked 요약}
 - 작업 문서: requirements.md {있음/없음} | gap.md {있음/없음} {있으면 (점수: N/100, P0 Missing: {N}, Gate: ✅/❌/⚠️)}
 - 최근 작업: {마지막 커밋 메시지}
-- 메모: {claude-mem 최근 5건 중 관련 observation 요약. 없으면 생략}
+- 메모: {memory 도구(engram 등) 최근 관련 observation 요약. 도구 없거나 결과 없으면 생략}
 
 ## 추천
 {위 판단 로직에 따른 구체적 다음 행동}

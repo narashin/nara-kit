@@ -73,6 +73,10 @@ IF conflicts with spec/source-of-truth, or cannot be verified either way:
   -> ASK -- reply to the reviewer as a question (category + recommendation + evidence), never as a confirmed fix or rebuttal
 ```
 
+### 🔴 Reply CHECKPOINT (applies to Phases 5-4, 6, and every reviewer-thread post)
+
+**Never post to the reviewer thread without explicit user approval.** Before ANY `gh api .../replies` call (accept "Fixed.", rebut, ASK question, or question-answer), collect ALL drafted replies, show them to the user (target comment + category + full reply text), and post only the ones the user approves. Default flow = draft → show → confirm → post, never post-first. `--dry-run` drafts only, posts nothing. Posting to a colleague's PR is an irreversible social side effect.
+
 ## Phase 5: Accept Path
 
 ### 5-1. Impact Analysis
@@ -91,8 +95,8 @@ IF conflicts with spec/source-of-truth, or cannot be verified either way:
 - Run related tests
 - Confirm no regressions
 
-### 5-4. Reply
-Inline reply via `gh api repos/{owner}/{repo}/pulls/{number}/comments/{id}/replies -f body="..."`:
+### 5-4. Reply (post only after Reply CHECKPOINT approval)
+Inline reply via `gh api repos/{owner}/{repo}/pulls/{number}/comments/{id}/replies -f body="..."` — **draft first, post only what the user approved** (see Reply CHECKPOINT):
 
 ```
 Fixed. [one-line description of change]
@@ -113,13 +117,15 @@ Rebut reasons (one or more):
 - Legacy/compatibility reason exists
 - Conflicts with user's architecture decision
 
-Reply format:
+Reply format (post only after Reply CHECKPOINT approval):
 ```
 [Current implementation reason]. [Technical evidence -- code/test reference].
 [Question or alternative (if applicable)]
 ```
 
 ## Phase 7: Wrap-up
+
+0. **Reply confirmation** -- before/at wrap-up, confirm every reviewer-thread reply was shown and approved per the Reply CHECKPOINT; never report replies as posted unless the user approved them.
 
 1. **Changes summary** (when accepts exist):
    - Changed file list + diff summary

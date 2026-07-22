@@ -45,7 +45,7 @@ Use `take_screenshot` with `filePath`. Note: chrome-devtools **only writes insid
 Delete the temp preview page(s), kill the dev server (`lsof -ti:<port> | xargs kill`), confirm the tracked tree is clean. Screenshots stay untracked (not committed).
 
 ### 7. Hand off
-Report absolute file paths and open the folder (`open <dir>`). For GHE PRs, the human drags the files into the PR editor to get `user-attachments` URLs (CLI cannot attach) — see [[feedback-pr-visual-comparison]].
+Report absolute file paths and open the folder (`open <dir>`). For GHE PRs, the human drags the files into the PR editor to get `user-attachments` URLs (CLI cannot attach): the `gh`/API path cannot upload PR-body image attachments, so hand the absolute paths back and let the user drop them into the web editor.
 
 ## Project specifics
 
