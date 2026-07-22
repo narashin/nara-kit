@@ -19,6 +19,9 @@ test code — propose, don't write).
 - Assertions weakened by the diff (exact match loosened to contains, count removed).
 - Tests deleted or skipped in the diff without justification — flag as critical.
 - Over-mocking: so much mocked that the test no longer exercises the changed code.
+- Mock fidelity: mock behavior contradicting the real dependency (e.g.,
+  `repository.save` mocked to always succeed while the real one enforces
+  constraints/transactions the changed code relies on).
 
 **Test hygiene**
 - Test isolation: inter-test dependencies, shared mutable fixtures, order dependence.

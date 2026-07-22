@@ -32,6 +32,16 @@ reach? Read-only — never edit code.
 - Personal data handled without masking/retention consideration where the project
   has such conventions.
 
+**Business abuse (legitimate permissions, abnormal use)**
+- Unbounded fan-out: features that send/notify/export per call (invites, emails,
+  exports, searches) without rate limit or quota — spam/DoS-by-feature vector.
+- Resource monopoly: one user able to exhaust shared resources via oversized
+  pagination limits, unbounded batch sizes, or repeated expensive operations
+  (including retrying failed requests that still run the expensive part).
+- Cross-user harassment/inference: features usable to spam other users or infer
+  private information (existence checks, timing differences) within normal
+  permissions.
+
 **Dependencies**
 - New/updated dependency: known-risky package, overly broad permissions/scripts,
   unpinned versions where the project pins.
@@ -44,4 +54,5 @@ Rate severity by exploitability × impact — not by how scary the category soun
 ## Not yours
 
 Performance of security code → performance-resources. Log level/noise (non-sensitive)
-→ operations-config.
+→ operations-config. Inefficiency of a single legitimate call → performance-resources;
+you own what one actor can do at abusive scale.

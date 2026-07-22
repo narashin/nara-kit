@@ -28,6 +28,9 @@ Read-only — never edit code.
 **Other**
 - Caching strategy: missing where hot, present-but-never-invalidated where stale.
 - Bundle size impact (heavyweight import for one function).
+- Metered-cost calls: per-request calls to billed APIs (LLM, email/SMS, search,
+  object storage egress) — cost scales with users, not just latency; flag call
+  counts that multiply per page-load/per-user.
 - Java: Stream abuse in hot loops, excessive synchronized, GC pressure patterns.
 
 ## Evidence discipline

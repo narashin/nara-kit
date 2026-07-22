@@ -25,7 +25,7 @@
 🔴 Critical: N건  🟠 Major: N건  🟡 Minor: N건  💡 Suggestion: N건
 ⚖️ Judge: confirmed N / downgraded N / rejected N / needs-context N
 ✅ 수정 verified: N건  ⏳ unverified: N건  ❌ mismatched: N건
-🔄 라운드: {N}회 (수렴: {✅ Clean / ⚠️ Max rounds / 🔁 No progress})
+🔄 라운드: {N}회 (수렴: {✅ Clean / 🖐 Manual-only / ⚠️ Max rounds / 🔁 No progress})
 
 🔄 라운드별 이력
 ━━━━━━━━━━━━━━━
@@ -82,6 +82,10 @@ validation: pass | fail (<command>) | unavailable
 ```
 
 `--fix=none` runs print `fix-ledger: n/a` and `fix-verification: n/a`.
+Fix-enabled runs that applied ZERO fixes (nothing eligible) print `fix-ledger: match`
+and `fix-verification: 0 verified, 0 unverified, 0 mismatched`; `validation` reflects
+whatever actually ran (`unavailable` if no validation was executed). Empty-scope
+stops: see scope.md (all `n/a`).
 
 ## Adversarial review (manual follow-up)
 

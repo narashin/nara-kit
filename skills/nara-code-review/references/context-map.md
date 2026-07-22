@@ -18,6 +18,13 @@ For each changed file:
    `pages/`, `styles/`, or `*.tsx`/`*.css`/`*.scss`, check for `DESIGN.md` at project
    root. If present, read its YAML frontmatter (colors, typography, rounded, spacing
    tokens) + Do's/Don'ts, and pass to **frontend-ux-a11y**. Skip otherwise.
+8. **Historical context (conditional — only when triggered, never blanket)**: when
+   the diff removes/alters a guard, branch, or comment whose purpose is unclear, or
+   deletes/weakens an existing test — run `git log -p -- <file>` / `git blame` on
+   those lines (optionally `git log --grep="<keyword>"`). Surface why the code
+   existed (past incident, revert, legacy compat) to the relevant reviewers. Do NOT
+   run this on every file — only on puzzling guards, legacy comments, and removed
+   protections.
 
 ## 2b. Change intent (specification)
 

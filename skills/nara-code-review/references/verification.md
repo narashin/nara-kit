@@ -52,8 +52,15 @@ Each round after fixes:
 2. New findings → aggregation → adjudication → next round's ledger entries.
 
 **Convergence — stop when ANY:** clean (no confirmed critical/major), max rounds,
-no progress (same fingerprints reappearing → mark manual-fix-needed), or only
-suggestions remain.
+no progress (same fingerprints reappearing → mark manual-fix-needed), only
+suggestions remain, or **manual-only** (confirmed findings remain but every one is
+R2/R3 or otherwise auto-fix-ineligible — no further round can make progress; label
+the run `manual-only`, never `clean`).
+
+When a round applies ZERO fixes, the Verifier still runs its snapshot compare
+(claimed 0 vs observed 0) — report `fix-ledger: match` and
+`fix-verification: 0 verified, 0 unverified, 0 mismatched`, not `n/a` (`n/a` is
+reserved for `--fix=none`). The final baseline review is skipped (no fix applied).
 
 ## Final baseline review (mandatory when any fix was applied)
 

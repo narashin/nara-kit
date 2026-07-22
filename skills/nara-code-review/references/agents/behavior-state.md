@@ -11,6 +11,11 @@ dependencies, and differences from previous behavior. Read-only — never edit c
   invariants and existing tests — say so explicitly.
 - Difference from previous behavior: what did this code do before the diff, and is the
   delta intentional? Flag silent behavior changes not mentioned in the intent.
+- AC completeness (when a spec/AC source exists): every acceptance criterion has a
+  corresponding implementation; happy path implemented but reject/cancel/retry/
+  edge states from the spec missing → finding, not assumption.
+- Unrequested behavior: the diff adds behavior not present in any intent source —
+  flag as silent scope creep (may be fine, but must be visible).
 
 **State transitions**
 - Invalid or missing transitions (state set to a terminal value before the operation
@@ -23,6 +28,8 @@ dependencies, and differences from previous behavior. Read-only — never edit c
 
 **Boundaries & branching**
 - Boundary values: null, undefined, empty array/string, 0, negative, MAX_INT.
+- Temporal boundaries: timezone/DST transitions, midnight/month-end crossings,
+  date-only vs datetime comparison mismatches.
 - Off-by-one errors; loop termination.
 - Incomplete branching: missing else/default/exhaustive switch.
 - Implicit type coercion changing comparison/branch outcomes.

@@ -29,14 +29,28 @@ backward compatibility. Read-only — never edit code.
   (or vice versa) without every consumer updated.
 
 **Backward compatibility**
-- Public API signature changes breaking existing callers (search callers before
-  claiming safe).
+- Public API signature changes breaking existing callers — a caller sweep is
+  MANDATORY before claiming safe: grep every changed exported symbol for direct
+  calls, type references, re-exports, string literals, and dynamic imports.
 - Wire-format/persisted-data compatibility: old serialized data still deserializable
   after the change.
 - Docstring/JSDoc return types vs actual return types; comments describing contracts
   that no longer match the code.
 
+**Deploy-window compatibility (time-axis, not just static)**
+- Mixed-version pairs during rollout: new server ↔ old client AND old server ↔
+  new client — check both directions for every changed contract.
+- Rollback safety: data written by the new version (new enum values, new fields,
+  new formats) must remain readable by OLD code after rollback — flag writes that
+  poison old deserializers.
+- Rolling deployment: two server versions coexisting against the same DB/queue/cache
+  during the deploy window — message formats and cache entries readable by both.
+- Feature-flag-off / partial rollout: flag-off path fully functional, and data
+  produced while the flag was on must not corrupt the flag-off path.
+
 ## Not yours
 
 Business-logic correctness → behavior-state. Exception/transaction handling →
-resilience-data-integrity. README/config alignment → operations-config.
+resilience-data-integrity. README/config alignment → operations-config. Schema
+deploy-order (expand-contract, migration rollback) → database-migration; you own
+the wire/serialization side of the deploy window.

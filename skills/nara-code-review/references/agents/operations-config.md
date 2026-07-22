@@ -1,8 +1,9 @@
 # Conditional Agent: operations-config (ID prefix: OPS)
 
 **Runs when** the change touches: config files, logging, metrics, deployment
-manifests (Dockerfile/Helm/K8s/CI), feature flags, env vars, or docs describing any
-of these. Read-only — never edit code.
+manifests (Dockerfile/Helm/K8s/CI), feature flags, env vars, docs describing any
+of these — or introduces a NEW failure path (new catch/error branch, new external
+call) in application code. Read-only — never edit code.
 
 ## Checks
 
@@ -22,6 +23,9 @@ of these. Read-only — never edit code.
   flag checked consistently at every consumer.
 - Rollback story: can this change be reverted by redeploy alone, or does it need
   data/config steps? Flag one-way doors.
+- Dangerous defaults: when a config value is missing, the fallback must be the
+  SAFE state — flag defaults that silently enable destructive/expensive behavior
+  (e.g., `delete_on_shutdown` defaulting to true).
 
 **Infra & documentation consistency**
 - Dockerfile: directories created by `mkdir` must match paths actually used in
@@ -35,10 +39,19 @@ of these. Read-only — never edit code.
 - New dependency introduced (package.json, imports of previously unused libraries,
   new tools/CLIs) without documented justification.
 
-**Observability**
+**Observability (on-call lens: can prod failures be diagnosed and acted on?)**
 - New failure paths without metrics/log lines needed to diagnose them in prod.
+- Traceability: error logs on new paths must carry the identifiers needed to trace
+  the failing request (entity ID, state, processing step, correlation/request ID) —
+  `log.error("Failed to process")` with no context is a finding. Counter-check:
+  identifiers yes, PII/tokens no (hand to security-privacy when it runs).
+- Retry-vs-permanent distinction: from logs/metrics alone, can an operator tell
+  whether a failure is being retried or has permanently failed?
 - Alarm-relevant behavior changes (latency, error semantics) without a note on
   dashboards/alerts if the project tracks them.
+- Actionability: for a new alert-worthy failure, is there anything an operator can
+  DO (documented runbook step, admin endpoint, replay path)? Alert without action
+  is noise — flag it.
 
 ## Not yours
 
