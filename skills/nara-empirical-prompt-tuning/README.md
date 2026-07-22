@@ -12,8 +12,8 @@ Iterate and improve agent-facing instructions by dispatching bias-free executors
 
 ## 언제 쓰나
 
-- **USE FOR:** "프롬프트 튜닝", "EPT", "prompt tuning", "스킬 개선", "improve prompt".
-- **DO NOT USE FOR:** one-off throwaway prompts, subjective style preferences, direct skill authoring (use skill-development).
+- **USE FOR:** "프롬프트 튜닝", "EPT", "prompt tuning", "improve prompt".
+- **DO NOT USE FOR:** 스킬 개선/강화/벤치마크 (→ nara-skill-forge), one-off throwaway prompts, subjective style preferences, direct skill authoring (use skill-development).
 
 ## 더 보기
 

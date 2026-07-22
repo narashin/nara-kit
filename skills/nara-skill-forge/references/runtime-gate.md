@@ -12,6 +12,8 @@ grep -nE "(in Claude Code|Claude Code skill|Claude Code only|Cursor only|Codex o
 ```
 
 Non-empty output = red flag → make Phase 4 round 1 a P0 `runtime-lock` fix.
+Ignore hits inside `runtime-gate.md` itself — it quotes the patterns it scans
+for, so self-hits are always false positives.
 
 ## Red vs allowed
 
