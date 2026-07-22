@@ -69,4 +69,4 @@ implementation → review once → fix once → regression verification → stop
 
 reviewer fan-out, reviewer의 재위임, 자동 재리뷰, 발견 사항이 없을 때 추가 reviewer 실행, 리뷰 결과를 이유로 한 전체 구현 재위임을 금지한다. 수정이 필요하면 한 번 반영하고 기존 발견 사항·관련 회귀를 검증한 뒤 종료한다.
 
-독립적·전면적 리뷰가 필요하면 이 경량 리뷰 대신 `/nara-code-review`(5-agent)를 별도 단계로 호출한다.
+독립적·전면적 리뷰가 필요하면 이 경량 리뷰 대신 `/nara-code-review`(multi-agent)를 별도 단계로 호출한다.

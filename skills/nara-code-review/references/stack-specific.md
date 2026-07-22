@@ -1,6 +1,7 @@
 # Stack-Specific Review Checks
 
-Additional checks per tech stack. After identifying the stack, apply the relevant section alongside the main 5-agent review.
+Additional checks per tech stack. After identifying the stack (context-map Phase 2),
+inject the relevant section into each reviewer whose lane the items belong to.
 
 ---
 

@@ -120,7 +120,7 @@ side effects:
 
 ## 7. Long-running 진행 보고
 
-다단계 스킬 (code-review 5-agent, prep multi-source, test-discover 4-stage) 중간 보고:
+다단계 스킬 (code-review multi-agent, prep multi-source, test-discover 4-stage) 중간 보고:
 
 ```
 (2/5) Architecture agent 완료
@@ -250,7 +250,7 @@ PR 본문 생성 완료 (recorded only — gh pr create 대기).
 
 ### /nara-code-review
 ```
-5-agent 리뷰 완료.
+multi-agent 리뷰 완료.
 - artifact: `docs/review/<YYMMDD>-<desc>.md`
 - findings: <N>건 (blocking <n>, suggestion <n>, nitpick <n>)
 - auto-fix rounds: <N>/3 (converged | max-reached | no-progress)
