@@ -10,6 +10,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Added
+- `nara-jira-triage` — reconcile (역방향 sync, Jira Done → 큐 이슈 done): 열린 큐 이슈 중 Jira `statusCategory = Done`(done/resolved/closed) 티켓의 Multica 이슈를 done 전이 + 근거 코멘트. **결정론이라 오토파일럿(LLM)에 얹지 않고 out-of-band 셸 스크립트 + OS 크론으로 실행** (Jira REST PAT + `multica` CLI만; 빈 런 LLM 토큰 낭비 방지, Multica엔 precheck 없으니 스크립트가 곧 게이트). Multica 이슈 상태만 바꾸고 Jira는 안 건드림 → "Stage 1 코드 실행 금지" 테제 위반 아님. `--dry-run` 지원. deploy.md에 배포 절(placeholder 호스트), description USE FOR에 "완료 티켓 큐 정리" 추가.
+
 ## [0.20.0] - 2026-07-22
 
 ### Changed

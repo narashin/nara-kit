@@ -46,9 +46,32 @@ projects = SVC,APP
 
 > Stage 2 런처 스킬 = `nara-jira-drain` (별도). 이 절은 그 계약.
 
+## reconcile — out-of-band 결정론 스크립트 (LLM 아님)
+
+reconcile(Jira Done → 큐 이슈 done)은 의미 판단이 없어 **오토파일럿(LLM)에 얹지 않는다** — 얹으면 빈 런마다 LLM 토큰 낭비. 대신 Jira REST(PAT) + `multica` CLI만 쓰는 셸 스크립트를 OS 크론으로 돌린다. Multica agent엔 precheck 프리미티브가 없으므로(빈 런 못 막음), 스크립트 자체가 게이트 역할(매칭 0 → no-op).
+
+**전제:** 실행 머신에 `multica`·`jq`·`curl` + 셸에서 쓸 **Jira PAT** (Jira Data Center: `Authorization: Bearer <PAT>`).
+
+```bash
+# 1) PAT 저장 (0600). JIRA_PAT env 로 대체 가능
+install -m 700 -d ~/.config/jira-reconcile
+printf '%s' '<YOUR_JIRA_PAT>' > ~/.config/jira-reconcile/token && chmod 600 ~/.config/jira-reconcile/token
+
+# 2) 스크립트 배치 (JIRA_BASE 기본값은 스크립트 상단 상수 — 사내 Jira 호스트로)
+#    로직: multica issue list → jira_key 수집 → REST 'statusCategory=Done' 배치 → 매칭 done 전이
+#    --dry-run 지원. 상세 로직은 SKILL.md reconcile 절.
+
+# 3) 크론 (macOS launchd 예: 매시간). Linux면 crontab.
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<label>.plist
+launchctl kickstart -k gui/$(id -u)/<label>          # 즉시 1회
+```
+
+> 스크립트·PAT·크론 plist는 **각자 머신 로컬** — 이 repo(placeholder)엔 실 호스트/토큰 넣지 않는다.
+
 ## 동기화 체크리스트
 
 - [ ] SKILL.md 변경 → `multica skill update` 재실행
 - [ ] config(`~/.claude/jira-triage.md`) profiles에 신규 project 매핑 추가
 - [ ] jira MCP 토큰 = 대상 assignee 본인
 - [ ] 실행 머신에 `herdr`·`claude`·`git` CLI + repo `local_path` 확인
+- [ ] reconcile: `multica`·`jq`·`curl` + Jira PAT(0600) + OS 크론(launchd/crontab) 등록. `--dry-run` 스모크 먼저

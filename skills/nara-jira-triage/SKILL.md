@@ -1,8 +1,8 @@
 ---
 name: nara-jira-triage
 description: >-
-  Triage your ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues, classified by type and routed to a repo — ready for you to trigger into a Stage 2 herdr session (human-judged). Stage 1 never runs code.
-  USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", Multica Jira autopilot.
+  Triage your ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues, classified by type and routed to a repo — ready for you to trigger into a Stage 2 herdr session (human-judged). Also reconciles the queue: closes queue issues whose Jira ticket is already Done. Stage 1 never runs code.
+  USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", "완료 티켓 큐 정리", Multica Jira autopilot.
   DO NOT USE FOR: 티켓 생성 (→ slack-to-jira), 버그 원인 분석 (→ /nara-incident).
 ---
 
@@ -17,7 +17,8 @@ description: >-
 ## 2-stage 루프
 
 ```
-[Stage 1] jira-triage 크론 → ready 티켓 → 티켓당 Multica 이슈(큐, UNASSIGNED) + 멘션
+[Stage 1] jira-triage 크론(LLM) → ready 티켓 → 티켓당 Multica 이슈(큐, UNASSIGNED) + 멘션
+[reconcile] 별도 결정론 스크립트(LLM 아님, out-of-band) → Jira Done된 잔여 큐 이슈 → done 전이
 [Stage 2] 너: 큐 판단 → /nara-jira-drain <KEY> → herdr worktree(space=repo@branch)에 Claude Code 세션
           → dev-mode/doc-mode PR까지 (게이트 미달→정지+리포트) · 인터랙티브 $0
 [Stage 3] review-queue → PR 리뷰 → 너: merge → herdr worktree cleanup
@@ -46,6 +47,8 @@ jira-triage [--assignee <currentUser|ACCOUNT_ID>] [--projects <KEY,KEY>] [--ment
 4. **route** — project key → repo ([Config](references/config.md))
 5. **dedup** — `multica issue list`, metadata `jira_key` 있으면 스킵
 6. **emit** — 티켓당 UNASSIGNED 큐 이슈 + 신규에만 멘션
+
+> **reconcile은 이 LLM 파이프라인에 포함 안 됨.** classify(2)만 의미 판단이라 LLM이 필요하고, reconcile은 결정론이라 별도 out-of-band 스크립트로 뺀다 (아래 [reconcile](#reconcile-jira-done--큐-이슈-완료-out-of-band) 참조). 오토파일럿에 얹으면 빈 런마다 LLM 토큰을 낭비하므로 분리.
 
 ```bash
 # Step 1 — poll. ready 상태만 (Backlog/In Progress/Done 제외)
@@ -107,6 +110,31 @@ multica issue comment add <issue_id> \
 
 dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dry-run` 이면 Step 6 전체 스킵.
 
+### reconcile (Jira Done → 큐 이슈 완료, out-of-band)
+
+큐를 채우는 방향과 **역방향** sync. 이미 완료된 티켓의 잔여 큐 이슈를 닫아 큐를 최신으로 유지한다. **결정론 — LLM 의미 판단 없음.** classify와 달리 여기엔 추측이 없다: Jira `statusCategory = Done` 은 사람이 이미 내린 완료 결정이고, 이 스텝은 그 결정을 큐에 반영할 뿐이다.
+
+LLM이 필요 없으므로 **오토파일럿(LLM)이 아니라 별도 셸 스크립트 + OS 크론**으로 실행한다 — Jira REST(PAT) + `multica` CLI만 쓴다. 배포·스크립트 상세는 [deploy](references/deploy.md) 참조. 로직:
+
+```bash
+# 1. 열린 큐 이슈 수집 — metadata.jira_key 있고 status ∈ {todo, in_progress, in_review, blocked}
+multica issue list --output json --limit 100   # metadata 인라인 → jira_key 필터, done/cancelled 제외
+
+# 2. 배치 조회 (한 방). statusCategory=Done 이 done/resolved/closed 전부 포함
+curl -sf -G "$JIRA_BASE/rest/api/2/search" -H "Authorization: Bearer $PAT" \
+  --data-urlencode "jql=key IN (<수집 KEY들>) AND statusCategory = Done" --data-urlencode "fields=key"
+
+# 3. 매칭된 KEY의 Multica 이슈 → done + 코멘트 (근거 남김)
+multica issue status <issue_id> done
+multica issue comment add <issue_id> \
+  --content "Jira <KEY> Done → 큐 이슈 자동 완료 (reconcile)"
+```
+
+- 수집 KEY 0건 또는 Done 매칭 0건 → 조용히 스킵 (no-op) — 스크립트 자체가 게이트라 별도 precheck 불필요
+- `--dry-run` 이면 3의 쓰기 전체 스킵, 닫을 대상만 미리보기
+- Jira Done = 워크가 랜딩됐다는 신호. 드물게 Stage 2 task in-flight 중 Jira가 먼저 Done이어도 큐 이슈 완료가 맞음 (중복 착수 방지)
+- reconcile은 **Multica 이슈** 상태만 바꾼다 — Jira 상태는 절대 건드리지 않음
+
 ## Stage 2 — 착수 (네가 트리거)
 
 큐 이슈를 판단 후 `/nara-jira-drain <KEY>` 로 트리거하면 jira-drain 스킬이:
@@ -120,6 +148,7 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 ## 규칙
 
 - **Stage 1은 코드 실행 금지** — 큐만 채운다. 착수는 사람이 jira-drain 트리거로 결정
+- **reconcile은 테제 위반 아님** — Jira Done은 사람이 이미 내린 완료 결정. 큐 이슈 done 전이는 그 결정의 기계적 반영이지 새 착수·판단이 아님 (결정론). 또한 오토파일럿(LLM) 밖 out-of-band 스크립트라 Stage 1 LLM 파이프라인과 무관
 - 분류는 summary/description **LLM 의미 판단** — issuetype 필드 기대 안 함
 - 큐 대상 = ready 상태(To Do/Selected)만. Backlog·In Progress·Done·컨테이너 제외
 - 큐 이슈는 **UNASSIGNED 생성** — autopilot이 자동 착수하지 않음 (사람 게이트)
@@ -139,3 +168,5 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 | project repo 매핑 없음 | 큐 이슈는 생성하되 `[UNVERIFIED: repo 매핑 없음]` (트리거 전 수동 확인) |
 | `multica issue create` 실패 | 해당 티켓 격리, 다음 계속, `→ ESCALATE` |
 | 멘션 차단 (classifier) | 이슈는 생성, 멘션만 `→ ESCALATE: 멘션 차단` |
+| reconcile Jira REST 실패 (스크립트) | 스크립트 die + 로그, 다음 크론 재시도 (오토파일럿 무관) |
+| reconcile `multica issue status` 실패 | 해당 이슈 WARN 스킵, 다음 계속 |
