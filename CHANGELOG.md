@@ -10,6 +10,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Added
+- `nara-local-shot` — 로컬 실행 웹앱(SSO-gated 포함) 스크린샷 캡쳐+파일 저장 스킬. PR Before/After visual comparison·UI 검증용. 핵심: dev 서버 + chrome-devtools MCP로 직접 캡쳐(placeholder만 남기지 않음), 세션 없는 자동 브라우저는 더미 쿠키로 우회 — presence-only 미들웨어 + `.ico` matcher 트릭 + API-free 격리 프리뷰 전제. `references/auth-bypass.md`(메커니즘·httpOnly caveat·real-storageState fallback), `references/iris-ui-recipe.md`(iris-ui 구체값). nara-ui-diff(env-diff)와 스코프 구분.
+
 ### Changed
 - `nara-skill-forge` — Darwin Skill의 두 메커니즘 이식(reference-모듈 리팩터): **회귀 래칫**(fix→재채점→prior-passing grader 회귀 또는 토큰 증가 시 워킹트리 복원, no-auto-commit에 맞춰 각색) + **runtime-neutrality gate**(Claude Code/Codex 양쪽 배포 대비 single-runtime lock grep 스캔). 세부는 `references/ratchet.md`·`references/runtime-gate.md`로 분리. body 리팩터로 waza advisory 통과(links 0→5, module-count 0→2, body-structure ❌→✓).
 
