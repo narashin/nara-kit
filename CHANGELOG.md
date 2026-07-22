@@ -22,6 +22,10 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - description에 DO NOT redirect 추가: production incident root-cause → nara-incident (토큰 패리티 1097→1096).
   - routing.md 런타임 중립화("Agent tool" → "parallel subagents").
   - eval 수리: 구 5-agent 체계 잔재 assertion("High") 및 과광폭 not_contains("요구사항") 교정.
+- `nara-code-review` — forge 2라운드 (iter 6–8, 전부 kept):
+  - non-runtime finding 시맨틱 정립: 관측 가능한 불일치(rename leftover·중복 util·dead code)는 유효한 suggestion finding — E레벨을 "주장 사실의 관측가능성"으로 재해석(E3=repo 검증, E2=diff 도출), E2 게이트 동일 적용. suggestion의 failure_path는 비용 경로(drift·혼동)로 서술.
+  - 부기 명확화: policy-excluded(suggestion·R3)는 auto-fix candidate 아님(Judge 스킵 근거), 통계표 `-(unadjudicated)` 표기 + fingerprint 병합 집계 규칙, zero-fix 런은 validation 실행 의무 없음(실행된 것만 보고).
+  - `--staged` 스코프 옵션 신설(커밋 직전 staged만) + NL 매핑("staged만" 요청 시 플래그 없이 적용) + staged manifest 시맨틱(head=index) + 제외 dirty 파일 고지.
 
 ## [0.19.0] - 2026-07-22
 

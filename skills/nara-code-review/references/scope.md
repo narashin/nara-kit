@@ -5,6 +5,7 @@
 ```
 working tree dirty  → staged + unstaged + untracked 전체 리뷰
 working tree clean  → HEAD~1..HEAD (단, HEAD가 base 브랜치에 이미 포함되면 빈 스코프)
+--staged            → staged 변경만 (커밋 직전 리뷰 — unstaged/untracked 제외)
 숫자 N              → HEAD~N..HEAD
 branch 이름          → <branch>..HEAD
 ```
@@ -60,6 +61,12 @@ re-review it silently — escalate in the report and set `scope-integrity: MISMA
 
 - Empty: default scope rule above
 - Number: `HEAD~N..HEAD` / Branch name: `<branch>..HEAD`
+- `--staged` — staged 변경만 리뷰 (dirty 기본값이 unstaged/untracked까지 포함하는
+  것을 배제). staged가 비어 있으면 빈 스코프 규칙 적용.
+  NL 매핑: 사용자가 명시적으로 staged 한정을 요청하면("staged만", "커밋 전에 staged
+  변경만") 리터럴 플래그 없이도 --staged 시맨틱 적용. 매니페스트에는
+  `head_commit: index` + `include_worktree: false`로 기록하고, 제외된 dirty 파일이
+  있으면 리포트 스코프 노트에 1줄로 고지
 - `--fix=none|safe|selected|all` — fix policy (default `safe`), see [fix-policy](fix-policy.md)
 - `--report-only` — alias of `--fix=none` (kept for compatibility)
 - `--worktree` / `--no-worktree` — include/exclude working-tree changes with explicit baseline
@@ -88,6 +95,7 @@ re-review it silently — escalate in the report and set `scope-integrity: MISMA
 옵션:
   --fix=none|safe|selected|all    수정 정책 (기본 safe: R0 + 검증 가능한 R1만)
   --report-only                   --fix=none 별칭
+  --staged                        staged 변경만 리뷰 (커밋 직전)
   --show-all                      evidence/신뢰도 필터 없이 전체 출력
   --threshold=N                   신뢰도 기준 변경 (기본: 80)
   --max-rounds=N                  수정-검증 반복 횟수 (기본: 3, 최대: 5)

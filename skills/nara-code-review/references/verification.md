@@ -61,6 +61,9 @@ When a round applies ZERO fixes, the Verifier still runs its snapshot compare
 (claimed 0 vs observed 0) — report `fix-ledger: match` and
 `fix-verification: 0 verified, 0 unverified, 0 mismatched`, not `n/a` (`n/a` is
 reserved for `--fix=none`). The final baseline review is skipped (no fix applied).
+Zero-fix runs are NOT required to execute validation commands — the `validation`
+status line reports what actually ran: the round-start baseline result if one was
+captured, else `unavailable`.
 
 ## Final baseline review (mandatory when any fix was applied)
 

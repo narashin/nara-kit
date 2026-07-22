@@ -71,6 +71,10 @@ Final baseline review: {실행됨/스킵(수정 없음)} — 신규 발견 N건
 🔕 게이트 미달 (E1 이하 또는 신뢰도 <{threshold}): N건 (--show-all로 열람)
 ```
 
+Stats table rules: unadjudicated findings show `-(unadjudicated)` in the confirmed
+column. Fingerprint-merged findings count ONCE under the merge representative's row;
+co-reporters keep their 발견 count with the merge noted in their row.
+
 ## Trailing status (contract gate — 없으면 리뷰 미완료)
 
 ```

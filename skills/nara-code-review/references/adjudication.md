@@ -7,7 +7,9 @@ re-verifies findings before anything is fixed or reported as confirmed.
 
 - All `critical` / `major` findings
 - ALL security-privacy findings (any severity)
-- ALL auto-fix candidates (anything the Fixer would touch)
+- ALL auto-fix candidates (anything the Fixer would touch). Policy-excluded items
+  are NOT candidates regardless of mechanical triviality: `suggestion` severity
+  (never fixed in any mode) and R3.
 - Findings where two reviewers reached conflicting conclusions
 
 `minor`/`suggestion` findings that will not be auto-fixed may skip adjudication
