@@ -12,7 +12,7 @@ Pressure-test an idea, plan, design, ticket, or RFC by researching facts first, 
 
 ## 언제 쓰나
 
-- **USE FOR:** "grill", "찔러줘", "이 설계 구멍", "설계 검증", "계획 반박해줘", brainstorm/design exploration before committing.
+- **USE FOR:** "grill", "찔러줘", "이 설계 구멍", "설계 검증", "설계 리뷰", "design review", "API 설계 검토", "리팩터링 계획 검토", "모듈 경계", "계획 반박해줘", brainstorm/design exploration before committing.
 - **DO NOT USE FOR:** 외부 SoT 로컬화 (→ nara-prep), AC 초안 생성 (→ nara-ac-draft), 코드 리뷰 (→ nara-code-review), 작업 분할·계획 (→ nara-plan).
 
 ## 더 보기
