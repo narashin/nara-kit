@@ -25,7 +25,7 @@ description: >-
 
 ## Attack lanes (3 agents, parallel) — [attack-protocol](references/attack-protocol.md)
 
-1. **refuter** — confirmed finding마다 반박 시도: failure_path를 실제 코드에서
+1. **refuter** — finding마다 반박 시도: failure_path를 실제 코드에서
    재추적, 기존 guard·caller·test에서 counterevidence 수색. 목표는 방어가 아니라
    격추.
 2. **blind hunter** — 리포트를 **보지 않고** 같은 스코프의 diff를 리뷰한 뒤,
