@@ -1,7 +1,6 @@
 ---
 name: nara-local-shot
 description: Capture screenshots of a locally-running web app — even auth/SSO-gated pages — for PR visual comparison or UI verification, then save the image files. Drives a local dev server + chrome-devtools MCP, bypassing SSO with a dummy session cookie when the target page needs no real backend. USE FOR "스샷 찍어줘", "PR 스샷", "before/after 캡쳐", "visual comparison 이미지 만들어", "로컬 앱 스샷", "capture a screenshot of the local app", "as-is/to-be 스샷". DO NOT USE FOR env-diff visual regression across QA/prod (use nara-ui-diff), figma-vs-runtime diff, or writing/running Playwright test code (use nara-test-implement).
-version: 0.1.0
 ---
 
 # nara-local-shot — capture local app screenshots (auth-gated ok)

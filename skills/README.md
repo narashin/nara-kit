@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**47 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**50 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -39,7 +39,9 @@
 | `nara-implement` | Gated code implementation (strategy approval → TDD option → verify → stop at staged, never auto-commit) — dev-mode execute step / 검증 게이트 구현 (전략 승인·TDD 옵션·자동 커밋 없음) |
 | `nara-commit` | Generate conventional commit message with ticket ID / 커밋 메시지 생성 |
 | `nara-pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
-| `nara-code-review` | 5-agent parallel review (Architecture/Correctness/Reliability/Security/Test) / 5-에이전트 병렬 코드 리뷰 |
+| `nara-code-review` | Evidence-based multi-agent review (core 4 + conditional 6, Reviewer→Judge→Fixer→Verifier) / 증거 기반 멀티에이전트 코드 리뷰 |
+| `nara-pr-review` | Remote PR review via gh (code plane + PR plane: description/commits/CI/discussion), approval-gated comments / 원격 PR 리뷰 |
+| `nara-adversarial-review` | Attack an existing review report (refuter / blind hunter / rigor auditor), append-only / 리뷰 리포트 공격 검증 |
 | `nara-pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
 | `nara-review-reminder` | Find PRs where you are a requested reviewer but haven't reviewed yet → create Multica reminder issues / 미리뷰 PR 탐지 |
 | `nara-review-queue` | Drain Multica "리뷰 필요" reminder issues → trigger built-in `/review` per PR, write verdict back as issue comment (read-only). Consumer pair of `review-reminder` / 멀티카 리뷰 큐 드레인 |
@@ -69,6 +71,7 @@
 | `nara-test-implement` | Implement tests from scenario documents / 시나리오 기반 테스트 구현 |
 | `nara-golden-path-discover` | Discover live golden-path E2E scenarios + Playwright-ready export / 라이브 골든패스 E2E 발굴 + Playwright export |
 | `nara-ui-diff` | Env-diff visual regression: QA/Prod baseline vs local target computed-style + rect diff (candidates only) / 환경 간 UI 회귀 비교 — computed-style·bounding-rect 차이 후보 |
+| `nara-local-shot` | Screenshots of locally-running web apps (SSO-gated via dummy-cookie bypass) for PR visual comparison / 로컬 앱 스크린샷 캡쳐 |
 
 ### Automation / 자동화
 
@@ -100,7 +103,7 @@
 
 ## Workflow / 워크플로우
 
-`nara-workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 47개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+`nara-workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 50개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
 
 > 아래 다이어그램·표의 스킬 이름은 짧은 표기 — 실제 설치·호출명은 `nara-<name>` (예: `gap` = `nara-gap`).
 
@@ -157,7 +160,7 @@ flowchart LR
 | **P0 Hard Gate** | `gap` | P0 Missing ≥ 1이면 점수 무관 차단. 점수 ≥ 80 + P0 0건만 review-ready | ★★★★ |
 | **Plan Approval** (folded) | dev-mode (plan 단계 내) | plan에 흡수된 AskUserQuestion 승인 전 코드 변경 금지. 별도 phase 아님 | ★★★★ |
 | **Implementation Notes Gate** (scope-scaled) | dev-mode (Execute, medium/large) | medium/large만: impl-notes 생성 + `📝 notes:` trailing + verify 빈 notes reject. `small` skip | ★★★ |
-| **Claimed-vs-Observed** | `code-review` (auto-fix 후) | `git diff --name-only` 관측 경로 vs 주장 경로 대조, mismatch → escalate + trailing status | ★★★ |
+| **Fix-Ledger Verification** | `code-review` (fix 라운드마다) | 라운드 시작 파일 hash 스냅샷 → issue 단위 hunk·validation proof 대조 (claimed-but-unchanged / changed-but-unclaimed / changed-but-unresolved), mismatch → escalate + trailing status | ★★★ |
 | **Notes Reconciliation** | `gap --verify` | impl-notes Deviations ↔ gap Missing 매칭 → Agreed Exception 후보. Open Q [revise] → Spec Revise Candidates | ★★★ |
 | **Readiness Gate** | `prep` | 4기준 (Functional / UNVERIFIED / blocking-Q / Goal) 충족으로 다음 단계 분기 | ★★★ |
 
