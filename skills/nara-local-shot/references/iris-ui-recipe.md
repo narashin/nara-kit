@@ -33,6 +33,7 @@ Concrete values for the iris-ui (LYRIS) frontend. Verified 2026-07-22 (LYRIS-502
    /Users/<me>/orca/workspaces/iris-ui/<primary-root>/<name>.png
    ```
    then `mv` to the worktree root beside the PR. Read each PNG back to verify the state rendered.
+   - **Isolate As-Is vs To-Be into separate files.** If both variants live on one short preview page, a viewport (non-`fullPage`) shot — even after `scrollIntoView` — captures the *whole* page when it fits the viewport, so `asis-*.png` and `tobe-*.png` come out identical. Fix: render **one variant per capture** via a query param (`/dev/<name>?v=asis` vs `?v=tobe`, branch on `useRouter().query.v`) and take a `fullPage: true` shot of each. Verify by reading both PNGs back — they must differ.
 6. **Cleanup**: `rm pages/dev/<name>.tsx`; `rmdir pages/dev`; `lsof -ti:3000 | xargs kill`; confirm `git status` tracked-clean (screenshots + preview are untracked).
 
 ## PR handoff
