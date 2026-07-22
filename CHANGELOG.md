@@ -10,7 +10,16 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-07-22
+
 ### Changed
+- `nara-adversarial-review` — forge 하드닝 (EPT 프로브 검증):
+  - code-review 계약 변경 sync: refuter에 non-runtime finding 재검증 규칙(사실 자체를 grep/read로), rigor auditor에 observability 루브릭 인지(suggestion의 E3-무실행경로는 위반 아님) + 신규 정상 status 값(`manual-only`, zero-fix `match`/`0,0,0`, empty-scope n/a) 등재.
+  - 프로토콜 gap 규정화: refuted↔weakened 경계 규칙(path 불성립+실결함 → refuted+missed-found 재정식화·상호링크), missed-found 채택에 원 리포트 게이트 적용, `N missed-found`=채택분만 카운트, refuter 입력=confirmed+unadjudicated, manifest 부재 시 finding location 복원 허용, diff 미복원·rejected 섹션 부재 fallback.
+  - 런타임 중립화("Agent tool" → "병렬 subagent") + SKILL↔protocol 모순 1건 해소(refuter 대상 범위).
+- `nara-pr-review` — forge 하드닝 (EPT 프로브 검증):
+  - PR-plane/code-plane 경계 규정: lane 산출물은 프로세스 평면 요약만(finding-schema 변환·dedup·Judge 비대상), lane 발견 코드 결함은 code-plane으로 이관 후 finding ID 참조(이중 보고 금지).
+  - 리포트 구성 명문화(code-plane finding 섹션 + lane 요약 4 + trailing status), adjudication 준용 규칙(code-review 설치 시 adjudication.md), 수집 실패 시 부분 데이터 리뷰 금지(`❌ 실패:` 중단), receipt↔게시 초안 시점 분리, 재사용 목록에 routing 명시, ci 다중 실패 표기.
 - `nara-code-review` — 리뷰 관점 15종 검토 후 14종을 기존 10 agent에 흡수(신규 agent 0 — 직교성 유지, 체크당 owner 1명):
   - 신규 섹션: deploy-window/시간축 호환(contracts, mixed-version·rollback deserialize) / business abuse(security, rate-limit·자원 독점) / failure aftermath(resilience, DLQ·재처리·수동 복구) / data lifecycle(resilience, cascade delete·soft-delete 누출) / i18n(frontend, 하드코딩 문자열·조사/복수형) / observability 심화(operations, 추적성·retry-vs-영구실패·alert actionability).
   - 라우팅 구멍 수리: 순수 코드의 신규 failure path(새 catch/외부 호출)도 operations-config 트리거.
