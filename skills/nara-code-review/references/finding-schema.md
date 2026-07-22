@@ -51,6 +51,10 @@ A finding missing any of `invariant`, `preconditions`, `failure_path`,
 `counterevidence_checked`, or `validation` is rejected at aggregation regardless of
 confidence. These fields are what make a finding adjudicable and verifiable.
 
+For `suggestion`/structural findings with no runtime failure, `failure_path` states
+the concrete COST path instead (drift on future change, reader confusion, dead-code
+maintenance) — still mandatory, still must be specific to this code.
+
 ## Fingerprint (dedup & tracking key)
 
 ```

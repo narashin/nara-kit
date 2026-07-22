@@ -6,7 +6,10 @@ reviewers share — specialization stays orthogonal (see `agents/*.md`).
 ## Contract
 
 - Review only the changed code and code directly affected by it.
-- Style preferences without a concrete failure path are NOT findings.
+- Style preferences without a concrete failure path are NOT findings. Distinction:
+  a taste claim ("I'd name this differently") is a style preference — drop it; an
+  OBSERVABLE inconsistency with repo proof (rename leftover, duplicate of an
+  existing util, dead code) is a valid `suggestion`-severity finding.
 - Every finding must include: code location, preconditions, failure path, impact
   (see [finding-schema](finding-schema.md)).
 - Never claim something is "missing" (validation, guard, caller handling, test)
@@ -31,6 +34,12 @@ Assign every finding an `evidence_level`:
 | E2 | Deterministic execution path AND failure condition identified in code |
 | E1 | Generally dangerous pattern, but actual failure condition not confirmed |
 | E0 | Speculation or a question needing more context |
+
+Non-runtime findings (suggestions, duplication, dead code, structural): E-levels
+rate the OBSERVABILITY of the claimed fact, not a failure path — E3 = fact directly
+verified in the repo (grep/read proof), E2 = fact derivable from the diff without
+assumptions, E1 = suspected but unverified. The acceptance gate below applies to
+them unchanged.
 
 ## Confidence rubric
 
