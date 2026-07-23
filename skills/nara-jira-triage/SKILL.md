@@ -1,8 +1,8 @@
 ---
 name: nara-jira-triage
 description: >-
-  Triage your ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues, classified by type and routed to a repo — ready for you to trigger into a Stage 2 herdr session (human-judged). Also reconciles the queue: closes queue issues whose Jira ticket is already Done. Stage 1 never runs code.
-  USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", "완료 티켓 큐 정리", Multica Jira autopilot.
+  Triage your ready (To Do / Selected) and In Progress Jira tickets into per-ticket Multica issues, classified by type and routed to a repo — ready ones queued as todo, In Progress mirrored as in_progress. A separate deterministic reconcile script mirrors Jira status onto existing issues (Done→done, In Progress→in_progress). Stage 1 never runs code.
+  USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", "완료 티켓 큐 정리", "진행중 티켓 반영", Multica Jira autopilot.
   DO NOT USE FOR: 티켓 생성 (→ slack-to-jira), 버그 원인 분석 (→ /nara-incident).
 ---
 
@@ -17,8 +17,8 @@ description: >-
 ## 2-stage 루프
 
 ```
-[Stage 1] jira-triage 크론(LLM) → ready 티켓 → 티켓당 Multica 이슈(큐, UNASSIGNED) + 멘션
-[reconcile] 별도 결정론 스크립트(LLM 아님, out-of-band) → Jira Done된 잔여 큐 이슈 → done 전이
+[Stage 1] jira-triage 크론(LLM) → ready+In Progress 티켓 → 티켓당 Multica 이슈(UNASSIGNED, ready=todo/In Progress=in_progress) + 멘션
+[reconcile] 별도 결정론 스크립트(LLM 아님, out-of-band) → 기존 이슈 status를 Jira에 미러(Done→done, In Progress→in_progress)
 [Stage 2] 너: 큐 판단 → /nara-jira-drain <KEY> → herdr worktree(space=repo@branch)에 Claude Code 세션
           → dev-mode/doc-mode PR까지 (게이트 미달→정지+리포트) · 인터랙티브 $0
 [Stage 3] review-queue → PR 리뷰 → 너: merge → herdr worktree cleanup
@@ -41,22 +41,24 @@ jira-triage [--assignee <currentUser|ACCOUNT_ID>] [--projects <KEY,KEY>] [--ment
 
 ## 파이프라인
 
-1. **poll** — ready 상태 할당 티켓 조회
+1. **poll** — ready(To Do/Selected) **+ In Progress** 할당 티켓 조회
 2. **classify** — 구현 \| 버그픽스 \| 기획 \| 기타 (summary/description 의미 판단)
 3. **subtask 게이트** — 컨테이너(subtask 보유)는 제외, 실제 작업 단위만
 4. **route** — project key → repo ([Config](references/config.md))
 5. **dedup** — `multica issue list`, metadata `jira_key` 있으면 스킵
-6. **emit** — 티켓당 UNASSIGNED 큐 이슈 + 신규에만 멘션
+6. **emit** — 티켓당 UNASSIGNED 이슈 + 신규에만 멘션. **Jira 상태로 초기 status 결정**: ready→`todo`(미착수 큐), In Progress→`in_progress`(Multica 안 거치고 직접 착수한 것 미러)
 
 > **reconcile은 이 LLM 파이프라인에 포함 안 됨.** classify(2)만 의미 판단이라 LLM이 필요하고, reconcile은 결정론이라 별도 out-of-band 스크립트로 뺀다 (아래 [reconcile](#reconcile-jira-done--큐-이슈-완료-out-of-band) 참조). 오토파일럿에 얹으면 빈 런마다 LLM 토큰을 낭비하므로 분리.
 
 ```bash
-# Step 1 — poll. ready 상태만 (Backlog/In Progress/Done 제외)
-jira_search jql='assignee = currentUser() AND status in ("To Do", "Selected for Development") AND project IN (SVC, APP) ORDER BY updated DESC' \
+# Step 1 — poll. ready + In Progress (Backlog/Done 제외)
+jira_search jql='assignee = currentUser() AND status in ("To Do", "Selected for Development", "In Progress") AND project IN (SVC, APP) ORDER BY updated DESC' \
   fields='key,summary,status,description,labels,subtasks,parent'   # issuetype 보통 빈값 — 의미로 분류
 ```
 
 ready 상태 목록은 config `ready_statuses` 로 조정. 폴링 윈도우 없음 — dedup이 재처리 차단.
+
+> **In Progress를 왜 폴링하나:** 사용자가 Multica를 안 거치고 직접 착수하면 Jira만 In Progress로 바뀌고 Multica엔 이슈가 없다. 그 티켓을 `in_progress` 이슈로 만들어 미러링한다. **이미 이슈가 있으면 dedup으로 스킵** — 기존 이슈의 상태 동기화(todo→in_progress)는 오토파일럿이 아니라 [reconcile 스크립트](#reconcile-jira-done--큐-이슈-완료-out-of-band)가 맡는다(결정론). 즉 오토파일럿은 **없는 것만 생성**, 스크립트는 **있는 것만 상태 동기화** — 역할 분리.
 
 ### classify 스키마
 
@@ -103,36 +105,45 @@ multica issue metadata set <issue_id> --key repo          --value "<host/owner/r
 multica issue metadata set <issue_id> --key session_group --value "<group>"
 multica issue metadata set <issue_id> --key pr_language   --value "<ko|en>"
 multica issue metadata set <issue_id> --key sub_repo      --value "<default|fe|be>"
-# --mention 지정 시 신규 이슈에만:
+# Jira가 In Progress면 이슈 status를 in_progress로 (기본 생성은 todo). ready면 생략.
+multica issue status <issue_id> in_progress    # In Progress 티켓만
+# --mention 지정 시 신규 이슈에만 (문구는 상태별로):
 multica issue comment add <issue_id> \
-  --content "[@<표시명>](mention://member/<MEMBER_ID>) <KEY> 큐에 추가됨 (<타입>)" --output json
+  --content "[@<표시명>](mention://member/<MEMBER_ID>) <KEY> <큐에 추가됨|진행 중 반영> (<타입>)" --output json
 ```
 
-dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dry-run` 이면 Step 6 전체 스킵.
+dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션·상태설정 전부 스킵 (기존 이슈 상태 동기화는 reconcile 스크립트 담당). `--dry-run` 이면 Step 6 전체 스킵.
 
-### reconcile (Jira Done → 큐 이슈 완료, out-of-band)
+### reconcile (Jira 상태 → Multica 상태 미러, out-of-band)
 
-큐를 채우는 방향과 **역방향** sync. 이미 완료된 티켓의 잔여 큐 이슈를 닫아 큐를 최신으로 유지한다. **결정론 — LLM 의미 판단 없음.** classify와 달리 여기엔 추측이 없다: Jira `statusCategory = Done` 은 사람이 이미 내린 완료 결정이고, 이 스텝은 그 결정을 큐에 반영할 뿐이다.
+큐를 채우는 방향과 **역방향** sync. **기존** 큐 이슈의 status를 Jira 현재 상태에 맞춘다. **결정론 — LLM 의미 판단 없음.** classify와 달리 추측이 없다: Jira 상태는 사람이 이미 내린 결정(끝냈으면 Done, 착수했으면 In Progress)이고, 이 스텝은 그 결정을 Multica 이슈에 반영할 뿐이다.
 
-LLM이 필요 없으므로 **오토파일럿(LLM)이 아니라 별도 셸 스크립트 + OS 크론**으로 실행한다 — Jira REST(PAT) + `multica` CLI만 쓴다. 배포·스크립트 상세는 [deploy](references/deploy.md) 참조. 로직:
+전이 (Multica 이슈 쪽만):
+
+| Jira statusCategory | Multica 전이 | 조건 |
+|---|---|---|
+| `done` | → `done` | 아직 done 아니면 |
+| `indeterminate` (In Progress) | → `in_progress` | Multica가 아직 `todo`일 때만 (in_review/blocked 등은 유지) |
+| 그 외 | 변경 없음 | |
+
+LLM이 필요 없으므로 **오토파일럿(LLM)이 아니라 별도 셸 스크립트 + OS 크론**으로 실행한다 — Jira REST(PAT) + `multica` CLI만. 배포·스크립트 상세는 [deploy](references/deploy.md). 로직:
 
 ```bash
 # 1. 열린 큐 이슈 수집 — metadata.jira_key 있고 status ∈ {todo, in_progress, in_review, blocked}
-multica issue list --output json --limit 100   # metadata 인라인 → jira_key 필터, done/cancelled 제외
+multica issue list --output json --limit 100   # done/cancelled 제외
 
-# 2. 배치 조회 (한 방). statusCategory=Done 이 done/resolved/closed 전부 포함
+# 2. 배치 조회 (한 방, 카테고리 필터 없이). status는 .fields.status.statusCategory.key 에 있음(REST는 .fields 중첩)
 curl -sf -G "$JIRA_BASE/rest/api/2/search" -H "Authorization: Bearer $PAT" \
-  --data-urlencode "jql=key IN (<수집 KEY들>) AND statusCategory = Done" --data-urlencode "fields=key"
+  --data-urlencode "jql=key IN (<수집 KEY들>)" --data-urlencode "fields=status"
 
-# 3. 매칭된 KEY의 Multica 이슈 → done + 코멘트 (근거 남김)
-multica issue status <issue_id> done
-multica issue comment add <issue_id> \
-  --content "Jira <KEY> Done → 큐 이슈 자동 완료 (reconcile)"
+# 3. 조인 후 (jira category, multica status)로 전이 결정 → 적용 + 근거 코멘트
+multica issue status <issue_id> <done|in_progress>
+multica issue comment add <issue_id> --content "Jira <KEY> '<상태명>' → 큐 이슈 <target> 동기화 (reconcile)"
 ```
 
-- 수집 KEY 0건 또는 Done 매칭 0건 → 조용히 스킵 (no-op) — 스크립트 자체가 게이트라 별도 precheck 불필요
-- `--dry-run` 이면 3의 쓰기 전체 스킵, 닫을 대상만 미리보기
-- Jira Done = 워크가 랜딩됐다는 신호. 드물게 Stage 2 task in-flight 중 Jira가 먼저 Done이어도 큐 이슈 완료가 맞음 (중복 착수 방지)
+- 수집 KEY 0건 또는 불일치 0건 → 조용히 스킵 (no-op) — 스크립트 자체가 게이트라 precheck 불필요
+- `--dry-run` 이면 3의 쓰기 스킵, 대상만 미리보기
+- **없는 이슈는 만들지 않는다** — 생성은 오토파일럿(In Progress 폴링) 몫, 스크립트는 **있는 것 상태 동기화**만. 역할 분리
 - reconcile은 **Multica 이슈** 상태만 바꾼다 — Jira 상태는 절대 건드리지 않음
 
 ## Stage 2 — 착수 (네가 트리거)
@@ -150,7 +161,7 @@ multica issue comment add <issue_id> \
 - **Stage 1은 코드 실행 금지** — 큐만 채운다. 착수는 사람이 jira-drain 트리거로 결정
 - **reconcile은 테제 위반 아님** — Jira Done은 사람이 이미 내린 완료 결정. 큐 이슈 done 전이는 그 결정의 기계적 반영이지 새 착수·판단이 아님 (결정론). 또한 오토파일럿(LLM) 밖 out-of-band 스크립트라 Stage 1 LLM 파이프라인과 무관
 - 분류는 summary/description **LLM 의미 판단** — issuetype 필드 기대 안 함
-- 큐 대상 = ready 상태(To Do/Selected)만. Backlog·In Progress·Done·컨테이너 제외
+- 폴링 대상 = ready(To Do/Selected) + In Progress. Backlog·Done·컨테이너 제외. ready→`todo` 이슈, In Progress→`in_progress` 이슈(미러). 없는 것만 생성 — 기존 이슈 상태 동기화는 reconcile 스크립트
 - 큐 이슈는 **UNASSIGNED 생성** — autopilot이 자동 착수하지 않음 (사람 게이트)
 - dedup = metadata `jira_key`. 스킵 이슈엔 멘션 안 단다
 - `--dry-run` 이면 Multica 쓰기 전체 스킵

@@ -11,6 +11,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 ## [Unreleased]
 
 ### Added
+- `nara-pr-activity-reminder` (신규, 51번째 스킬) — 예전 Multica 전용 `review-reply-reminder` + `review-commit-reminder`를 하나로 병합. **PR당 추적 이슈 1개**(dedup=`pr_url`, 구 방식은 `(pr_url, tracker_type)`로 PR당 2개였음)에 대댓글 + 새 커밋을 함께 기록. metadata에 `last_comment_id` + `last_commit_sha` 두 cursor 보관, 종류별 코멘트 + 멘션 런당 1회. 최초-추적 소급 알림 금지, force-push cursor 유실 처리, partial-create 고아 복구, MERGED/CLOSED→done, 셸 인젝션 가드 전부 이식. dedup은 open 이슈만 매칭(닫힌 구 이슈 무시 → 마이그레이션 안전). **로직이 100% 결정론(classify 없음)이라 헤드리스 LLM 오토파일럿이 아니라 out-of-band 스크립트 크론으로 실행 — SKILL.md는 그 로직 스펙**(빈 런 LLM 토큰·codex inactivity 타임아웃 회피).
+- `nara-jira-triage` — **In Progress 폴링** (케이스 B): poll JQL에 `"In Progress"` 추가, Jira In Progress인데 Multica 이슈가 없는 티켓(=Multica 안 거치고 직접 착수)을 `in_progress` 이슈로 생성(미러). 기존 이슈는 dedup 스킵. ready→todo / In Progress→in_progress. 오토파일럿은 **없는 것만 생성**, reconcile 스크립트는 **있는 것만 상태 동기화** — 역할 분리.
+- `nara-jira-triage` — reconcile 확장 (케이스 A): "Jira Done→done"에서 **"Jira 상태→Multica 상태 미러"**로 일반화. In Progress(statusCategory=indeterminate) → Multica `todo`→`in_progress` 추가(todo일 때만; in_review 등은 유지). 스크립트가 REST `fields=status`의 `.fields.status.statusCategory.key`로 카테고리 판정(REST는 `.fields` 중첩 — MCP 평탄화와 다름).
 - `nara-jira-triage` — reconcile (역방향 sync, Jira Done → 큐 이슈 done): 열린 큐 이슈 중 Jira `statusCategory = Done`(done/resolved/closed) 티켓의 Multica 이슈를 done 전이 + 근거 코멘트. **결정론이라 오토파일럿(LLM)에 얹지 않고 out-of-band 셸 스크립트 + OS 크론으로 실행** (Jira REST PAT + `multica` CLI만; 빈 런 LLM 토큰 낭비 방지, Multica엔 precheck 없으니 스크립트가 곧 게이트). Multica 이슈 상태만 바꾸고 Jira는 안 건드림 → "Stage 1 코드 실행 금지" 테제 위반 아님. `--dry-run` 지원. deploy.md에 배포 절(placeholder 호스트), description USE FOR에 "완료 티켓 큐 정리" 추가.
 
 ## [0.20.0] - 2026-07-22

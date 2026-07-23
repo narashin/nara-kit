@@ -1,6 +1,6 @@
 # nara-kit
 
-Agent Skills repo — 50 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
+Agent Skills repo — 51 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
 
 ## Structure
 

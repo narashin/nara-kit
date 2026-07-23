@@ -48,7 +48,7 @@ projects = SVC,APP
 
 ## reconcile — out-of-band 결정론 스크립트 (LLM 아님)
 
-reconcile(Jira Done → 큐 이슈 done)은 의미 판단이 없어 **오토파일럿(LLM)에 얹지 않는다** — 얹으면 빈 런마다 LLM 토큰 낭비. 대신 Jira REST(PAT) + `multica` CLI만 쓰는 셸 스크립트를 OS 크론으로 돌린다. Multica agent엔 precheck 프리미티브가 없으므로(빈 런 못 막음), 스크립트 자체가 게이트 역할(매칭 0 → no-op).
+reconcile(Jira 상태 → 기존 Multica 이슈 상태 미러: Done→done, In Progress→in_progress)은 의미 판단이 없어 **오토파일럿(LLM)에 얹지 않는다** — 얹으면 빈 런마다 LLM 토큰 낭비. 대신 Jira REST(PAT) + `multica` CLI만 쓰는 셸 스크립트를 OS 크론으로 돌린다. Multica agent엔 precheck 프리미티브가 없으므로(빈 런 못 막음), 스크립트 자체가 게이트 역할(불일치 0 → no-op). **없는 이슈는 안 만든다** — 생성은 오토파일럿(In Progress 폴링) 몫.
 
 **전제:** 실행 머신에 `multica`·`jq`·`curl` + 셸에서 쓸 **Jira PAT** (Jira Data Center: `Authorization: Bearer <PAT>`).
 
@@ -58,8 +58,8 @@ install -m 700 -d ~/.config/jira-reconcile
 printf '%s' '<YOUR_JIRA_PAT>' > ~/.config/jira-reconcile/token && chmod 600 ~/.config/jira-reconcile/token
 
 # 2) 스크립트 배치 (JIRA_BASE 기본값은 스크립트 상단 상수 — 사내 Jira 호스트로)
-#    로직: multica issue list → jira_key 수집 → REST 'statusCategory=Done' 배치 → 매칭 done 전이
-#    --dry-run 지원. 상세 로직은 SKILL.md reconcile 절.
+#    로직: multica issue list → jira_key 수집 → REST fields=status 배치 → (jira category, multica status) 조인 → 전이
+#    status는 REST 응답의 .fields.status.statusCategory.key(done/indeterminate). --dry-run 지원. 상세는 SKILL.md reconcile 절.
 
 # 3) 크론 (macOS launchd 예: 매시간). Linux면 crontab.
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<label>.plist

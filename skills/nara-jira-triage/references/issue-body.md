@@ -1,6 +1,6 @@
 # issue-body — Multica 큐 이슈 본문 템플릿
 
-티켓당 1개 이슈. **UNASSIGNED, status To Do** 로 생성. 본문은 사람이 읽고 착수 결정하는 데 쓰고, 착수 시 metadata(`jira_key`/`repo`)를 Stage 2 agent가 읽는다.
+티켓당 1개 이슈. **UNASSIGNED** 로 생성. 초기 status는 Jira 상태 반영: ready(To Do/Selected)→`todo`, In Progress→`in_progress`(직접 착수 미러). 본문은 사람이 읽고 착수 결정하는 데 쓰고, 착수 시 metadata(`jira_key`/`repo`)를 Stage 2 agent가 읽는다.
 
 ## dev 큐 이슈 (구현 / 버그픽스)
 

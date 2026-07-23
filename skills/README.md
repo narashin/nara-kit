@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**50 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**51 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -45,6 +45,7 @@
 | `nara-pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
 | `nara-review-reminder` | Find PRs where you are a requested reviewer but haven't reviewed yet → create Multica reminder issues / 미리뷰 PR 탐지 |
 | `nara-review-queue` | Drain Multica "리뷰 필요" reminder issues → trigger built-in `/review` per PR, write verdict back as issue comment (read-only). Consumer pair of `review-reminder` / 멀티카 리뷰 큐 드레인 |
+| `nara-pr-activity-reminder` | Detect new replies to your PR review comments + new commits on PRs you review → ONE per-PR Multica tracking issue (Multica autopilot) / PR 리뷰 활동(대댓글+새커밋) 통합 추적 |
 | `nara-wt` | Create git worktree for a Jira ticket (`{repo}-{ticket}-{slug}`) — fetches summary, generates slug, asks for git type prefix / Jira 티켓 기반 worktree 생성 |
 | `nara-merge-conflict` | Resolve merge/rebase conflicts by reconstructing ours/theirs intent per hunk, human-decided / 머지·리베이스 충돌 의도 기반 해결 |
 | `nara-release-prep` | One-shot release prep: merged-PR diff → release branch recreate → QA deploy dispatch → Jira Fix Version append / 원샷 릴리즈 준비 (PR 수집 → pre-release 재생성 → QA 배포 → Fix Version) |
