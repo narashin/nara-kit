@@ -1,8 +1,8 @@
 ---
 name: nara-jira-triage
 description: >-
-  Triage your ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues, classified by type and routed to a repo — ready for you to trigger into a Stage 2 herdr session (human-judged). Stage 1 never runs code.
-  USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", Multica Jira autopilot.
+  Triage ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues — classified, repo-routed, human-judged before Stage 2. Creation only: reverse status sync (merged PR → queue done) is a cron script whose contract this skill declares. Stage 1 never runs code.
+  USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", "큐 상태 정리", Multica Jira autopilot.
   DO NOT USE FOR: 티켓 생성 (→ slack-to-jira), 버그 원인 분석 (→ /nara-incident).
 ---
 
@@ -21,6 +21,7 @@ description: >-
 [Stage 2] 너: 큐 판단 → /nara-jira-drain <KEY> → herdr worktree(space=repo@branch)에 Claude Code 세션
           → dev-mode/doc-mode PR까지 (게이트 미달→정지+리포트) · 인터랙티브 $0
 [Stage 3] review-queue → PR 리뷰 → 너: merge → herdr worktree cleanup
+          ↳ cleanup 안 돌아도 다음 Stage 1 실행의 Step 7 reconcile이 머지 PR 보고 큐를 done으로 되돌린다
 ```
 
 사람 게이트 2곳: **착수 선택** + **merge**.
@@ -46,6 +47,8 @@ jira-triage [--assignee <currentUser|ACCOUNT_ID>] [--projects <KEY,KEY>] [--ment
 4. **route** — project key → repo ([Config](references/config.md))
 5. **dedup** — `multica issue list`, metadata `jira_key` 있으면 스킵
 6. **emit** — 티켓당 UNASSIGNED 큐 이슈 + 신규에만 멘션
+
+Step 1~6은 **생성만** 한다. 미종료 큐 이슈를 PR/Jira 실측으로 되돌리는 건 out-of-band 크론 담당 — [Step 7](#step-7--reconcile-역방향-상태-동기화).
 
 ```bash
 # Step 1 — poll. ready 상태만 (Backlog/In Progress/Done 제외)
@@ -107,6 +110,32 @@ multica issue comment add <issue_id> \
 
 dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dry-run` 이면 Step 6 전체 스킵.
 
+## Step 7 — reconcile (역방향 상태 동기화)
+
+큐는 채워지기만 하고 되돌아오지 않는다 — 큐 `done` 전이는 jira-drain cleanup에만 있고 그건 사람이 herdr space를 정리할 때만 돈다. cleanup 미실행 건·큐 밖 손PR 건은 머지 뒤에도 `in_review`에 박제된다.
+
+**이 스킬은 reconcile을 실행하지 않는다.** 순수 결정론(`gh`/`jq`/`multica`, LLM 판단 0)이라 out-of-band 셸 스크립트 + OS 크론이 담당한다 — 오토파일럿(헤드리스 claude)에 얹으면 빈 런마다 토큰만 태운다. 역할 분리는 고정:
+
+| 주체 | 책임 |
+|---|---|
+| 오토파일럿(이 스킬 Step 1~6) | **없는 큐 이슈 생성**만 (classify에 LLM 필요) |
+| `jira-reconcile.sh` (크론) | **있는 큐 이슈 상태 sync**만. 생성 안 함 |
+
+스크립트가 지키는 전이 계약 (Pass A = PR 실측 우선, Pass B = Jira 미러):
+
+| 근거 | 전이 | 부수 write |
+|---|---|---|
+| A. strict 매칭 `MERGED` 1건 | → `done` | `drain_state=done` · `pr_url` |
+| A. `MERGED` 0 + `OPEN` 1건 | `todo`\|`in_progress` → `in_review` | `pr_url` |
+| A. `MERGED` 2건+ / 매칭 0건 / `CLOSED`만 | 무변경 | 경고 로그 (종료 심사는 사람) |
+| B. Jira statusCategory `done` | → `done` | — |
+| B. Jira `indeterminate` | `todo` → `in_progress` | — |
+
+- **PR이 Jira보다 강한 증거** — Pass A 먼저. Jira 쪽이 밀려 있는 게 보통이다
+- `gh pr list --search`는 fuzzy(`PROJ-40` 질의에 PROJ-39·29도 온다) → `headRefName`\|`title`에 KEY가 **단어 경계**로 박힌 것만 채택: `(^|[^A-Za-z0-9])<KEY>([^0-9]|$)` (`PROJ-4` ≠ `PROJ-40`)
+- **`metadata.pr_url`은 근거 아님** — review-reminder가 KEY 검증 없이 심어 딴 티켓 PR이 붙기도 한다(실제 발생). strict 매칭 결과로 덮어씀
+- Jira에는 아무것도 쓰지 않는다 (Stage 1 전체가 Jira read-only)
+
 ## Stage 2 — 착수 (네가 트리거)
 
 큐 이슈를 판단 후 `/nara-jira-drain <KEY>` 로 트리거하면 jira-drain 스킬이:
@@ -124,6 +153,8 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 - 큐 대상 = ready 상태(To Do/Selected)만. Backlog·In Progress·Done·컨테이너 제외
 - 큐 이슈는 **UNASSIGNED 생성** — autopilot이 자동 착수하지 않음 (사람 게이트)
 - dedup = metadata `jira_key`. 스킵 이슈엔 멘션 안 단다
+- **상태 되돌리기(reconcile)는 이 스킬이 실행하지 않는다** — 결정론이라 크론 스크립트 소유(§Step 7). 여기선 계약만 선언
+- 큐 상태 SoT = PR 실측 > Jira 상태 > `pr_url` metadata(오염 가능, 근거 아님) 순
 - `--dry-run` 이면 Multica 쓰기 전체 스킵
 - config에 비밀값 없음 — Jira 인증은 MCP 레이어
 - APP는 FE/BE 판정해 sub-repo 라우팅. 모호하면 사람이 선택 (자동 추측 금지)
@@ -139,3 +170,4 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 | project repo 매핑 없음 | 큐 이슈는 생성하되 `[UNVERIFIED: repo 매핑 없음]` (트리거 전 수동 확인) |
 | `multica issue create` 실패 | 해당 티켓 격리, 다음 계속, `→ ESCALATE` |
 | 멘션 차단 (classifier) | 이슈는 생성, 멘션만 `→ ESCALATE: 멘션 차단` |
+| 큐 상태가 실제와 어긋남 (머지됐는데 `in_review` 등) | 이 스킬 소관 아님 — reconcile 크론(§Step 7) 담당. 즉시 필요하면 스크립트 수동 실행 |
