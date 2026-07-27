@@ -10,6 +10,11 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Added
+- `nara-jira-triage` — Step 7 `reconcile` 계약 명문화: 큐 이슈 상태를 **PR 실측**으로 되돌리는 전이 규약(strict KEY 경계 매칭 후 `MERGED`→`done`+`drain_state=done`, `OPEN`→`in_review`, 다건·미머지 close는 무변경+경고)과 증거 우선순위(PR 실측 > Jira 상태 > `pr_url` metadata — 후자는 KEY 검증 없이 심겨 오염 가능, 근거 아님)를 선언. `gh pr list --search`가 fuzzy라(`SANDY-40` 질의에 SANDY-39/29 혼입) 경계 매칭 `(^|[^A-Za-z0-9])<KEY>([^0-9]|$)` 필수.
+  - **실행은 이 스킬이 하지 않는다** — 결정론(LLM 판단 0)이라 out-of-band 크론 스크립트 소유. 역할 분리 명문화: 오토파일럿=없는 것만 생성(classify에 LLM 필요) / 스크립트=있는 것만 상태 sync. Step 1~6 = 생성 전용.
+  - 배경: 큐 `done` 전이가 jira-drain cleanup에만 있어 cleanup 미실행·큐 밖 손PR 건이 머지 후에도 `in_review`로 박제됨.
+
 ## [0.20.0] - 2026-07-22
 
 ### Changed

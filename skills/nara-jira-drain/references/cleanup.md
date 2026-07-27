@@ -32,6 +32,7 @@ multica issue status <id> done
 - 미머지 PR의 space는 건드리지 않는다 — 머지 확인 후 실행이 안전.
 - 머지 판정은 PR 상태(`MERGED`)로만 — 로컬 브랜치 존재 여부로 추측 금지.
 - `drain_state`: `working`(jira-drain 착수) → `done`(머지·정리 완료). [[nara-jira-drain]] SKILL.md가 working write, 여기서 done.
+- cleanup을 안 돌려도 큐 이슈 상태는 [[nara-jira-triage]] Step 7 reconcile이 PR 실측(`MERGED`)으로 `done` 전이시킨다 — 여기 4)는 즉시 반영용. 단 herdr space·워크트리 회수는 reconcile이 안 한다(그건 여기 1)~3)뿐).
 
 ## 오류 처리
 
