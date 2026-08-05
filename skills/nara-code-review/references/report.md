@@ -78,26 +78,45 @@ co-reporters keep their 발견 count with the merge noted in their row.
 ## Trailing status (contract gate — 없으면 리뷰 미완료)
 
 ```
-overrides: applied (.claude/overrides/code-review.md) | none
-fix-ledger: match | MISMATCH (<n> claimed-but-unchanged, <m> changed-but-unclaimed, <k> changed-but-unresolved)
+overrides: applied (<path>) | none (<확인 명령> → <결과>) | unverifiable (<이유>)
+fix-ledger: match (<n> claimed, <n> changed, 0 unclaimed) | MISMATCH (<n> claimed-but-unchanged, <m> changed-but-unclaimed, <k> changed-but-unresolved)
 fix-verification: {N} verified, {N} unverified, {N} mismatched
-scope-integrity: match (<n> files) | MISMATCH (scope <n> → touched <m>: <외부 변경 파일>)
-validation: pass (<cmd> → exit 0; …) | fail (<cmd> → exit <code>; …) | unavailable (<이유>)
+scope-integrity: match (scope <n> → touched <n>) | expanded (scope <n> → touched <m>: <파일> — <사유>, 승인) | MISMATCH (scope <n> → touched <m>: <외부 변경 파일>)
+validation: pass (<cmd> → exit <code>[, baseline <base> → exit <code>]; …) | fail (<cmd> → exit <code>; …) | unavailable (<이유>)
 ```
 
 **These five lines are claims about what was executed, so each must carry its own
 evidence.** A bare verdict is a contract violation even when the verdict is right:
 
 - `validation` — name every command that ran and quote **its exit status**, not a
-  prose summary of its output. `pass` is available only when every cited command
-  exited 0. A non-zero exit is `fail`; downgrading it to `pass` because the failures
-  look pre-existing requires quoting the baseline run that proves it (`git show
-  <base>:<path> | …`, or the same command at the baseline commit). With no such run,
-  write `fail` and say the baseline is unmeasured. `unavailable` means no validation
-  command was executed at all — state why.
-- `scope-integrity` — quote the file counts on both sides (frozen scope vs actually
-  touched). `match` without a count is not verifiable, and a scope expansion is the
-  failure this line exists to catch.
+  prose summary of its output. A non-zero exit is `fail` **unless** the same command
+  at the baseline produced it too and that run is quoted (`git show <base>:<path> | …`,
+  or the command at the baseline commit) — then it is `pass`, and the non-zero code
+  stays on the line beside the baseline code. Never drop the exit codes to make `pass`
+  look clean: `pass (… → exit 0)` and `pass (… → exit 2, baseline abc123d → exit 2)`
+  are different claims and the second is the one with evidence. With no baseline run,
+  write `fail` and say the baseline is unmeasured — a failure that merely *looks*
+  pre-existing is not measured. `unavailable` means no validation command ran — say why.
+- **Every verdict carries evidence, the clean ones included.** There is no bare-word
+  form of any of the five lines — not `match`, not `none`. `scope-integrity` quotes the
+  counts on both sides even when they agree (a single count cannot show agreement);
+  `fix-ledger: match` quotes claimed, changed, and the zero unclaimed it is asserting;
+  `overrides: none` quotes the check that found nothing, because `none` claims the file
+  was looked for while `unverifiable` says it was not. A clean line with no evidence is
+  the easiest place for an unmeasured claim to hide.
+- `scope-integrity` — an expansion is `expanded` only when **all three** hold: a per-file reason, disclosed
+  to the user **before** the fix was applied, and explicitly approved. Name each extra
+  file with its reason on the line. Miss any one of the three — reason absent, disclosed
+  only afterwards, approval assumed — and it is `MISMATCH`. Approval after the fact does
+  not convert a MISMATCH; the point of disclosing first is that the user could still say
+  no.
+
+  `expanded` is **not** a MISMATCH: it takes no `→ ESCALATE:`, and the run is reported as
+  applied. MISMATCH means the reader was never told, which is the failure this line
+  exists to catch — folding a controlled expansion into it destroys that signal, and
+  `match` is equally wrong because the touched set is not the frozen set.
+- **`→ ESCALATE:` goes directly under the block**, one line per escalating verdict, so
+  it travels with the status whether or not a report body was produced.
 - **When the evidence for a line does not exist**, write
   `unverifiable (<무엇이 없는지>)`. This applies to **any** of the five lines,
   `overrides` included — a run that never checked for the override file reports

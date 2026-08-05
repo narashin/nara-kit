@@ -85,12 +85,13 @@ project-defined package scripts and standard read-only validators
 ## Output Status (mandatory trailing lines)
 
 ```
-overrides: applied (path) | none
-fix-ledger: match | MISMATCH (...)
+overrides: applied (path) | none (...) | unverifiable (...)
+fix-ledger: match (...) | MISMATCH (...)
 fix-verification: N verified, N unverified, N mismatched
-scope-integrity: match | MISMATCH (...)
+scope-integrity: match | expanded (...) | MISMATCH (...)
 validation: pass | fail (...) | unavailable
 ```
 
-Contract enforcement gate — without trailing status, the review is incomplete.
-Any MISMATCH → `→ ESCALATE:` in the report, never reported as applied.
+Contract enforcement gate — without trailing status, the review is incomplete. No line
+has a bare-word form; every verdict carries its evidence. Any MISMATCH → `→ ESCALATE:`
+under the block, never reported as applied; `expanded` (disclosed + approved) is neither.

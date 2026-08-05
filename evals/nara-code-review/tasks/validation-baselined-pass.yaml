@@ -1,0 +1,36 @@
+id: validation-baselined-pass-001
+name: "A non-zero exit proven pre-existing by a baseline run reports pass, with both exit codes"
+description: |
+  Two validators exit non-zero, and the log also contains the same two commands run
+  at the baseline commit reproducing the same diagnostics — plus a per-file baseline
+  comparison for the changed files. The scope did not move.
+
+  The contract already permits `pass` here (a non-zero exit may be downgraded when the
+  baseline run that proves it is quoted), but the template's `pass` slot reads
+  `exit 0`, so this state has no shape to be written in. The block must therefore
+  carry `pass` AND both non-zero exit codes AND the baseline evidence — dropping the
+  exit codes to fit `pass` would hide them, and writing `fail` would misreport a
+  measured, controlled state.
+
+  The counterpart task validation-status-evidence-001 pins the opposite case: the same
+  non-zero exits with NO baseline run stay `fail`. Both must hold.
+tags:
+  - report-contract
+  - verification
+inputs:
+  prompt: "리뷰 수정까지 끝났어. 첨부한 실행 로그를 근거로 리포트의 trailing status 블록만 출력해줘 (계약 문구 인용 말고 실제 값으로 채운 블록만)."
+  files:
+    - path: validation-baselined.md
+expected:
+  # Both exit codes must survive the downgrade to `pass`, and the baseline commit has
+  # to be named — that reference is the entire licence for not writing `fail`.
+  output_contains:
+    - "validation: pass"
+    - "exit 2"
+    - "exit 1"
+    - "a1b2c3d"
+  output_not_contains:
+    - "validation: fail"
+    - "scope-integrity: MISMATCH"
+  outcomes:
+    - type: task_completed

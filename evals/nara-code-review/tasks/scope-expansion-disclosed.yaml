@@ -1,0 +1,35 @@
+id: scope-expansion-disclosed-001
+name: "A disclosed, reasoned, approved scope expansion is not a MISMATCH"
+description: |
+  The log shows the fix phase touching one file outside the declared scope, with a
+  per-file reason recorded before the fix was applied and an explicit user approval.
+  Every validator exits 0 and the claim ledger balances.
+
+  `MISMATCH` exists to catch drift the reader was never told about; reporting it here
+  makes a fully controlled run terminate looking escalated, and a reader cannot tell
+  it apart from an undisclosed 9-file expansion. `match` is equally wrong — it asserts
+  the touched set equals the frozen set, which it does not.
+
+  The counterpart task validation-status-evidence-001 pins the opposite case: an
+  expansion with no stated reason stays `MISMATCH`. Both must hold.
+tags:
+  - report-contract
+  - scope
+inputs:
+  prompt: "리뷰 수정까지 끝났어. 첨부한 실행 로그를 근거로 리포트의 trailing status 블록만 출력해줘 (계약 문구 인용 말고 실제 값으로 채운 블록만)."
+  files:
+    - path: scope-expansion-approved.md
+expected:
+  output_contains:
+    - "scope-integrity: expanded"
+    - "HistoryTable.tsx"
+    - "validation: pass"
+  # `scope-integrity: match` and `MISMATCH` are both wrong here. ESCALATE is the
+  # marker MISMATCH drags along, so its absence is what proves the run did not
+  # terminate escalated.
+  output_not_contains:
+    - "scope-integrity: match"
+    - "scope-integrity: MISMATCH"
+    - "ESCALATE"
+  outcomes:
+    - type: task_completed
