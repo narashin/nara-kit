@@ -1,0 +1,37 @@
+id: vacuous-test-detection-001
+name: "Tests that cannot fail must be flagged with their mechanism"
+description: |
+  The diff adds a component plus four tests that all pass today and would keep
+  passing after the behavior they claim to cover is removed:
+  (a) `not.toHaveTextContent("null")` — React renders nothing for a null child,
+      so dropping the `ownerName &&` guard changes no text;
+  (b) the empty-state test asserts only the absence of a table, so
+      `emptyState={null}` stays green while the AC copy goes unverified;
+  (c) the overflow-badge expectation is computed from `VISIBLE_TAG_COUNT`
+      itself, so changing the cap 2 -> 3 keeps both sides moving together, and
+      `getByText(/a, b/)` is a partial match that tolerates a third tag;
+  (d) the role `it.each` renders byte-identical DOM five times because the
+      component never reads `requesterRole`.
+  A sufficient review names each mechanism and the symbol it hangs on, rather
+  than reporting generic "coverage could be stronger".
+tags:
+  - tests
+  - vacuous-assertions
+inputs:
+  prompt: "변경사항 리뷰해줘"
+  files:
+    - path: vacuous-tests.diff
+expected:
+  # Each string anchors one planted mechanism to the symbol or copy a finding on it
+  # must cite — the test's own name for (a), the unasserted copy for (b), the
+  # self-referenced constant for (c), the parameterized construct for (d).
+  # Do NOT require the matcher name (`not.toHaveTextContent`): a report can name
+  # the mechanism, the guard and the fix correctly without echoing the matcher,
+  # and requiring it grades phrasing instead of detection.
+  output_contains:
+    - "does not leak null"
+    - "No teams found"
+    - "VISIBLE_TAG_COUNT"
+    - "it.each"
+  outcomes:
+    - type: task_completed

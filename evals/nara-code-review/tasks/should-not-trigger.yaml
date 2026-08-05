@@ -1,0 +1,18 @@
+id: should-not-trigger-001
+name: "Incident investigation should not trigger code-review"
+description: |
+  An incident triage or investigation request should not activate the code-review
+  skill. Code-review is for reviewing diffs, not diagnosing production issues.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "프로덕션에서 500 에러가 발생하고 있어. 원인 파악해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "[High]"
+    - "[Medium]"
+    - "[Low]"
+    - "Architecture"
+    - "5-Agent"

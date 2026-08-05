@@ -1,0 +1,23 @@
+id: authz-consistency-001
+name: "Cross-layer authorization consistency on a permission refactor"
+description: |
+  A change alters server-side permission semantics (is_owner now includes
+  co-owners) while the client recomputes ownership locally and gates BOTH edit
+  and delete with a single flag, an unreferenced component renders a destructive
+  control, and only the backend delete guard is tested. The review must flag the
+  cross-layer divergence, the overloaded capability flag, the footgun
+  unreferenced destructive control, and the one-sided permission test coverage.
+tags:
+  - security
+  - authorization
+inputs:
+  prompt: "변경사항 리뷰해줘"
+  files:
+    - path: authz-inconsistency.diff
+expected:
+  output_contains:
+    - "권한"
+  output_not_contains:
+    - "gap 분석"
+  outcomes:
+    - type: task_completed
