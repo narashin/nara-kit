@@ -81,9 +81,31 @@ co-reporters keep their 발견 count with the merge noted in their row.
 overrides: applied (.claude/overrides/code-review.md) | none
 fix-ledger: match | MISMATCH (<n> claimed-but-unchanged, <m> changed-but-unclaimed, <k> changed-but-unresolved)
 fix-verification: {N} verified, {N} unverified, {N} mismatched
-scope-integrity: match | MISMATCH (<외부 변경 파일>)
-validation: pass | fail (<command>) | unavailable
+scope-integrity: match (<n> files) | MISMATCH (scope <n> → touched <m>: <외부 변경 파일>)
+validation: pass (<cmd> → exit 0; …) | fail (<cmd> → exit <code>; …) | unavailable (<이유>)
 ```
+
+**These five lines are claims about what was executed, so each must carry its own
+evidence.** A bare verdict is a contract violation even when the verdict is right:
+
+- `validation` — name every command that ran and quote **its exit status**, not a
+  prose summary of its output. `pass` is available only when every cited command
+  exited 0. A non-zero exit is `fail`; downgrading it to `pass` because the failures
+  look pre-existing requires quoting the baseline run that proves it (`git show
+  <base>:<path> | …`, or the same command at the baseline commit). With no such run,
+  write `fail` and say the baseline is unmeasured. `unavailable` means no validation
+  command was executed at all — state why.
+- `scope-integrity` — quote the file counts on both sides (frozen scope vs actually
+  touched). `match` without a count is not verifiable, and a scope expansion is the
+  failure this line exists to catch.
+- **When the evidence for a line does not exist**, write
+  `unverifiable (<무엇이 없는지>)`. This applies to **any** of the five lines,
+  `overrides` included — a run that never checked for the override file reports
+  `unverifiable`, not `none`, because `none` asserts the file was looked for. The
+  common case is a fix phase that ran outside this session: it leaves no per-finding
+  claim ledger, so `fix-ledger` and `fix-verification` have nothing to count. Never
+  fill the numeric slots by inference; an invented `0 verified, 0 unverified,
+  0 mismatched` reads as a measurement that was taken.
 
 `--fix=none` runs print `fix-ledger: n/a` and `fix-verification: n/a`.
 Fix-enabled runs that applied ZERO fixes (nothing eligible) print `fix-ledger: match`

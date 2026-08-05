@@ -1,0 +1,88 @@
+diff --git a/components/teams/TeamRow.tsx b/components/teams/TeamRow.tsx
+new file mode 100644
+index 0000000..1a2b3c4
+--- /dev/null
++++ b/components/teams/TeamRow.tsx
+@@ -0,0 +1,34 @@
++import type { ReactNode } from "react";
++
++export const VISIBLE_TAG_COUNT = 2;
++
++type Row = { id: string; ownerName: string | null; tags: string[] };
++type Props = {
++  rows: Row[];
++  requesterRole: "OWNER" | "MEMBER" | "VIEWER" | "ADMIN" | "GUEST";
++  emptyState: ReactNode;
++};
++
++export function TeamRow({ rows, emptyState }: Props) {
++  if (!rows.length) return <>{emptyState}</>;
++
++  return (
++    <table>
++      <tbody>
++        {rows.map((row) => (
++          <tr key={row.id}>
++            <td>{row.ownerName && <span>{row.ownerName}</span>}</td>
++            <td>
++              {row.tags.slice(0, VISIBLE_TAG_COUNT).join(", ")}
++              {row.tags.length > VISIBLE_TAG_COUNT && (
++                <span>{`+${row.tags.length - VISIBLE_TAG_COUNT}`}</span>
++              )}
++            </td>
++          </tr>
++        ))}
++      </tbody>
++    </table>
++  );
++}
+diff --git a/tests/components/teams/TeamRow.test.tsx b/tests/components/teams/TeamRow.test.tsx
+new file mode 100644
+index 0000000..5d6e7f8
+--- /dev/null
++++ b/tests/components/teams/TeamRow.test.tsx
+@@ -0,0 +1,52 @@
++import { render } from "@testing-library/react";
++
++import { TeamRow, VISIBLE_TAG_COUNT } from "../../../components/teams/TeamRow";
++
++const baseRow = { id: "r1", ownerName: "Alan Park", tags: ["a", "b"] };
++
++describe("TeamRow", () => {
++  it("does not leak null into the owner cell", () => {
++    // ownerName 가드가 없으면 셀에 "null"이 찍힌다
++    const { getAllByRole } = render(
++      <TeamRow rows={[{ ...baseRow, ownerName: null }]} requesterRole="OWNER" emptyState={null} />,
++    );
++    expect(getAllByRole("cell")[0]).not.toHaveTextContent("null");
++  });
++
++  it("shows the empty state instead of a table", () => {
++    const { queryByRole } = render(
++      <TeamRow rows={[]} requesterRole="OWNER" emptyState={<p>No teams found</p>} />,
++    );
++    expect(queryByRole("table")).not.toBeInTheDocument();
++  });
++
++  it("caps the visible tags and shows an overflow badge", () => {
++    const { getByText } = render(
++      <TeamRow
++        rows={[{ ...baseRow, tags: ["a", "b", "c", "d", "e"] }]}
++        requesterRole="OWNER"
++        emptyState={null}
++      />,
++    );
++    expect(getByText(`+${5 - VISIBLE_TAG_COUNT}`)).toBeInTheDocument();
++    expect(getByText(/a, b/)).toBeInTheDocument();
++  });
++
++  it.each(["OWNER", "MEMBER", "VIEWER", "ADMIN", "GUEST"] as const)(
++    "renders for the %s role",
++    (requesterRole) => {
++      const { getByRole } = render(
++        <TeamRow rows={[baseRow]} requesterRole={requesterRole} emptyState={null} />,
++      );
++      expect(getByRole("table")).toBeInTheDocument();
++    },
++  );
++});
