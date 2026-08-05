@@ -1,0 +1,29 @@
+id: basic-usage-001
+name: "Review staged changes before commit"
+description: |
+  Verify that code-review runs the 4 core reviewers (behavior-state,
+  contracts-compatibility, resilience-data-integrity, tests-regression) plus
+  trigger-matched conditional reviewers, and outputs findings grouped by
+  severity with file/symbol references and the mandatory trailing status.
+tags:
+  - basic
+  - happy-path
+inputs:
+  # A diff is required for the report-structure expectations below to be
+  # satisfiable at all — with an empty change set the correct behavior is the
+  # no-changes stop covered by edge-case-001, not a severity-bucketed report.
+  prompt: "커밋 전에 변경사항 리뷰해줘"
+  files:
+    - path: authz-inconsistency.diff
+expected:
+  output_contains:
+    - "Critical"
+    - "fix-verification"
+  # Anti-signals for the wrong skill having answered. Bare "요구사항" is not one:
+  # a correct report legitimately writes "요구사항/티켓 없음" when reporting that no
+  # specification was available, so it rejected correct output.
+  output_not_contains:
+    - "요구사항 정리"
+    - "gap 분석"
+  outcomes:
+    - type: task_completed

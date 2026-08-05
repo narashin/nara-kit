@@ -1,6 +1,12 @@
 # Project-specific working docs (generated per-project, not shipped)
 docs/
-evals/
+
+# Eval suites stay untracked by default: several carry internal hostnames, ticket
+# keys and queue structure, and this repo is public. Opt a suite in only after its
+# tasks/fixtures are free of company-specific identifiers. Run artifacts never ship.
+evals/*
+!evals/nara-code-review/
+evals/**/results/
 
 # Local config (contains company-specific URLs and page IDs)
 confluence.local.md

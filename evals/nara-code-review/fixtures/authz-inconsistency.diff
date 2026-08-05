@@ -1,0 +1,36 @@
+# Change under review — capability/permission refactor across layers.
+
+# ── Backend: list serializer now grants `is_owner` to co-owners too ──────────
+- def serialize(item, user):
+-     item["is_owner"] = item.owner_id == user.id or user.is_admin
++ def serialize(item, user):
++     # co-owners (explicit permission row) are now treated as owners
++     item["is_owner"] = (
++         item.owner_id == user.id
++         or has_permission(user.id, item.id, role="owner")  # co-owner
++         or user.is_admin
++     )
+
+# ── Backend guard for destructive delete (UNCHANGED): primary owner / admin ──
+  @router.delete("/groups/{gid}")
+  def delete_group(gid, user=Depends(require_primary_owner)):  # co-owner -> 403
+      service.delete(gid)
+
+# ── Frontend list: recomputes ownership LOCALLY, gates BOTH edit and delete ──
+  const isOwner = group.owner_id === user.id || user.is_admin; // local recompute
+  return (
+    <Row>
+      {isOwner && <EditButton id={group.id} />}
+      {isOwner && <DeleteButton id={group.id} />}
+    </Row>
+  );
+
+# ── components/ResourceCard.tsx — NOT imported anywhere (0 references) ────────
+  export function ResourceCard({ group }) {
+    return group.is_owner ? <DeleteButton id={group.id} /> : null;
+  }
+
+# ── Tests: only the backend delete guard is covered ─────────────────────────
+  def test_co_owner_cannot_delete():
+      assert client.delete(f"/groups/{gid}", as_user=co_owner).status_code == 403
+  # (no frontend gating test; no test asserting is_owner flag semantics)
