@@ -15,6 +15,16 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - **실행은 이 스킬이 하지 않는다** — 결정론(LLM 판단 0)이라 out-of-band 크론 스크립트 소유. 역할 분리 명문화: 오토파일럿=없는 것만 생성(classify에 LLM 필요) / 스크립트=있는 것만 상태 sync. Step 1~6 = 생성 전용.
   - 배경: 큐 `done` 전이가 jira-drain cleanup에만 있어 cleanup 미실행·큐 밖 손PR 건이 머지 후에도 `in_review`로 박제됨.
 
+### Changed
+- `nara-code-review` — trailing status 계약을 **증거 없이 쓸 수 있는 verdict가 하나도 없게** 만들고 실패 불가 테스트 카탈로그를 주입 (3커밋, forge EPT 검증):
+  - `agents/tests-regression.md`에 **실측 vacuous 기전 10종** 열거(기존엔 `"Assertions that cannot fail"` 한 줄뿐). 실제 리뷰에서 mutation으로 증명된 사례 — `mockImplementationOnce`+React 동기 재시도 / 대상 상수로 기대값 계산 / `not.toBe` 방향 미고정 / 가드 없는 분기 / 소스가 안 읽는 필드로 `it.each` / 부재 단정 / React가 `null`을 렌더 안 함 / boundary 밖 chrome 단정 / 최상단 고정 mock / 키·상수 리터럴 복제.
+  - `report.md` trailing status가 **명령 종료 상태와 파일 수를 인용**하도록 강화. `validation: pass`는 인용된 exit code로만, `scope-integrity`는 양측 카운트로만 성립.
+  - **`scope-integrity`에 세 번째 상태 `expanded` 추가.** 성립 조건 3개(파일별 사유·수정 적용 **전** 공개·명시적 승인) 전부 충족해야 하고 하나라도 없으면 `MISMATCH`. 사후 승인은 MISMATCH를 되돌리지 않는다 — 먼저 공개하는 이유가 유저가 아직 거절할 수 있어야 한다는 것이므로. `expanded`는 `→ ESCALATE:`를 달지 않고 applied로 보고된다.
+    - 배경: `match | MISMATCH` 2상태에서는 **사유를 적고 승인까지 받은 확장도 ESCALATE로 끝나** 통제된 실행이 escalate로 보이고 미공개 드리프트와 구분되지 않았다.
+  - 템플릿이 산문과 어긋난 4슬롯 정합: `validation: pass`에 `baseline <base> → exit <code>` 슬롯(비-0 exit을 baseline 인용으로 강등하는 경로는 산문에만 있고 템플릿은 `exit 0`을 하드코딩했다) / `scope-integrity: match`·`fix-ledger: match`도 카운트 인용 / `overrides: none`은 확인 명령을 인용(`none`은 "찾아봤다"는 주장, `unverifiable`은 안 찾았다는 뜻) / `→ ESCALATE:`는 **블록 바로 아래** 고정(리포트 본문 유무와 무관하게 status와 함께 이동).
+  - eval 신규 task 2 + fixture 2(승인된 확장 / baseline 인용된 비-0 exit). 기존 `validation-status-evidence-001`이 **반대 케이스 회귀 가드**로 작동 — 미baseline·미공개는 여전히 `fail`·`MISMATCH`이고 3라운드 전부 green.
+  - 미해소(다음 테마): `→ ESCALATE:`가 MISMATCH에만 규정돼 `validation: fail`·`unverifiable`의 escalate 여부 미정 / `unverifiable`과 zero-fix 표(`match`+`0,0,0` 강제)의 상호작용 / SKILL.md가 500 하드리밋 대비 632토큰 초과(20 모듈 통합·examples 섹션 부재와 함께 별 테마).
+
 ## [0.20.0] - 2026-07-22
 
 ### Changed
