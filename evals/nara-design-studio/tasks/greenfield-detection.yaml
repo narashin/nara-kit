@@ -1,0 +1,32 @@
+id: greenfield-detection-001
+name: "Empty startingPoints means greenfield — detected, never asked"
+description: |
+  SKILL.md §2.1 and references/greenfield.md: a pack says which components exist, not what a
+  screen in this product looks like. That is `startingPoints`, which is optional — so even a T2
+  pack (as here: Button / Table / StatusChip, no startingPoints) leaves every structural
+  decision open.
+
+  Two behaviors are being checked:
+    1. The greenfield state is DERIVED from the manifest, not put to the user as a question.
+       "Are you greenfield?" is a question about a word, not about their product.
+    2. Non-visible IA (status enum, default sort, row-click semantics) is decided and stated,
+       not interviewed — three candidates of a default sort order look identical, so comparing
+       them is useless. Visible IA (nav shape, page skeleton) instead becomes what the
+       candidates differ on.
+tags:
+  - greenfield
+  - edge-case
+inputs:
+  prompt: "design a ticket list screen"
+  files:
+    - path: pack-manifest-greenfield.json
+expected:
+  output_contains:
+    - "(?i)greenfield"
+    - "(?i)startingpoints"
+    - "(?i)(nav|navigation|sidebar|tab)"
+    - "(?i)(status|sort|row click)"
+  output_not_contains:
+    - "(?i)(are you greenfield|is this greenfield|greenfield\\?)"
+  outcomes:
+    - type: task_completed

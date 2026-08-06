@@ -20,21 +20,39 @@ For **design / options / explore** requests, default to **Studio Mode** (§3): b
 
 ## 2. Bootstrap gate — resolve the pack before building
 
-This is an **explicit choice, never a silent fallback**. Every build first resolves which pack it renders against:
+**Which design system a project builds on is the project's own decision, and it is made once, explicitly.** Inheriting one from another project — because the user happens to have a default set, or a pack sits in a shared directory — is how a new product silently acquires an unrelated company's design language. So exactly one source can settle this without asking:
 
 ```
-packPath set in references/settings.local.md (gitignored — copy from settings.local.md.example)?
- ├─ YES → load that pack, proceed. The user never sees this gate again.
- └─ NO  → ask the user, one of three options:
-      (a) Build a pack from your design-system codebase
-          → invoke the [nara-design-pack-builder](../nara-design-pack-builder/SKILL.md) skill. It writes a pack and sets packPath in `references/settings.local.md`, then hand back to this skill to resume the interview.
-      (b) Point at an existing pack
-          → ask for its path, write `packPath: <path>` into references/settings.local.md.
-      (c) Use the bundled neutral starter pack (assets/starter-pack/, tier T1)
-          → token-only, generic design; proceed with no product components.
+.claude/overrides/nara-design-studio.md  →  pack: <name> | packPath: <path>
+  ├─ present → use it. State the pack name + tier in one line and continue; never ask again here.
+  └─ absent  → this project has made no decision yet. ASK (below). Never infer one.
 ```
 
-Whichever option is chosen, tell the user which tier they're now building against (see `references/pack-contract.md` §1 for T0–T3) — a starter-pack design is always visibly T1, never presented as if it were the real product.
+Two sources supply the **recommended default the question is seeded with** — never a winner on their own:
+
+| Source | Role |
+|---|---|
+| `references/settings.local.md` → `defaultPackPath` (`packPath` still read as an alias) | the user's usual pack |
+| `~/.claude/design-packs/*/` (any dir with a `_ds_manifest.json`) | packs a team or an internal distribution dropped in |
+
+Offer whichever of those exist as the pre-selected option, then these:
+
+```
+(a) Build a pack from a design system you already have → [nara-design-pack-builder](../nara-design-pack-builder/SKILL.md).
+    Source may be a component codebase, an installed npm package (one shipping a UMD/dist build often
+    needs no per-component adaptation), a Storybook, or a published CSS/token bundle.
+(b) Convert a DESIGN.md → python3 assets/runtime/designmd_to_pack.py --design <DESIGN.md> --out <packDir>
+    Mechanical; T2 with a `components:` block, T1 without. Not a fallback — a DESIGN.md's frontmatter
+    carries a wider token surface than the starter pack ships.
+(c) Point at an existing pack → ask for the path.
+(d) Start a new design system → the bundled starter pack (T1, token-only), then §2.1's greenfield path.
+```
+
+Record the answer in `.claude/overrides/nara-design-studio.md` (`pack:` for a `~/.claude/design-packs/` entry, since that name is portable across machines; `packPath:` for anything else) so the project is asked exactly once. Always name the tier you are building against (`references/pack-contract.md` §1) — a starter-pack design is visibly T1, never presented as the real product. Never change a recorded pack the user did not ask you to change.
+
+### 2.1 Greenfield check — does the resolved pack carry any IA?
+
+A pack says which components and tokens exist, not what a screen in this product looks like — that is `startingPoints`, which is optional, so even a T3 pack can leave every structural decision open. **Derive this, never ask it:** `startingPoints` non-empty → brownfield, adopt its real IA per §5. Empty or absent → greenfield; say so and follow [references/greenfield.md](references/greenfield.md) (which IA the candidates carry, which is decided outright, and the write-back that converges the project to brownfield).
 
 ## 3. Studio Mode — the default for "design / explore / show me options"
 
@@ -49,6 +67,7 @@ Whichever option is chosen, tell the user which tier they're now building agains
 - [ ] Every actionable element has a `data-studio-label` and, where behavior matters, an `interactions` entry.
 - [ ] Only genuinely-new UI is token-built; the output is served through `serve.py` (relative paths resolve).
 - [ ] `fidelity` is set once, matches what was asked, and is never toggled live.
+- [ ] **Run the adherence gate — this one is not self-graded:** `python3 assets/runtime/check_adherence.py <file.html> --pack <packPath>`. Exit `1` lists every hardcoded hex/px with its line; replace each with a pack token and re-run until it exits `0`. Never serve output that has not passed. (`references/pack-contract.md` §3.4 — a pack may tighten the rules via `adherenceConfig`.)
 
 ### Behavior spec (interactions) & export
 
@@ -74,7 +93,7 @@ If any A/B/C item is unknown, it is an open blocker — keep interviewing.
 ### Interview coverage (the axes every spec should resolve)
 
 - **Screen type** — list / detail / form / dashboard / modal / flow (multi-step).
-- **Fidelity** — **default to styled; do NOT ask.** The token layer makes styled essentially free, and the candidates already compare *layout directions*, so wireframe adds little here. Build wireframe only if the user explicitly asks for a grayscale structure-only pass. See §6.
+- **Fidelity** — not an interview question; §6 owns it.
 - **Core data & states** — which fields/columns; which status values appear, and whether the pack already models them as a component (a Label/Chip/Badge) rather than needing new ones invented.
 - **Primary actions & flow** — the main CTA; what each interactive element leads to; entry and back paths.
 - **Empty / loading / error** — shown or skipped for this pass.
@@ -95,7 +114,7 @@ If any A/B/C item is unknown, it is an open blocker — keep interviewing.
 - **Wireframe** — grayscale, no color/shadow; layout skeleton + information hierarchy only (gray bars for text/data, silhouette pills for status). Keep the real region layout and spacing. For fast structure agreement.
 - **Styled** — full pack styling: real tokens, real components, real status colors, the pack's own surface/border/radius treatment. For look-and-feel and clickable prototypes.
 
-**Default: styled — and don't ask about fidelity.** In a token-based pack, styled is essentially free and the layout-direction candidates already cover structural comparison, so wireframe is rarely worth it. Treat **wireframe as an explicit opt-in only** (user says "wireframe" / "low-fi" / "just structure"). When used, it's a build-time choice (`STUDIO_CONFIG.fidelity`, static badge) — build one fidelity per pass, never both; to switch, regenerate. The mechanism stays available; just don't offer it proactively.
+**Default: styled — and don't ask.** With a token pack styled is essentially free, and the layout-direction candidates already cover structural comparison, so wireframe is **explicit opt-in only** ("wireframe" / "low-fi" / "just structure"). It stays a build-time choice (`STUDIO_CONFIG.fidelity`, static badge): one fidelity per pass, never both; to switch, regenerate.
 
 ## 7. Iteration
 
@@ -106,7 +125,8 @@ If any A/B/C item is unknown, it is an open blocker — keep interviewing.
 ## 8. Reference index
 
 - `references/getting-started.md` — human-facing quick start: what it is, how it works, zero-setup starter-pack run, connecting a real design system, the refine loop, and handoff.
+- `references/greenfield.md` — building against a pack with no `startingPoints`: detection, which IA the candidates carry vs. which is decided outright, and the handoff write-back (§2.1).
 - `references/pack-contract.md` — the pack contract: fidelity tiers (T0–T3), required files per tier, every manifest field the engine reads, and the `/_studio` / `/_pack` / `/` serve topology.
-- `references/settings.local.md.example` — template for the gitignored `settings.local.md` that sets `packPath` (copy it, fill in a path, or omit it to use the starter pack).
-- `assets/runtime/` — the engine itself: `studio.js` + `studio.css` (the studio chrome — candidate switcher, comment mode, Interaction mode, Export), `serve.py` (the three-mount dev server), `studio-template.html` (the pack-neutral output skeleton), and `watch-comments.sh` / `watch-captures.sh` / `open-design.sh` (the auto-loop and reopen helpers).
+- `references/settings.local.md.example` — template for the gitignored `settings.local.md` that sets `defaultPackPath` (§2 source 2).
+- `assets/runtime/` — the engine itself: `studio.js` + `studio.css` (the studio chrome — candidate switcher, comment mode, Interaction mode, Export), `serve.py` (the three-mount dev server), `studio-template.html` (the pack-neutral output skeleton), `designmd_to_pack.py` (DESIGN.md → pack converter, §2 option (b)), `check_adherence.py` (the emit-time hardcoded-value gate), and `watch-comments.sh` / `watch-captures.sh` / `open-design.sh` (the auto-loop and reopen helpers).
 - `assets/starter-pack/` — the bundled neutral T1 pack (tokens + manifest + a specimen card) used when the user picks bootstrap-gate option (c).

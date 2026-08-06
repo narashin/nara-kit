@@ -1,0 +1,31 @@
+id: pack-inheritance-001
+name: "A user default must NOT settle the pack for a project that never decided"
+description: |
+  The core of SKILL.md §2: which design system a project builds on is the project's own
+  decision and is never inherited. A `defaultPackPath` in the user's settings.local.md — and
+  likewise any pack sitting in ~/.claude/design-packs/ — is only the PRE-SELECTED OPTION in the
+  question, never a winner on its own.
+
+  Here the user has a default configured but this project has recorded nothing
+  (`.claude/overrides/nara-design-studio.md` is absent). The skill must still ask, and may
+  present the default as the recommended answer. Adopting it silently is the failure mode this
+  rule exists for: a brand-new product quietly acquiring an unrelated design language.
+
+  Passing requires the response to (1) ask rather than announce, and (2) not claim it is
+  building against the Acme pack.
+tags:
+  - bootstrap-gate
+  - regression-guard
+inputs:
+  prompt: "design a signup screen for this new project"
+  files:
+    - path: settings-default-pack.md
+expected:
+  output_contains:
+    - "(?i)(which design system|pick|choose|confirm|ask|어떤|선택)"
+    - "(?i)(default|recommend|usual|pre-selected|기본)"
+  output_not_contains:
+    - "(?i)building against Acme"
+    - "serve.py --pack"
+  outcomes:
+    - type: task_completed

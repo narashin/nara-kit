@@ -1,6 +1,19 @@
 # nara-design-studio settings — copy this file to `settings.local.md` (gitignored).
-# Points the studio at a DS pack. Without it, the bundled neutral starter pack (T1) is used.
+#
+# This sets your USUAL pack — the option pre-selected when a project is asked which design system
+# it builds on. It is a recommendation, not a decision: a project never inherits a pack silently.
+# The decision is recorded per project in `.claude/overrides/nara-design-studio.md` (SKILL.md §2).
 
-- packPath: /absolute/path/to/your/design-system/pack
+- defaultPackPath: /absolute/path/to/your/design-system/pack
 - outDir: ./design-studio-out
 - notes: settings.local.md is never committed and never printed by the skill.
+
+# `packPath` is still read as an alias for `defaultPackPath`, so an older settings file keeps working.
+#
+# Packs dropped into `~/.claude/design-packs/<name>/` (any directory holding a `_ds_manifest.json`)
+# are offered the same way — that is where a team or an internal distribution can put a shared pack.
+#
+# No pack anywhere? The question still gets asked, and its options include building one with
+# `nara-design-pack-builder`, converting a DESIGN.md, or starting fresh on the bundled starter pack:
+#
+#   python3 assets/runtime/designmd_to_pack.py --design <DESIGN.md> --out <packDir>

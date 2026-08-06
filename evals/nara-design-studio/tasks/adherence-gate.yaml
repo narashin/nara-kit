@@ -1,0 +1,28 @@
+id: adherence-gate-001
+name: "Hardcoded values are caught by running the gate, not by self-grading the checklist"
+description: |
+  SKILL.md §3's pre-emit checklist ends with the one item that is explicitly not self-graded:
+  run `check_adherence.py` against the generated HTML before serving it, and keep fixing until
+  it exits 0. The rule "tokens only — no hardcoded brand values" cannot hold as prose, because
+  by the time anyone reads output containing `padding: 16px` it has already been broken.
+
+  Given a snippet that plainly violates both default rules (a raw hex and a raw px that is not
+  a hairline), the skill should reach for the gate command and replace the values with pack
+  tokens — not simply assert that the output is token-driven.
+tags:
+  - adherence
+  - regression-guard
+inputs:
+  prompt: |
+    이 후보 조각을 스튜디오 출력으로 내보내기 직전이야. 계약대로 처리해줘.
+    <div data-studio-label="Summary card" style="background: #fafafa; padding: 24px; border: 1px solid var(--ds-hairline)">…</div>
+  files: []
+expected:
+  output_contains:
+    - "(?i)check_adherence"
+    - "(?i)var\\(--ds-"
+    - "(?i)(#fafafa|24px)"
+  output_not_contains:
+    - "(?i)(looks fine as is|already token-driven|no changes needed)"
+  outcomes:
+    - type: task_completed

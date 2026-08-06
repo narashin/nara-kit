@@ -1,0 +1,27 @@
+id: pack-decision-recorded-001
+name: "A recorded project decision must be used without re-asking"
+description: |
+  The symmetric case to pack-inheritance-001, and the reason that rule does not just become
+  "always ask". Once `.claude/overrides/nara-design-studio.md` records the decision, SKILL.md
+  §2 says to use it, state the pack name and tier in one line, and never ask again for this
+  project. Re-asking every session would make the rule an interrogation instead of a one-time
+  decision.
+
+  The skill should name the pack (Acme DS) and its tier, then move on to the interview — not
+  re-open the four-option question.
+tags:
+  - bootstrap-gate
+  - positive-test
+inputs:
+  prompt: "design an order-history screen"
+  files:
+    - path: project-decision.md
+expected:
+  output_contains:
+    - "(?i)acme"
+    - "(?i)(t2|t3|tier)"
+    - "(?i)(interview|candidate|studio)"
+  output_not_contains:
+    - "(?i)(starter pack|which design system should)"
+  outcomes:
+    - type: task_completed

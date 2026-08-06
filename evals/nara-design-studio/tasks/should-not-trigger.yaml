@@ -1,0 +1,19 @@
+id: should-not-trigger-001
+name: "RFC / publish-to-Confluence request should not trigger design-studio"
+description: |
+  A request to write an RFC and publish it to Confluence should activate nara-rfc /
+  nara-publish-spec, not nara-design-studio. The skill's own frontmatter DO NOT USE FOR
+  list explicitly excludes "writing specs/RFCs (use nara-rfc)" and
+  "publishing to Confluence (use nara-publish-spec)".
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "write an RFC for this architecture decision and then publish it to confluence"
+  files: []
+expected:
+  output_not_contains:
+    - "Studio Mode"
+    - "bootstrap gate"
+    - "studio candidate"
+    - "packPath"

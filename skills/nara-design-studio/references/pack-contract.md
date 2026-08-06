@@ -15,7 +15,7 @@ A pack can be as small as a token stylesheet or as complete as a full component 
 
 | Tier | Pack materials | Drift vs. the real product | Where it typically lives |
 |------|-----------------|------------------------------|---------------------------|
-| **T0** | `DESIGN.md` prose only — no runtime pack directory at all | High | Degradation path when no pack can be built or pointed at |
+| **T0** | Prose spec only — no runtime pack directory at all | High | Degradation path when no pack can be built or pointed at |
 | **T1** | Token CSS (`tokens/*.css`) + a manifest + a few specimen "cards" | Medium | The **neutral starter pack** bundled with `nara-design-studio` |
 | **T2** | + a real `_ds_bundle.js` exposing the design system's actual components | None (components are real) | An external pack, hand-made or built by `nara-design-pack-builder` |
 | **T3** | + `data.js` (navigation tree / enums) + shared kit helpers (`kitHelpersPath`) | None | A mature external pack (e.g. a product's own design-system pack) |
@@ -29,6 +29,27 @@ starts life at **T1** or **T2**.
 
 T0 is not a directory contract — it means "no pack, prose-only spec" and is out of scope for this document
 beyond noting it exists as the bottom of the ladder.
+
+**A `DESIGN.md` is not T0.** A DESIGN.md (Stitch format, see `nara-design-md`) carries a complete token surface
+in its frontmatter — a color role set, a typography scale, spacing, radii, and per-component style specs — which
+is strictly more than a hand-written T1 pack usually ships. Convert it rather than reading it as prose:
+
+```
+python3 assets/runtime/designmd_to_pack.py --design <path/to/DESIGN.md> --out <packDir> [--namespace <Global>]
+```
+
+The transform is mechanical and makes no design judgments. It lands at **T1** for a DESIGN.md with no
+`components:` block, and at **T2** when there is one — each entry becomes a standalone JSX component in the
+generated `_ds_bundle.js`. Two properties the converter guarantees, both worth knowing when reading its output:
+
+- **Authored vs derived is never blended.** The engine's chrome needs tokens a DESIGN.md does not define
+  (`--ds-primary-hover`, `--ds-surface`, the ink ramp, `--ds-radius-200`, `--ds-shadow-popover`). Those are
+  emitted into a separate, commented block in `tokens/tokens.css` and reported on stdout, so an authored value
+  is always distinguishable from an inferred one. A chrome token with no source role at all is reported as
+  `MISSING` and the converter exits non-zero.
+- **No literal survives into a component.** A spec's literal geometry (`padding: 12px 24px`) becomes a
+  component-scoped token (`--ds-comp-button-primary-padding`) that the generated JSX references via `var()`,
+  so the pack itself satisfies the same adherence rules its output is held to (§3.4).
 
 ---
 
@@ -62,6 +83,7 @@ a screen from a pack) needs to parse to understand what the pack offers.
 | `tokens` | array of `{ name, value, kind, definedIn }` | interview / handoff | The design tokens the pack exposes (color, spacing, radius, …) and which stylesheet defines each — used to enumerate what's available when nothing else exists as a real component. |
 | `cards` | array of `{ path, group, name }` | studio's specimen browser | Guideline / specimen HTML pages (foundations, component demos) the studio can show. Each card file also self-declares the same metadata in a leading `<!-- @dsCard group="..." name="..." subtitle="..." viewport="WxH" -->` comment, so a card is browsable standalone even without the manifest entry. |
 | `startingPoints` | array (optional) | interview stage | Pack-provided example screens/templates used as jump-off points when interviewing for a new design. Not required — omit or leave empty for packs that don't curate any. |
+| `adherenceConfig` | string (optional) | emit-time gate | Path, relative to the pack root, to this pack's adherence rule file — see §3.4. Omit to use the gate's built-in defaults. |
 
 **Token vocabulary:** the engine's chrome (`studio.js` + `studio.css`) consumes design tokens under a single,
 generic **`--ds-*`** prefix (e.g. `--ds-ink`, `--ds-primary`, `--ds-canvas`, `--ds-radius-200`) — the bundled
@@ -120,6 +142,38 @@ window.STUDIO_CONFIG = {
 and `cfg.pack.kitHelpersPath` verbatim when it builds the exported `Spec.md` handoff document, so a pack author
 who fills these in accurately gets a correct, product-specific handoff spec for free — no template edits needed.
 
+### 3.4 `adherenceConfig` — the emit-time gate
+
+The baseline rule "tokens only — no hardcoded brand values" (`SKILL.md` §5) cannot hold as prose: by the time
+anyone reads output containing `padding: 16px`, the rule has already been broken. It is enforced mechanically
+instead, before a generated screen is written:
+
+```
+python3 assets/runtime/check_adherence.py <file.html> [...] --pack <packDir>
+```
+
+Two rules ship on by default and need no pack cooperation — **raw hex colors** and **raw px values** outside a
+small allowlist (a `1px` hairline is not a spacing decision). Exit code `1` means violations; fix them and
+re-emit. Declarations inside a `:root { … }` block are always exempt, because `SKILL.md` §5 explicitly tells a
+portable single-file export to inline the pack's token block, and those declarations *are* the tokens.
+
+A pack tightens or relaxes the rules by shipping a JSON config and naming it in `adherenceConfig`:
+
+```jsonc
+{
+  "forbidRawHex": true,
+  "forbidRawPx": true,
+  "allowedRawPx": ["0px", "1px"],
+  "ignorePatterns": ["data-studio-label"],   // regexes; a matching line is skipped
+  "allowTokens": ["--ds-primary", "…"]       // informational: what this pack actually defines
+}
+```
+
+Declaring `adherenceConfig` and then not shipping the file is a hard error, not a silent pass — a gate that
+quietly disables itself is worse than no gate. A pack that ships richer rules in another format (an ESLint or
+oxlint config, say, with per-component prop allowlists) keeps that file for its own repo tooling; this field is
+for the subset the studio can enforce on generated HTML without any extra toolchain.
+
 ---
 
 ## 4. Serve topology
@@ -152,8 +206,9 @@ three mounts (and the studio's comment/capture/spec POST endpoints) resolve.
 
 ## 5. Pointing the studio at a pack — `packPath`
 
-Which pack a project uses is **not** part of this contract file — it's a per-project setting. See
-`settings.local.md.example` in this same `references/` directory: it documents the `packPath` key that a
-project's gitignored `settings.local.md` sets to point the studio at an external pack. Without a `packPath`
-set, the studio falls back to its bundled neutral T1 starter pack (`assets/starter-pack/`) — a design produced
-against the starter pack is always explicitly T1; the fallback is a visible choice, never a silent default.
+Which pack a project uses is **not** part of this contract file — it is a per-project decision, recorded in
+that project's `.claude/overrides/nara-design-studio.md` and asked for exactly once (`SKILL.md` §2). A project
+never inherits a pack from another project: the user's `defaultPackPath` (see `settings.local.md.example`) and
+any pack under `~/.claude/design-packs/` are offered as the pre-selected answer to that question, never applied
+on their own. A design produced against the bundled neutral starter pack is always explicitly T1 — choosing it
+is an answer, never a silent default.

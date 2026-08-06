@@ -20,7 +20,7 @@ The runtime lives in `assets/runtime/` (a small `serve.py` dev server + `studio.
 
 ## Quick start (zero setup)
 
-Just invoke the skill — `/nara-design-studio` or say *"design a screen"*. With no pack configured, it uses the **bundled neutral starter pack** (`assets/starter-pack/`, token-only) so you can prototype layouts immediately. Everything renders from generic `--ds-*` design tokens.
+Just invoke the skill — `/nara-design-studio` or say *"design a screen"*. It asks once which design system this project builds on; pick **"start a new design system"** and it uses the **bundled neutral starter pack** (`assets/starter-pack/`, token-only) so you can prototype layouts immediately. Everything renders from generic `--ds-*` design tokens.
 
 To view a generated screen in the browser:
 
@@ -33,11 +33,26 @@ The server exposes three mounts so the runtime, the pack, and your output can li
 
 ## Connecting your own design system (full fidelity)
 
-The starter pack is layout-only (tier T1). To render with your product's **real components** (tier T2+, zero drift), give the engine a pack. On first run with no pack it offers three options:
+The starter pack is layout-only (tier T1). To render with your product's **real components** (tier T2+, zero drift), give the engine a pack.
 
-1. **Build a pack from your codebase** — runs `/nara-design-pack-builder`, a guided React-first protocol that extracts your tokens + components + a manifest into a pack, then sets `packPath`.
-2. **Point at an existing pack** — set `packPath` in `references/settings.local.md` (copy `settings.local.md.example`; this file is gitignored, never committed).
-3. **Use the neutral starter pack** — the T1 default above.
+**Which design system a project uses is asked once, per project, and never inherited.** A brand-new repo does not silently pick up whatever pack your last project used — that is how an unrelated design language ends up in a new product.
+
+| Source | Role |
+|--------|------|
+| `.claude/overrides/nara-design-studio.md` → `pack:` / `packPath:` | **the decision.** Present → used, no question. Absent → you get asked, and your answer is written here. |
+| `references/settings.local.md` → `defaultPackPath` | your usual pack — pre-selected in that question |
+| `~/.claude/design-packs/<name>/` (any dir with a `_ds_manifest.json`) | packs a team or an internal distribution dropped in — also offered |
+
+The question's other options:
+
+1. **Build a pack from a design system you already have** — runs `/nara-design-pack-builder`. The source can be a local component codebase, an **installed npm package** (a design system that ships a UMD/dist build often needs no per-component adaptation), a Storybook, or a published CSS/token bundle.
+2. **Convert a DESIGN.md** — if you have one (see `/nara-design-md`), it already carries a full color/typography/spacing/radius set plus per-component style specs, which is *more* than the starter pack ships:
+   ```bash
+   python3 assets/runtime/designmd_to_pack.py --design DESIGN.md --out ../my-pack
+   ```
+   The transform is mechanical. It lands at **T2** when the file has a `components:` block (each entry becomes a real mountable component) and **T1** when it doesn't. Every token the engine needs that DESIGN.md doesn't define is emitted into a separate `derived` block and printed, so you can always see what was inferred.
+3. **Point at an existing pack** — give its path.
+4. **Start a new design system** — the neutral starter pack (T1), then the greenfield path in `greenfield.md`.
 
 A pack must expose its tokens as `--ds-*` (the engine's vocabulary). A pack that keeps a different prefix (e.g. `--acme-*`) ships a tiny **adapter stylesheet** mapping its prefix onto `--ds-*` — one `:root { --ds-x: var(--acme-x); }` line per chrome-used token — and lists it in the pack's `globalCssPaths`. The adapter lives **with the pack**, not with this engine. See `pack-contract.md` for the full manifest + tier contract.
 
@@ -55,8 +70,20 @@ Save a finalized design under `<outDir>/handoff/`, then anyone can reopen the li
 bash assets/runtime/open-design.sh <ID-or-fragment> <outDir> [packDir] [port]
 ```
 
+## The adherence gate
+
+"Use tokens, never hardcoded values" is checked, not trusted. Before output is served, the agent runs:
+
+```bash
+python3 assets/runtime/check_adherence.py <file.html> --pack <packDir>
+```
+
+It fails on raw hex colors and raw px values (a `1px` hairline is allowed; a `24px` margin is not), printing each with its line number. Token declarations inside an inlined `:root { … }` block are exempt. A pack can tighten or relax the rules by shipping a config and naming it in its manifest's `adherenceConfig` — see `pack-contract.md` §3.4.
+
 ## Reference
 
-- `pack-contract.md` — fidelity tiers (T0–T3), required files per tier, every manifest field the engine reads, the serve topology.
-- `settings.local.md.example` — the `packPath` template.
+- `pack-contract.md` — fidelity tiers (T0–T3), required files per tier, every manifest field the engine reads, the adherence config, the serve topology.
+- `settings.local.md.example` — the `defaultPackPath` template (pack resolution source 2).
+- `../assets/runtime/designmd_to_pack.py` — DESIGN.md → pack converter.
+- `../assets/runtime/check_adherence.py` — the emit-time hardcoded-value gate.
 - `../../nara-design-pack-builder/SKILL.md` — extract a pack from your design system.

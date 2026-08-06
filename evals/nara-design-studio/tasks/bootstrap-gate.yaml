@@ -1,0 +1,28 @@
+id: bootstrap-gate-001
+name: "No recorded project decision — the pack question must be asked, with all four ways out"
+description: |
+  SKILL.md §2 makes the pack a per-project decision recorded in
+  `.claude/overrides/nara-design-studio.md`. When that file is absent the project has decided
+  nothing, so the skill must ASK — and the question carries four options: (a) build a pack from
+  a design system you already have (codebase / installed npm package / Storybook / published
+  CSS bundle), (b) convert a DESIGN.md via designmd_to_pack.py, (c) point at an existing pack,
+  (d) start a new design system on the bundled starter pack.
+
+  It must not silently pick one and proceed to building or serving a screen.
+tags:
+  - bootstrap-gate
+  - edge-case
+inputs:
+  prompt: "design a screen for our order-history page"
+  files: []
+expected:
+  output_contains:
+    - "(?i)(build a pack|design system you already have|pack-builder)"
+    - "(?i)(design\\.md|designmd_to_pack)"
+    - "(?i)(existing pack|point at)"
+    - "(?i)(starter pack|new design system)"
+  output_not_contains:
+    - "serve.py --pack"
+    - "8917"
+  outcomes:
+    - type: task_completed

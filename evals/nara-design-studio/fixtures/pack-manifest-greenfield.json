@@ -1,0 +1,24 @@
+{
+  "namespace": "Acme",
+  "source": "acme-design-system",
+  "pack": {
+    "name": "Acme DS",
+    "sourceRepo": "org/acme-design-system",
+    "sourcePackages": ["@acme/ui-components"],
+    "kitHelpersPath": "",
+    "reuseRule": "Reuse Acme DS components; do not recreate from tokens.",
+    "tier": "T2"
+  },
+  "components": [
+    { "name": "Button", "group": "Actions", "sourcePath": "src/Button.tsx", "adaptedPath": "components/Button.jsx", "promptPath": "", "typesPath": "components/Button.d.ts", "status": "adapted", "note": "" },
+    { "name": "Table", "group": "Data Display", "sourcePath": "src/Table.tsx", "adaptedPath": "components/Table.jsx", "promptPath": "", "typesPath": "components/Table.d.ts", "status": "adapted", "note": "" },
+    { "name": "StatusChip", "group": "Data Display", "sourcePath": "src/StatusChip.tsx", "adaptedPath": "components/StatusChip.jsx", "promptPath": "", "typesPath": "components/StatusChip.d.ts", "status": "adapted", "note": "" }
+  ],
+  "globalCssPaths": ["tokens/tokens.css"],
+  "tokens": [
+    { "name": "--ds-primary", "value": "#2563eb", "kind": "color", "definedIn": "tokens/tokens.css" },
+    { "name": "--ds-ink", "value": "#18181b", "kind": "color", "definedIn": "tokens/tokens.css" }
+  ],
+  "cards": [],
+  "adherenceConfig": "_adherence.json"
+}

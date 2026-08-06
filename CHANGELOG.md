@@ -11,11 +11,19 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 ## [Unreleased]
 
 ### Added
+- `nara-design-studio` — **DESIGN.md → 팩 변환기** `assets/runtime/designmd_to_pack.py`. DESIGN.md(Stitch format) frontmatter는 color role set·typography scale·spacing·radii·컴포넌트 스타일 스펙을 이미 담고 있어 **번들 starter 팩(T1, 토큰 23개·컴포넌트 0)보다 토큰 표면이 넓다** — 산문으로 읽지 말고 팩으로 변환한다. `components:` 블록이 있으면 **T2**(각 항목이 마운트 가능한 standalone JSX + `_ds_bundle.js`), 없으면 T1.
+  - **authored / derived 분리.** 엔진 크롬이 요구하지만 DESIGN.md가 정의하지 않는 토큰(`--ds-primary-hover`, ink 램프, `--ds-radius-200`, `--ds-shadow-popover` 등)은 `tokens.css`의 별도 주석 블록으로 emit + stdout 리포트. 매핑 가능한 role이 없으면 `MISSING` + exit 1 — 추론값이 authored 값과 섞이지 않는다.
+  - **리터럴은 컴포넌트 스코프 토큰으로 승격.** DESIGN.md `components:`가 geometry를 리터럴로 적으므로(`padding: 12px 24px`) 그대로 인라인하면 팩 자신이 adherence 규칙을 위반한다 → `--ds-comp-<name>-<prop>`로 뽑고 JSX는 `var()`만 참조.
+  - pyyaml 있으면 사용, 없으면 stdlib 파서로 폴백 — **새 의존성 0**.
+- `nara-design-studio` — **emit-time adherence 게이트** `assets/runtime/check_adherence.py`. baseline 규칙 "tokens only — no hardcoded brand values"는 산문으로는 강제 불가(`padding: 16px`가 적힌 시점에 이미 위반)라 기계 검사로 전환. 기본 규칙 2개(raw hex / allowlist 밖 raw px, `1px` hairline은 허용)는 팩 협조 없이 동작, 위반 시 exit 1 + 라인 리포트. 인라인된 `:root { … }` 블록은 면제(`SKILL.md` §5가 portable single-file export에 토큰 블록 인라인을 지시하므로 그것은 정의부지 하드코딩이 아니다). 팩은 매니페스트 `adherenceConfig`로 규칙을 조일 수 있다.
+- `nara-design-studio` — **그린필드 분기**(`SKILL.md` §2.1–2.2). 팩 tier는 "DS가 있나"만 답하고 "IA가 있나"는 아무도 묻지 않아, `startingPoints` 없는 팩에서 화면마다 nav·컬럼·상태값이 재발명되고 화면 2개째부터 일관성이 사라지던 문제. `manifest.startingPoints` 공백 여부로 **자동 판정**(유저에게 묻지 않음)하고, 보이는 IA(nav 형태·페이지 골격)는 기존 layout-direction candidate가 갈리는 축으로 흡수, 안 보이는 IA(상태 enum·정렬 기본·row 클릭 의미)는 후보 비교가 무의미하므로 기본값 통보 + 거부권. 확정된 화면은 팩 `startingPoints`로 **write back**해 다음 빌드부터 브라운필드로 수렴시킨다.
+
 - `nara-jira-triage` — Step 7 `reconcile` 계약 명문화: 큐 이슈 상태를 **PR 실측**으로 되돌리는 전이 규약(strict KEY 경계 매칭 후 `MERGED`→`done`+`drain_state=done`, `OPEN`→`in_review`, 다건·미머지 close는 무변경+경고)과 증거 우선순위(PR 실측 > Jira 상태 > `pr_url` metadata — 후자는 KEY 검증 없이 심겨 오염 가능, 근거 아님)를 선언. `gh pr list --search`가 fuzzy라(`PROJ-40` 질의에 PROJ-39/29 혼입) 경계 매칭 `(^|[^A-Za-z0-9])<KEY>([^0-9]|$)` 필수.
   - **실행은 이 스킬이 하지 않는다** — 결정론(LLM 판단 0)이라 out-of-band 크론 스크립트 소유. 역할 분리 명문화: 오토파일럿=없는 것만 생성(classify에 LLM 필요) / 스크립트=있는 것만 상태 sync. Step 1~6 = 생성 전용.
   - 배경: 큐 `done` 전이가 jira-drain cleanup에만 있어 cleanup 미실행·큐 밖 손PR 건이 머지 후에도 `in_review`로 박제됨.
 
 ### Changed
+- `nara-design-studio` — 부트스트랩 게이트를 **프로젝트 1회 결정** 모델로 재작성. 어떤 디자인 시스템 위에 짓는지는 프로젝트 고유 결정이므로 **상속되지 않는다** — 유저의 `defaultPackPath`나 공유 디렉터리에 팩이 있다는 이유로 신규 repo가 무관한 회사의 디자인 언어를 조용히 물려받는 것을 막는다. 결정을 확정할 수 있는 소스는 `.claude/overrides/nara-design-studio.md` 하나뿐이고(있으면 무질문 사용, 없으면 반드시 질문 후 여기에 기록), `settings.local.md`의 `defaultPackPath`(`packPath`는 alias)와 `~/.claude/design-packs/*/`(팀·사내 배포가 팩을 떨어뜨리는 자리)는 **질문의 기본 선택지로 강등** — 단독으로 이기지 않는다. 기존엔 단일 글로벌 `packPath`뿐이라 프로젝트마다 다른 팩을 쓰려면 매번 그 줄을 고쳐야 했다. 선택지에 **DESIGN.md 변환**을 추가하고 (a)의 소스 범위를 "design-system codebase"에서 설치된 npm 패키지·Storybook·배포 dist까지로 확장했다(UMD를 배포하는 DS는 컴포넌트별 adaptation이 아예 불필요한 경우가 많다).
 - `nara-code-review` — trailing status 계약을 **증거 없이 쓸 수 있는 verdict가 하나도 없게** 만들고 실패 불가 테스트 카탈로그를 주입 (3커밋, forge EPT 검증):
   - `agents/tests-regression.md`에 **실측 vacuous 기전 10종** 열거(기존엔 `"Assertions that cannot fail"` 한 줄뿐). 실제 리뷰에서 mutation으로 증명된 사례 — `mockImplementationOnce`+React 동기 재시도 / 대상 상수로 기대값 계산 / `not.toBe` 방향 미고정 / 가드 없는 분기 / 소스가 안 읽는 필드로 `it.each` / 부재 단정 / React가 `null`을 렌더 안 함 / boundary 밖 chrome 단정 / 최상단 고정 mock / 키·상수 리터럴 복제.
   - `report.md` trailing status가 **명령 종료 상태와 파일 수를 인용**하도록 강화. `validation: pass`는 인용된 exit code로만, `scope-integrity`는 양측 카운트로만 성립.

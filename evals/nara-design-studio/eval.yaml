@@ -1,0 +1,33 @@
+name: nara-design-studio-eval
+description: >-
+  Evaluation suite for design-studio — pack-agnostic Studio Mode engine
+  (pack decision → interview → candidates → refine → handoff). Covers the three contracts that
+  only show up at runtime: the pack is a per-project decision that is never inherited from a user
+  default, greenfield is derived from the manifest rather than asked, and the tokens-only rule is
+  enforced by running check_adherence.py rather than self-graded.
+skill: nara-design-studio
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill resolve the pack the way §2 requires (ask when the project has recorded nothing, use the record when it has, never inherit a user default silently), then run the Studio Mode interview — instead of building straight away or drifting into an unrelated workflow (RFC, publish-spec)?
+graders:
+  - type: code
+    name: has_output
+    config:
+      assertions:
+        - "len(output) > 0"
+  - type: text
+    name: relevant_content
+    config:
+      regex_match:
+        - "(?i)(studio|pack|candidate|interview|bootstrap)"
+tasks:
+  - "tasks/*.yaml"

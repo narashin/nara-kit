@@ -1,0 +1,23 @@
+id: routing-001
+name: "Design request should trigger Studio Mode"
+description: |
+  A request to design a screen with studio candidates should activate nara-design-studio.
+  Per SKILL.md §1, the run order is: load skill → resolve the pack (bootstrap gate, §2) →
+  interview until unambiguous → build. Since no packPath is resolved yet in this environment,
+  the response should surface either the bootstrap gate or the interview — never a finished
+  screen, and never an unrelated skill (RFC / Confluence).
+tags:
+  - routing
+  - positive-test
+inputs:
+  prompt: "design a screen with studio candidates for a support-ticket list, show me a few options"
+  files: []
+expected:
+  output_contains:
+    - "(?i)(pack|bootstrap)"
+    - "(?i)(interview|candidate|studio)"
+  output_not_contains:
+    - "RFC"
+    - "Confluence"
+  outcomes:
+    - type: task_completed
