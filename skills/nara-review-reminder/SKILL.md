@@ -26,7 +26,14 @@ nara-review-reminder --host <GH_HOST> --repo <OWNER/REPO> --reviewer <USERNAME> 
 
 인자 없으면 agent instructions에서 주입된 기본값 사용.
 
-## 실행
+## Step 0 — 사전 정리
+
+[teams-and-reconcile.md](references/teams-and-reconcile.md) 절차를 따라 두 가지를 먼저 한다:
+
+1. **reconcile** — 열린 리마인더 이슈를 실제 PR 상태로 정리 (머지·내 리뷰 완료 → `done`, 팀원이 대신 리뷰 → `cancelled`). 안 하면 끝난 PR 이슈가 영구히 쌓인다
+2. **내 팀 slug 셋** — `gh api /user/teams --paginate` → `<org>/<slug>`. 팀 요청 객체엔 `login` 이 없어 이 확장 없이는 팀 경유 건이 100% 누락된다
+
+## Step 1 — PR 조회
 
 ```bash
 GH_HOST=<host> gh pr list \
@@ -36,12 +43,18 @@ GH_HOST=<host> gh pr list \
   --limit 100
 ```
 
-## 필터 조건
+## Step 2 — 필터 조건
 
-다음 조건을 **모두** 만족하는 PR만 대상:
+`reviewRequests[]` 엔 `{"__typename":"User","login":…}` 과 `{"__typename":"Team","slug":"<org>/<team>"}` 이 섞여 온다. 판정 4개:
 
-1. `reviewRequests[].login` 에 `<reviewer>` 포함
-2. `reviews[].author.login` 에 `<reviewer>` **없음**
+- **개인 지정** = `User.login` 에 `<reviewer>`
+- **팀 경유** = `Team.slug` 중 하나가 내 팀 slug 셋에 포함
+- **내가 리뷰 완료** = `reviews[].author.login` 에 `<reviewer>`
+- **팀원이 이미 리뷰함** = 매칭 팀의 멤버(`gh api /orgs/<ORG>/teams/<SLUG>/members`) 중 `<reviewer>` 아닌 사람이 `reviews[].author.login` 에 존재
+
+**모두** 만족해야 대상: ① 개인 지정 또는 팀 경유 성립 ② 내가 리뷰 완료 아님 ③ **팀 경유만**인 건은 팀원이 이미 리뷰함 아님 (개인 지정이 있으면 팀원 리뷰와 무관하게 대상 — 나를 콕 집은 요청이므로).
+
+팀 경유 건도 개인 지정 건과 동일 처리 (멘션 + `--reviewer-agent` assign).
 
 ## 출력 — 미리뷰 PR 없음
 
@@ -64,7 +77,11 @@ multica issue create \
   --output json
 # → issue ID 추출 후 metadata 저장
 multica issue metadata set <issue_id> --key pr_url --value "<PR URL>"
+multica issue metadata set <issue_id> --key tracker_type --value review
+multica issue metadata set <issue_id> --key request_via --value "<direct | team | direct+team>"
 ```
+
+`tracker_type=review` 없으면 Step 0 이 `pr-activity-reminder` 의 `activity` 이슈까지 닫는다(둘 다 `pr_url` 보유). `request_via` 는 reconcile 의 "팀 경유만" 판정용.
 
 이슈가 `--reviewer-agent` 에 assign되면 Multica가 해당 에이전트의 task를 enqueue → 에이전트가 nara-review-queue 스킬로 PR을 리뷰하고 결과를 이슈 코멘트(KO/EN)로 남긴 뒤 done 처리한다. 이것이 "리뷰 필요 생성 → 자동 리뷰" 트리거.
 
@@ -93,5 +110,5 @@ multica issue comment add <issue_id> \
 - **fire-and-forget 자동화** — 헤드리스(Multica autopilot)로 도므로 인터랙티브 confirm 게이트 없음. 안전은 **dedup(중복 이슈/알림 방지) + 가역성(이슈는 삭제 가능, 코드 변경 없음)**으로 확보. 인간 확인이 필요한 실행이면 이 스킬 대신 수동 리뷰.
 - `GH_HOST` 환경변수로 gh CLI 라우팅 제어
 - 인자 누락 시 agent instructions 기본값 사용. 그것도 없으면 오류 안내 후 중단
-- `gh` CLI PATH에 존재해야 함
+- `gh` CLI PATH에 존재해야 함. 팀 조회는 `read:org` 스코프 필요 — 없으면 개인 매칭만으로 계속 진행(중단 금지)
 - `--mention` 미지정 시 멘션 코멘트 단계는 전체 스킵 (기존 동작 그대로)

@@ -24,7 +24,18 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - **실행은 이 스킬이 하지 않는다** — 결정론(LLM 판단 0)이라 out-of-band 크론 스크립트 소유. 역할 분리 명문화: 오토파일럿=없는 것만 생성(classify에 LLM 필요) / 스크립트=있는 것만 상태 sync. Step 1~6 = 생성 전용.
   - 배경: 큐 `done` 전이가 jira-drain cleanup에만 있어 cleanup 미실행·큐 밖 손PR 건이 머지 후에도 `in_review`로 박제됨.
 
+- `nara-review-reminder` — **팀 리뷰 요청 확장 + 리마인더 이슈 reconcile** (`references/teams-and-reconcile.md` 신규). 필터가 `reviewRequests[].login`만 봤는데 GitHub은 팀 요청을 `{"__typename":"Team","slug":"<org>/<team>"}`으로 주고 **`login` 필드가 없다** — 팀으로 걸린 요청은 100% 누락돼 티켓이 아예 생기지 않았다(실측: sandbox-dns#721의 한 팀, api-server 열린 PR 다수의 팀 요청 전건). `gh api /user/teams`로 `<organization.login>/<slug>`를 조립해 **동적으로** 해석한다 — 팀 slug 하드코딩은 팀 이동 시 조용히 썩고, 어차피 오탐 위험을 줄여주지도 않는다(그건 아래 별개 필터의 몫).
+  - **"내 차례" 필터.** 팀 요청은 팀원 아무나 처리하면 되므로, 매칭된 팀의 멤버 중 리뷰를 이미 남긴 사람이 있으면 티켓을 만들지 않는다. GitHub이 "팀원 1명 리뷰 시 팀 요청 자동 해제"를 하는지에 **의존하지 않는다** — 해제되지 않은 채 남아 있는 PR이 관측됐고(해당 리뷰어들이 그 팀 비멤버라 반증은 아니나 확증도 없다) 어느 쪽이든 직접 계산이 맞다. 개인 지정이 함께 있으면 팀원 리뷰와 무관하게 대상 — 나를 콕 집은 요청이므로.
+  - **Step 0 reconcile.** 리마인더 이슈를 닫는 주체가 아무도 없어 끝난 PR의 이슈가 영구히 쌓였다. 생성 루틴 **전에** 열린 이슈를 실측 대조해 머지·클로즈·내 리뷰 완료는 `done`, 팀원이 대신 처리한 건은 `cancelled`로 전환한다(전환 건에는 코멘트·멘션 없음 — 조용히 닫는다).
+  - `tracker_type=review` metadata 신설. `pr-activity-reminder`의 `activity` 이슈도 `pr_url`을 갖고 있어, 이 구분 없이는 reconcile이 **남의 자동화 이슈를 닫는다**. `request_via`는 reconcile이 "팀 경유만" 여부를 재조회 없이 판정하게 한다.
+  - `read:org` 스코프 부재 시 **중단하지 않고** 개인 매칭만으로 계속 진행 — 리마인더가 통째로 죽는 것보다 부분 동작이 낫다.
+  - waza: 토큰 1200→1677(+477, 상세는 reference로 분리해 +1152에서 축소), 링크 이탈 advisory는 baseline과 동일한 `../README.md` 백링크 1건으로 불변.
+
 ### Changed
+- `nara-jira-triage` — Step 7 reconcile 계약에 **Pass C(Jira 역기록)** 추가. Pass A가 merged PR로 큐를 `done` 처리해도 Jira는 `In Progress`에 남아 두 트래커가 갈라졌다. Pass C는 A의 `MERGED` 1건 분기에서만, 그리고 **Jira assignee가 나인 티켓에만** 전이를 건다.
+  - **기본 OFF**(`JIRA_SYNC=1` 명시 opt-in). 팀이 보는 트래커에 대한 유일한 외부 mutation이므로 자동 실행을 기본값으로 두지 않는다 — merged가 곧 종료인지는 팀 워크플로의 판단이다.
+  - **종료 상태명은 프로젝트마다 다르다.** 전이 id 하드코딩 금지를 계약에 명문화 — 한 프로젝트는 `Resolved`/`Closed`를 노출하고 다른 프로젝트는 `Done` 하나뿐이라, 이름 하나로 고정하면 한쪽이 통째로 막힌다. `to.statusCategory.key == "done"`인 전이 중 `$JIRA_CLOSE_STATUSES` 순서로 첫 매칭을 고른다(카테고리 제약이 있어 동명의 비-done 상태를 잘못 집을 수 없다).
+  - 실행 주체는 여전히 이 스킬이 아니라 out-of-band 크론 스크립트 — 스킬은 계약만 선언한다.
 - `nara-local-shot` — Before/After 비교를 **두 revision·두 pass로 명시적 절차화** (Step 1 재작성 + `references/comparison-passes.md` 신규). 기존 Step 1은 As-Is 복원을 `git show`+preview page 한 경로로만 처방해서, subject가 **real app page**이거나 옛 렌더가 그 사이 바뀐 공유 코드에 기대던 경우(복원 시 drift) 필요한 두 번째 pass — 베이스 revision 워크트리 + dev server 재시작 + deps/build/codegen 산출물 갱신 — 를 아무도 언급하지 않았다. 그 비용은 앱을 띄우는 시퀀스이고 teardown 이후에 발견되므로 런치를 두 번 지불하게 되며, 비교표는 한 열만 채운 채 placeholder로 나간다.
   - **As-Is 존재 여부를 먼저 판정.** 순수 추가 변경은 선행 렌더가 없으므로 To-Be만 찍고 그 사실을 보고 — 없는 이전 상태를 뒤지지 않는다. 현재 상태 확인만 원하면 single pass.
   - **네이밍 스킴 선고정** `<state>-asis.png` / `<state>-tobe.png` — 두 pass가 같은 state를 쓰므로 무자격 이름은 충돌. Step 6에 teardown 전 계획된 shot 전수 존재 확인 추가(사후 발견 = 전체 재런치).
