@@ -66,7 +66,14 @@ it exists for exactly that one case, not as a shortcut around renaming.
   "promptPath": "components/actions/Button.prompt.md",
   "typesPath": "components/actions/Button.d.ts",
   "status": "adapted",
-  "note": ""
+  "note": "",
+  "real": {
+    "import": "Button",
+    "from": "@acme/ui-components",
+    "propMap": { "onNavigate": "href" },
+    "drop": ["leadingIcon"],
+    "notes": "Icons are children in the real component, not props: <Button><Icon/><span>Label</span></Button>."
+  }
 }
 ```
 
@@ -79,6 +86,23 @@ it exists for exactly that one case, not as a shortcut around renaming.
 | `promptPath` / `typesPath` | Pointers to the component's companion files (`adapt-guide.md` §5). |
 | `status` | `"adapted"` — mounted and verified per Step 7. `"flagged"` — attempted but not cleanly adaptable (see `adapt-guide.md` §6); still listed, never silently dropped, per `SKILL.md` §11's honesty note. |
 | `note` | Required when `status` is `"flagged"`: one line on why (e.g. `"reads 5 pieces of global app state to derive its own layout; no reasonable prop substitute this pass"`). Optional, usually empty, when `status` is `"adapted"`. |
+| `real` | **Required for every `"adapted"` entry.** What an implementer actually imports, and every way this adapted copy diverges from it — written during Step 4, while both sides are in view. Read by `nara-design-studio`'s runtime, which emits these rows into every exported `Spec.md`. See below. |
+
+### `real` — the pack → real prop map
+
+| Field | Meaning |
+|---|---|
+| `import` | The real component's name in the source design system. `null` when there is no counterpart at all (the adapted component is a pack-local convenience) — `notes` must then say what to compose instead. |
+| `from` | The package or import path an implementer writes — the **real** one, never this pack's path. |
+| `propMap` | Renamed props only, as `adaptedProp → realProp`. Props that survived adaptation unchanged are omitted; listing them adds noise without adding information. |
+| `drop` | Props this adapted copy has that the real component does **not**. These are the dangerous ones — React accepts an unknown prop silently, so the mistake surfaces as a subtly wrong screen rather than an error. |
+| `notes` | The part no table can carry: children vs. slot props, enum value differences, "takes no props at all — it reads its own state", required companion fields. |
+
+Every rule you applied from `adapt-guide.md` §1–§2 produced a divergence to record here: a store value that
+became a prop, a `<Link>` that became `href`/`onNavigate`, a `useTranslation()` that became `label`. Omit the
+block only when the pack genuinely cannot name a counterpart — an absent `real` is **not** read as "no
+divergence"; the studio prints an explicit warning into the spec instead, because "unknown" and "identical"
+must not look the same to an implementer.
 
 A `"flagged"` component is not mounted by `_ds_bundle.js` and is not expected to appear at
 `window[namespace][name]` — its entry exists purely so the manifest is honest about what the source DS has that
@@ -148,6 +172,7 @@ re-declared.
 
 - [ ] `namespace` matches exactly what `_ds_bundle.js` assigns to `window`.
 - [ ] Every component enumerated in Step 2 has a `components[]` entry — `"adapted"` or `"flagged"`, never absent.
+- [ ] Every `"adapted"` entry carries a `real` block, written during Step 4 — not reconstructed afterwards, and not omitted because "the props look the same" (that claim is what the block records).
 - [ ] Every `"adapted"` entry actually mounted in Step 7's full-pack re-serve.
 - [ ] `globalCssPaths` lists the token file (and bridge adapter, if any) — nothing a generated screen needs is
       missing.

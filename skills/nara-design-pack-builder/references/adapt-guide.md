@@ -84,6 +84,19 @@ adapted version against the source repo. If a prop genuinely can't be honored st
 something stripped in §1), keep the prop in the signature, document in the `.d.ts` and `.prompt.md` that it's
 currently a no-op standalone, and say why — don't silently drop it from the type.
 
+### Record every divergence you could not avoid
+
+Keeping names is the goal, not the outcome. §1 *forces* divergence: a store-provided value becomes a prop the
+real component never had, a `<Link>` becomes `href`/`onNavigate`, a `useTranslation()` becomes `label`. §2 does
+the same to styling. Each of those goes into the component's manifest `real` block
+(`manifest-schema.md` → `components[].real`) **as you make it** — `propMap` for a rename, `drop` for a prop the
+real component has no counterpart for, `notes` for anything a table can't carry.
+
+Write it now, not at the end. This is the only point where the source component and the adapted one are both in
+front of you; reconstructing the mapping later means re-reading the source design system from scratch. And an
+unrecorded divergence is the expensive kind — React accepts an unknown prop **silently**, so the mistake ships
+as a subtly wrong screen with no type error, no lint error and no failing test.
+
 ## 5. Companion files — one `.d.ts` + one `.prompt.md` per component
 
 Every adapted component ships two companion files alongside its `.jsx`, named identically:

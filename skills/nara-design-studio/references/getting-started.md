@@ -78,12 +78,26 @@ bash assets/runtime/open-design.sh <ID-or-fragment> <outDir> [packDir] [port]
 python3 assets/runtime/check_adherence.py <file.html> --pack <packDir>
 ```
 
-It fails on raw hex colors and raw px values (a `1px` hairline is allowed; a `24px` margin is not), printing each with its line number. Token declarations inside an inlined `:root { … }` block are exempt. A pack can tighten or relax the rules by shipping a config and naming it in its manifest's `adherenceConfig` — see `pack-contract.md` §3.4.
+It fails on raw hex colors and raw px values (a `1px` hairline is allowed; a `24px` margin is not), printing each with its line number. Token declarations inside an inlined `:root { … }` block are exempt. A pack can tighten or relax the rules by shipping a config and naming it in its manifest's `adherenceConfig` — see `pack-contract.md` §3.5.
+
+## The layout check
+
+Pixel fidelity is not what implementation has to reproduce — **layout** is: section order, table columns in order, field order, and which side each action sits on. Every exported `Spec.md` opens with that as a numbered list, and it is verifiable rather than advisory:
+
+```bash
+# design side — in the studio: Export → "Layout contract (JSON)"
+# impl side   — paste assets/runtime/layout-contract.js into the implemented page's console, then:
+#   copy(JSON.stringify(window.LAYOUT_CONTRACT.extract(), null, 2))
+python3 assets/runtime/check-layout.py design.layout.json impl.layout.json
+```
+
+One extractor, run on both sides, so the comparison is mechanical instead of two people looking at screenshots. Exit `1` lists what moved. Label every region you expect an implementer to reproduce with `data-studio-label` — the contract is built from those, so an unlabeled region drops out silently. See `pack-contract.md` §6.
 
 ## Reference
 
-- `pack-contract.md` — fidelity tiers (T0–T3), required files per tier, every manifest field the engine reads, the adherence config, the serve topology.
+- `pack-contract.md` — fidelity tiers (T0–T3) and what T2/T3 does *not* eliminate, required files per tier, every manifest field the engine reads (including `components[].real`, the pack → real prop map), the adherence config, the serve topology, and the layout contract.
 - `settings.local.md.example` — the `defaultPackPath` template (pack resolution source 2).
 - `../assets/runtime/designmd_to_pack.py` — DESIGN.md → pack converter.
 - `../assets/runtime/check_adherence.py` — the emit-time hardcoded-value gate.
+- `../assets/runtime/layout-contract.js` + `check-layout.py` — the layout-parity pair: one extractor run on both the design and the implemented page, then diffed.
 - `../../nara-design-pack-builder/SKILL.md` — extract a pack from your design system.

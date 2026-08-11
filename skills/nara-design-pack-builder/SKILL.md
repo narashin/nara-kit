@@ -82,6 +82,11 @@ For every confirmed component, in order, do all of the following before moving t
    `serve.py`.
 3. Verify it actually renders and its interactive states work.
 4. Fix anything broken **before** starting the next component.
+5. **Record what you changed, in the same breath** — write the component's `real` block (`import`, `from`,
+   `propMap`, `drop`, `notes`; `references/manifest-schema.md`). Every §1–§2 rule you applied produced a
+   divergence (a store value became a prop, `<Link>` became `href`/`onNavigate`), and this is the only moment
+   both sides are in view. An unrecorded one is the expensive kind: React accepts a prop that no longer exists
+   **silently**, so the screen renders wrong with no type error, lint error or failing test.
 
 **Never batch-adapt ahead of verification.** A rendering failure in component 3 is cheap to fix immediately;
 the same failure discovered after adapting twelve components is not — you'd be debugging blind across a much

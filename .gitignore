@@ -36,3 +36,6 @@ skills/*/.waza.yaml
 skills/*/evals/
 skills/*/skills/
 __pycache__/
+
+# Browser-MCP scratch artifacts (snapshots, console logs, downloads).
+.playwright-mcp/

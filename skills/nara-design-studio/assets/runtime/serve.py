@@ -4,7 +4,7 @@ nara-design-studio dev server (generic — no design-system specifics).
 
 Serves three mounts so the engine runtime, the DS pack, and the generated output can live in
 separate directories yet resolve under one origin:
-  /_studio/*  -> the engine runtime dir (studio.js / studio.css)
+  /_studio/*  -> the engine runtime dir (studio.js / studio.css / layout-contract.js)
   /_pack/*    -> the DS pack dir (bundle, tokens, data, manifest, kit helpers)
   /*          -> the output dir (generated candidate HTML, out/, handoff/)
 It also captures the studio's POSTs (comments / interactions / spec / capture) into the output dir.

@@ -464,6 +464,54 @@
     return acc.join("\n");
   }
 
+  /* ---- layout contract ----
+     The part of a design that MUST survive implementation regardless of pixel fidelity: section order,
+     table column order, field order, and which side each action sits on. The extraction lives in
+     layout-contract.js — ONE reading, run on both the design and the implemented page, so
+     `check-layout.py` can diff them. Duplicating it here would let the two sides disagree. */
+  function contractOf(cand) {
+    var api = window.LAYOUT_CONTRACT;
+    if (!api) return null;
+    var page = cand.querySelector(".ds-page") || cand.querySelector("[id^='mnt-']") || cand;
+    return api.extract(page, { label: labelOf(cand.getAttribute("data-id")) });
+  }
+
+  /* ---- pack component map ----
+     A pack's bundled components are ADAPTED copies (pack-builder strips store/router/context couplings
+     into plain props, converts CSS-in-JS to token styles…), so their prop shape can differ from the
+     real ones an implementer imports. `_ds_manifest.json` records each divergence in
+     `components[].real`; the manifest is fetched once and the rows for the components a candidate
+     actually rendered are written into the exported spec. No manifest / no `real` block → the spec
+     says so instead of pretending the mapping is 1:1. */
+  var packComponents = null;                                       // name -> real{} once loaded
+  function loadPackComponents() {
+    return fetch("/_pack/_ds_manifest.json", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (m) {
+        if (!m || !Array.isArray(m.components)) return;
+        packComponents = {};
+        m.components.forEach(function (c) { if (c && c.name && c.real) packComponents[c.name] = c.real; });
+      })
+      .catch(function () { /* file:// or no server — the spec degrades with a note */ });
+  }
+  function mdCell(s) { return String(s == null ? "" : s).replace(/\|/g, "\\|").replace(/\n/g, " "); }
+  function mappingRows(treeText) {
+    if (!packComponents) return null;
+    var seen = {}, rows = [];
+    (treeText || "").split("\n").forEach(function (line) {
+      var m = /^\s*- ([A-Za-z0-9_$]+)/.exec(line);
+      if (!m) return;
+      var name = m[1], real = packComponents[name];
+      if (!real || seen[name]) return;
+      seen[name] = 1;
+      var renames = real.propMap ? Object.keys(real.propMap).map(function (k) { return "`" + k + "` → `" + real.propMap[k] + "`"; }).join(", ") : "";
+      var drops = (real.drop || []).map(function (k) { return "`" + k + "`"; }).join(", ");
+      rows.push("| `" + name + "` | " + (real.import ? "`" + real.import + "`" : "**none**") + " | " + (real.from ? "`" + real.from + "`" : "—") +
+                " | " + (renames || "—") + " | " + (drops || "—") + " | " + mdCell(real.notes || "") + " |");
+    });
+    return rows;
+  }
+
   function generateSpecMarkdown() {
     var L = [];
     L.push("# " + (cfg.title || (cfg.pack && cfg.pack.name ? cfg.pack.name + " screen" : "Design") ) + " — Interaction & Implementation Spec");
@@ -500,6 +548,18 @@
       var tag = pickedId ? (id === pickedId ? "  _(selected)_" : "  _(alternative)_") : "";
       L.push(""); L.push("## " + labelOf(id) + tag);
       var note = noteOf(id); if (note) { L.push(""); L.push(note); }
+
+      var contract = contractOf(cand);
+      if (contract && contract.sections.length) {
+        L.push(""); L.push("### Layout contract — MUST match");
+        L.push("Pixel fidelity is not the bar; **this structure is**. Section order, table column order, field order and the side each action sits on are the design decision — an implementation that changes any line below has changed the design, not just its styling. Check it mechanically: Export → **Layout contract (JSON)**, capture the same JSON from the implemented page with `layout-contract.js`, then `python3 check-layout.py design.layout.json impl.layout.json`.");
+        L.push("");
+        window.LAYOUT_CONTRACT.toMarkdownLines(contract).forEach(function (l) { L.push(l); });
+      } else if (!window.LAYOUT_CONTRACT) {
+        L.push(""); L.push("### Layout contract — MUST match");
+        L.push("⚠️ `layout-contract.js` isn't loaded in this output, so the structural contract (section order, table columns, action placement) is missing. Add `<script src=\"/_studio/layout-contract.js\"></script>` and re-export.");
+      }
+
       L.push(""); L.push("### Interactions (element → result)");
       var list = interactionsOf(id);
       if (list && list.length) list.forEach(function (it, i) { L.push((i + 1) + ". **" + it.target + "** → " + it.action); });
@@ -510,10 +570,26 @@
       var tree = componentTreeFor(id);
       L.push(""); L.push("### Component tree (as rendered)");
       if (tree) {
-        L.push("Real component names + key props read from the live React render — map these to your design system's imports.");
+        L.push("Component names + key props read from the live React render — these are the PACK's adapted components.");
         L.push(""); L.push("```"); L.push(tree); L.push("```");
       } else {
         L.push("_Token-built (no mounted components) or React unavailable — see the HTML source for structure._");
+      }
+
+      var rows = tree ? mappingRows(tree) : null;
+      if (rows && rows.length) {
+        L.push(""); L.push("### Implementation mapping (pack → real)");
+        L.push("The pack's components are **adapted copies**, so their prop shape is not always the real one. Import the **Real** component, apply the renames, and drop the props with no counterpart — a dropped prop passed anyway is accepted silently by React and renders the wrong thing.");
+        L.push("");
+        L.push("| Pack | Real | Import from | Renamed props | No counterpart | Notes |");
+        L.push("|---|---|---|---|---|---|");
+        rows.forEach(function (r) { L.push(r); });
+      } else if (tree && packComponents === null) {
+        L.push("");
+        L.push("> ⚠️ The pack manifest couldn't be read (no server?), so no pack → real prop mapping is included. Serve with `serve.py --pack <packDir>` and re-export.");
+      } else if (tree && rows && !rows.length) {
+        L.push("");
+        L.push("> ⚠️ This pack's manifest records no `components[].real` blocks, so the pack → real prop mapping is unknown. The bundled components are adapted copies — prop names may differ from what you import. Populate `real` per component (see the nara-design-pack-builder manifest schema).");
       }
     });
     L.push(""); L.push("## Components");
@@ -531,11 +607,30 @@
     fetch("/__spec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: url, markdown: md }) }).catch(function () {});
     flash("Downloaded " + name + " — hand it off together with the HTML source (real DS components).");
   }
+  /* The design side of the layout check. Pair it with a contract captured from the implemented page
+     (layout-contract.js in that page's console) and diff with check-layout.py. */
+  function exportLayoutContract() {
+    if (!window.LAYOUT_CONTRACT) {
+      showResult("layout-contract.js isn't loaded",
+        "Add the script below to this output and reload — the extractor lives there so the design and the implementation are read the same way.",
+        '<script src="/_studio/layout-contract.js"></script>');
+      return;
+    }
+    var picked = state.pickedId || state.activeId;
+    var cand = candidateEls().find(function (el) { return el.getAttribute("data-id") === picked; });
+    var contract = contractOf(cand);
+    if (!contract || !contract.sections.length) { flash("No sections found to contract — is the candidate rendered?"); return; }
+    var name = location.pathname.split("/").pop().replace(/\.html?$/, "") + "-" + picked + ".layout.json";
+    downloadFile(name, JSON.stringify(contract, null, 2), "application/json");
+    flash("Downloaded " + name + " — diff it against the implemented page with check-layout.py.");
+  }
+
   function toggleExportMenu(anchor) {
     var open = document.querySelector(".studio-export");
     if (open) { open.remove(); return; }
     var menu = h("div", { class: "studio-export" }, [
       h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportSpec(); } }, [h("i", { "data-lucide": "file-text" }), "Spec.md — implementer handoff"]),
+      h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportLayoutContract(); } }, [h("i", { "data-lucide": "list-checks" }), "Layout contract (JSON) — for check-layout.py"]),
       h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportPNG(); } }, [h("i", { "data-lucide": "image" }), "PNG per candidate — needs a browser-MCP agent"]),
       h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportPDF(); } }, [h("i", { "data-lucide": "printer" }), "PDF — print / Save as PDF (all candidates)"]),
       h("div", { class: "studio-export-note" }, ["Implementer handoff = the HTML source (real DS components) + Spec.md. PDF/PNG are for stakeholders / records."]),
@@ -596,6 +691,8 @@
     /* Load the persisted interaction sidecar (if any), then (re)render legends + hotspots. Also
        retry once for React/Babel-mounted candidate content that lands after init. */
     loadSpecOverride().then(function () { renderLegends(); renderHotspots(); icons(); });
+    /* Pack manifest -> the pack->real prop mapping written into every exported spec. */
+    loadPackComponents();
     setTimeout(renderHotspots, 400);
   }
 
