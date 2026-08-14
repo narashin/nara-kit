@@ -40,7 +40,7 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 ### Changed
 - **`nara-now`가 진행 위치를 추적한다** (제거된 워크플로 스킬의 대체재). 74회로 최다 호출되는 스킬이 "지금 어디고 다음이 뭔지"를 맡는다 — 흐름을 별도 스킬로 만들면 아무도 부르지 않는다는 게 측정의 결론이라, **새 워크플로 스킬을 만들지 않는 것이 이 설계의 조건이다.**
   - 추측하지 않기 위해 상태를 기록으로 남긴다: `nara-implement`가 유닛 검증 통과(`Pass`) 시 `docs/plan.md`의 **그 유닛 헤딩에만** `— ✅ done`을 붙이고, `nara-now`는 그 표식만 읽는다. 커밋 로그·파일 변경으로 완료를 유추하지 않는다. `Fail`·`Blocked`·`Unverifiable`엔 표식을 안 붙인다.
-  - 추천이 **실행 가능한 명령 형태**로 나온다 — "구현하세요"가 아니라 `/nara-implement T-2`, 인자까지 채워서(`/nara-prep PRODUCT-431`). 그대로 복사해 붙일 수 있어야 한다.
+  - 추천이 **실행 가능한 명령 형태**로 나온다 — "구현하세요"가 아니라 `/nara-implement T-2`, 인자까지 채워서(`/nara-prep PROJ-123`). 그대로 복사해 붙일 수 있어야 한다.
   - 결정표에 진행 행 추가: plan에 미완료 유닛 있으면 `{done}/{total} 완료 · 다음 T-N {제목}`.
 - **스킬 말미 handoff 표준화** — `nara-prep`·`nara-grill`·`nara-gap`·`nara-code-review`·`nara-reflect`에 `**다음**: /nara-<skill>` 한 줄. 다음 단계를 사람이 기억하지 않아도 화면에 남는다.
 - **dev-mode core spine이 6→5단계** — `plan → execute → verify → code-review → reflect`. `nara-gap`이 spine 맨 앞에서 빠졌다: 구현 전 gap은 greenfield에서 score ~0의 무정보 산출물인데, 사용자 작업이 대부분 기획부터 시작하는 greenfield라 상시 발생했다. **축은 brownfield/greenfield가 아니라 타이밍이었다** — greenfield라도 구현 *후* 요구사항-vs-코드 대조는 유효하므로 gap을 verify 단계로 옮겨 생성+판정을 1회로 합쳤다. brownfield 인수인계처럼 "이 코드 얼마나 됐나"가 먼저 필요하면 entry에서 조건부 위성으로 호출한다.
@@ -160,7 +160,7 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 - `nara-pr-respond` — 동료 PR 스레드 답글 **무단 auto-post** 방지: preview-default(draft→show→confirm→post) 게이트를 SKILL + `references/procedure.md`(실행 절차) 양쪽에 강제.
 - `nara-review-reminder` — Multica 이슈 description의 리터럴 `\n`(백슬래시-n 렌더) → `printf` 실개행. fire-and-forget 자동화 계약 명시.
 - `nara-local-shot` — 배포 시 미해결되는 `[[wiki-link]]` Obsidian 참조를 인라인 설명으로 교체.
-- `nara-design-studio` — USE FOR 과광범으로 `brand-design`과 라우팅 충돌 → `DO NOT USE FOR` redirect(팩-agnostic 엔진 vs PRODUCT 전용 팩) 추가.
+- `nara-design-studio` — USE FOR 과광범으로 전용 팩 스킬과 라우팅 충돌 → `DO NOT USE FOR` redirect(팩-agnostic 엔진 vs 전용 팩) 추가.
 - `nara-test-verify` — `nara-test-discover`(S2/S3 ID)와 `nara-golden-path-discover`(제목+step, ID 없음) 이중 스키마 misfire 수정: 스키마 감지 + 페르소나 프롬프트(`agent-prompts.md`) fence 내 Input-schema 주입 + dispatch 배선. NEEDS_WORK/FAIL remediation loop 명시.
 - `nara-jira-drain` — launch 후 metadata를 무조건 `working`으로 flip하던 것 수정: launch 커맨드 exit 성공 시에만 mark, `working=launched(실행 확정 아님)` 세만틱, 오발은 다운스트림 `PR_RESULT` 부재로 감지.
 - `nara-trending-digest` — self-renew가 (a) 중복 cron 생성(`CronCreate` dedup 없음) → `CronList→Delete→Create`, (b) crawl 성공에 묶여 crawl 실패 시 스케줄 death → **Step 0**(crawl 전, ungated)로 이동. off-minute cron. fire-and-forget 계약.
@@ -169,7 +169,7 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 ## [0.18.0] - 2026-07-22
 
 ### Added
-- `nara-local-shot` — 로컬 실행 웹앱(SSO-gated 포함) 스크린샷 캡쳐+파일 저장 스킬. PR Before/After visual comparison·UI 검증용. 핵심: dev 서버 + chrome-devtools MCP로 직접 캡쳐(placeholder만 남기지 않음), 세션 없는 자동 브라우저는 더미 쿠키로 우회 — presence-only 미들웨어 + `.ico` matcher 트릭 + API-free 격리 프리뷰 전제. `references/auth-bypass.md`(메커니즘·httpOnly caveat·real-storageState fallback), `references/project-recipe.md`(webapp 구체값). nara-ui-diff(env-diff)와 스코프 구분.
+- `nara-local-shot` — 로컬 실행 웹앱(SSO-gated 포함) 스크린샷 캡쳐+파일 저장 스킬. PR Before/After visual comparison·UI 검증용. 핵심: dev 서버 + chrome-devtools MCP로 직접 캡쳐(placeholder만 남기지 않음), 세션 없는 자동 브라우저는 더미 쿠키로 우회 — presence-only 미들웨어 + `.ico` matcher 트릭 + API-free 격리 프리뷰 전제. `references/auth-bypass.md`(메커니즘·httpOnly caveat·real-storageState fallback), `references/프로젝트별 레시피(구체값은 소비 repo 소유). nara-ui-diff(env-diff)와 스코프 구분.
 
 - `nara-pr-review` — 원격 PR evidence-based 리뷰 (gh 기반, 체크아웃 없음). 코드 평면(nara-code-review 리뷰어 체계 재사용, 미설치 시 lane 요약 fallback) + PR 평면 4 lane(description↔diff 정합 / commit 구성 / CI 신호 / discussion 커버리지). 리포트 우선, 코멘트 게시는 finding 단위 승인 후에만 — approve/request-changes는 항상 사람.
 - `nara-adversarial-review` — 기존 리뷰 리포트 공격 검증: refuter(finding 격추 시도) + blind hunter(리포트 미열람 재리뷰 후 대조) + rigor auditor(evidence level·proof·trailing status 무결성). 원 리포트에 append-only. `/codex:adversarial-review`의 네이티브 대안 (의존+fallback).

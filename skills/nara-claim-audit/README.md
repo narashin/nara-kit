@@ -12,8 +12,8 @@ Audit numeric claims in a local spec markdown against CSV data snapshots, report
 
 ## 언제 쓰나
 
-- **USE FOR:** "수치 맞나 확인해줘", "기획서 숫자 검증", "데이터랑 문서 대조", "claim audit", "스펙 수치 감사", 게시 전 수치 점검.
-- **DO NOT USE FOR:** 요구사항 vs 코드 갭 (→ nara-gap), 브라우저 AC 판정 (→ nara-browser-verify), Confluence 게시 (→ nara-publish-spec), 게시본 개정 이력 (→ nara-spec-revision).
+- **USE FOR:** "수치 맞나 확인해줘", "기획서 숫자 검증", "데이터랑 문서 대조", "claim audit", "게시 전 수치 점검".
+- **DO NOT USE FOR:** 요구사항 vs 코드 갭 (→ nara-gap), 브라우저 AC 판정 (→ nara-browser-verify), Confluence 게시 (→ nara-publish-spec).
 
 ## 왜 있나
 

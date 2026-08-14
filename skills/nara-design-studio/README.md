@@ -13,7 +13,7 @@ Design and prototype product screens on ANY design system via a pluggable pack: 
 ## 언제 쓰나
 
 - **USE FOR:** "design a screen", "UI mockup", "wireframe this list", "prototype the flow", "design studio", "studio candidates".
-- **DO NOT USE FOR:** backend/API work, writing specs/RFCs (use nara-rfc), publishing to Confluence (use nara-publish-spec), non-visual tasks.
+- **DO NOT USE FOR:** 전용 팩이 따로 있는 디자인시스템 화면 (그 팩 스킬을 쓸 것 — design-studio는 팩-agnostic 엔진), backend/API work, writing specs/RFCs (use nara-rfc), publishing to Confluence (use nara-publish-spec), non-visual tasks.
 
 ## 설정
 

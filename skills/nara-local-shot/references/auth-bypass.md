@@ -46,4 +46,4 @@ Notes:
 
 ## Fallback: real session (API-dependent pages)
 
-When the page genuinely needs authenticated backend data, the dummy cookie cannot work. Reuse the project's e2e `storageState` (real cookies captured once) with Playwright instead of chrome-devtools' fresh browser. For webapp this is the SSO storageState pattern already documented for e2e — the dummy-cookie route is only for isolated, API-free preview pages.
+When the page genuinely needs authenticated backend data, the dummy cookie cannot work. Reuse the project's e2e `storageState` (real cookies captured once) with Playwright instead of chrome-devtools' fresh browser. For in many projects this is the SSO storageState pattern already documented for e2e — the dummy-cookie route is only for isolated, API-free preview pages.

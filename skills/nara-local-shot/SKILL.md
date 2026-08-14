@@ -54,10 +54,10 @@ Report absolute file paths and open the folder (`open <dir>`). For GHE PRs, the 
 
 ## Project specifics
 
-Concrete per-project values (dev command, host/port, cookie name, middleware matcher) live in `references/`. webapp is worked end-to-end in `references/project-recipe.md`.
+Concrete per-project values (dev command, host/port, cookie name, middleware matcher) live in the consuming repo's `.claude/` — never committed here.
 
 ## Additional resources
 
 - **`references/comparison-passes.md`** — planning both sides of a Before/After: when an As-Is exists at all, reconstruct-vs-two-server-runs, revision switching without disturbing the tree, stale generated state, naming so passes don't overwrite.
 - **`references/auth-bypass.md`** — the dummy-cookie mechanism in detail: why presence-only middleware allows it, the `.ico` matcher trick, httpOnly caveat, and the real-`storageState` fallback for API-dependent pages.
-- **`references/project-recipe.md`** — webapp worked example: `next dev -H local.example.com --experimental-https` on :3000, `appToken` cookie, `middleware.ts` presence-check, As-Is reproduction from `git show`.
+- 프로젝트별 실제 값(dev 명령·호스트·포트·쿠키명·미들웨어 matcher)은 **소비 repo의 `.claude/`에 두고 이 저장소에 커밋하지 않는다.**

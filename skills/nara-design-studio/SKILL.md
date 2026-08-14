@@ -3,7 +3,7 @@ name: nara-design-studio
 description: >-
   Design and prototype product screens on ANY design system via a pluggable pack: interview → Studio candidates → element-comment refine loop → implementer handoff (HTML + Spec.md). Renders with the pack's REAL components (anti-drift), not hand-drawn chrome.
   USE FOR: "design a screen", "UI mockup", "wireframe this list", "prototype the flow", "design studio", "studio candidates".
-  DO NOT USE FOR: PRODUCT/PRODUCT UI 화면 (use brand-design — 그것이 PRODUCT 전용 팩; design-studio는 팩-agnostic 엔진), backend/API work, writing specs/RFCs (use nara-rfc), publishing to Confluence (use nara-publish-spec), non-visual tasks.
+  DO NOT USE FOR: 전용 팩이 따로 있는 디자인시스템 화면 (그 팩 스킬을 쓸 것 — design-studio는 팩-agnostic 엔진), backend/API work, writing specs/RFCs (use nara-rfc), publishing to Confluence (use nara-publish-spec), non-visual tasks.
 ---
 
 This skill is a **pack-agnostic design-studio engine** — it ships no design system of its own. Every product-specific detail (tokens, real components, navigation data, brand rules) comes from a **pack**, resolved via the bootstrap gate below before anything is built. Read `references/pack-contract.md` once at the start of a session to know what a pack provides and how it's consumed; pull in the resolved pack's own docs (its manifest, its `pack.md` if it ships one) as needed.
