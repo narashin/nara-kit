@@ -19,7 +19,7 @@ description: >-
 ```
 [Stage 1] jira-triage 크론 → ready 티켓 → 티켓당 Multica 이슈(큐, UNASSIGNED) + 멘션
 [Stage 2] 너: 큐 판단 → /nara-jira-drain <KEY> → herdr worktree(space=repo@branch)에 Claude Code 세션
-          → dev-mode/doc-mode PR까지 (게이트 미달→정지+리포트) · 인터랙티브 $0
+          → 구현/기획 흐름으로 PR까지 (게이트 미달→정지+리포트) · 인터랙티브 $0
 [Stage 3] review-queue → PR 리뷰 → 너: merge → herdr worktree cleanup
           ↳ cleanup 안 돌아도 다음 Stage 1 실행의 Step 7 reconcile이 머지 PR 보고 큐를 done으로 되돌린다
 ```
@@ -64,9 +64,9 @@ ready 상태 목록은 config `ready_statuses` 로 조정. 폴링 윈도우 없�
 
 | 타입 | 판정 (의미 기준) | 착수 트랙 |
 |------|------|------|
-| **버그픽스** | 결함·회귀·보안 누락·오작동 | dev-mode |
-| **구현** | 신규 동작·기능·제거·마이그레이션·테스트 추가 | dev-mode |
-| **기획** | 타당성·조사·scope·설계·PRD·방법론 — 코드 아님 | doc-mode |
+| **버그픽스** | 결함·회귀·보안 누락·오작동 | 구현 흐름 |
+| **구현** | 신규 동작·기능·제거·마이그레이션·테스트 추가 | 구현 흐름 |
+| **기획** | 타당성·조사·scope·설계·PRD·방법론 — 코드 아님 | 기획 흐름 |
 | **기타** | 운영·질문·판단 불가 | 수동 |
 
 모호 → **기타 + `[UNVERIFIED: 분류 모호]`**, 추측 금지.
@@ -144,7 +144,7 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 큐 이슈를 판단 후 `/nara-jira-drain <KEY>` 로 트리거하면 jira-drain 스킬이:
 1. 이슈 metadata(`jira_key`/`triage_type`/`repo`/`pr_language`/`sub_repo`) 읽음. `local_path`는 로컬 config(`~/.claude/jira-triage.md`)에서 조회 — 이슈 metadata엔 없음. (`session_group`은 herdr가 무시 — 아래 규칙 참조)
 2. `herdr worktree create`로 **space=repo@branch** 워크트리 + claude pane 생성 (herdr엔 group 개념 없음 — space 자체가 티켓 단위)
-3. dev-mode(구현/버그픽스) 또는 doc-mode(기획) 프롬프트를 claude 초기 인자로 주입 — **PR까지, 머지 X, 게이트 미달→정지+리포트, PR 언어 프로젝트별**
+3. 구현(버그픽스 포함) 또는 기획 프롬프트를 claude 초기 인자로 주입 — **PR까지, 머지 X, 게이트 미달→정지+리포트, PR 언어 프로젝트별**
 4. 이슈 → In Progress. 완료 시 PR 링크/정지 사유 코멘트
 
 > 인터랙티브(구독) 실행 = $200 헤드리스 풀 안 씀. 헤드리스는 예산 내 선택적(별도).

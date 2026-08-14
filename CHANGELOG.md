@@ -10,7 +10,21 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Removed
+
+- **워크플로 메타 스킬 4종 제거** — `nara-workflow-orchestrator`, `nara-workflow-dev-mode`, `nara-workflow-doc-mode`, `nara-workflow-viz`. **BREAKING**: 소비자 설치본에는 옛 스킬이 그대로 남으므로 수동 삭제가 필요하다 (`rm -rf ~/.claude/skills/nara-workflow-*` 후 `npx skills update`).
+  - 근거는 취향이 아니라 실측이다. `~/.claude/projects/**/*.jsonl`에서 최근 60일 호출을 세면(사람의 슬래시 호출 `<command-name>`과 어시스턴트의 Skill 툴 호출 `"skill":` **양쪽**) 네 스킬 합계가 **1회**다 — `dev-mode` 1, 나머지 셋은 **각 0회**. 같은 기간 `nara-now` 74, `nara-reflect` 63, `nara-code-review` 23. 즉 흐름이 불필요한 게 아니라 **흐름을 스킬로 포장하면 아무도 부르지 않는다**. `viz`는 입력이어야 할 `workflow.json`이 저장소에 아예 없어 애초에 실행 불가였다.
+  - 같은 날 `dev-mode` spine을 6→5단계로 고치며 3개 파일을 갱신했는데, 측정 결과 그 편집이 바꾼 실행 경로는 0이었다. 문서만 고친 셈이고, 그게 이 제거의 직접적 계기다.
+  - **계약은 죽이지 않고 옮겼다** — Implementation Notes Gate(scope scaling·pre-flight·trailing `📝`·state gate·카테고리 4종 원문)는 `nara-implement/references/implementation-notes.md`로 이관. `docs/implementation-notes.md`의 **경로·섹션명·`Reconciliation Log` writer(`nara-gap --verify`)는 불변**이라 `nara-gap`·`nara-reflect` 연결이 그대로 산다.
+  - 흐름 서술은 `skills/README.md`에 **"권장 순서이지 실행되는 스킬이 아니다"**로 남겼다. `CLAUDE.md`·전역 `rules/workflow.md`도 같은 방향으로 갱신. 다음 단계 안내는 `nara-now`(74회)가 맡는다 — 새 워크플로 스킬을 만들지 않는다는 것이 이 변경의 핵심 조건이다.
+  - `nara-ac-draft`는 2회지만 **유지**한다. AC가 대개 외부 SoT에 이미 있고 `nara-prep`이 verbatim으로 옮기므로, AC 게이트가 우회되는 게 아니라 통과되는 것이다 — 낮은 호출수가 정상 동작이다.
+
 ### Changed
+- **`nara-now`가 진행 위치를 추적한다** (제거된 워크플로 스킬의 대체재). 74회로 최다 호출되는 스킬이 "지금 어디고 다음이 뭔지"를 맡는다 — 흐름을 별도 스킬로 만들면 아무도 부르지 않는다는 게 측정의 결론이라, **새 워크플로 스킬을 만들지 않는 것이 이 설계의 조건이다.**
+  - 추측하지 않기 위해 상태를 기록으로 남긴다: `nara-implement`가 유닛 검증 통과(`Pass`) 시 `docs/plan.md`의 **그 유닛 헤딩에만** `— ✅ done`을 붙이고, `nara-now`는 그 표식만 읽는다. 커밋 로그·파일 변경으로 완료를 유추하지 않는다. `Fail`·`Blocked`·`Unverifiable`엔 표식을 안 붙인다.
+  - 추천이 **실행 가능한 명령 형태**로 나온다 — "구현하세요"가 아니라 `/nara-implement T-2`, 인자까지 채워서(`/nara-prep PRODUCT-431`). 그대로 복사해 붙일 수 있어야 한다.
+  - 결정표에 진행 행 추가: plan에 미완료 유닛 있으면 `{done}/{total} 완료 · 다음 T-N {제목}`.
+- **스킬 말미 handoff 표준화** — `nara-prep`·`nara-grill`·`nara-gap`·`nara-code-review`·`nara-reflect`에 `**다음**: /nara-<skill>` 한 줄. 다음 단계를 사람이 기억하지 않아도 화면에 남는다.
 - **dev-mode core spine이 6→5단계** — `plan → execute → verify → code-review → reflect`. `nara-gap`이 spine 맨 앞에서 빠졌다: 구현 전 gap은 greenfield에서 score ~0의 무정보 산출물인데, 사용자 작업이 대부분 기획부터 시작하는 greenfield라 상시 발생했다. **축은 brownfield/greenfield가 아니라 타이밍이었다** — greenfield라도 구현 *후* 요구사항-vs-코드 대조는 유효하므로 gap을 verify 단계로 옮겨 생성+판정을 1회로 합쳤다. brownfield 인수인계처럼 "이 코드 얼마나 됐나"가 먼저 필요하면 entry에서 조건부 위성으로 호출한다.
   - **verify는 2-track** — 코드 AC는 `nara-gap`, `browser-visible: yes` AC는 `nara-browser-verify`. 초기 검토안이던 "gap 전면 조건부화"는 기각됐다: `gap --verify`가 기존 `gap.md`를 전제하므로(`nara-gap/SKILL.md`) 생성이 안 돌면 `docs/implementation-notes.md`의 `## Reconciliation Log` **유일한 writer**와 `nara-now` 라우팅이 함께 죽는다.
   - `nara-now` 결정표 재작성 — `gap.md` 부재가 더 이상 "gap 분석 필요" 신호가 아니다(verify 전엔 없는 게 정상). 3행이 `/nara-plan`, 3-bis가 `/nara-implement`, 3-ter가 verify로 갈린다.

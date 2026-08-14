@@ -2,9 +2,9 @@
 name: nara-plan
 description: >-
   Split a spec or request into independently verifiable VERTICAL work units — each with its own goal, scope, acceptance criteria, and verification — written to docs/plan.md.
-  This is the dev-mode plan step. Never implements code or posts to a remote tracker.
-  USE FOR: "plan", "계획 짜줘", "작업 나눠", "수직 분할", "작업 단위로 쪼개", dev-mode plan step.
-  DO NOT USE FOR: 스펙 작성 (→ nara-prep / doc-mode), 구현 (→ nara-implement), 원격 Jira 티켓 생성 (→ nara-slack-to-jira).
+  This is the plan step. Never implements code or posts to a remote tracker.
+  USE FOR: "plan", "계획 짜줘", "작업 나눠", "수직 분할", "작업 단위로 쪼개", 구현 계획 단계.
+  DO NOT USE FOR: 스펙 작성 (→ nara-prep), 구현 (→ nara-implement), 원격 Jira 티켓 생성 (→ nara-slack-to-jira).
 ---
 
 # nara-plan — 수직 작업 단위 분할
@@ -33,6 +33,8 @@ description: >-
 ## 산출물
 
 `docs/plan.md`에 `# <Feature> Plan` 형식으로 작성한다 (사용자가 경로를 지정하면 그 경로). 각 작업 단위: `## T-N <제목>` + `목표` / `범위(포함·제외)` / `AC` / `검증` / `의존성` / `요구사항 추적`.
+
+**진행 표식** — 헤딩은 `## T-N <제목>`으로만 쓴다(표식 없음 = 미착수). 완료 표식 `— ✅ done`은 `nara-implement`가 검증 통과 시 **자기 유닛 헤딩에만** 붙이며, `nara-now`가 그걸 읽어 진행 위치와 다음 명령을 제시한다. plan 재생성 시 기존 표식은 보존한다 — 지우면 진행 상황이 사라진다.
 
 **`검증` 필드 계약** — `browser-visible: yes`인 AC를 포함한 단위는 `검증`에 런타임 경로를 명시한다: 대상 URL/환경 · viewport · auth 전략 · 통과 조건 · 실행 주체 `nara-browser-verify`. 명시 없이 "UI 확인" 같은 문구로 대체하면 그 단위는 `Blocked`. 상류 태그가 없는 레거시 `requirements.md`는 `unknown`으로 취급해 **중단 없이 진행**하되, 화면 동작이 분명한 AC는 `검증`에 그 사실을 적는다.
 

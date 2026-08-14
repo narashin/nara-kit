@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**52 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**48 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -14,10 +14,6 @@
 | `nara-design-md` | Adopt, update, or audit a DESIGN.md — AI-readable design spec / AI용 디자인 스펙 생성·갱신·감사 |
 | `nara-design-studio` | Design/prototype product screens on any design system via a pluggable pack: interview → Studio candidates → element-comment refine → implementer handoff (real pack components, anti-drift) / 팩 교체형 디자인 스튜디오 — 인터뷰→후보→코멘트 리파인→핸드오프 |
 | `nara-design-pack-builder` | Extract a design-studio DS pack (tokens + standalone component bundle + manifest) from a React design system, guided React-first protocol / React 디자인시스템에서 design-studio 팩 추출(가이드 프로토콜) |
-| `nara-workflow-orchestrator` | Route requests to dev or doc mode / 요청을 dev/doc 모드로 라우팅 |
-| `nara-workflow-dev-mode` | Implementation workflow (core spine: plan → execute → verify → code-review → reflect; verify는 2-track) / 구현 워크플로우 |
-| `nara-workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
-| `nara-workflow-viz` | Generate self-contained HTML flow visualization from workflow.json / 워크플로우 시각화 HTML 생성 |
 
 ### Requirements & Analysis / 요구사항 & 분석
 
@@ -27,8 +23,8 @@
 | `nara-ac-draft` | Generate User Stories + Gherkin AC from one-line intent (no external SoT). Sister of `prep` / 한 줄 의도 → US + Gherkin AC 생성 (외부 SoT 없을 때) |
 | `nara-gap` | Requirements vs implementation gap analysis → `docs/gap.md` (0-100 score) / 요구사항 vs 구현 갭 분석 |
 | `nara-claim-audit` | Audit numeric claims in a spec against CSV snapshots (script-owned, deterministic) / 기획서 수치 주장을 CSV와 대조 — 스크립트 소유·결정론 |
-| `nara-grill` | Pressure-test an idea/design/plan — fact-first, one question at a time (dev/doc design-exploration satellite) / 사실 조사 후 한 번에 한 질문씩 설계 검증 |
-| `nara-plan` | Split a spec into independently verifiable vertical work units → `docs/plan.md` (dev-mode plan artifact) / 스펙을 독립 검증 가능한 수직 작업 단위로 분할 |
+| `nara-grill` | Pressure-test an idea/design/plan — fact-first, one question at a time (설계 탐색 단계) / 사실 조사 후 한 번에 한 질문씩 설계 검증 |
+| `nara-plan` | Split a spec into independently verifiable vertical work units → `docs/plan.md` / 스펙을 독립 검증 가능한 수직 작업 단위로 분할 |
 | `nara-incident` | Structured incident analysis report with red-capable reproduction gate (no code changes) / 재현 게이트 기반 장애 분석 리포트 (코드 수정 없음) |
 | `nara-incident-fix` | TDD-based fix from `docs/incident-report.md` / 장애 리포트 기반 TDD 수정 |
 | `nara-slack-to-jira` | Turn Slack thread permalinks into Jira tickets (classify Bug/Feature, dedup, draft → approve → create, English content) / 슬랙 스레드 → Jira 티켓 |
@@ -37,7 +33,7 @@
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `nara-implement` | Gated code implementation (strategy approval → TDD option → verify → stop at staged, never auto-commit) — dev-mode execute step / 검증 게이트 구현 (전략 승인·TDD 옵션·자동 커밋 없음) |
+| `nara-implement` | Gated code implementation (strategy approval → TDD option → verify → stop at staged, never auto-commit) — 구현 단계 / 검증 게이트 구현 (전략 승인·TDD 옵션·자동 커밋 없음) |
 | `nara-commit` | Generate conventional commit message with ticket ID / 커밋 메시지 생성 |
 | `nara-pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
 | `nara-code-review` | Evidence-based multi-agent review (core 4 + conditional 6, Reviewer→Judge→Fixer→Verifier) / 증거 기반 멀티에이전트 코드 리뷰 |
@@ -81,7 +77,7 @@
 |-------|---------------------|
 | `nara-trending-digest` | Crawl GitHub Trending weekly, LLM-filter for AI/LLM + DX tools, post digest to Slack DM + Obsidian / GitHub 트렌딩 주간 크롤 → 필터링 → Slack DM + Obsidian |
 | `nara-jira-triage` | Poll Jira for tickets assigned to you, classify 구현/버그픽스/기획/기타, emit a Multica issue with a ready-to-run launch kit (never executes code) / 내 Jira 티켓 폴링 → 분류 → 런치킷 Multica 이슈 발급 |
-| `nara-jira-drain` | Launch a chosen jira-triage queue ticket into an aoe session (group + worktree), drive dev-mode/doc-mode to a PR — interactive ($0), human-triggered / 큐 티켓 1건 → aoe 세션 착수 → PR까지 자율 (인터랙티브 $0) |
+| `nara-jira-drain` | Launch a chosen jira-triage queue ticket into an aoe session (group + worktree), drive the work to a PR — interactive ($0), human-triggered / 큐 티켓 1건 → aoe 세션 착수 → PR까지 자율 (인터랙티브 $0) |
 
 ### Meta / 메타
 
@@ -99,19 +95,21 @@
 
 **자연어 트리거 (라우팅)** — Claude가 `description`의 `USE FOR` 키워드로 자동 매칭: `"어디까지 했지"` → nara-now, `"요구사항 정리해줘"` → nara-prep, `"리뷰해줘"` → nara-code-review.
 
-**워크플로우 진입**: `"개발 모드로 시작"` → dev-mode / `"기획 모드로 시작"` → doc-mode / `"workflow"` → orchestrator (자동 분류).
+**워크플로우 진입**: **`nara-now`** — 상태를 보고 다음 행동을 명령 형태로 제시한다. 워크플로우 진입용 별도 스킬은 없다.
 
-**첫 사용 권장 순서**: `nara-now` (상태 점검) → `nara-prep <TICKET>` (요구사항 로컬화) → `nara-gap` (갭 점수) → 구현 → `nara-code-review` → `nara-pr`.
+**첫 사용 권장 순서**: `nara-now` (상태 점검) → `nara-prep <TICKET>` (요구사항 로컬화) → `nara-plan` (작업 단위) → `nara-implement` → `nara-gap` (verify) → `nara-code-review` → `nara-pr`.
 
 ## Workflow / 워크플로우
 
-`nara-workflow-orchestrator`가 요청을 dev/doc 모드로 분류·라우팅. 50개 스킬 모두 독립 실행 가능 — 외부 플러그인은 자동화를 강화하지만 **필수는 아님** (없으면 수동 대안).
+아래는 **권장 흐름이지 실행되는 스킬이 아니다.** 각 단계는 개별 스킬을 직접 호출(`/nara-<name>`)하며, "지금 어디고 다음이 뭔지"는 `nara-now`가 답한다.
+
+> 2026-08-14: 흐름을 소유하던 메타 스킬 4종(`orchestrator`·`dev-mode`·`doc-mode`·`viz`)을 제거했다. 실사용 측정 결과 60일간 합계 1회 호출(3종은 0회)이었던 반면, 실제로 도는 것은 개별 스킬 직접 호출과 `nara-now`(74회)였다. 흐름을 스킬로 포장하면 아무도 부르지 않는다는 것이 측정의 결론이다. `dev-mode`가 들고 있던 Implementation Notes Gate 계약은 `nara-implement`로 이관됐다.
 
 > 아래 다이어그램·표의 스킬 이름은 짧은 표기 — 실제 설치·호출명은 `nara-<name>` (예: `gap` = `nara-gap`).
 
-### Mode A — Dev (Implementation / 구현)
+### 개발 흐름 (권장 순서)
 
-**Core spine (mandatory, 5단계 — 매 단계가 인간 검증 재료를 산출):** `plan → execute → verify → code-review → reflect`
+**핵심 5단계 (각 단계가 인간 검증 재료를 산출):** `plan → execute → verify → code-review → reflect`
 
 ```mermaid
 flowchart LR
@@ -129,13 +127,13 @@ flowchart LR
     style RF fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
 ```
 
-- **Entry (조건부)**: 외부 SoT 있으면 `prep`, 한 줄 의도면 `ac-draft`. AC Gate 통과 후 spine 진입.
-- **조건부 satellites**: `grill`(large/greenfield 설계 검증), `gap`(brownfield 인수인계 — 구현 전 진행률 파악이 먼저 필요할 때만), `adr`(구조 결정 시), impl-notes(medium/large). `small`/bugfix는 전부 skip하고 코어 5단계 직행.
+- **진입 (조건부)**: 외부 SoT 있으면 `prep`, 한 줄 의도면 `ac-draft`. AC Gate 통과 후 아래 순서.
+- **조건부 satellites**: `grill`(large/greenfield 설계 검증), `gap`(brownfield 인수인계 — 구현 전 진행률 파악이 먼저 필요할 때만), `adr`(구조 결정 시), impl-notes(medium/large — `nara-implement`가 소유). `small`/bugfix는 전부 skip하고 5단계 직행.
 - **verify는 2-track**: 코드 AC는 `gap`(이 시점에 `gap.md` 생성+판정 1회), `browser-visible: yes` AC는 `browser-verify`(런타임 증거 기반 축별 판정). gap이 spine 맨 앞에서 빠진 이유는 `docs/adr/0001-verify-browser-ac-at-runtime.md` (repo-local, 배포 대상 아님).
 - **plan = `nara-plan`** (수직 작업 단위 → `docs/plan.md`), **execute = `nara-implement`** (검증 게이트 + TDD 옵션, 자동 커밋 없음 → `/nara-commit`).
 - **plan 승인**은 plan 단계에 흡수 (별도 pre-execution phase 없음). 완료 전 AI 점수 판정 단계는 제거됨 (AI-as-judge 안티패턴 — `verify` + `code-review`가 검증 담당).
 
-### Mode B — Doc (Documentation / 문서화)
+### 기획 흐름 (권장 순서)
 
 ```mermaid
 flowchart LR
@@ -153,7 +151,7 @@ flowchart LR
 - **Revision loop**: `publish-spec` 이후 피드백 수집되면 별개 세션에서 `/nara-spec-revision <URL>` — 라운드마다 버전 append (워크플로 재진입 아닌 standalone).
 - `adr`(구조 결정), `rfc`(기술 결정)는 필요 시 spec 산출 후 호출.
 
-**Legend**: (no symbol) **nara-kit** (all native) · 🟢 green border **core spine** · 🟡/🔴 **gate / block**.
+**Legend**: 🟢 green border = 핵심 5단계 · 🟡/🔴 = gate / block. 전부 개별 스킬 직접 호출이다.
 
 ## Gates / 게이트
 
@@ -161,10 +159,10 @@ flowchart LR
 
 | Gate | Where | Mechanism | 강도 |
 |------|-------|-----------|------|
-| **AC Gate** | doc-mode (artifact 전) / dev-mode (gap 전) | `## Acceptance Criteria` 비면 차단. Gherkin 빈 템플릿만 제시. SoT에 AC 있으면 자동 통과 | ★★★★ |
+| **AC Gate** | `prep` / `ac-draft` (plan 진입 전) | `## Acceptance Criteria` 비면 차단. Gherkin 빈 템플릿만 제시. SoT에 AC 있으면 자동 통과 | ★★★★ |
 | **P0 Hard Gate** | `gap` | P0 Missing ≥ 1이면 점수 무관 차단. 점수 ≥ 80 + P0 0건만 review-ready | ★★★★ |
-| **Plan Approval** (folded) | dev-mode (plan 단계 내) | plan에 흡수된 AskUserQuestion 승인 전 코드 변경 금지. 별도 phase 아님 | ★★★★ |
-| **Implementation Notes Gate** (scope-scaled) | dev-mode (Execute, medium/large) | medium/large만: impl-notes 생성 + `📝 notes:` trailing + verify 빈 notes reject. `small` skip | ★★★ |
+| **Plan Approval** (folded) | `plan` (단계 내) | plan에 흡수된 AskUserQuestion 승인 전 코드 변경 금지. 별도 phase 아님 | ★★★★ |
+| **Implementation Notes Gate** (scope-scaled) | `implement` (medium/large) | medium/large만: impl-notes 생성 + `📝 notes:` trailing + verify 빈 notes reject. `small` skip | ★★★ |
 | **Fix-Ledger Verification** | `code-review` (fix 라운드마다) | 라운드 시작 파일 hash 스냅샷 → issue 단위 hunk·validation proof 대조 (claimed-but-unchanged / changed-but-unclaimed / changed-but-unresolved), mismatch → escalate + trailing status | ★★★ |
 | **Notes Reconciliation** | `gap --verify` | impl-notes Deviations ↔ gap Missing 매칭 → Agreed Exception 후보. Open Q [revise] → Spec Revise Candidates | ★★★ |
 | **Readiness Gate** | `prep` | 4기준 (Functional / UNVERIFIED / blocking-Q / Goal) 충족으로 다음 단계 분기 | ★★★ |
@@ -181,14 +179,14 @@ flowchart LR
 | `docs/sources/<id>.raw.md` | `prep` | 외부 SoT verbatim 원문 (AC 원본 보존) |
 | `docs/gap.md` | `gap` | 요구 vs 구현 갭. P0/P1/P2 + Score + Hard Gate. AC 본문 = 자동 P0 |
 | `docs/gap-history.md` | `gap` | append-only score-trend 로그 (gen/verify). gap.md 덮어써져도 점수 추이 보존 |
-| `docs/plan.md` | `plan` (nara-plan) | dev-mode 구현 계획 — 독립 검증 가능한 수직 작업 단위 (T-N + AC + 요구사항 추적). `nara-implement`의 입력. (doc-mode의 `docs/plan/*.md` 디렉터리와 구분) |
-| `docs/implementation-notes.md` | dev-mode (Execute, medium/large) | 구현 중 drift log. 4 카테고리: Design / Deviations / Tradeoffs / Open Q. `small`은 skip |
+| `docs/plan.md` | `plan` (nara-plan) | 구현 계획 — 독립 검증 가능한 수직 작업 단위 (T-N + AC + 요구사항 추적). `nara-implement`의 입력. (기획 산출물 `docs/plan/*.md` 디렉터리와 구분) |
+| `docs/implementation-notes.md` | `implement` (medium/large) | 구현 중 drift log. 4 카테고리: Design / Deviations / Tradeoffs / Open Q. `small`은 skip |
 | `docs/handoff.md` | `reflect` | 다음 세션 인계 9-섹션 (검증 상태 + 재현 명령 포함). In Progress + Open Questions surface |
 | `docs/test-scenarios/*.md` | `test-discover` / `golden-path-discover` | AC↔시나리오 1:1 매핑, Playwright-ready E2E export |
 | `docs/incident-report.md` | `incident` | root cause 가설 + 증거 + 제안 수정 |
-| `docs/plan/*.md` | doc-mode | spec / RFC / design artifact (AC 박힌 채) |
+| `docs/plan/*.md` | 기획 흐름 | spec / RFC / design artifact (AC 박힌 채) |
 
-**AC lifecycle**: AC는 모든 스킬의 공유 SoT. `prep`이 외부 SoT의 AC를 **verbatim 보존** → `docs/requirements.md`의 `## Acceptance Criteria`에 박힘 → `gap`(P0 자동분류) / `test-discover`(시나리오 1:1) / dev-mode(AC Gate) 가 소비. SoT에 AC 없으면 doc-mode AC Gate가 작성 강제.
+**AC lifecycle**: AC는 모든 스킬의 공유 SoT. `prep`이 외부 SoT의 AC를 **verbatim 보존** → `docs/requirements.md`의 `## Acceptance Criteria`에 박힘 → `gap`(P0 자동분류) / `test-discover`(시나리오 1:1) 가 소비. SoT에 AC 없으면 `ac-draft`가 작성 강제.
 
 ## Output Contract / 출력 규약
 
@@ -202,7 +200,7 @@ nara-kit 스킬은 **제너럴 워크플로우 엔진**. 프로젝트 특화 룰
 
 모든 외부 스킬은 **선택적 강화** — 없으면 수동 대안으로 동작. 이제 남은 외부 참조는 `codex:adversarial-review` 하나뿐 (code-review의 반론 패스, 없으면 skip).
 
-> **superpowers 의존 전부 제거됨.** design exploration → `nara-grill`, plan → `nara-plan`, execution(SDD/TDD) → `nara-implement`, branch finish → 네이티브 git 시퀀스(dev-mode 내), receiving-code-review 원칙 → `nara-pr-respond` 본문 인라인. nara-kit은 이제 superpowers 없이 완결.
+> **superpowers 의존 전부 제거됨.** design exploration → `nara-grill`, plan → `nara-plan`, execution(SDD/TDD) → `nara-implement`, branch finish → 네이티브 git 시퀀스, receiving-code-review 원칙 → `nara-pr-respond` 본문 인라인. nara-kit은 이제 superpowers 없이 완결.
 
 | External Skill | Plugin | Referenced By | Stage |
 |----------------|--------|---------------|-------|

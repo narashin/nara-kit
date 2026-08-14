@@ -40,7 +40,7 @@ projects = SVC,APP
 
 **실행 규약 (jira-drain이 herdr pane run으로 주입):**
 - 종료점 = **PR 생성까지. 머지 금지.**
-- dev-mode 내부 게이트(gap<80, AC, code-review 미해결) 미달 → **강행 금지, 멈추고 사유 리포트**
+- 게이트(gap<80, AC, code-review 미해결) 미달 → **강행 금지, 멈추고 사유 리포트**
 - 완료 시 PR 링크/정지 사유를 이슈 코멘트로 → Stage 3(review-queue) 인계
 - 인터랙티브(구독) 실행 = $200 헤드리스 풀 안 씀
 

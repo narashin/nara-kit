@@ -13,7 +13,7 @@ Generate User Stories + Gherkin AC from one-line intent when no external SoT exi
 ## 언제 쓰나
 
 - **USE FOR:** "한 줄 기획", "thin SoT", "AC 비어 prep 막힘", "US 뽑아", "AC 초안", "ac-draft".
-- **DO NOT USE FOR:** 외부 SoT→/nara-prep, 시나리오→nara-test-discover, 코드→nara-workflow-dev-mode.
+- **DO NOT USE FOR:** 외부 SoT→/nara-prep, 시나리오→nara-test-discover, 구현→/nara-implement.
 
 ## 더 보기
 

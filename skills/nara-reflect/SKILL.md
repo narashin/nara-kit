@@ -126,3 +126,5 @@ description: >-
 - Conventions는 프로젝트 전반 적용 가능한 것만 / Warnings는 코드만 봐선 모르는 것만
 - In Progress는 코드·커밋으로 복원 불가한 흐름만 / Open Questions는 답 없이 남은 것만
 - In Progress·Open Q 있으면 다음 세션 `/nara-now`가 `docs/handoff.md` 우선 참조하도록 안내
+
+**다음**: `/nara-pr` (또는 브랜치 정리). 구조 결정이 남았으면 `/nara-adr`.

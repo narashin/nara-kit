@@ -12,7 +12,7 @@ Implement an approved code change under a verification gate, then stop at staged
 
 ## 언제 쓰나
 
-- **USE FOR:** "구현", "implement", "execute", "이 계획대로 짜줘", "작업 단위 구현", dev-mode execute step.
+- **USE FOR:** "구현", "implement", "execute", "이 계획대로 짜줘", "작업 단위 구현", 구현 실행 단계.
 - **DO NOT USE FOR:** 테스트 코드만 생성 (→ nara-test-implement), 장애 수정 (→ nara-incident-fix), 커밋 메시지 (→ nara-commit), 원인 불명 버그 (→ nara-incident).
 
 ## 더 보기

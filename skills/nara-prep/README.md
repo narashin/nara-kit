@@ -13,7 +13,7 @@ Localize external SoT (Jira/Confluence/Figma/Linear) into docs/requirements.md. 
 ## 언제 쓰나
 
 - **USE FOR:** "prep", "/nara-prep TICKET-ID", "요구사항 정리", "스펙 로컬화", Jira URL, Confluence URL.
-- **DO NOT USE FOR:** gap (→ /nara-gap), code impl (→ dev-mode), RFC (→ /nara-rfc), no external SoT (→ doc-mode).
+- **DO NOT USE FOR:** gap (→ /nara-gap), code impl (→ /nara-implement), RFC (→ /nara-rfc), no external SoT (→ /nara-ac-draft).
 
 ## 더 보기
 

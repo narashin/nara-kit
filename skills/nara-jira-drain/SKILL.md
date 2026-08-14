@@ -1,9 +1,9 @@
 ---
 name: nara-jira-drain
 description: >-
-  Launch a chosen jira-triage queue ticket into a herdr worktree (space = repo@branch) running claude, and drive dev-mode/doc-mode to a PR — interactive ($0), human-triggered.
+  Launch a chosen jira-triage queue ticket into a herdr worktree (space = repo@branch) running claude, and drive the implementation or spec flow to a PR — interactive ($0), human-triggered.
   USE FOR: "jira-drain", "큐 티켓 착수", "이 티켓 돌려", "/nara-jira-drain KEY".
-  DO NOT USE FOR: 큐 생성·분류 (→ jira-triage), PR 리뷰 (→ review-queue), 큐 없이 직접 (→ /nara-wt + dev-mode).
+  DO NOT USE FOR: 큐 생성·분류 (→ jira-triage), PR 리뷰 (→ review-queue), 큐 없이 직접 (→ /nara-wt + /nara-plan).
 ---
 
 # jira-drain — 큐 티켓 → herdr space 착수
@@ -72,16 +72,16 @@ jira-drain <KEY|issue_id> [--dry-run]
 
 ## gate-as-stop 프롬프트 (§launch claude 인자 본문)
 
-### 구현 / 버그픽스 (dev-mode)
+### 구현 / 버그픽스
 
 ```
-<KEY> 처리. /nara-prep <KEY> 후 dev-mode를 PR 생성까지 자율 진행. 규칙: (1) 각 게이트(gap<80, AC 미비, code-review 미해결 결함, 테스트 실패)에서 사람 기다리지 말고 멈춰 — 사유를 한국어로 요약 출력하고 PR 만들지 마. (2) 모든 게이트 통과 시에만 PR 생성, 머지는 하지 마. (3) PR 본문 언어=<pr_language>, 템플릿: 요약/변경/검증/Jira. (4) 완료 시 PR URL 또는 정지 사유를 마지막 줄에 PR_RESULT: <url|STOPPED: 사유> 로 출력.
+<KEY> 처리. /nara-prep <KEY> 후 plan→implement→verify→code-review를 PR 생성까지 자율 진행. 규칙: (1) 각 게이트(gap<80, AC 미비, code-review 미해결 결함, 테스트 실패)에서 사람 기다리지 말고 멈춰 — 사유를 한국어로 요약 출력하고 PR 만들지 마. (2) 모든 게이트 통과 시에만 PR 생성, 머지는 하지 마. (3) PR 본문 언어=<pr_language>, 템플릿: 요약/변경/검증/Jira. (4) 완료 시 PR URL 또는 정지 사유를 마지막 줄에 PR_RESULT: <url|STOPPED: 사유> 로 출력.
 ```
 
-### 기획 (doc-mode)
+### 기획
 
 ```
-<KEY> 처리. /nara-prep <KEY> 후 doc-mode로 spec 초안까지 자율 진행. 규칙: (1) clarity/Readiness 게이트 미달 시 사람 기다리지 말고 멈춰 — 사유를 한국어로 요약 출력. (2) spec 초안까지만, publish/Confluence 게시는 하지 마. (3) spec 본문 언어=한국어. (4) 완료 시 산출물 경로 또는 정지 사유를 마지막 줄에 SPEC_RESULT: <path|STOPPED: 사유> 로 출력.
+<KEY> 처리. /nara-prep <KEY> 후 grill→spec 초안까지 자율 진행. 규칙: (1) clarity/Readiness 게이트 미달 시 사람 기다리지 말고 멈춰 — 사유를 한국어로 요약 출력. (2) spec 초안까지만, publish/Confluence 게시는 하지 마. (3) spec 본문 언어=한국어. (4) 완료 시 산출물 경로 또는 정지 사유를 마지막 줄에 SPEC_RESULT: <path|STOPPED: 사유> 로 출력.
 ```
 
 ## 규칙

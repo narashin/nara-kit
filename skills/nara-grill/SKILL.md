@@ -31,3 +31,5 @@ description: >-
 ## 출력
 
 내용이 있는 섹션만 사용한다: `## Decisions` / `## Assumptions` / `## Remaining risks` / `## Receipt`. Receipt에는 각 결정과 `confirmed | pending | aborted | Blocked`, 사용자 답변 또는 근거 위치(`파일:라인`), 적용 여부를 기록한다.
+
+**다음**: 결정이 확정되면 `/nara-plan`. 구조 결정이 있었으면 `/nara-adr`.

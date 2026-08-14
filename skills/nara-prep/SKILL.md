@@ -3,7 +3,7 @@ name: nara-prep
 description: >-
   Localize external SoT (Jira/Confluence/Figma/Linear) into docs/requirements.md. AC verbatim 보존.
   USE FOR: "prep", "/nara-prep TICKET-ID", "요구사항 정리", "스펙 로컬화", Jira URL, Confluence URL.
-  DO NOT USE FOR: gap (→ /nara-gap), code impl (→ dev-mode), RFC (→ /nara-rfc), no external SoT (→ doc-mode).
+  DO NOT USE FOR: gap (→ /nara-gap), code impl (→ /nara-implement), RFC (→ /nara-rfc), no external SoT (→ /nara-ac-draft).
 ---
 
 # prep — 외부 SoT 로컬화
@@ -30,7 +30,7 @@ description: >-
 - 빈 섹션도 헤더 + "없음". `Agreed Exceptions` 필수 — gap false positive 방지
 - **Acceptance Criteria 처리:**
   - Jira "Acceptance Criteria" 필드, Confluence 본문의 "AC" / "수락 기준" / "Given-When-Then" 블록 발견 시 verbatim 보존 → `## Acceptance Criteria` 섹션에 박음
-  - 외부 SoT에 AC 없음 → 빈 섹션 + `Open Questions`에 `[blocking] AC 누락. nara-ac-draft 또는 doc-mode AC Gate에서 작성 필요` 추가
+  - 외부 SoT에 AC 없음 → 빈 섹션 + `Open Questions`에 `[blocking] AC 누락. nara-ac-draft로 작성 필요` 추가
   - 외부 SoT 자체가 부재 (한 줄 의도만) → prep 호출 거부 + `nara-ac-draft` 권장 안내
   - **AC 추론·창작 금지.** raw에 없으면 만들지 않음. gap·test-discover가 정확도 잃는 게 spec 변조보다 나음
   - **`browser-visible: yes|no|unknown` 태그** — 보존한 AC 항목마다 부착. raw 텍스트가 화면에서 관측되는 동작을 기술하면 `yes`, 서버·데이터 계층이면 `no`, 판단 근거가 raw에 없으면 `unknown`. **태그는 메타데이터** — AC 본문·순서·verbatim 보존을 건드리지 않으며, 태그를 붙이려고 AC를 해석·보강하지 않는다 (no-derive 우선). `yes` 항목의 검증 경로는 `nara-plan`이 확정한다
@@ -40,3 +40,5 @@ description: >-
   - 외부 SoT가 FR만 명시하고 AC 없음 → FR만 채우고 AC 비움 + blocking Open Question
   - 원칙: **raw에 있는 만큼만 채움. raw에 없는 걸 채우기 위해 derive 금지**
 - 덮어쓰기 전 사용자 확인
+
+**다음**: `/nara-plan` (작업 단위 분할). AC 비었으면 `/nara-ac-draft` 먼저.

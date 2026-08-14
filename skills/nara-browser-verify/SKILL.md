@@ -2,7 +2,7 @@
 name: nara-browser-verify
 description: >-
   Judge browser-visible acceptance criteria in a headless runtime, returning a per-axis verdict backed by runtime evidence.
-  USE FOR: "브라우저 AC 검증", "이 화면 AC 통과했나", "런타임으로 확인해줘", "headless 검증", "browser-verify", dev-mode verify step for browser-visible AC.
+  USE FOR: "브라우저 AC 검증", "이 화면 AC 통과했나", "런타임으로 확인해줘", "headless 검증", "browser-verify", verify 단계의 browser-visible AC.
   DO NOT USE FOR: env↔local 비교 (→ nara-ui-diff), 스샷 캡처 (→ nara-local-shot), 테스트 코드 작성 (→ nara-test-implement), 코드 AC 갭 분석 (→ nara-gap).
 ---
 

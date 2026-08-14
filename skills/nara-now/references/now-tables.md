@@ -9,7 +9,7 @@
 | 1 | main/master 브랜치 | "메인 브랜치. 새 작업이면 브랜치 생성 후 `/nara-prep`" |
 | 2 | 비-main 브랜치, requirements.md 없음 | "요구사항 미정리. `/nara-prep`으로 요구사항 정리부터" |
 | 3 | requirements.md 있음, plan.md 없음 | "요구사항 정리됨. `/nara-plan`으로 작업 단위 분할" |
-| 3-bis | plan.md 있음, 미구현 (변경 없음) | "계획 있음. `/nara-implement <T-N>`" |
+| 3-bis | plan.md 있음, **미완료 유닛 존재** | "`{done}/{total}` 완료. 다음: `/nara-implement T-{다음번호}` — {유닛 제목}" |
 | 3-ter | 구현 변경 있음, gap.md 없음 | "구현분 있음. `/nara-gap`으로 verify (코드 AC) + `browser-visible: yes` AC 있으면 `/nara-browser-verify`" |
 | 4 | gap.md 있음, **P0 Missing ≥ 1** | "P0 ({N}건) 보완 1순위 (점수 무관). gap.md Critical 섹션 참조" |
 | 5 | gap.md 있음, P0 Missing 0건, 점수 < 80 | gap.md Next Actions 분석 후 실행 방법 추천 (아래 실행 방법 판단 참조) |
@@ -39,7 +39,8 @@ gap.md Next Actions의 **상위 1~2개 항목**을 보고 판단:
 ## 현재 상황
 - 브랜치: {branch}
 - 변경사항: {modified/untracked 요약}
-- 작업 문서: requirements.md {있음/없음} | gap.md {있음/없음} {있으면 (점수: N/100, P0 Missing: {N}, Gate: ✅/❌/⚠️)}
+- 작업 문서: requirements.md {있음/없음} | plan.md {있음/없음} | gap.md {있음/없음} {있으면 (점수: N/100, P0 Missing: {N}, Gate: ✅/❌/⚠️)}
+- 진행: {plan.md 있으면 `T-{done}/{total} 완료 · 다음 T-{N} {제목}`. 없으면 생략}
 - 최근 작업: {마지막 커밋 메시지}
 - 메모: {memory 도구(engram 등) 최근 관련 observation 요약. 도구 없거나 결과 없으면 생략}
 

@@ -337,6 +337,6 @@ EPT 완료 (applied).
 - ✅ 1차 (워크플로우 골격): `/nara-now`, `/nara-prep`, `/nara-gap`, `/nara-reflect`, `/handoff`
 - ✅ 2차 (코드 라이프사이클): `/nara-commit`, `/nara-pr`, `/nara-code-review`, `/nara-pr-respond`, `/nara-publish-spec`
 - ✅ 3차 선별 (문서·메타): `/nara-rfc`, `/nara-adr`, `/nara-skill-forge`, `/nara-empirical-prompt-tuning`
-- 일반 원칙 흡수 (명시 receipt 없이 CLAUDE.md 4요소 자동 적용): `/nara-explain`, `/nara-incident`, `/nara-incident-fix`, `/nara-test-discover`, `/nara-test-verify`, `/nara-test-implement`, `/nara-design-md`, `/nara-spec-revision`, `/nara-workflow-orchestrator`, `/nara-workflow-dev-mode`, `/nara-workflow-doc-mode`, `/nara-workflow-viz`
+- 일반 원칙 흡수 (명시 receipt 없이 CLAUDE.md 4요소 자동 적용): `/nara-explain`, `/nara-incident`, `/nara-incident-fix`, `/nara-test-discover`, `/nara-test-verify`, `/nara-test-implement`, `/nara-design-md`, `/nara-spec-revision`
 
 각 스킬은 nara-kit CLAUDE.md를 통해 contract를 자동 상속 — SKILL.md에 개별 참조 라인 불필요. 명시 receipt 없는 스킬은 4요소(Outcome/Evidence/Paths/Next) + 상태 라벨만 따라 자유 생성.

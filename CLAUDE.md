@@ -68,10 +68,13 @@ Run: `waza eval <skill-name>` (requires `.waza.yaml` config at root)
 
 ## Workflow Architecture
 
-Two orchestrated modes — `workflow-orchestrator` routes requests:
+**There is no workflow skill.** Skills are invoked directly (`/nara-<name>`); `nara-now` reads the session state and names the next command. The four meta-skills that used to own the flow (`workflow-orchestrator`, `workflow-dev-mode`, `workflow-doc-mode`, `workflow-viz`) were removed on 2026-08-14 after measurement showed **1 invocation in 60 days combined** (three of them zero) against `nara-now` at 74 — packaging a flow as a skill means nobody calls it.
 
-- **Dev mode** (`workflow-dev-mode`): 5-step core spine `plan → execute → verify → code-review → reflect` (entry: prep/ac-draft; conditional satellites: grill/adr/impl-notes/brownfield gap). Verify is 2-track — code AC via `nara-gap`, `browser-visible: yes` AC via `nara-browser-verify` (see `docs/adr/0001-verify-browser-ac-at-runtime.md`)
-- **Doc mode** (`workflow-doc-mode`): clarify → prep → spec → publish → reflect
+Recommended order, not an executed pipeline:
+
+- **개발**: (prep | ac-draft) → plan → implement → verify → code-review → reflect. Verify is 2-track — code AC via `nara-gap`, `browser-visible: yes` AC via `nara-browser-verify` (see `docs/adr/0001-verify-browser-ac-at-runtime.md`). Conditional: grill (large/greenfield), gap up front (brownfield handover), adr (structural decision).
+- **기획**: (prep | ac-draft) → grill → spec → claim-audit → publish-spec → reflect
+- The Implementation Notes Gate contract now lives in `nara-implement` (`references/implementation-notes.md`) — it moved with the retirement, it was not dropped.
 
 See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagrams.
 
@@ -81,13 +84,13 @@ See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagram
 2. Create `skills/nara-<name>/README.md` — thin human guide (Claude does NOT read it at runtime): purpose + invocation (`/nara-<name>`, `$nara-<name>`) + USE FOR / DO NOT USE FOR + backlinks to `../README.md` and `SKILL.md`. Derive from SKILL.md frontmatter to avoid drift. Every skill folder has one — `skills/*/README.md` is tracked (not gitignored). Setup-heavy skills (config/MCP) may add a rich hand-written guide instead (see `nara-slack-to-jira/README.md`)
 3. Create `evals/<name>/eval.yaml` + `tasks/` + `fixtures/`
 4. Update `skills/README.md` catalog table — keep skill count accurate (root `README.md` has no per-skill table; the catalog + mermaids live in `skills/README.md`)
-5. If skill participates in workflow, update `workflow-dev-mode` or `workflow-doc-mode` references
+5. If the skill sits in a flow, update `skills/README.md`'s recommended order and the relevant handoff lines
 6. New skill inherits output contract automatically — do not add per-skill output-contract reference (CLAUDE.md handles it)
 
 ## When Modifying a Skill
 
 1. Run `waza check skills/<name>` before and after — verify no regression on tokens, links, advisories
-2. If changing `description` field, verify routing doesn't break (test with `workflow-orchestrator` eval) — and regenerate `README.md` (purpose/USE FOR/DO NOT lines derive from `description`)
+2. If changing `description` field, verify routing still matches the intended triggers — and regenerate `README.md` (purpose/USE FOR/DO NOT lines derive from `description`)
 3. For substantive behavior changes, use `/nara-skill-forge <name>` — EPT subagent loop with iterative fixes
 4. Check cross-references — other skills may link to this one via `references/`
 

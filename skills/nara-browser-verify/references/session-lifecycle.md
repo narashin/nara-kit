@@ -56,7 +56,7 @@ long-running 서버는 정확한 PID·cwd·명령·port·bounded log 경로를 �
 
 ## 부모 태스크 handoff
 
-부모(plan의 `검증` 필드, dev-mode verify 단계 등)가 주면 재질문하지 않는다: 정확한 criterion, 대상 URL/환경, headless 요구, auth 전략과 secret-free bootstrap, viewport/state, dev 서버 명령·cwd·readiness, 필요한 스크린샷 증거, 민감 캡처 redaction 규칙, Pass 조건.
+부모(plan의 `검증` 필드, verify 단계 등)가 주면 재질문하지 않는다: 정확한 criterion, 대상 URL/환경, headless 요구, auth 전략과 secret-free bootstrap, viewport/state, dev 서버 명령·cwd·readiness, 필요한 스크린샷 증거, 민감 캡처 redaction 규칙, Pass 조건.
 
 빠진 값이 repo 근거로 안전하게 결정 가능하면 채운다. 결과를 바꾸는 **사용자 소유 결정**만 부모에게 돌려보낸다.
 

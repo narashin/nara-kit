@@ -16,7 +16,7 @@ description: >-
 - `--verify` → 기존 gap.md 기준 재검증 (경량)
 - `--score` → gap.md에서 점수만 산출
 
-**호출 시점** (ADR-0001): dev-mode spine의 **verify 단계**에서 인자 없이 1회 호출해 `gap.md` 생성과 판정을 함께 한다. `--verify`는 그 이후 반복 재검증용이며 `gap.md` 존재가 전제다 — gap.md가 없는데 `--verify`로 들어오면 생성 모드로 안내한다. spine 진입 전(구현 전) 호출은 greenfield에서 score ~0의 무정보 산출물이므로 하지 않는다. **예외**: brownfield 인수인계·진행률 파악이 먼저 필요하면 사용자가 직접 호출한다.
+**호출 시점** (ADR-0001): 구현 후 **verify 단계**에서 인자 없이 1회 호출해 `gap.md` 생성과 판정을 함께 한다. `--verify`는 그 이후 반복 재검증용이며 `gap.md` 존재가 전제다 — gap.md가 없는데 `--verify`로 들어오면 생성 모드로 안내한다. spine 진입 전(구현 전) 호출은 greenfield에서 score ~0의 무정보 산출물이므로 하지 않는다. **예외**: brownfield 인수인계·진행률 파악이 먼저 필요하면 사용자가 직접 호출한다.
 
 **담당 범위**: 코드에서 확인 가능한 AC. `browser-visible: yes` AC의 런타임 판정은 `nara-browser-verify` 몫이며, 여기서는 grep 근거가 없으면 `Unknown`으로 두고 갭으로 단정하지 않는다.
 
@@ -114,3 +114,5 @@ implementation-notes.md 없으면 이 단계 skip.
 - Verbatim 항목(따옴표/백틱/코드블록 안 텍스트)은 의미 무관 exact match. grep 0건이면 Missing 강제
 - Implemented 판정에 evidence 없으면 자동 Partial 강등
 - **모든 항목 P0/P1/P2 분류 필수.** 모호 시 conservative — P0로. rubric §6 신호 기반, 근거 1줄 trace
+
+**다음**: P0 Missing 있으면 보완 후 `/nara-gap --verify`. 없으면 `/nara-code-review`.

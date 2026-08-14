@@ -2,7 +2,7 @@
 
 > 사람용 문서. Claude는 런타임에 이 파일을 읽지 않음 (SKILL.md + references만 로드). 호출·용도 안내.
 
-Split a spec or request into independently verifiable VERTICAL work units — each with its own goal, scope, acceptance criteria, and verification — written to docs/plan.md. This is the dev-mode plan step. Never implements code or posts to a remote tracker.
+Split a spec or request into independently verifiable VERTICAL work units — each with its own goal, scope, acceptance criteria, and verification — written to docs/plan.md. This is the plan step. Never implements code or posts to a remote tracker.
 
 ## 호출
 
@@ -12,8 +12,8 @@ Split a spec or request into independently verifiable VERTICAL work units — ea
 
 ## 언제 쓰나
 
-- **USE FOR:** "plan", "계획 짜줘", "작업 나눠", "수직 분할", "작업 단위로 쪼개", dev-mode plan step.
-- **DO NOT USE FOR:** 스펙 작성 (→ nara-prep / doc-mode), 구현 (→ nara-implement), 원격 Jira 티켓 생성 (→ nara-slack-to-jira).
+- **USE FOR:** "plan", "계획 짜줘", "작업 나눠", "수직 분할", "작업 단위로 쪼개", 구현 계획 단계.
+- **DO NOT USE FOR:** 스펙 작성 (→ nara-prep), 구현 (→ nara-implement), 원격 Jira 티켓 생성 (→ nara-slack-to-jira).
 
 ## 더 보기
 
