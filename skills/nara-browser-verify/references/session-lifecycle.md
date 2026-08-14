@@ -37,9 +37,18 @@ long-running 서버는 정확한 PID·cwd·명령·port·bounded log 경로를 �
 
 ## 증거 디렉터리
 
-이진 증거는 run-owned `.claude/browser-verify/runs/<ts>/`에 둔다. 부모 태스크가 디렉터리를 지정했으면 그것을 쓴다. **여기에 Markdown 장부를 만들지 않는다** — 판정은 receipt로만 나간다.
+이진 증거는 run-owned 디렉터리에 둔다. **여기에 Markdown 장부를 만들지 않는다** — 판정은 receipt로만 나간다.
 
-- `git check-ignore`로 무시 경로임을 확인한다. 실패하면 **ESCALATE** 후 진행 거부 (인증 흔적이 tracked 파일로 새는 것을 막는다).
+### 경로 선택 사다리
+
+증거 경로는 **`git check-ignore`를 통과하는 첫 번째**를 쓴다. 통과 여부를 매번 실제로 확인하고, 어디에 썼는지 receipt에 절대 경로로 남긴다.
+
+1. 부모 태스크가 지정한 디렉터리
+2. 대상 repo의 `.claude/browser-verify/runs/<ts>/`
+3. **드라이버가 이미 소유한 gitignore된 작업 디렉터리** — 예: playwright MCP의 `.playwright-mcp/browser-verify/<ts>/`
+4. 위가 전부 tracked면 → **ESCALATE**: "증거를 남길 무시 경로가 없다. 대상 repo `.gitignore`에 `.claude/` 추가 필요" 후 진행 거부
+
+3번이 필요한 이유(2026-08-14 실측): `.claude/`를 무시하지 않는 repo가 흔한데, MCP 드라이버는 **workspace root 밖 쓰기를 거부**하므로 `/tmp` 같은 중립 경로로 피할 수 없다. 사다리가 없으면 그런 repo에서 스킬 전체가 영구 `Blocked`가 된다. 단, 3번은 **드라이버 작업 디렉터리이므로 다른 run의 산출물과 섞일 수 있다** — 반드시 `<ts>` 하위 디렉터리를 만들어 소유 범위를 분리하고, 정리 시 그 하위만 건드린다.
 - 스크린샷/비디오와 network/HAR/console 인벤토리를 분리한다. Authorization·cookie·token·credential·민감 body가 있으면 그 캡처는 민감으로 분류한다.
 - 민감 캡처는 검증된 redaction과 원본·이동 경로 잔여물 부재를 확인한 경우에만 증거로 쓴다. 아니면 소유한 캡처를 안전히 삭제하고 `Unverifiable`을 반환한다.
 - 사용자 스크린샷·fixture·profile 등 소유권 불명 산출물을 move/delete하지 않는다.

@@ -16,7 +16,7 @@ description: >-
 2. **컨닝 금지** — `element.click()` / `form.submit()` / `dispatchEvent()`는 상호작용 증거가 **아니다**. trusted pointer/keyboard API만. 상세 [anti-cheat](references/anti-cheat.md).
 3. **headless-only** — 가시 브라우저 fallback 없음. 안전한 헤드리스 인증을 못 세우면 `Unverifiable` 반환.
 4. **자기 소유만 정리** — run-owned만 종료. `killall`·broad `pkill` 금지. [session-lifecycle](references/session-lifecycle.md).
-5. **크레덴셜 격리** — 비밀값을 응답·아티팩트·로그·스크린샷 어디에도 남기지 않는다. 기록은 `auth mode: token-headless` 같은 비민감 사실만. 증거 디렉터리는 `git check-ignore`로 확인, 실패 시 **ESCALATE** 후 진행 거부.
+5. **크레덴셜 격리** — 비밀값을 응답·아티팩트·로그·스크린샷 어디에도 남기지 않는다. 기록은 `auth mode: token-headless` 같은 비민감 사실만. 증거 디렉터리는 **반드시 `git check-ignore`를 통과**해야 하며, 경로 선택은 [session-lifecycle](references/session-lifecycle.md#증거-디렉터리) 사다리를 따른다(무시되는 경로를 하나도 못 찾으면 그때 ESCALATE).
 6. **차이·관련값만 인라인** — full computed dump·HAR·콘솔 전량은 디스크 아티팩트. 채팅 인라인 금지.
 7. **receipt 먼저 → 중단** — 자동 수정·자동 체이닝 없음. 실패 축은 보고만.
 
