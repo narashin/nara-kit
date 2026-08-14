@@ -18,7 +18,7 @@ env-diff는 **연결된 MCP 서버에 의존**한다. raw CDP를 primary로 nati
 2. **viewport 통일** — `emulate({viewport:'<w>x<h>x<dpr>'})`로 **DPR 포함** 일치. `resize_page`는 width/height만 — DPR 안 바뀜.
 3. **런타임 선택** — `list_pages`로 각 런타임의 **숫자 pageId** 획득 → `{runtime→pageId}` 맵 저장 → `select_page({pageId:<number>})`로 전환. **`select_page`에 isolatedContext 문자열('baseline') 넘기지 말 것** — isolatedContext는 쿠키 격리용, pageId는 활성 페이지 선택용(별개).
 4. **로그인** — `take_snapshot` → `fill_form`(uid로 batch) → `click` submit → `wait_for`(post-login marker). DOM 바뀌면 re-snapshot (chrome-devtools 타깃은 uid 기반).
-5. **측정** — `evaluate_script`에 [env-diff.md](modes/env-diff.md) 직렬화 snippet. 반환은 JSON-serializable만 — raw style/rect는 `{}`.
+5. **측정** — `evaluate_script`에 [env-diff.md](modes/env-diff.md) 직렬화 snippet. 반환은 JSON-serializable만 — chrome-devtools에서 raw style/rect는 `{}`로 떨어진다.
 
 ## playwright 시퀀스
 

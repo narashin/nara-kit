@@ -35,7 +35,7 @@ UI 회귀 조사관. **배포된 QA/Prod 런타임(baseline)** 과 **로컬 dev 
 5. **Engine/profile 분리** — 이 스킬은 절차+템플릿만. 모든 제품값(URL/login/context/screens)은 소비 repo의 `.claude/ui-diff/` profile. 없으면 템플릿에서 bootstrap 후 중단(user-global provisioning 금지).
 6. **크레덴셜 격리** — tracked profile·artifact·response 어디에도 크레덴셜 금지. gitignore된 `login.local.md`에만(또는 storageState), **절대 출력 안 함**. [profile](references/profile.md)
 7. **MCP-first 드라이버** — chrome-devtools(same-domain 격리) → playwright. MCP 없으면 raw CDP는 unsupported 탈출구(러너 안 만듦). 실제 사용 driver를 artifact에 기록. [drivers](references/drivers.md)
-8. **직렬화 규율** — eval snippet은 `getComputedStyle`/`getBoundingClientRect` primitive를 plain object로 **직접 복사**. 두 MCP 다 raw CSSStyleDeclaration/DOMRect는 `{}`로 떨굼.
+8. **직렬화 규율** — eval snippet은 `getComputedStyle`/`getBoundingClientRect` primitive를 plain object로 **직접 복사**. raw 반환은 드라이버마다 다르게 망가진다(2026-08-14 실측): chrome-devtools는 `{}`(조용한 측정 실패), playwright는 CSS 속성 전량 1000줄+ 직렬화(컨텍스트 폭파). 어느 쪽도 증거 아님 — 빈 dump도 거대 dump도 실패로 처리.
 9. **receipt 먼저 → 중단** — artifact 쓰고 영수증 출력 후 정지(자동 체이닝 없음).
 
 ## Step 0 — Profile load + override

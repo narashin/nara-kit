@@ -21,7 +21,7 @@ full computed dump(양쪽) + diff 표 + driver log를 `.claude/ui-diff/runs/<ts>
 **표준 후보 prop셋** (`--props`로 override):
 `width, height, padding, margin, background-color, opacity, border, border-radius, font-size, color, z-index` + `getBoundingClientRect`의 `x, y, width, height`.
 
-**직렬화 계약 (필수)** — 두 MCP 다 raw `CSSStyleDeclaration`/`DOMRect` 반환값을 `{}`로 떨군다. eval snippet은 primitive를 plain 배열로 **직접 복사**:
+**직렬화 계약 (필수)** — raw `CSSStyleDeclaration`/`DOMRect`를 그대로 반환하면 드라이버마다 다르게 망가진다 (2026-08-14 실측): **chrome-devtools MCP는 `{}`** 로 떨궈 조용한 측정 실패가 되고, **playwright MCP는 CSS 속성 전량(1000줄+)을 직렬화**해 컨텍스트를 폭파시킨다. 빈 dump도 거대 dump도 증거가 아니다. eval snippet은 primitive를 plain 배열로 **직접 복사**:
 
 ```js
 // 각 driver의 eval 도구 안에서 실행 (chrome-devtools evaluate_script / playwright browser_evaluate)
