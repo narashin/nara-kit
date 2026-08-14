@@ -16,10 +16,15 @@ Core insight: **capture the screenshots yourself and save the files** — never 
 
 ## Workflow
 
-### 1. Decide targets
-List each shot needed. For a PR Before/After: one **As-Is** (old render) + one-or-more **To-Be** (new render), per state worth showing (e.g. in-progress vs rejected).
+### 1. Decide targets and passes
+Settle first whether a comparison is wanted, or current-state only (single pass). A purely additive change has no prior render — capture To-Be only and say so, don't hunt for an As-Is.
 
-For As-Is, reproduce the OLD markup: `git show HEAD~1:<file>` (or `origin/<base>:<file>`) and rebuild it in a temp preview page with mock data — safer than swapping the live file in place.
+For Before/After, list each shot: one **As-Is** + one-or-more **To-Be**, per state worth showing (e.g. in-progress vs rejected). That is **two renders from two revisions**; only To-Be comes from the current tree. Pick the As-Is source now — the cost is the launch sequence, not the picture:
+
+- **Reconstruct in a preview page** (preferred): `git show HEAD~1:<file>` (or `origin/<base>:<file>`), rebuild the old markup in a temp preview page with mock data. Safer than swapping the live file, and both passes share one dev server.
+- **Second server run**: for real app pages, or when the old render leaned on since-changed shared code. Needs its own base-revision worktree, dev server restart, and possibly refreshed deps/build/codegen state.
+
+Fix a non-colliding naming scheme up front — `<state>-asis.png` / `<state>-tobe.png`. Full procedure: `references/comparison-passes.md`.
 
 ### 2. Temp preview page (isolated strategy)
 Create `pages/dev/<name>.tsx` (Next.js pages router) or the framework's equivalent route. Render the component with representative mock props covering the states to capture. Mark the file clearly `TEMPORARY — DO NOT COMMIT`. Keep it API-free so a dummy session suffices.
@@ -42,7 +47,7 @@ Use `take_screenshot` with `filePath`. Note: chrome-devtools **only writes insid
 - Verify each saved PNG by reading it back before handing off — confirm the intended state actually rendered.
 
 ### 6. Cleanup
-Delete the temp preview page(s), kill the dev server (`lsof -ti:<port> | xargs kill`), confirm the tracked tree is clean. Screenshots stay untracked (not committed).
+Before tearing anything down, confirm every planned shot from step 1 exists on disk — a missing pass found after teardown costs the whole launch sequence again. Then delete the temp preview page(s), kill the dev server (`lsof -ti:<port> | xargs kill`), confirm the tracked tree is clean. Screenshots stay untracked (not committed).
 
 ### 7. Hand off
 Report absolute file paths and open the folder (`open <dir>`). For GHE PRs, the human drags the files into the PR editor to get `user-attachments` URLs (CLI cannot attach): the `gh`/API path cannot upload PR-body image attachments, so hand the absolute paths back and let the user drop them into the web editor.
@@ -53,5 +58,6 @@ Concrete per-project values (dev command, host/port, cookie name, middleware mat
 
 ## Additional resources
 
+- **`references/comparison-passes.md`** — planning both sides of a Before/After: when an As-Is exists at all, reconstruct-vs-two-server-runs, revision switching without disturbing the tree, stale generated state, naming so passes don't overwrite.
 - **`references/auth-bypass.md`** — the dummy-cookie mechanism in detail: why presence-only middleware allows it, the `.ico` matcher trick, httpOnly caveat, and the real-`storageState` fallback for API-dependent pages.
 - **`references/project-recipe.md`** — webapp worked example: `next dev -H local.example.com --experimental-https` on :3000, `appToken` cookie, `middleware.ts` presence-check, As-Is reproduction from `git show`.
