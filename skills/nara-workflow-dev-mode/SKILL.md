@@ -1,7 +1,7 @@
 ---
 name: nara-workflow-dev-mode
 description: >-
-  Implementation-first workflow: conditional entry (SoT/AC) → core spine gap → plan → execute → verify → code-review → reflect → branch finish. TDD optional inside execute.
+  Implementation-first workflow: conditional entry (SoT/AC) → core spine plan → execute → verify → code-review → reflect → branch finish. Verify is 2-track (code AC via gap, browser AC via browser-verify). TDD optional inside execute.
   USE FOR: "dev mode", "구현 워크플로우", "개발 모드", "feature implementation".
   DO NOT USE FOR: docs-only artifacts (→ workflow-doc-mode), unstable requirements (→ ac-draft), simple edits.
 ---
@@ -18,7 +18,7 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 
 1. Confirm implementation workflow.
 2. Classify scope (모호 시 상향): `small` (1-2 files, single concern) / `medium` (3-10 files, single domain) / `large` (10+ files, multi-domain).
-3. Walk the **mandatory core spine** (each step emits human-verifiable material): `gap → plan → execute → verify → code-review → reflect`. Pull conditional satellites (`nara-prep` / `nara-ac-draft` / `nara-grill` / `nara-adr`) only by trigger — see Execution.
+3. Walk the **mandatory core spine** (each step emits human-verifiable material): `plan → execute → verify → code-review → reflect`. Pull conditional satellites (`nara-prep` / `nara-ac-draft` / `nara-grill` / `nara-adr` / brownfield `nara-gap`) only by trigger — see Execution.
 
 ## Execution
 
@@ -31,9 +31,11 @@ bugfix / feature / refactor / impl delivery, 코드·설정·테스트 변경, d
 
 **Entry 완료(SoT면 `nara-prep`, thin intent면 `nara-ac-draft`로 AC 확정 — Readiness 4/4) → 아래 core spine 진입.**
 
-**Core spine (mandatory) — 항상 `gap`부터 순서대로:**
-- `gap` → `plan` → `execute` → `verify` → `code-review` → `reflect`
+**Core spine (mandatory) — 항상 `plan`부터 순서대로:**
+- `plan` → `execute` → `verify` → `code-review` → `reflect`
 - **plan**: `nara-plan`로 `docs/plan.md`(독립 검증 가능한 수직 작업 단위)를 산출한다. 작성 후 AskUserQuestion 승인을 plan 단계에서 흡수 (별도 pre-execution phase 없음). 승인 후 execute.
+- **verify (2-track)**: 코드 AC → `nara-gap`(이 시점에 `docs/gap.md` **생성+판정 1회**. `--verify` 재실행은 이후 반복분). `browser-visible: yes` AC → `nara-browser-verify`(런타임 증거 기반 축별 판정). 두 트랙 모두 해당하면 둘 다 돌리고, 어느 쪽이든 미해결이면 code-review로 넘어가지 않는다.
+- **gap은 spine 맨 앞이 아니다** (ADR-0001): 구현 전 gap은 greenfield에서 score ~0의 무정보 산출물이라 제거했다. 예외 — brownfield 인수인계·"이 코드 얼마나 됐나" 판단이 **먼저** 필요하면 entry 단계에서 `nara-gap`을 조건부 위성으로 호출한다.
 - **execute**: `nara-implement` (전략 승인 게이트 + TDD 옵션 + direct/delegated; **자동 커밋 없음** — staged 상태로 정지 후 `/nara-commit`). Implementation Notes Gate 적용 (scope-scaled, 아래). 머지/리베이스 중 충돌 발생 시 → `/nara-merge-conflict` (ad-hoc 호출, 자동 라우팅 아님).
 - **reflect** 이후: `nara-adr` (구조 결정 있었을 때만) → **branch finish** (네이티브 시퀀스, 별도 스킬 아님): clean tree 확인 → `/nara-pr` (또는 로컬 머지) → 머지 후 base 브랜치 복귀 + 병합된 브랜치 삭제.
 

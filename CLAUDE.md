@@ -70,7 +70,7 @@ Run: `waza eval <skill-name>` (requires `.waza.yaml` config at root)
 
 Two orchestrated modes — `workflow-orchestrator` routes requests:
 
-- **Dev mode** (`workflow-dev-mode`): 6-step core spine `gap → plan → execute → verify → code-review → reflect` (entry: prep/ac-draft; conditional satellites: brainstorm/adr/impl-notes)
+- **Dev mode** (`workflow-dev-mode`): 5-step core spine `plan → execute → verify → code-review → reflect` (entry: prep/ac-draft; conditional satellites: grill/adr/impl-notes/brownfield gap). Verify is 2-track — code AC via `nara-gap`, `browser-visible: yes` AC via `nara-browser-verify` (see `docs/adr/0001-verify-browser-ac-at-runtime.md`)
 - **Doc mode** (`workflow-doc-mode`): clarify → prep → spec → publish → reflect
 
 See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagrams.
@@ -102,6 +102,14 @@ nara-kit ships as plain Agent Skills — no version manifest, no marketplace, no
 3. Push to BOTH remotes: `git push origin main && git push github main && git push --tags` (both).
    (`origin` = LINE internal; `github` = github.com/narashin/nara-kit — consumers install from github).
 4. Consumer side: `npx skills update` (or re-run `npx skills add narashin/nara-kit --global --agent claude-code --agent codex --skill '*'`).
+
+**Sibling-skill links:** a skill may reference another skill's file with a relative path (`../nara-<other>/references/<file>.md`) instead of duplicating it — the owner skill keeps the knowledge (see `docs/adr/0002-link-sibling-skill-references.md`). This assumes the default `--skill '*'` bulk install, so every such reference MUST state what happens when the file is absent (skip and proceed, or return `Unverifiable`). `waza check` reports these as `link escapes skill directory` **whether or not the target exists** — it is not a breakage detector. Before a release, run:
+
+```bash
+grep -rn "](\.\./nara-[^)]*)" --include="*.md" skills/ | while IFS=: read -r f _ line; do d=$(dirname "$f"); echo "$line" | grep -oE "\]\(\.\./nara-[^)]+\)" | tr -d "]()" | while read -r rel; do [ -e "$d/$rel" ] || echo "BROKEN $f -> $rel"; done; done
+```
+
+No output = all sibling links resolve. Any `BROKEN` line blocks the release.
 
 **What ships:** only `skills/<name>/` directories. `README.md`, `skills/README.md`, `CLAUDE.md`, `CHANGELOG.md`, `references/`, and `evals/` (gitignored) never reach consumers — pushes touching only those need no consumer action.
 

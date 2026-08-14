@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**50 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**51 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -15,7 +15,7 @@
 | `nara-design-studio` | Design/prototype product screens on any design system via a pluggable pack: interview → Studio candidates → element-comment refine → implementer handoff (real pack components, anti-drift) / 팩 교체형 디자인 스튜디오 — 인터뷰→후보→코멘트 리파인→핸드오프 |
 | `nara-design-pack-builder` | Extract a design-studio DS pack (tokens + standalone component bundle + manifest) from a React design system, guided React-first protocol / React 디자인시스템에서 design-studio 팩 추출(가이드 프로토콜) |
 | `nara-workflow-orchestrator` | Route requests to dev or doc mode / 요청을 dev/doc 모드로 라우팅 |
-| `nara-workflow-dev-mode` | Implementation workflow (core spine: gap → plan → execute → verify → code-review → reflect) / 구현 워크플로우 |
+| `nara-workflow-dev-mode` | Implementation workflow (core spine: plan → execute → verify → code-review → reflect; verify는 2-track) / 구현 워크플로우 |
 | `nara-workflow-doc-mode` | Documentation workflow (spec/RFC/design artifacts) / 문서화 워크플로우 |
 | `nara-workflow-viz` | Generate self-contained HTML flow visualization from workflow.json / 워크플로우 시각화 HTML 생성 |
 
@@ -72,6 +72,7 @@
 | `nara-golden-path-discover` | Discover live golden-path E2E scenarios + Playwright-ready export / 라이브 골든패스 E2E 발굴 + Playwright export |
 | `nara-ui-diff` | Env-diff visual regression: QA/Prod baseline vs local target computed-style + rect diff (candidates only) / 환경 간 UI 회귀 비교 — computed-style·bounding-rect 차이 후보 |
 | `nara-local-shot` | Screenshots of locally-running web apps (SSO-gated via dummy-cookie bypass) for PR visual comparison / 로컬 앱 스크린샷 캡쳐 |
+| `nara-browser-verify` | Judge browser-visible AC against a headless runtime — per-axis verdict from trusted input, network req/res, inspected screenshots / 브라우저 AC 런타임 판정 (축별 증거 기반) |
 
 ### Automation / 자동화
 
@@ -109,15 +110,17 @@
 
 ### Mode A — Dev (Implementation / 구현)
 
-**Core spine (mandatory, 6단계 — 매 단계가 인간 검증 재료를 산출):** `gap → plan → execute → verify → code-review → reflect`
+**Core spine (mandatory, 5단계 — 매 단계가 인간 검증 재료를 산출):** `plan → execute → verify → code-review → reflect`
 
 ```mermaid
 flowchart LR
-    E["prep / ac-draft<br>(entry · AC 확정)"] --> G[gap] --> P["plan<br>(nara-plan)"] --> X["execute<br>(nara-implement)"] --> V[verify] --> R[code-review] --> RF[reflect] --> F([finish])
-    B["grill<br>large/greenfield"] -. 조건부 .-> G
+    E["prep / ac-draft<br>(entry · AC 확정)"] --> P["plan<br>(nara-plan)"] --> X["execute<br>(nara-implement)"] --> V["verify<br>2-track"] --> R[code-review] --> RF[reflect] --> F([finish])
+    B["grill<br>large/greenfield"] -. 조건부 .-> P
+    G["gap<br>brownfield 인수인계"] -. 조건부 .-> P
+    V --- V1["코드 AC → gap"]
+    V --- V2["browser-visible AC → browser-verify"]
     RF -. 구조 결정 .-> A[adr] -.-> F
 
-    style G fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
     style P fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
     style X fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
     style V fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
@@ -126,7 +129,8 @@ flowchart LR
 ```
 
 - **Entry (조건부)**: 외부 SoT 있으면 `prep`, 한 줄 의도면 `ac-draft`. AC Gate 통과 후 spine 진입.
-- **조건부 satellites**: `grill`(large/greenfield 설계 검증), `adr`(구조 결정 시), impl-notes(medium/large). `small`/bugfix는 전부 skip하고 코어 6단계 직행.
+- **조건부 satellites**: `grill`(large/greenfield 설계 검증), `gap`(brownfield 인수인계 — 구현 전 진행률 파악이 먼저 필요할 때만), `adr`(구조 결정 시), impl-notes(medium/large). `small`/bugfix는 전부 skip하고 코어 5단계 직행.
+- **verify는 2-track**: 코드 AC는 `gap`(이 시점에 `gap.md` 생성+판정 1회), `browser-visible: yes` AC는 `browser-verify`(런타임 증거 기반 축별 판정). gap이 spine 맨 앞에서 빠진 이유는 `docs/adr/0001-verify-browser-ac-at-runtime.md` (repo-local, 배포 대상 아님).
 - **plan = `nara-plan`** (수직 작업 단위 → `docs/plan.md`), **execute = `nara-implement`** (검증 게이트 + TDD 옵션, 자동 커밋 없음 → `/nara-commit`).
 - **plan 승인**은 plan 단계에 흡수 (별도 pre-execution phase 없음). 완료 전 AI 점수 판정 단계는 제거됨 (AI-as-judge 안티패턴 — `verify` + `code-review`가 검증 담당).
 

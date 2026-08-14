@@ -16,6 +16,10 @@ description: >-
 - `--verify` → 기존 gap.md 기준 재검증 (경량)
 - `--score` → gap.md에서 점수만 산출
 
+**호출 시점** (ADR-0001): dev-mode spine의 **verify 단계**에서 인자 없이 1회 호출해 `gap.md` 생성과 판정을 함께 한다. `--verify`는 그 이후 반복 재검증용이며 `gap.md` 존재가 전제다 — gap.md가 없는데 `--verify`로 들어오면 생성 모드로 안내한다. spine 진입 전(구현 전) 호출은 greenfield에서 score ~0의 무정보 산출물이므로 하지 않는다. **예외**: brownfield 인수인계·진행률 파악이 먼저 필요하면 사용자가 직접 호출한다.
+
+**담당 범위**: 코드에서 확인 가능한 AC. `browser-visible: yes` AC의 런타임 판정은 `nara-browser-verify` 몫이며, 여기서는 grep 근거가 없으면 `Unknown`으로 두고 갭으로 단정하지 않는다.
+
 ## 생성 모드
 
 전제: `docs/requirements.md` 존재 필수. 없으면 "/nara-prep 먼저 실행" 안내 후 중단.

@@ -34,6 +34,8 @@ description: >-
 
 `docs/plan.md`에 `# <Feature> Plan` 형식으로 작성한다 (사용자가 경로를 지정하면 그 경로). 각 작업 단위: `## T-N <제목>` + `목표` / `범위(포함·제외)` / `AC` / `검증` / `의존성` / `요구사항 추적`.
 
+**`검증` 필드 계약** — `browser-visible: yes`인 AC를 포함한 단위는 `검증`에 런타임 경로를 명시한다: 대상 URL/환경 · viewport · auth 전략 · 통과 조건 · 실행 주체 `nara-browser-verify`. 명시 없이 "UI 확인" 같은 문구로 대체하면 그 단위는 `Blocked`. 상류 태그가 없는 레거시 `requirements.md`는 `unknown`으로 취급해 **중단 없이 진행**하되, 화면 동작이 분명한 AC는 `검증`에 그 사실을 적는다.
+
 ## 출력 (receipt)
 
 경로, 상태, 작업 단위 수, 요구사항별 traceability, 의존성, `증거`, `미검증`, 미해결 분할 문제를 보고한다. 이후 단계로 `/nara-implement <작업 단위>`를 제시한다.

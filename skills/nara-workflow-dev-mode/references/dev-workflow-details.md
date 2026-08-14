@@ -8,18 +8,19 @@ Thin one-line intent (외부 SoT 없음) is handled by `nara-ac-draft`, which wr
 2. Localize source-of-truth when requirements are external or scattered
 3. Run discovery and clarification before code changes when ambiguity remains
 4. Perform integration review against existing code and patterns
-5. Run gap analysis when current-state vs target-state delta matters
+5. Run gap analysis at the **verify** step (or up front only for brownfield handover), never as the spine's first step
 6. Create written implementation plan before execution
 7. **Implementation Notes Gate (scope-scaled)**: `medium`/`large`만 — Execute 진입 시 `docs/implementation-notes.md` 생성 + 변경 응답에 trailing `📝 notes:`. `small`은 skip. (SKILL.md 참조)
 8. Enforce TDD for behavior-changing work where practical
-9. Run verification before claiming completion. **verify는 (medium/large) implementation-notes.md 비어 있으면 reject. small scope는 notes gate 미적용.**
+9. Run verification before claiming completion — **2-track**: 코드 AC → `nara-gap`(gap.md 생성+판정), `browser-visible: yes` AC → `nara-browser-verify`(런타임 증거). **verify는 (medium/large) implementation-notes.md 비어 있으면 reject. small scope는 notes gate 미적용.**
 10. Route to review, reflect (notes 흡수), ADR (구조 결정 시만), and finish only after prior gates pass. (evaluation step removed — AI-as-judge anti-pattern.)
 
 ## Mandatory routing table
 
 - external or scattered requirements -> `nara-prep`
 - design ambiguity (large/greenfield) -> `nara-grill` (조건부)
-- current-state vs target-state delta matters -> `nara-gap`
+- verify step, code AC -> `nara-gap` (brownfield handover는 entry에서 조건부 호출)
+- verify step, `browser-visible: yes` AC -> `nara-browser-verify`
 - implementation about to start -> `nara-plan` (`docs/plan.md` 수직 작업 단위)
 - phased or broader execution -> `nara-implement` (delegated 모드)
 - before completion claim -> `nara-code-review`
@@ -76,7 +77,7 @@ Route: dev -> medium -> `nara-ac-draft` -> `nara-plan` -> TDD -> `nara-implement
 
 ### Example 2
 User: `Add audit log export API.`
-Route: dev -> `nara-gap` -> `nara-plan` -> `nara-implement` -> verification.
+Route: dev -> `nara-plan` -> `nara-implement` -> verification (`nara-gap`; browser AC 있으면 `nara-browser-verify` 병행).
 
 ### Example 3
 User: `Implement multi-tenant rollout across services.`

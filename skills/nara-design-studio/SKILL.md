@@ -38,7 +38,7 @@ Two sources supply the **recommended default the question is seeded with** — n
 Offer whichever of those exist as the pre-selected option, then these:
 
 ```
-(a) Build a pack from a design system you already have → [nara-design-pack-builder](../nara-design-pack-builder/SKILL.md).
+(a) Build a pack from a design system you already have → [nara-design-pack-builder](../nara-design-pack-builder/SKILL.md) (sibling-installed; if absent, tell the user to install it rather than improvising a pack).
     Source may be a component codebase, an installed npm package (one shipping a UMD/dist build often
     needs no per-component adaptation), a Storybook, or a published CSS/token bundle.
 (b) Convert a DESIGN.md → python3 assets/runtime/designmd_to_pack.py --design <DESIGN.md> --out <packDir>

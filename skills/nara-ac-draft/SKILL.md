@@ -18,7 +18,7 @@ description: >-
 1. **Context** — intent verbatim. 코드 scan으로 actor/domain. 못 찾으면 `[NOT FOUND]`
 2. **Decomposition** — Who/What/Why 3축. 불확실 `[NEEDS_CONFIRMATION]`. Why 없으면 US 거부
 3. **S2 Discovery** — US 1.5~2.5x 과생성. Tag Happy/Sad/Edge. Gherkin AC 1~3. 근거 없는 구체값 `[UNVERIFIED]`
-4. **S3 Selection** — ratio 0.4~0.6. AC-ID 확정. `Unknown` never empty
+4. **S3 Selection** — ratio 0.4~0.6. AC-ID 확정. `Unknown` never empty. AC마다 `browser-visible` 태그 부여 (아래 규칙)
 
 ## 규칙
 
@@ -28,6 +28,7 @@ description: >-
 - AC-ID 안정 (재실행 시 ID 유지)
 - 구현 디테일 금지 — observable behavior만
 - FR↔AC 1:1 — US verbatim 재기술
+- **`browser-visible: yes|no|unknown`** — AC마다 필수. 판단은 그 AC가 **화면에서 관측되는 동작**(UI 요소 표시·화면 전이·표시 문구·입력 반응)을 말하는지로만. 서버 계산·데이터 정합·배치는 `no`. 근거 부족하면 `unknown` (추측 금지). 태그는 메타데이터 — AC 본문·ID·순서를 바꾸지 않는다. `yes` 항목의 런타임 검증은 `nara-browser-verify`가, 검증 경로 확정은 `nara-plan`이 소유한다
 
 ## Examples
 
@@ -35,4 +36,4 @@ description: >-
 
 ## Handoff
 
-산출 후 `nara-gap` or `nara-grill`. prep 우회. `test-discover`가 AC-ID로 매핑. Standalone.
+산출 후 `nara-plan` (설계 불안정하면 `nara-grill` 먼저). prep 우회. `test-discover`가 AC-ID로 매핑. `browser-visible: yes` AC는 plan의 `검증` 필드를 거쳐 `nara-browser-verify`로 간다. Standalone.

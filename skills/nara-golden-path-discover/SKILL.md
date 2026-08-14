@@ -56,4 +56,4 @@ When invoked without first running nara-test-discover: scan `docs/test-scenarios
 - [Pipeline (6 stages) + drop codes + S1 atomic-path definition](references/pipeline.md)
 - [Export format: schema, coverage, determinism, SKIP/WARNING taxonomy (EN + KO)](references/export-format.md)
 - [Live crawl: MCP choice, label harvest, 3-rung degradation](references/live-crawl.md)
-- Reused heuristics: [../nara-test-discover/references/heuristics.md](../nara-test-discover/references/heuristics.md)
+- Reused heuristics: [../nara-test-discover/references/heuristics.md](../nara-test-discover/references/heuristics.md) — sibling-installed file; if absent (standalone install), skip it and use the local pipeline heuristics only

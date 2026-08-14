@@ -13,7 +13,7 @@
 
 **접근법:**
 - 버그픽스: 재현 → 실패 테스트(Red) → 수정 → 회귀 테스트 → verify
-- 구현: prep(AC) → gap → plan → TDD → verify
+- 구현: prep(AC) → plan → TDD → verify(gap + browser AC면 browser-verify)
 
 **착수:** 판단 후 Stage 2 트리거 (herdr가 space=repo@branch 워크트리에서 실행)
 (수동: `/nara-wt <KEY>` → `/nara-prep <KEY>` → dev-mode)

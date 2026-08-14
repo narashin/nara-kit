@@ -8,10 +8,14 @@
 |----------|------|------|
 | 1 | main/master 브랜치 | "메인 브랜치. 새 작업이면 브랜치 생성 후 `/nara-prep`" |
 | 2 | 비-main 브랜치, requirements.md 없음 | "요구사항 미정리. `/nara-prep`으로 요구사항 정리부터" |
-| 3 | requirements.md 있음, gap.md 없음 | "요구사항 정리됨. `/nara-gap`으로 갭 분석" |
+| 3 | requirements.md 있음, plan.md 없음 | "요구사항 정리됨. `/nara-plan`으로 작업 단위 분할" |
+| 3-bis | plan.md 있음, 미구현 (변경 없음) | "계획 있음. `/nara-implement <T-N>`" |
+| 3-ter | 구현 변경 있음, gap.md 없음 | "구현분 있음. `/nara-gap`으로 verify (코드 AC) + `browser-visible: yes` AC 있으면 `/nara-browser-verify`" |
 | 4 | gap.md 있음, **P0 Missing ≥ 1** | "P0 ({N}건) 보완 1순위 (점수 무관). gap.md Critical 섹션 참조" |
 | 5 | gap.md 있음, P0 Missing 0건, 점수 < 80 | gap.md Next Actions 분석 후 실행 방법 추천 (아래 실행 방법 판단 참조) |
 | 6 | gap.md 있음, P0 Missing 0건, 점수 ≥ 80 | "review-ready. commit + `/nara-code-review`" |
+
+**`gap.md` 부재는 결함이 아니다.** gap은 spine 맨 앞이 아니라 **verify 단계**에서 1회 생성된다 (ADR-0001). 구현 전에 없는 것이 정상이므로 3행에서 `/nara-gap`을 권고하지 않는다 — 구현 변경이 관측될 때(3-ter)부터 verify 대상이다. brownfield 인수인계처럼 "이 코드 얼마나 됐나"를 먼저 알아야 하는 경우에만 사용자가 `gap`을 직접 호출한다.
 
 **P0 hard gate 우선**: 점수 ≥ 80이어도 P0 Missing 있으면 우선순위 4. 점수만 보고 판단 금지.
 
