@@ -7,8 +7,26 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 각 tag = 여기의 한 버전 섹션. tag가 없는 진행 중 변경은 `[Unreleased]`에 쌓인다.
 
 호환성 규칙(major 판정): 스킬 이름 삭제·rename, invocation 방식 변경, 산출물 경로 변경은 consumer에게 breaking.
+단 `0.x` 구간에서는 semver 관례대로 breaking을 minor로 올린다 — `1.0.0`은 API 안정 선언으로 읽히므로 표면이 굳은 뒤에 붙인다.
 
 ## [Unreleased]
+
+## [0.21.0] - 2026-08-14
+
+> **BREAKING — 업그레이드 시 수동 조치 필요.** 스킬 4종이 제거됐다. `npx skills update`는 **삭제된 스킬을 지우지 않으므로** 설치본에 옛 사본이 그대로 남는다:
+>
+> ```bash
+> rm -rf ~/.claude/skills/nara-workflow-orchestrator \
+>        ~/.claude/skills/nara-workflow-dev-mode \
+>        ~/.claude/skills/nara-workflow-doc-mode \
+>        ~/.claude/skills/nara-workflow-viz
+> npx skills update
+> ls ~/.claude/skills | grep -c '^nara-'   # 47 (+ naranizer = 48)
+> ```
+>
+> 옛 사본을 남겨두면 존재하지 않는 흐름을 가리키는 지침이 계속 로드된다. Codex 쪽 설치 경로도 동일하게 정리한다.
+>
+> **대체 경로**: `orchestrator`/`dev-mode`/`doc-mode` → 개별 스킬 직접 호출 + `nara-now`의 다음 행동 추천 · `viz` → 대체 없음(입력 `workflow.json`이 애초에 없어 실행 불가였다) · Implementation Notes Gate → `nara-implement`.
 
 ### Removed
 
@@ -70,7 +88,6 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - `read:org` 스코프 부재 시 **중단하지 않고** 개인 매칭만으로 계속 진행 — 리마인더가 통째로 죽는 것보다 부분 동작이 낫다.
   - waza: 토큰 1200→1677(+477, 상세는 reference로 분리해 +1152에서 축소), 링크 이탈 advisory는 baseline과 동일한 `../README.md` 백링크 1건으로 불변.
 
-### Changed
 - `nara-jira-triage` — Step 7 reconcile 계약에 **Pass C(Jira 역기록)** 추가. Pass A가 merged PR로 큐를 `done` 처리해도 Jira는 `In Progress`에 남아 두 트래커가 갈라졌다. Pass C는 A의 `MERGED` 1건 분기에서만, 그리고 **Jira assignee가 나인 티켓에만** 전이를 건다.
   - **기본 OFF**(`JIRA_SYNC=1` 명시 opt-in). 팀이 보는 트래커에 대한 유일한 외부 mutation이므로 자동 실행을 기본값으로 두지 않는다 — merged가 곧 종료인지는 팀 워크플로의 판단이다.
   - **종료 상태명은 프로젝트마다 다르다.** 전이 id 하드코딩 금지를 계약에 명문화 — 한 프로젝트는 `Resolved`/`Closed`를 노출하고 다른 프로젝트는 `Done` 하나뿐이라, 이름 하나로 고정하면 한쪽이 통째로 막힌다. `to.statusCategory.key == "done"`인 전이 중 `$JIRA_CLOSE_STATUSES` 순서로 첫 매칭을 고른다(카테고리 제약이 있어 동명의 비-done 상태를 잘못 집을 수 없다).
