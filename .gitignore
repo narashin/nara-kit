@@ -39,3 +39,6 @@ __pycache__/
 
 # Browser-MCP scratch artifacts (snapshots, console logs, downloads).
 .playwright-mcp/
+
+# superpowers 잔재 (플러그인 비활성화됨, 과거 SDD 산출물)
+.superpowers/
