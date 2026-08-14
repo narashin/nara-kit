@@ -1,0 +1,13 @@
+id,name,status,team,score
+1,alice,active,core,10
+2,bob,active,core,20
+3,carol,inactive,core,30
+4,dave,active,platform,40
+5,erin,active,platform,50
+6,frank,inactive,ops,60
+7,grace,active,ops,70
+8,heidi,active,ops,80
+9,ivan,active,ops,90
+10,judy,active,ops,100
+11,ken,active,ops,110
+12,leo,active,ops,120

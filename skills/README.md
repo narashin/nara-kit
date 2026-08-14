@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**51 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
+**52 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 모호하면 `nara-workflow-orchestrator`가 dev/doc 모드로 라우팅.
 
 ← Back to [root README](../README.md).
 
@@ -26,6 +26,7 @@
 | `nara-prep` | Localize external SoT (Jira/Figma/Confluence) into `docs/requirements.md` + Readiness score / 외부 SoT 로컬화 + 충분성 판정 |
 | `nara-ac-draft` | Generate User Stories + Gherkin AC from one-line intent (no external SoT). Sister of `prep` / 한 줄 의도 → US + Gherkin AC 생성 (외부 SoT 없을 때) |
 | `nara-gap` | Requirements vs implementation gap analysis → `docs/gap.md` (0-100 score) / 요구사항 vs 구현 갭 분석 |
+| `nara-claim-audit` | Audit numeric claims in a spec against CSV snapshots (script-owned, deterministic) / 기획서 수치 주장을 CSV와 대조 — 스크립트 소유·결정론 |
 | `nara-grill` | Pressure-test an idea/design/plan — fact-first, one question at a time (dev/doc design-exploration satellite) / 사실 조사 후 한 번에 한 질문씩 설계 검증 |
 | `nara-plan` | Split a spec into independently verifiable vertical work units → `docs/plan.md` (dev-mode plan artifact) / 스펙을 독립 검증 가능한 수직 작업 단위로 분할 |
 | `nara-incident` | Structured incident analysis report with red-capable reproduction gate (no code changes) / 재현 게이트 기반 장애 분석 리포트 (코드 수정 없음) |

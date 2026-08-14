@@ -12,6 +12,7 @@ Convert a local markdown spec/plan to the **APP Confluence RfC template** (7 man
 
 ## Execution Flow
 
+0. **Claim gate**: 마커 있으면 `nara-claim-audit` 먼저 (미확인 수치 → 거부)
 1. **Collect info**: spec file path, Jira ticket ID (required -- ask if missing), publish location
 2. **Template conversion (dry-run)**: restructure into 7-section template, save as `confluence-draft.md`, show preview
 3. **User confirmation**: single question "게시할까?" -- Publish or Cancel
