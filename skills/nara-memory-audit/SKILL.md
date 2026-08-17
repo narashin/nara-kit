@@ -31,6 +31,7 @@ Full algorithm + Tier 2 prompt → [scoring.md](references/scoring.md).
 3. **Report** (receipt) — nothing modified.
 4. **Approval gate** — explicit go; accept all/subset/none. This keeps the skill a doubt-generator, not a judge ([[nara-kit-thesis-direction]]).
 5. **Apply**: anchor fix → `Edit` (slim, don't just patch — [[feedback-memory-storage-discipline]]); danger/refuted → move to `memory/archive/` + drop its `MEMORY.md` line; re-sync index (pointers == files).
+6. **Mirror the removal** — `nara-reflect` dual-stores each learning (file + memory MCP record), so archiving the file alone leaves a live twin that still gets recalled. For every archived/fixed file, supersede or delete its MCP counterpart in the same approved batch. No MCP tool installed → skip, and say so in the receipt.
 
 ## Examples
 
@@ -47,7 +48,7 @@ flagged (6):
   jira_triage.md   score=2  ref_validity      STALE          → skills/nara-jira-triage/
   runtime_cost.md  score=2  age,code_drift    CONTRADICTION  → aoe→herdr
   offload_talk.md  score=3  age,ref_validity  STALE(spent)   → archive
-applied: 4 fixed, 2 archived  |  MEMORY.md: 31→29 synced
+applied: 4 fixed, 2 archived  |  MEMORY.md: 31→29 synced  |  mirror: 6 MCP records updated/superseded
 ```
 
 ## Rules
@@ -55,6 +56,7 @@ applied: 4 fixed, 2 archived  |  MEMORY.md: 31→29 synced
 - **No mutation before approval.** Tier 1 + Tier 2 read-only.
 - **Move, never delete** — archive reversible; `rm` is manual + explicit only.
 - External-system claims = `UNVERIFIABLE`, never guessed.
+- **File layer is a proxy, not full coverage.** Tier 1 is bash — it cannot read an MCP store. Dual-stored memories are mirrors, so scoring the file scores both; but a record that only ever existed in the MCP layer (passive capture, saved outside reflect) is **invisible here**. State it; don't claim the tool layer is swept.
 - `skill_ref_broken` is high-precision: bare backticked names (no `skills/` prefix, no `/nara-`) are a Tier-2-only catch — a file scoring 0 on signals 1-3 with only bare-name drift is missed. State it; don't claim full coverage.
 
 ## Troubleshooting
