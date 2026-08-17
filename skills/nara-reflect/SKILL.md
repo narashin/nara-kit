@@ -40,29 +40,22 @@ description: >-
 
 **write = memory·handoff 둘뿐.** 나머지는 추천 + 명령만 낸다 (surface 생성은 그 스킬이).
 
-**타깃 충돌 tiebreaker** (한 학습이 2개 lane에 걸칠 때):
-- **미래 세션/팀 동작을 지속적으로 규율하려는 rule·가이드라인** (강제 가능하든 — "gap<80이면 PR 차단" — 권고든 — "PR 본문은 한국어") → **CLAUDE.md suggest-only 우선** (repo=팀, user=개인). CLAUDE.md는 매 세션 context에 로드되고 repo는 git으로 공유됨 — recall-on-search인 memory보다 rule 전파에 맞음. 그 rule이 *왜* 생겼는지가 코드·rule 텍스트만으로 복원 불가할 때만 memory에도 이유 별도 write (2개 타깃 허용 예외).
-  - **판별선**: 규범(prescriptive — "앞으로 X 해라") → CLAUDE.md. 서술(descriptive — "이 코드/시스템은 이렇게 동작한다"는 사실·주의사항) → auto-memory. 둘 다면 위 예외로 양쪽.
-- 그 외 모든 충돌 (일회성 결정·발견 등) → 표의 **위쪽 행 우선** (auto-memory > handoff > ADR > skill > hook).
-
 **추천 lane 표현 계약** (suggest-only 행 — skill/hook/ADR/CLAUDE.md):
 - 금지어: "설치됨", "활성화됨", "자동 적용됨", "settings 갱신됨", "반영 완료" — reflect는 이 surface들을 **생성·적용하지 않는다**
 - 필수어: "추천", "suggest-only", "실행 명령만" — 사용자가 해당 스킬을 직접 실행해야 함을 명시
 
-### skill 추천 트리거 (고정밀 — 노이즈 방지)
+**skill 추천은 절차형 + 반복 둘 다**일 때만. 아니면 침묵 (매 세션 묻지 않는다).
 
-매 세션 묻지 않는다. **아래 둘 다** 만족할 때만 skill 후보로 표면화:
-
-1. **절차형** — 재실행 가능한 multi-step 루틴 (결정→ADR, 사실→memory, **절차→skill**)
-2. **반복** — 이번 세션 2회+ 수동 반복 OR 관련 memory 이미 존재(재발)
-
-아니면 침묵. (드물게·믿을 만하게 > 매번·무시됨. 무차별 추천은 안 눌린다.)
+타깃이 2개 lane에 걸치거나 skill 트리거 판정이 애매하면 → [references/routing-rules.md](references/routing-rules.md).
 
 ## 3. write 타깃 실행
 
 ### auto-memory
 
-- **dedup 먼저** — 새로 만들기 전 memory dir + `MEMORY.md`를 slug/topic으로 grep. 겹치면 CREATE 대신 **기존 파일 UPDATE** (`verified_at` 갱신). 근사 중복 파일 금지. (grep 불가 시 → 실패 처리 표)
+- **dedup 먼저 — 층마다 따로.** 겹치면 CREATE 대신 **기존 UPDATE** (`verified_at` 갱신). 근사 중복 금지.
+  - *파일 층*: memory dir + `MEMORY.md`를 slug/topic으로 grep. (grep 불가 시 → 실패 처리 표)
+  - *도구 층*: memory MCP 도구 검색은 **명사 키워드 1~3개**로. 문장형·패러프레이즈 쿼리 금지 — 부분 매칭으로 완만히 저하되지 않고 0건으로 떨어진다. **0건 ≠ 부재**: 더 짧은 키워드로 재시도, 특정 레코드 존재 확인은 ID 단위 조회로 확정. (여전히 0건 → 실패 처리 표)
+- **dual-store** — 파일 층에 write한 학습은 memory MCP 도구에도 **독립 레코드**로 저장. 세션 요약 레코드에 담는 것으로 갈음 금지 (요약은 주제 단위 recall이 약하다). UPDATE도 양쪽 동시 — 한쪽만 고치면 divergence. 도구 미설치 환경이면 skip하고 receipt에 사유 명시.
 - **evidence 필수** — 본문에 세션에서 실제 관찰한 근거(파일·커밋·사용자 발언) 명시. 못 대면 저장 X → discard.
 - **frontmatter** — memory 도구/디렉토리 컨벤션을 따른다. `verified_at`/`ref_paths`는 `metadata:` 블록 **안**. memory 도구가 별도 필드(예: `node_type`)를 붙이면 그 도구 스키마를 우선 — 아래는 최소 셋:
 
@@ -91,14 +84,33 @@ description: >-
 
 - gap.md 존재 + Agreed Exceptions 변경 시에만 반영. 없으면 skip.
 
+### memory health (Tier 1 피기백, ~0 토큰)
+
+write를 **끝낸 뒤** 파일 층 전체를 훑는다. reflect는 생산자, `/nara-memory-audit`은 청소부 — 여기선 **점수만 읽고 아무것도 고치지 않는다**.
+
+```bash
+MEM_DIR=~/.claude/projects/<slug>/memory
+AUDIT=~/.claude/skills/nara-memory-audit/scripts/audit.sh   # Codex 등 설치 경로 다르면 그쪽
+for f in "$MEM_DIR"/*.md; do [ "$(basename "$f")" = MEMORY.md ] || bash "$AUDIT" "$f"; done \
+  | jq -s '{total: length, flagged: [.[] | select(.score >= 2) | {file, score, signals}]}'
+```
+
+- `$AUDIT` 없거나 `jq`/`git` 없으면 **skip** — receipt에서 그 줄 생략, 실패 아님 (의존 아님)
+- `MEMORY.md` 포인터 수 ≠ memory 파일 수면 `index desync` 표시 (dedup grep에서 이미 본 데이터)
+- `flagged > 0`이면 **추천만** → `/nara-memory-audit`. reflect가 Tier 2를 돌리거나 파일을 고치지 않는다
+
 ## 4. 출력 (receipt)
 
 `## Session Reflect — {날짜}` 아래:
 
 1. **라우팅 표** — `학습 | 타깃 | 동작(write/추천/discard) | 근거`
-2. write된 memory/handoff 경로
+2. **write 산출물 — 층별로 분리** (한 줄에 뭉치지 않는다):
+   - 파일 층: memory 파일 경로 + `MEMORY.md` 포인터, handoff 경로
+   - 도구 층: 저장된 레코드 ID
+   - 한쪽에만 있는 항목은 **`divergence`** 표시. 도구 미설치면 `store: file-only (<사유>)`
 3. 추천 항목의 **실행 명령** (예: `/nara-adr`, `skill-development`)
 4. Gap Status (이전→현재)
+5. **memory health** — `total: N | flagged: M` (+ `index desync` 시 표기). `M>0`이면 `/nara-memory-audit` 추천. 스크립트 부재면 이 줄 생략
 
 - 모든 후보가 discard/no-op → **"특이사항 없음"** 한 줄로 종료
 - **게이트 구분**: 추천 lane(skill/hook/ADR/CLAUDE.md)은 인터랙티브 게이트 없음 (receipt에 명령만, 보고 실행/무시). write lane(memory/handoff)은 §3 🔴 CHECKPOINT의 preview 표시 의무 — 보여주는 것은 필수, 승인 대기는 아님(비차단).
@@ -106,22 +118,14 @@ description: >-
 > 외부 스킬 부재 시 fallback → 실패 처리 표. 의존 아님.
 > nara-kit **스킬 자체**가 불편했다면 `/nara-meta-feedback` (별개 — reflect는 프로젝트 지식, meta-feedback은 툴킷 friction).
 
-## 실패 처리 (if-then)
+## 실패 처리
 
-| 트리거 조건 | 일차 대응 | 여전히 실패 시 |
-|---|---|---|
-| memory dir / 타 repo `CLAUDE.md` grep 불가 | `duplicate_status: unknown` 표시 | CREATE/UPDATE 결정을 사용자 확인으로 위임 (단정 금지) |
-| 학습에 세션 근거(파일·커밋·발언) 못 댐 | 해당 후보 discard | 사유를 라우팅 표 `근거` 열에 명시 |
-| 외부 스킬(`skill-development`·`hook-development`) 부재 | 수동 fallback 안내 (CLAUDE.md "When Adding a New Skill") | 추천 lane 유지 — reflect가 대신 생성하지 않음 |
-| carry-forward 후에도 In Progress·Open Q 둘 다 없음 | handoff.md 삭제 | 삭제 실패(파일 lock 등) 시 stale 경고만, 강제 삭제 금지 |
-| implementation-notes.md resolved entry와 중복 | 해당 entry skip | 애매하면 후보로 올리되 근거에 "중복 의심" 표기 |
+if-then 표 전체 → [references/routing-rules.md](references/routing-rules.md). 어떤 실패도 **단정 금지** — 모르면 `unknown` 표시 후 사용자 확인.
 
 ## 규칙
 
 - **write는 memory·handoff만.** skill/hook/ADR/CLAUDE.md는 추천만 — 직접 수정 금지
 - 근거 못 대는 학습 **저장 금지** — discard가 기본 sink
-- 같은 주제 메모리 새로 만들지 말고 **기존 UPDATE**
-- skill 추천은 **절차형 + 반복 둘 다**일 때만 (per-session 프롬프트 금지)
 - `git log`로 볼 수 있는 코드 변경 나열 금지 / 결정은 **이유** 필수
 - Conventions는 프로젝트 전반 적용 가능한 것만 / Warnings는 코드만 봐선 모르는 것만
 - In Progress는 코드·커밋으로 복원 불가한 흐름만 / Open Questions는 답 없이 남은 것만

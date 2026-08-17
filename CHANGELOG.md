@@ -11,6 +11,14 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Changed
+
+- `nara-reflect`: durable memory를 **두 층**(파일 기반 memory dir + memory MCP 도구)으로 인정하도록 §3·§4·실패 처리 표 개정
+  - dedup을 층별로 분리 — 도구 층 검색은 명사 키워드 1~3개, 문장형 쿼리 금지, **0건을 부재로 단정 금지**(짧은 키워드 재시도 → ID 조회로 확정)
+  - dual-store 스텝 신설 — 파일 층에 write한 학습은 도구 층에도 독립 레코드로. 세션 요약 레코드로 갈음 금지, UPDATE도 양쪽
+  - receipt를 층별로 분리 표기 — 파일 경로 / 레코드 ID 나란히, 한쪽만 있으면 `divergence`, 도구 미설치면 `store: file-only (<사유>)`
+- `nara-reflect`: `nara-memory-audit` **Tier 1 피기백** — write 후 `audit.sh`(bash, ~0 토큰)로 파일 층 점수만 읽어 receipt에 `memory health: total N | flagged M` 한 줄. `M>0`이면 `/nara-memory-audit` **추천만** (Tier 2·수정은 여전히 audit 스킬 소관). 스크립트/`jq`/`git` 부재 시 줄 생략 — 의존 아님
+- `nara-reflect`: tiebreaker·skill 추천 트리거·실패 처리 표를 `references/routing-rules.md`로 분리 (조건부 발동 규칙만 이동 — 매 세션 발동 계약은 본문 유지). 3078 → 2737 토큰
 ## [0.21.0] - 2026-08-14
 
 > **BREAKING — 업그레이드 시 수동 조치 필요.** 스킬 4종이 제거됐다. `npx skills update`는 **삭제된 스킬을 지우지 않으므로** 설치본에 옛 사본이 그대로 남는다:
