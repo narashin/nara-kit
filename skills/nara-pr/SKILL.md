@@ -16,7 +16,8 @@ description: >-
 3. 커밋 분석 → Title Format 규칙에 따라 제목 생성.
 4. [body-guide.md](references/body-guide.md) Read → 규칙대로 본문 생성 (Korean).
 5. naranizer post-pass 어투 변환 (프로필 없음·미설치면 스킵). 규칙: body-guide.md.
-6. `gh pr create` 제안, 유저 확인 후 실행.
+6. `nara-ko-prose` repair post-pass — 한국어 명확성 수리 (규칙 원문 없음·미설치면 스킵). naranizer **다음**에 실행하며, 어휘·말투를 건드리지 않으므로 5의 결과를 되돌리지 않는다.
+7. `gh pr create` 제안, 유저 확인 후 실행.
 
 ## Base Branch Detection
 

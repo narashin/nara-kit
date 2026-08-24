@@ -22,7 +22,8 @@ Record significant technical decisions with context, alternatives, and consequen
 1. **Scan**: Read `docs/adr/` for next sequence number. Create dir if absent, start at `0001`.
 2. **Gather context**: conversation, `git log --oneline -20`, `docs/plan/`, CLAUDE.md
 3. **Write ADR**: Follow template and naming rules in [references/adr-template.md](references/adr-template.md). All sections required. Write in Korean (technical terms in English).
-4. **Update references**: Note ADR in CLAUDE.md if relevant. Update old ADR status if superseding/deprecating.
+4. **Repair Korean prose**: `nara-ko-prose` repair post-pass on the written body (skip if the rule source is absent / plugin not installed). Technical terms in English and code blocks are out of scope.
+5. **Update references**: Note ADR in CLAUDE.md if relevant. Update old ADR status if superseding/deprecating.
 
 ## Error Handling (if-then)
 

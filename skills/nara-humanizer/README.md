@@ -13,7 +13,7 @@ Detect AI writing patterns in Korean text and rewrite as natural human prose. Ba
 ## 언제 쓰나
 
 - **USE FOR:** "humanizer", "윤문", "AI 티 제거", "한국어 자연스럽게", "humanize", "ai-detection 회피".
-- **DO NOT USE FOR:** 개인 말투/페르소나 적용 (use naranizer), 영어 텍스트, 코드 리뷰 (use nara-code-review), 번역, 사실 검증.
+- **DO NOT USE FOR:** 개인 말투/페르소나 적용 (use naranizer), 생략된 조사·어미 복원 (use nara-ko-prose), 영어 텍스트, 코드 리뷰 (use nara-code-review), 번역, 사실 검증.
 
 ## 더 보기
 

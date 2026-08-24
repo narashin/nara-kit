@@ -11,8 +11,21 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Added
+
+- `nara-ko-prose` 신설 — 공유 산출물(PR 본문·RFC·ADR·한국어 Confluence 본문)의 한국어 명확성 수리. 생략된 조사·어미·문장 성분을 되돌리고, 명사구로 끊긴 문장을 종결어미로 맺고, 엠대시를 치환한다
+  - 규칙 출처는 [snflkd/fluent-korean](https://github.com/snflkd/fluent-korean) (MIT). **사본을 배포하지 않고** 설치된 원문을 실행 시점에 읽는다 — 원문 `## 상황과 목표` 절이 지침의 요약을 권장하지 않으므로 축약본도 두지 않으며, 원문 미발견 시 `Unverifiable`로 종료한다. nara-kit이 저작한 것은 호출 계약과 조항별 모드 배정뿐
+  - 모드 2종. `repair`(기본, 산출물 스킬 post-pass 경로)는 결함 교정만 하고, `full`(사용자 직접 호출)은 전 조항을 적용한다. `repair`가 부분집합인 이유는 분량이 아니라 **`naranizer`와의 공존** — 원문 동작 범위 4항(사용자 어조 모방 금지)을 PR 본문에 적용하면 개인 말투 변환이 통째로 취소된다
+  - `nara-humanizer`와 방향이 반대다. humanizer는 AI 마커를 **덜어내고**(쉼표 과다·유행어·번역투), ko-prose는 압축이 만든 결핍을 **채운다**. 한자어에서 정면으로 어긋나므로(humanizer는 "한자어 과다"를 검출, 원문 구 단위 2항은 적극 활용을 요구) `repair`는 그 조항을 적용하지 않는다
+  - 적용 제외: 커밋 메시지·변수명·코드 주석·로그 문자열(원문 동작 범위 2항), 헤더·목록의 종결어미 요구(원문 문장 단위 2항이 스스로 제외), 코드 블록·인용, 영어 텍스트
+
 ### Changed
 
+- `nara-pr`: Step 6에 `nara-ko-prose` repair post-pass 추가 (naranizer **다음**에 실행 — 어휘·말투를 건드리지 않아 앞 단계를 되돌리지 않는다). 기존 Step 6 → 7
+- `nara-rfc`: Step 5에 `nara-ko-prose` repair post-pass 추가. 기존 Step 5 → 6
+- `nara-adr`: Workflow Step 4에 `nara-ko-prose` repair post-pass 추가. 기존 Step 4 → 5
+- `nara-publish-spec`: Language 규칙에 조건부 `nara-ko-prose` repair 추가 — 본문이 **한국어일 때만** Step 2 preview 전에 실행. 영어 본문은 대상 아님
+- `nara-spec-revision`은 배선하지 않음 — 본문 규약이 영어 전용이므로 한국어 수리 대상이 없다
 - `nara-reflect`: durable memory를 **두 층**(파일 기반 memory dir + memory MCP 도구)으로 인정하도록 §3·§4·실패 처리 표 개정
   - dedup을 층별로 분리 — 도구 층 검색은 명사 키워드 1~3개, 문장형 쿼리 금지, **0건을 부재로 단정 금지**(짧은 키워드 재시도 → ID 조회로 확정)
   - dual-store 스텝 신설 — 파일 층에 write한 학습은 도구 층에도 독립 레코드로. 세션 요약 레코드로 갈음 금지, UPDATE도 양쪽

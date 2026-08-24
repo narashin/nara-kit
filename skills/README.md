@@ -58,6 +58,7 @@
 | `nara-reflect` | Capture session learnings (decisions, conventions, warnings) / 세션 학습 캡처 |
 | `nara-humanizer` | Detect AI writing patterns in Korean text and rewrite as natural prose (KatFishNet 94.88% AUC, 41 patterns) / 한국어 AI 작문 패턴 감지 + 윤문 |
 | `naranizer` | Rewrite AI-drafted Korean text into the user's own measured style from a local profile (register auto-detect, fact-preserving) / 실측 프로필 기반 개인 말투 변환 |
+| `nara-ko-prose` | Repair Korean prose in shared artifacts — restore dropped particles/endings, complete noun-phrase sentence breaks, replace em-dashes. Applies snflkd/fluent-korean (MIT) by reading the installed rules file; ships no copy / 공유 문서 한국어 명확성 수리 |
 
 ### Testing / 테스트
 

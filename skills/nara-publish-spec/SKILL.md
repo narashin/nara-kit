@@ -26,7 +26,7 @@ Convert a local markdown spec/plan to the **APP Confluence RfC template** (7 man
 - **7-section compliance required** -- block publish if template not followed
 - **No code-level references in Confluence** (file names, type names, function names) -- those belong in local spec.md only
 - **Storage format required**: `content_format: "storage"` (XHTML), not markdown
-- **Language**: dry-run preview in Korean OK; Confluence body in English unless user specifies Korean
+- **Language**: dry-run preview in Korean OK; Confluence body in English unless user specifies Korean. **When the body is Korean**, run a `nara-ko-prose` repair post-pass on it before the Step 2 preview (skip if the rule source is absent / plugin not installed). English bodies are out of scope
 - **[UNVERIFIED] markers**: warn if present before publishing
 
 ## Safety
