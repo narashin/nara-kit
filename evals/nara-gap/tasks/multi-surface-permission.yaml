@@ -1,0 +1,24 @@
+id: multi-surface-permission-001
+name: "Permission requirement spanning server, client, and tests"
+description: |
+  FR-7 is a permission requirement implemented at the server guard (with a guard
+  test) and the client gating, but with NO client-layer gating test and no test
+  asserting the capability-flag semantics. Per rubric §3-bis, a permission/
+  security requirement requires BOTH the guard test and the consuming-layer
+  gating test to count as Implemented. The analysis must downgrade FR-7 to
+  Partial and name the missing surface (client gating test / flag-semantics test)
+  rather than scoring it Implemented/complete.
+tags:
+  - security
+  - multi-surface
+inputs:
+  prompt: "gap 분석해줘"
+  files:
+    - path: multi-surface-permission.md
+expected:
+  output_contains:
+    - "Partial"
+  output_not_contains:
+    - "요구사항 작성"
+  outcomes:
+    - type: task_completed

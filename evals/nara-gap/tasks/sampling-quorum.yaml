@@ -1,0 +1,30 @@
+id: sampling-quorum-001
+name: "Forced doubt sampling is a quorum test, not a fresh draw every run"
+description: |
+  An existing gap.md already carries a doubt-sampling surface that the user
+  answered in the previous round: eight rows are classified as done and two rows
+  already sit in the sampling section with their sampling reason recorded. Every
+  cited path resolves and no external contract is cited, so nothing else in this
+  workspace forces a demotion.
+
+  The sampling surface already meets the quota this rubric asks for, so a re-run
+  must recognise that and leave the classification alone. Drawing a fresh sample
+  on top of the surface that already exists takes the same doubt out of the
+  numerator twice, and the score can then never recover across re-runs.
+tags:
+  - verify
+  - sampling
+  - convergence
+inputs:
+  prompt: "gap --verify 모드로 재검증해줘"
+  files:
+    - path: sampling-quorum.md
+expected:
+  output_contains:
+    - "Implemented: 8"
+    - "Needs Confirm: 2"
+    - "Score: 80"
+  output_not_contains:
+    - "Implemented: 6"
+  outcomes:
+    - type: task_completed

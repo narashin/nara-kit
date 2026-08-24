@@ -6,6 +6,7 @@ docs/
 # tasks/fixtures are free of company-specific identifiers. Run artifacts never ship.
 evals/*
 !evals/nara-code-review/
+!evals/nara-gap/
 evals/**/results/
 
 # Local config (contains company-specific URLs and page IDs)

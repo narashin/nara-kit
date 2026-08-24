@@ -1,0 +1,29 @@
+id: evidence-path-audit-001
+name: "Verify must audit every cited evidence path, not only Missing/Partial rows"
+description: |
+  An existing gap.md classifies three requirements as fully done and cites a
+  file:line for each. The workspace listing shows one cited file is not tracked
+  at all and another cited line number exceeds that file's line count. Only the
+  third citation resolves.
+
+  A citation that does not resolve is not evidence, so re-verification must audit
+  the citations it inherited rather than trusting the cached classification, and
+  must demote the two rows whose citations do not resolve. Leaving all three rows
+  as fully done means the run reported a status it never checked.
+tags:
+  - verify
+  - evidence
+  - stale-citation
+inputs:
+  prompt: "gap --verify 모드로 재검증해줘"
+  files:
+    - path: evidence-path-audit.md
+expected:
+  output_contains:
+    - "src/list/removed-filter.ts"
+    - "Implemented: 1"
+    - "Needs Confirm: 2"
+  output_not_contains:
+    - "Partial: 2"
+  outcomes:
+    - type: task_completed

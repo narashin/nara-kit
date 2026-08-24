@@ -1,0 +1,28 @@
+id: external-contract-sha-001
+name: "Verify must re-resolve externally pinned contract citations"
+description: |
+  An existing gap.md records an external contract pin in its header and two of
+  its five rows cite that external repository at that revision. The workspace
+  listing shows the external repository is absent and the pinned revision cannot
+  be resolved from here.
+
+  Those two rows therefore rest on a citation that can no longer be re-read, so
+  re-verification must name the unresolvable pin and hand both rows to the user
+  instead of carrying the cached classification forward. The three rows citing
+  local paths are unaffected.
+tags:
+  - verify
+  - external-contract
+  - stale-citation
+inputs:
+  prompt: "gap --verify 모드로 재검증해줘"
+  files:
+    - path: external-contract-sha.md
+expected:
+  output_contains:
+    - "a1b2c3d"
+    - "Score: 60"
+  output_not_contains:
+    - "Implemented: 5"
+  outcomes:
+    - type: task_completed
