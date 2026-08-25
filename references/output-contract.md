@@ -62,15 +62,15 @@ contract는 **alignment 메커니즘**. 형식적 실수 (혼동/누락/모호�
 
 ## 4. 응답 스타일 호환
 
-사용자 응답 모드(caveman / normal / wenyan)에 따라 receipt 압축 규칙 다름.
+세션에 걸린 출력 스타일이 얼마나 짧게 쓰라고 요구하느냐에 따라 receipt 압축 수준이 다름. 아래 3단계는 **동작 기준**이고 특정 스타일·플러그인 이름에 묶이지 않는다 — 현재 걸린 스타일의 요구를 이 중 하나로 매핑해 적용한다.
 
-| 모드 | 규칙 |
+| 압축 수준 | 규칙 |
 |------|------|
-| **normal** | 라벨 + 값 풀 (`branch: feature/x`) |
-| **caveman lite** | 관사/필러만 드롭. 라벨 유지 |
-| **caveman full** | 필드 라벨 축약 가능 (`br: feature/x | gap: 85`). 핵심 값만 |
-| **caveman ultra** | 라벨 생략. 값과 prefix 기호만 (`feature/x · 85 · /nara-code-review`) |
-| **wenyan** | 단문/한문체. 형식은 caveman 동일 |
+| **full** (기본) | 라벨 + 값 풀 (`branch: feature/x`) |
+| **compact** | 필드 라벨 축약 가능 (`br: feature/x | gap: 85`). 관사·필러 드롭, 핵심 값만 |
+| **minimal** | 라벨 생략. 값과 prefix 기호만 (`feature/x · 85 · /nara-code-review`) |
+
+압축은 **형식만** 줄인다. §1의 4요소는 어느 수준에서도 빠지지 않는다 — 라벨을 지워도 값은 남는다.
 
 **모드 무관 normal 유지**:
 - 코드 블록 / commit / PR 본문

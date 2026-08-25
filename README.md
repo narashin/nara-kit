@@ -60,7 +60,6 @@ nara-kit과 함께 쓰는 플러그인:
 
 | Plugin | Source | Purpose |
 |--------|--------|---------|
-| `caveman` | `JuliusBrussee/caveman` | Terse response style |
 | `engram` | `Gentleman-Programming/engram` | Persistent memory across sessions (worktree 지원 — claude-mem 대체) |
 | `claude-hud` | `jarrodwatts/claude-hud` | Token/session HUD overlay |
 | `plannotator` | `backnotprop/plannotator` | Plan annotation and analysis |
