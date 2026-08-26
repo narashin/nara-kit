@@ -21,8 +21,8 @@ Full algorithm + Tier 2 prompt → [scoring.md](references/scoring.md).
 
 ## Target
 
-- `~/.claude/projects/<slug>/memory/*.md` — skip `MEMORY.md` + `archive/`. Default = all files (cheap).
-- Run from the repo the memories are ABOUT (so `skills/` + git resolve); set `CLAUDE_PROJECT_DIR` if cwd differs.
+- `<agent-config>/projects/<slug>/memory/*.md` — skip `MEMORY.md` + `archive/`. Default = all files (cheap).
+- Run from the repo the memories are ABOUT (git resolves there); `CLAUDE_PROJECT_DIR` if cwd differs. Skill refs fall back to the agent skill roots, so a repo with no `skills/` tree still works — at reduced path-claim precision (see Rules).
 
 ## Procedure
 
@@ -31,12 +31,12 @@ Full algorithm + Tier 2 prompt → [scoring.md](references/scoring.md).
 3. **Report** (receipt) — nothing modified.
 4. **Approval gate** — explicit go; accept all/subset/none. This keeps the skill a doubt-generator, not a judge ([[nara-kit-thesis-direction]]).
 5. **Apply**: anchor fix → `Edit` (slim, don't just patch — [[feedback-memory-storage-discipline]]); danger/refuted → move to `memory/archive/` + drop its `MEMORY.md` line; re-sync index (pointers == files).
-6. **Mirror the removal** — `nara-reflect` dual-stores each learning (file + memory MCP record), so archiving the file alone leaves a live twin that still gets recalled. For every archived/fixed file, supersede or delete its MCP counterpart in the same approved batch. No MCP tool installed → skip, and say so in the receipt.
+6. **Mirror the removal** — `nara-reflect` dual-stores (file + MCP record), so archiving the file alone leaves a live twin that still gets recalled. Supersede or delete each MCP counterpart in the same approved batch; no MCP tool → skip and say so.
 
 ## Examples
 
 - Clean repo → `total: N | healthy: N`, stop (no Tier 2).
-- Post-migration → several `skill_ref_broken` flags → Tier 2 confirms STALE → fix skill paths on approval.
+- Post-migration → `skill_ref_broken` → Tier 2 confirms STALE → fix paths on approval.
 - Spent one-off memory (old + dead refs) → `danger` → archive on approval.
 
 ## Receipt
@@ -56,11 +56,12 @@ applied: 4 fixed, 2 archived  |  MEMORY.md: 31→29 synced  |  mirror: 6 MCP rec
 - **No mutation before approval.** Tier 1 + Tier 2 read-only.
 - **Move, never delete** — archive reversible; `rm` is manual + explicit only.
 - External-system claims = `UNVERIFIABLE`, never guessed.
-- **File layer is a proxy, not full coverage.** Tier 1 is bash — it cannot read an MCP store. Dual-stored memories are mirrors, so scoring the file scores both; but a record that only ever existed in the MCP layer (passive capture, saved outside reflect) is **invisible here**. State it; don't claim the tool layer is swept.
-- `skill_ref_broken` is high-precision: bare backticked names (no `skills/` prefix, no `/nara-`) are a Tier-2-only catch — a file scoring 0 on signals 1-3 with only bare-name drift is missed. State it; don't claim full coverage.
+- **Declare three coverage limits; never claim a full sweep.** (a) Tier 1 is bash and cannot read an MCP store — a record that only ever existed there is invisible. (b) A bare backticked skill name (no `skills/` prefix, no `/nara-`) is a Tier-2-only catch. (c) Outside the toolkit repo a `skills/<name>/` claim is only refutable when the skill is gone entirely; renamed-but-installed returns `unknown`.
+- **Unresolvable ≠ broken, but absent-everywhere IS broken.** `skill_ref_unknown` (score 0) means only "the skill exists, this repo can't confirm the path". A skill missing from every root is drift whichever repo asked.
+- **Never delete a true anchor to silence a signal.** A `ref_validity` miss on a present file means the reader is wrong — fix the reader; dropping the path disarms signals 2-3 for good.
 
 ## Troubleshooting
 
-- `❌ 실패: memory dir 없음 — <path>` → check `~/.claude/projects/<slug>/memory/`.
-- Needs `jq` + `git`. Missing → `❌ 실패: jq/git 필요`.
-- Signal 4 empty though drift exists? The ref lacks a `skills/` prefix or `/nara-` invocation → Tier 2 territory, not Tier 1.
+- `❌ 실패: memory dir 없음 — <path>` → check `<agent-config>/projects/<slug>/memory/`.
+- Needs `jq` + `git`; macOS-only (`stat -f`, `date -j`) — on Linux every call exits 1 with no JSON.
+- Skill refs `unknown` and you want them decided? Point `CLAUDE_PROJECT_DIR` at the toolkit repo — that, not `NARA_SKILLS_DIRS`, is what decides a `skills/<name>/` path claim. `NARA_SKILLS_DIRS` only replaces the root probe list (Form B, and the absent-everywhere fallback).

@@ -1,0 +1,15 @@
+id: should-not-trigger-001
+name: "Writing a new memory is not an audit"
+description: |
+  Recording a fresh learning is nara-reflect's job. This skill audits existing
+  durable memory files for staleness; it must not be the path by which a new
+  memory gets written.
+tags:
+  - anti-trigger
+inputs:
+  prompt: "오늘 배운 것 메모리에 저장해줘"
+expected:
+  output_not_contains:
+    - "Tier 1"
+  outcomes:
+    - type: task_completed

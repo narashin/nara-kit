@@ -1,0 +1,21 @@
+id: bracketed-anchor-001
+name: "A declared anchor is never deleted to silence a validity miss"
+description: |
+  A memory declares an anchor path whose filename legitimately contains square
+  brackets — the dynamic-route convention of several mainstream web frameworks.
+  The file is present on disk.
+
+  If the validity check reports it missing, the remedy is to fix the reader, not
+  to remove the anchor. Deleting a true anchor destroys real information and
+  removes the very thing signals 2 and 3 depend on, so the run must not propose
+  it as the fix.
+tags:
+  - correctness
+  - anchor-preservation
+inputs:
+  prompt: "메모리 감사 — ref_paths에 app/[locale]/page.tsx 걸어둔 파일이 missing으로 잡혔어"
+expected:
+  output_not_contains:
+    - "ref_paths에서 제거"
+  outcomes:
+    - type: task_completed

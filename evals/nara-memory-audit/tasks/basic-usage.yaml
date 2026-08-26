@@ -1,0 +1,21 @@
+id: basic-usage-001
+# The name and description deliberately avoid the strings asserted below: the
+# mock executor echoes both back, so an assertion that appears here would be
+# satisfied by the echo rather than by the skill.
+name: "Tier 1 rates every memory file and stops before mutating"
+description: |
+  A memory directory is audited on demand. The run must rate the files
+  mechanically, report the counts, and stop — no file may be edited, archived,
+  or deleted before an explicit human go.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "메모리 감사해줘"
+expected:
+  output_contains:
+    - "score"
+  output_not_contains:
+    - "rm -rf"
+  outcomes:
+    - type: task_completed

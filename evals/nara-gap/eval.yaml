@@ -13,16 +13,13 @@ metrics:
     weight: 1.0
     threshold: 0.8
     description: Did the skill produce gap.md with requirement status and a score?
-# Eval-level graders apply to EVERY task, the anti-trigger task included, so they
-# assert only universally-true properties. All behavioural discrimination lives in
-# each task's `expected.output_contains` / `output_not_contains`, which waza
-# enforces per task as `_output_contains` / `_output_not_contains`.
-graders:
-  - type: code
-    name: real_run
-    config:
-      assertions:
-        - "len(output) > 40"
-        - "'Mock response for:' not in output"
+# No eval-level graders. The previous one asserted the mock's own marker was
+# absent from the output, which is unsatisfiable under `executor: mock` by
+# construction: the mock emits exactly that marker, so all tasks failed on it
+# regardless of the skill (measured: 0/8 succeeded). An assertion that can never
+# pass is not a gate. Under `executor: mock` the tasks below are recorded
+# scenarios, not behavioral graders — the mock echoes the prompt and never
+# invokes the skill.
+graders: []
 tasks:
   - "tasks/*.yaml"

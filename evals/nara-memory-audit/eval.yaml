@@ -1,0 +1,37 @@
+name: nara-memory-audit-eval
+description: >-
+  Evaluation suite for the two-tier memory staleness audit.
+
+  WHERE THE REAL GRADING IS: `regress.sh` in this directory. The skill's
+  mechanical half is a bash script, so its behavior is asserted directly against
+  the script — 15 hermetic cases, 35 assertions, verified on bash 3.2 and 5.x.
+  Run `./regress.sh`; it exits non-zero on failure.
+
+  WHAT THE TASKS BELOW ARE: recorded scenarios for the SKILL.md layer (routing,
+  the read-only/approval contract, how the body teaches a reader to read an
+  unresolvable check). Under `executor: mock` they are NOT behavioral graders —
+  the mock echoes the prompt back and never invokes the skill, so no assertion
+  here can distinguish a correct run from a deleted skill. They become
+  discriminating only under a real executor. Do not read a green task run as
+  evidence about the skill.
+skill: nara-memory-audit
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: mock
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the run score the memory files and stop before mutating anything?
+# No eval-level graders. The obvious one — asserting the mock's own marker is
+# absent from the output — is unsatisfiable under `executor: mock` by
+# construction: the mock emits exactly that marker, so every task fails on it
+# regardless of the skill. An assertion that can never pass is not a gate, it is
+# noise that trains you to ignore the suite.
+graders: []
+tasks:
+  - "tasks/*.yaml"

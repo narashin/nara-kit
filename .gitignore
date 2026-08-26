@@ -7,6 +7,7 @@ docs/
 evals/*
 !evals/nara-code-review/
 !evals/nara-gap/
+!evals/nara-memory-audit/
 evals/**/results/
 
 # Local config (contains company-specific URLs and page IDs)

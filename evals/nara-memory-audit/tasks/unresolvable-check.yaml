@@ -1,0 +1,29 @@
+id: unresolvable-check-001
+# The name and description deliberately avoid the strings asserted below: the
+# mock executor echoes both back, so an assertion that appears here would be
+# satisfied by the echo rather than by the skill.
+name: "A path claim the repo cannot answer is separated from a refuted one"
+description: |
+  The audit is run from a consuming application repository — the documented
+  scenario, since memories are audited against the repo they are ABOUT. That
+  repo carries no skills tree of its own.
+
+  Three verdicts must stay distinct. A cited skill that resolves under an agent
+  root is fine. A cited skill that exists in no root at all is refuted, and stays
+  refuted no matter which repo asked. Only the middle case — the skill exists,
+  but this repo cannot confirm the repo-relative path — is unobservable, and an
+  unobservable check must not be scored as a failure. Collapsing all three into
+  one verdict either manufactures Tier 2 work out of healthy files or silences
+  live drift.
+tags:
+  - correctness
+  - false-positive
+inputs:
+  prompt: "이 앱 repo 기준으로 메모리 감사해줘. 메모리에 /nara-gap 언급이 여러 개 있어"
+expected:
+  output_contains:
+    - "unknown"
+  output_not_contains:
+    - "all skill references are broken"
+  outcomes:
+    - type: task_completed
