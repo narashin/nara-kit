@@ -9,7 +9,7 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 호환성 규칙(major 판정): 스킬 이름 삭제·rename, invocation 방식 변경, 산출물 경로 변경은 consumer에게 breaking.
 단 `0.x` 구간에서는 semver 관례대로 breaking을 minor로 올린다 — `1.0.0`은 API 안정 선언으로 읽히므로 표면이 굳은 뒤에 붙인다.
 
-## [Unreleased]
+## [0.22.0] - 2026-08-26
 
 ### Added
 
