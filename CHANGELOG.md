@@ -9,6 +9,16 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 호환성 규칙(major 판정): 스킬 이름 삭제·rename, invocation 방식 변경, 산출물 경로 변경은 consumer에게 breaking.
 단 `0.x` 구간에서는 semver 관례대로 breaking을 minor로 올린다 — `1.0.0`은 API 안정 선언으로 읽히므로 표면이 굳은 뒤에 붙인다.
 
+## [Unreleased]
+
+### Added
+
+- `nara-eli5-note` 편입 — 로컬 전용 스킬(`~/.agents/skills`, 2026-08-24 신설)을 nara-kit으로 올림. 실무에서 막힌 것을 eli5 또는 실무 노트체로 풀어 Obsidian vault 관례(폴더 두 계열·frontmatter·노트 골격)에 맞춰 저장하고, 그림을 필수로 동반한다
+  - **그림 매체는 HTML/SVG — ASCII 아트·mermaid 금지** (2026-08-26 유저 결정. 노트는 글, 그림은 렌더되는 파일). 그림 3개 이상·연결된 설명이면 노트 옆 `<slug>-그림.html`(HTML 뷰어 플러그인으로 열고, 절 번호를 노트와 1:1로 맞춤), 독립 그림 1~2개면 `_assets/` SVG 인라인 임베드
+  - `references/diagram-patterns.md`가 패턴 8종의 판정 기준(before/after·생애주기·층 구조·트리·비율·대조·비유·상태 지도)을 매체 무관으로 유지하고, HTML 스타일 베이스 CSS + 의미 고정 색 팔레트(초록=해결·빨강=문제·파랑=강조·노랑=보류)를 제공 — 노트마다 그림 스타일을 재발명하지 않는다
+  - 규율: 톤(eli5 vs 실무 노트체)을 추측하지 않고 묻는다 · `TL;DR`·`내가 틀렸던 것` 절 필수 · 비유는 하나만 · 개념어는 실제 식별자(필드명·파일명)와 1:1 대응
+  - `references/vault-conventions.md`는 설치자 vault 실측 스냅샷 — 포크 시 자기 vault에 맞게 갱신해서 쓴다
+
 ## [0.22.0] - 2026-08-26
 
 ### Added
