@@ -13,6 +13,14 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Added
 
+- `nara-release-watch` 신설 — watchlist repo의 신규 릴리즈를 폴링해 nara-kit에 증류할 값이 있는 것만 판정·보고한다. `nara-trending-digest`와 짝이지만 다른 일이다: trending은 **모르는 repo 발견**, 이건 **아는 repo 추적**. 배달 경로(Slack DM + Obsidian)만 공유
+  - **2층 구조가 설계의 핵심.** "새 릴리즈 있나"는 GitHub API 한 방(LLM 0), "증류할 만한가"는 스킬 표면을 알아야 하는 판단이다. 분리하면 신규 0건인 날 모델을 아예 안 깨운다 — 기존 autopilot이 Claude 풀 절반을 쓰고 있어 실질적인 절약
+  - **조용한 날엔 아무것도 보내지 않는다.** AI 툴링 repo 릴리즈는 버스티해서, 매일 "없음"을 보내면 6일치 무소식이 7일째 진짜 소식을 덮는다. 폴링은 매일, 알림은 있을 때만. 예외는 `needs_attention` — `gh` 인증 실패는 조용한 날과 구별이 안 되므로 조용함으로 접지 않고 매 실행 보고한다 (이게 없으면 토큰 만료 후 영구히 "평온"해 보인다)
+  - 노이즈 통제는 실측으로 정했다. `openai/codex`가 `rust-v0.153.0-alpha.5`를 플래그 없는 정식 릴리즈로 올려서 **prerelease를 태그 문자열로도 판정**하고, `anthropics/claude-code`가 `v2.1.258`(패치 거의 매일)이라 watchlist 항목별 **`@minor`/`@major` 임계**를 뒀다. 억제된 릴리즈도 `last_seen`은 전진시킨다 — 안 그러면 같은 패치를 매 실행 재평가하고 수렴하지 않는다. 첫 관측은 baseline만 기록하고 침묵(첫날 히스토리를 쏟으면 쓸모 있는 말을 하기 전에 무시당한다). 버전을 파싱 못 하면 억제하지 않는다
+  - 릴리즈·태그가 둘 다 없는 repo는 `unwatchable`로 **1회 보고 후 억제** — 조용히 감시하는 척 하지 않되 매일 조르지도 않는다 (실제로 `browserbase/skills`가 이 경로로 걸렸다)
+  - 판정 루브릭 4분류(`이미 있음`/`의존`/`증류 후보`/`무시`)의 **기본값은 `의존`**. 이 잡은 구조상 흡수 루프라서 기본값이 `증류 후보`면 매일 "우리도 만들자" 후보만 쌓인다 — vendor-free는 배포 산출물 속성이고 nativize는 이식이 싸고 테제가 날카로울 때만. `이미 있음`은 겹치는 **스킬 이름을 대야** 쓸 수 있다 (인상으로 릴리즈를 버리면 진짜 새로운 것을 놓친다)
+  - config는 `~/.claude/release-watch.md`(사람, 마크다운 산문 허용) + `~/.claude/release-watch-state.json`(기계, 원자적 재작성) 분리. 상태가 매번 덮어써지므로 사람이 편집하는 목록과 같은 파일에 둘 수 없다. 목록은 `watch.py seed`가 스타에서 후보만 제시하고 **자동 추가하지 않는다** — 스타는 다른 이유로도 누르니 노이즈다
+
 - `nara-worklog` 신설 — 세션 타임스탬프를 날짜별 Jira worklog로 올린다. **수집(hook)과 쓰기(스킬)를 분리한 것이 설계의 핵심**: 시작 시각은 "기록해야 한다는 걸 알기 전"에 지나가므로 LLM 선언으로는 안 지켜지고(hook이 필요), 반대로 팀이 읽는 티켓에 확인 없이 숫자가 올라가면 안 되며 hook은 shell이라 MCP를 못 쓴다(스킬이 필요)
   - 수집: `assets/nara-worklog-stamp.py`를 `UserPromptSubmit` + `Stop`에 배선. 브랜치명의 `ABC-123`으로 티켓을 판정하고 `~/.claude/worklog/<TICKET>.jsonl`에 append. 티켓 키 없는 브랜치는 skip. stdout 무출력·항상 exit 0 계약 — `UserPromptSubmit` hook의 stdout은 모델 컨텍스트로 주입되고 non-zero는 턴을 막는다. 설치는 일회성 수동 작업 ([references/hook-setup.md](skills/nara-worklog/references/hook-setup.md)) — `~/.claude/hooks/`와 `settings.json`은 배포 대상이 아니다
   - 산정: `assets/worklog.py`(표준 라이브러리만)가 소유한다. LLM이 시각을 더하면 같은 ledger에서 매번 다른 숫자가 나오고 그 숫자는 스프린트 리포트에 들어간다. `prompt → turn_end` 구간은 길어도 자르지 않고(에이전트 실행 = 작업 시간), `turn_end → prompt`(자리 비움)와 `turn_end` 없는 `prompt → prompt`(턴 중간에 죽은 세션)만 idle 임계 30분으로 자른다. 자정 분할로 날짜별 1건 — 여러 날 걸린 티켓이 PR 날짜에 뭉치지 않는다. 한 티켓 워크트리 여러 개는 합집합 병합(세션별 합산이면 중복 계상). 분 단위 **내림** — 안 쓴 1분을 청구하지 않고, 정확히 30초일 때 banker's rounding도 피한다

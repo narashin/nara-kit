@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**50 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**51 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -81,6 +81,7 @@
 | `nara-jira-triage` | Poll Jira for tickets assigned to you, classify 구현/버그픽스/기획/기타, emit a Multica issue with a ready-to-run launch kit (never executes code) / 내 Jira 티켓 폴링 → 분류 → 런치킷 Multica 이슈 발급 |
 | `nara-jira-drain` | Launch a chosen jira-triage queue ticket into an aoe session (group + worktree), drive the work to a PR — interactive ($0), human-triggered / 큐 티켓 1건 → aoe 세션 착수 → PR까지 자율 (인터랙티브 $0) |
 | `nara-worklog` | Reduce the hook-collected session-timestamp ledger into per-day Jira worklog entries behind a human confirm gate (idle-split, midnight-split, worktree union, floor-to-minute, watermark idempotency). Needs one-time hook setup / 세션 타임스탬프 → 날짜별 Jira worklog (승인 게이트) |
+| `nara-release-watch` | Poll a watchlist of GitHub repos for new releases, judge each against the nara-kit surface (`이미 있음`/`의존`/`증류 후보`/`무시`, default `의존`), silent on quiet days. Two-layer: LLM stays asleep when nothing shipped. Pairs with `trending-digest` (unknown-repo discovery) / watchlist 릴리즈 증류 판정 |
 
 ### Meta / 메타
 
