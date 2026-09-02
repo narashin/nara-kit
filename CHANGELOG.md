@@ -13,6 +13,12 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Added
 
+- `nara-worklog` 신설 — 세션 타임스탬프를 날짜별 Jira worklog로 올린다. **수집(hook)과 쓰기(스킬)를 분리한 것이 설계의 핵심**: 시작 시각은 "기록해야 한다는 걸 알기 전"에 지나가므로 LLM 선언으로는 안 지켜지고(hook이 필요), 반대로 팀이 읽는 티켓에 확인 없이 숫자가 올라가면 안 되며 hook은 shell이라 MCP를 못 쓴다(스킬이 필요)
+  - 수집: `assets/nara-worklog-stamp.py`를 `UserPromptSubmit` + `Stop`에 배선. 브랜치명의 `ABC-123`으로 티켓을 판정하고 `~/.claude/worklog/<TICKET>.jsonl`에 append. 티켓 키 없는 브랜치는 skip. stdout 무출력·항상 exit 0 계약 — `UserPromptSubmit` hook의 stdout은 모델 컨텍스트로 주입되고 non-zero는 턴을 막는다. 설치는 일회성 수동 작업 ([references/hook-setup.md](skills/nara-worklog/references/hook-setup.md)) — `~/.claude/hooks/`와 `settings.json`은 배포 대상이 아니다
+  - 산정: `assets/worklog.py`(표준 라이브러리만)가 소유한다. LLM이 시각을 더하면 같은 ledger에서 매번 다른 숫자가 나오고 그 숫자는 스프린트 리포트에 들어간다. `prompt → turn_end` 구간은 길어도 자르지 않고(에이전트 실행 = 작업 시간), `turn_end → prompt`(자리 비움)와 `turn_end` 없는 `prompt → prompt`(턴 중간에 죽은 세션)만 idle 임계 30분으로 자른다. 자정 분할로 날짜별 1건 — 여러 날 걸린 티켓이 PR 날짜에 뭉치지 않는다. 한 티켓 워크트리 여러 개는 합집합 병합(세션별 합산이면 중복 계상). 분 단위 **내림** — 안 쓴 1분을 청구하지 않고, 정확히 30초일 때 banker's rounding도 피한다
+  - 멱등성: `jira_add_worklog`가 멱등이 아니라서 ledger의 `logged` watermark가 유일한 중복 방지 장치다. 날짜 오름차순으로 쓰고 중간 실패 시 **성공한 날짜까지만** watermark를 올려 실패한 날이 다시 제안되게 한다. Jira 쓰기 0건이면 record하지 않는다
+  - `nara-pr` 스텝 8 추가 — PR 생성 후 미기록 시간을 한 줄 알리기만 한다. 쓰기는 승인 게이트가 있는 `nara-worklog` 소관 (스크립트 없으면 스킵)
+
 - `nara-eli5-note` 편입 — 로컬 전용 스킬(`~/.agents/skills`, 2026-08-24 신설)을 nara-kit으로 올림. 실무에서 막힌 것을 eli5 또는 실무 노트체로 풀어 Obsidian vault 관례(폴더 두 계열·frontmatter·노트 골격)에 맞춰 저장하고, 그림을 필수로 동반한다
   - **그림 매체는 HTML/SVG — ASCII 아트·mermaid 금지** (2026-08-26 유저 결정. 노트는 글, 그림은 렌더되는 파일). 그림 3개 이상·연결된 설명이면 노트 옆 `<slug>-그림.html`(HTML 뷰어 플러그인으로 열고, 절 번호를 노트와 1:1로 맞춤), 독립 그림 1~2개면 `_assets/` SVG 인라인 임베드
   - `references/diagram-patterns.md`가 패턴 8종의 판정 기준(before/after·생애주기·층 구조·트리·비율·대조·비유·상태 지도)을 매체 무관으로 유지하고, HTML 스타일 베이스 CSS + 의미 고정 색 팔레트(초록=해결·빨강=문제·파랑=강조·노랑=보류)를 제공 — 노트마다 그림 스타일을 재발명하지 않는다

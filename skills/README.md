@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**49 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**50 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -80,6 +80,7 @@
 | `nara-trending-digest` | Crawl GitHub Trending weekly, LLM-filter for AI/LLM + DX tools, post digest to Slack DM + Obsidian / GitHub 트렌딩 주간 크롤 → 필터링 → Slack DM + Obsidian |
 | `nara-jira-triage` | Poll Jira for tickets assigned to you, classify 구현/버그픽스/기획/기타, emit a Multica issue with a ready-to-run launch kit (never executes code) / 내 Jira 티켓 폴링 → 분류 → 런치킷 Multica 이슈 발급 |
 | `nara-jira-drain` | Launch a chosen jira-triage queue ticket into an aoe session (group + worktree), drive the work to a PR — interactive ($0), human-triggered / 큐 티켓 1건 → aoe 세션 착수 → PR까지 자율 (인터랙티브 $0) |
+| `nara-worklog` | Reduce the hook-collected session-timestamp ledger into per-day Jira worklog entries behind a human confirm gate (idle-split, midnight-split, worktree union, floor-to-minute, watermark idempotency). Needs one-time hook setup / 세션 타임스탬프 → 날짜별 Jira worklog (승인 게이트) |
 
 ### Meta / 메타
 
@@ -99,7 +100,7 @@
 
 **워크플로우 진입**: **`nara-now`** — 상태를 보고 다음 행동을 명령 형태로 제시한다. 워크플로우 진입용 별도 스킬은 없다.
 
-**첫 사용 권장 순서**: `nara-now` (상태 점검) → `nara-prep <TICKET>` (요구사항 로컬화) → `nara-plan` (작업 단위) → `nara-implement` → `nara-gap` (verify) → `nara-code-review` → `nara-pr`.
+**첫 사용 권장 순서**: `nara-now` (상태 점검) → `nara-prep <TICKET>` (요구사항 로컬화) → `nara-plan` (작업 단위) → `nara-implement` → `nara-gap` (verify) → `nara-code-review` → `nara-pr` → `nara-worklog` (Jira 시간 기록, 미기록분은 `nara-pr`이 알려준다).
 
 ## Workflow / 워크플로우
 
