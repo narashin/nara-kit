@@ -24,7 +24,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - `save_state`가 `abspath`로 정규화(bare 상대 파일명에서 `os.makedirs("")` 크래시), watchlist 후행 주석 분리를 `\s+--\s`로 제한(`some/repo--name` 절단), `MIN_POSTABLE_SECONDS` 상수화(임계 드리프트)
   - `eval-fixture.py`: `find("{")`의 -1을 슬라이스에 그대로 써서 `[-1:]`이 마지막 한 글자가 되어 의도한 진단 에러가 발화하지 않던 것, probe stale 재사용으로 거짓 green이 나던 것, 채점 0건에 성공을 반환하던 공허 통과, provenance 필드를 그레이더가 읽는다는 거짓 주석
   - 테스트 46 → **93건**. 변이 테스트가 드러낸 무보호 지점을 고정했다 — API `prerelease` 플래그 단독 케이스(`rel(prerelease=True)` 호출이 0건이었다), `jira_started` **배선**(함수 단위 테스트만 있어 상수 치환에도 통과했다), `fetch_versions`/`gh_json`(테스트 참조 0건). `test_stamp.py` 신설 14건 — 69 LOC 훅이 모든 세션의 모든 턴에서 도는데 테스트가 없었다. `run()` 헬퍼가 `--gap-minutes`를 명시 전달해 환경 의존 거짓 실패(`NARA_WORKLOG_GAP_MINUTES=10`에서 5건 실패)를 제거
-  - **이월 중 가장 큰 것**: hook이 bare `python3`로 배선돼 pyenv shim 오버헤드를 지불한다(실측 484.7ms vs 절대경로 40.2ms). `nara-review-gate.py`도 같은 배선이고 PreToolUse라 **모든 Bash 호출마다** 발생한다
+  - **hook 인터프리터 배선 수정** (PRF-001, 이월 예정이었으나 즉시 적용) — bare `python3`가 pyenv shim으로 해석돼 순수 오버헤드를 지불했다. 실측 **438.8ms → 55.1ms**(8배), 턴당 2회 발동이므로 약 0.77초 절감. `nara-review-gate.py`도 같은 배선이었고 PreToolUse라 **모든 Bash 호출마다** 발생했다
+    - 버전을 고정하지 않는 폴백 체인을 쓴다: `for P in /opt/homebrew/bin/python3 /usr/bin/python3; do [ -x "$P" ] && exec "$P" <hook>; done; exit 0`. pyenv 버전 경로가 제일 빠르지만(18.8ms) 업그레이드로 사라지면 exec 실패로 **모든 턴이 막힌다**. `exec`가 종료 코드를 보존하므로 exit 2 차단이 유지되고, `; exit 0`이 두 경로 부재 시 fail-open을 보장한다(그것 없이는 마지막 `[ -x ]` 실패가 exit 1이 된다) — 셋 다 실측 확인
+    - 두 hook 모두 3.9에서 컴파일되므로 `/usr/bin/python3`(3.9.6) 폴백이 유효하다. 이 파일에 3.10+ 문법을 쓰면 폴백이 깨진다
 
 - **eval 점수가 측정처럼 보이는 가짜였던 것을 막았다.** `waza run nara-gap`이 `4 passed / 4 failed`를 내놓고 있었는데, executor가 `mock`이라 스킬이 호출되지 않는다(`tool_call_count: 0`). mock의 출력은 `프롬프트 + 태스크명 + description + 픽스처 원문`을 그대로 이어붙인 것이라, 통과한 4건은 **단정 문자열이 자기 description에 이미 적혀 있어서** 통과한 동어반복이었다 — `Score`는 description의 `"produces docs/gap.md with a score (0-100)"`에 대소문자 무시로 매칭됐다
   - 원인은 2026-08-26 `f4dd7ac`의 `real_run` 그레이더 제거다. 사유("mock에서 절대 통과 못 하는 단정은 게이트가 아니다")는 **행동 게이트로는 맞고 출처(provenance) 게이트로는 틀렸다**. 제거 전엔 항상 0/8로 시끄럽게 고장났고, 제거 후엔 4/8로 조용히 그럴듯해졌다 — 나쁜 쪽으로 바뀐 거래다

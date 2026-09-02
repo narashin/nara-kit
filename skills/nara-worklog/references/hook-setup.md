@@ -25,7 +25,7 @@ chmod +x ~/.claude/hooks/nara-worklog-stamp.py
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/nara-worklog-stamp.py\"",
+            "command": "for P in /opt/homebrew/bin/python3 /usr/bin/python3; do [ -x \"$P\" ] && exec \"$P\" \"$HOME/.claude/hooks/nara-worklog-stamp.py\"; done; exit 0",
             "timeout": 10
           }
         ]
@@ -36,7 +36,7 @@ chmod +x ~/.claude/hooks/nara-worklog-stamp.py
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/nara-worklog-stamp.py\"",
+            "command": "for P in /opt/homebrew/bin/python3 /usr/bin/python3; do [ -x \"$P\" ] && exec \"$P\" \"$HOME/.claude/hooks/nara-worklog-stamp.py\"; done; exit 0",
             "timeout": 10
           }
         ]
@@ -47,6 +47,18 @@ chmod +x ~/.claude/hooks/nara-worklog-stamp.py
 ```
 
 `command` 타입만 쓴다. `prompt` 타입 hook은 매 턴 발동하면 모델이 지시로 오인한다.
+
+### 인터프리터를 절대경로로 쓰는 이유
+
+**`python3`를 그냥 쓰면 안 된다.** PATH가 pyenv shim으로 해석되면 shim이 버전 해석을 위해 프로세스를 더 포크하고, 그게 순수 오버헤드가 된다 — 실측 **438.8ms vs 55.1ms**(8배). 이 hook은 턴당 2회 발동하므로 턴당 약 0.77초가 그냥 사라진다. 스크립트 자체 비용은 그중 40ms뿐이다.
+
+경로를 하나만 박지 않고 체인으로 두는 이유:
+
+- **버전을 고정하지 않는다** — `~/.pyenv/versions/3.12.8/bin/python3`이 제일 빠르지만(18.8ms) pyenv 업그레이드로 그 경로가 사라지면 exec가 실패해 **모든 턴이 막힌다**
+- **`exec`가 종료 코드를 보존한다** — hook이 exit 2로 차단해야 하는 경우(예: PreToolUse 게이트)가 그대로 동작한다 (실측 확인)
+- **`; exit 0`이 fail-open을 보장한다** — 두 경로가 다 없으면 마지막 `[ -x ]` 실패가 exit 1이 되므로, 명시적으로 0을 반환해 bookkeeping 부재가 턴을 막지 않게 한다
+
+두 hook 모두 3.9에서 컴파일되므로 `/usr/bin/python3` 폴백이 실제로 유효하다. 이 파일들을 수정할 때 3.10+ 문법(`X | Y` 애노테이션 등)을 쓰면 폴백이 깨진다.
 
 ## 3. 확인
 
