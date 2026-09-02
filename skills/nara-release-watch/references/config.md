@@ -24,6 +24,7 @@
 | 입력 | 결과 |
 |---|---|
 | `- owner/repo` | 모든 stable 릴리즈 알림 |
+| `- owner/repo:some/dir` | **경로 감시** — 릴리즈 대신 그 경로를 건드린 커밋을 본다 |
 | `- owner/repo @minor` | minor·major 변경만 |
 | `- owner/repo @major` | major 변경만 |
 | `# 제목`, `> 인용`, 산문 한 줄 | 무시 |
@@ -31,7 +32,16 @@
 | 같은 repo 중복 (대소문자 무관) | 첫 항목만 |
 | 알 수 없는 마커 (`@nonsense`) | 기본값 `patch`로 폴백 — repo를 조용히 버리지 않는다 |
 
-prerelease(alpha·beta·rc·dev·canary·next·nightly·preview·snapshot)는 **기본 제외**다. 태그 문자열로도 판정하므로 API 플래그를 안 붙이는 repo도 걸러진다.
+prerelease(alpha·beta·rc·dev·canary·next·nightly·preview·snapshot)는 **기본 제외**다. 태그 문자열로도 판정하므로 API 플래그를 안 붙이는 repo도 걸러진다. 판정은 구분자에 앵커되므로 `v1.0.0-aarch64`·`-source`·`-devtools` 같은 정식 태그는 걸리지 않는다.
+
+### 경로 감시를 쓰는 경우
+
+repo 릴리즈는 그 안의 특정 디렉터리가 바뀌었는지 알려주지 않는다. 실측 예: `mattpocock/skills`는 릴리즈가 2026-08-06에 멈췄는데 `skills/productivity/grill-me`는 2026-08-15에 바뀌었고 repo 전체는 계속 활발했다. 릴리즈로 감시하면 그 변경을 영구히 못 보고, repo 전체 커밋으로 감시하면 하루 여러 건이라 노이즈다.
+
+- 릴리즈 모드와 **state가 분리**된다 (`repo` vs `repo:path`). 같은 repo를 repo 레벨 + 여러 경로로 동시에 감시해도 충돌하지 않는다
+- watermark 단위가 태그 대신 **커밋 SHA**다. `@minor`/`@major`와 prerelease 필터는 SHA에 의미가 없어 실질적으로 무시된다 (16진수 SHA에는 prerelease 키워드가 나올 수 없다 — 모든 키워드가 비-16진수 문자를 하나 이상 포함한다)
+- 경로에 커밋이 **0건**이면 `unwatchable`로 1회 보고된다. 거의 항상 경로 오타다
+- `..`가 든 경로는 파싱 단계에서 버려진다
 
 ## 씨딩
 

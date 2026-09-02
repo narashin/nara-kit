@@ -427,3 +427,120 @@ def test_flags_work_on_either_side_of_the_subcommand(tmp_path):
     # A subparser default used to clobber the root value, so the flag before the
     # verb was ignored and the real home-directory state file was read instead.
     assert seen == ["vSENTINEL", "vSENTINEL"]
+
+
+# --- path mode (owner/repo:dir) -----------------------------------------
+
+
+def test_path_entry_is_parsed_and_repo_entry_is_unaffected():
+    entries = watch.parse_watchlist(
+        "- anthropics/claude-code @minor\n"
+        "- mattpocock/skills:skills/productivity/grill-me\n"
+        "- mattpocock/skills:/skills/productivity/grilling/\n"
+    )
+    assert entries == [
+        {"repo": "anthropics/claude-code", "granularity": "minor"},
+        {"repo": "mattpocock/skills", "granularity": "patch",
+         "path": "skills/productivity/grill-me"},
+        {"repo": "mattpocock/skills", "granularity": "patch",
+         "path": "skills/productivity/grilling"},
+    ]
+
+
+def test_path_traversal_entry_is_dropped():
+    assert watch.parse_watchlist("- evil/repo:../../etc\n- evil/repo:a/../b\n") == []
+
+
+def test_same_repo_at_two_paths_does_not_collide():
+    entries = watch.parse_watchlist("- a/b:one\n- a/b:two\n- a/b\n")
+    assert [watch.state_key(e) for e in entries] == ["a/b:one", "a/b:two", "a/b"]
+
+
+def test_path_entry_uses_the_commit_fetcher_and_its_own_state():
+    calls = []
+
+    def fake_commits(repo, path, limit):
+        calls.append((repo, path))
+        return [rel("sha_new"), rel("sha_old")], "commits"
+
+    def fake_versions(repo, limit):
+        raise AssertionError("path entries must not hit the releases fetcher")
+
+    report, state = watch.poll(
+        [{"repo": "a/b", "granularity": "patch", "path": "skills/x"}],
+        {"a/b:skills/x": {"last_seen": "sha_old"}},
+        5,
+        fetch=fake_versions,
+        fetch_path=fake_commits,
+    )
+    assert calls == [("a/b", "skills/x")]
+    assert [r["id"] for r in report["new"]] == ["sha_new"]
+    assert [r["repo"] for r in report["new"]] == ["a/b:skills/x"]
+    assert state["a/b:skills/x"]["last_seen"] == "sha_new"
+    assert "a/b" not in state  # repo-level state untouched
+
+
+def test_repo_level_and_path_level_states_are_independent():
+    report, state = watch.poll(
+        [
+            {"repo": "a/b", "granularity": "patch"},
+            {"repo": "a/b", "granularity": "patch", "path": "dir"},
+        ],
+        {},
+        5,
+        fetch=faker({"a/b": ([rel("v1")], "releases")}),
+        fetch_path=lambda r, p, l: ([rel("sha1")], "commits"),
+    )
+    assert sorted(state) == ["a/b", "a/b:dir"]
+    assert state["a/b"]["last_seen"] == "v1"
+    assert state["a/b:dir"]["last_seen"] == "sha1"
+    assert {b["repo"] for b in report["baselined"]} == {"a/b", "a/b:dir"}
+
+
+def test_path_with_no_commits_is_reported_unwatchable_once(monkeypatch):
+    # An empty commit list for a path almost always means a typo in the watchlist.
+    monkeypatch.setattr(watch, "gh_json", lambda endpoint: [])
+    assert watch.fetch_commits("a/b", "nope/dir", 5) == ([], "none")
+
+
+def test_commit_fetch_failure_is_an_error_not_emptiness(monkeypatch):
+    monkeypatch.setattr(watch, "gh_json", lambda endpoint: None)
+    assert watch.fetch_commits("a/b", "dir", 5) == ([], "error")
+
+
+def test_commit_records_match_the_version_record_shape(monkeypatch):
+    monkeypatch.setattr(
+        watch,
+        "gh_json",
+        lambda endpoint: [
+            {
+                "sha": "abc123",
+                "html_url": "https://example.test/c/abc123",
+                "commit": {
+                    "message": "feat: add thing\n\nlonger body",
+                    "author": {"date": "2026-08-15T00:00:00Z"},
+                },
+            }
+        ],
+    )
+    versions, source = watch.fetch_commits("a/b", "dir", 5)
+    assert source == "commits"
+    assert set(versions[0]) == {"id", "name", "url", "published_at", "prerelease", "body"}
+    assert versions[0]["id"] == "abc123"
+    assert versions[0]["name"] == "feat: add thing"  # subject only
+    assert versions[0]["body"] == "feat: add thing\n\nlonger body"
+    assert versions[0]["prerelease"] is False
+
+
+def test_path_is_url_quoted_in_the_endpoint(monkeypatch):
+    seen = []
+    monkeypatch.setattr(watch, "gh_json", lambda e: seen.append(e) or [])
+    watch.fetch_commits("a/b", "skills/pro ductivity/grill-me", 5)
+    assert "path=skills/pro%20ductivity/grill-me" in seen[0]
+
+
+def test_a_hex_sha_can_never_look_like_a_prerelease():
+    # The prerelease keywords all contain a non-hex letter (r, v, t, y, s, w, p),
+    # so the filter is inert on commit SHAs and needs no special casing.
+    for sha in ("deadbeefcafe1234", "0123456789abcdef", "aabbccddeeff0011"):
+        assert watch.is_prerelease({"id": sha, "prerelease": False}) is False

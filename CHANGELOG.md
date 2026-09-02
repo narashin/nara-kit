@@ -46,6 +46,13 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Added
 
+- `nara-release-watch` 경로 감시 모드 — watchlist 항목을 `owner/repo:some/dir`로 쓰면 릴리즈가 아니라 **그 경로를 건드린 커밋**을 본다. repo 릴리즈가 특정 디렉터리의 변경을 대변하지 못할 때 필요하다
+  - 실측 동기: `mattpocock/skills`는 릴리즈가 2026-08-06에 멈췄는데 `skills/productivity/grill-me`는 2026-08-15에 바뀌었고 repo 전체는 계속 활발했다. 릴리즈로 감시하면 그 변경을 영구히 못 보고, repo 전체 커밋으로 감시하면 하루 여러 건이라 노이즈다. 해당 경로 커밋은 2026-04 이후 6건 — 감시 대상으로 적정
+  - state가 `repo` vs `repo:path`로 분리되므로 같은 repo를 repo 레벨과 여러 경로로 동시에 감시해도 충돌하지 않는다. watermark 단위는 태그 대신 커밋 SHA
+  - `@minor`/`@major`와 prerelease 필터는 SHA에 무의미해 실질적으로 무시된다 — 16진수 SHA에는 prerelease 키워드가 나올 수 없다(모든 키워드가 비-16진수 문자를 포함). 특수 분기 없이 안전함을 테스트로 고정
+  - 경로에 커밋이 0건이면 `unwatchable`로 1회 보고(거의 항상 오타), `..`가 든 경로는 파싱 단계에서 폐기
+  - 판정 루브릭은 두 모드에 동일 적용 — 스킬 diff는 그 자체로 "증류할 게 있나"라는 질문이다
+
 - `nara-release-watch` 신설 — watchlist repo의 신규 릴리즈를 폴링해 nara-kit에 증류할 값이 있는 것만 판정·보고한다. `nara-trending-digest`와 짝이지만 다른 일이다: trending은 **모르는 repo 발견**, 이건 **아는 repo 추적**. 배달 경로(Slack DM + Obsidian)만 공유
   - **2층 구조가 설계의 핵심.** "새 릴리즈 있나"는 GitHub API 한 방(LLM 0), "증류할 만한가"는 스킬 표면을 알아야 하는 판단이다. 분리하면 신규 0건인 날 모델을 아예 안 깨운다 — 기존 autopilot이 Claude 풀 절반을 쓰고 있어 실질적인 절약
   - **조용한 날엔 아무것도 보내지 않는다.** AI 툴링 repo 릴리즈는 버스티해서, 매일 "없음"을 보내면 6일치 무소식이 7일째 진짜 소식을 덮는다. 폴링은 매일, 알림은 있을 때만. 예외는 `needs_attention` — `gh` 인증 실패는 조용한 날과 구별이 안 되므로 조용함으로 접지 않고 매 실행 보고한다 (이게 없으면 토큰 만료 후 영구히 "평온"해 보인다)

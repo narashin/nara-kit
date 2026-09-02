@@ -23,6 +23,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib.parse
 from datetime import datetime, timezone
 
 HOME = os.path.expanduser("~")
@@ -68,7 +69,20 @@ def parse_watchlist(text: str) -> list[dict]:
 
         tokens = line.replace("`", "").split()
         candidate = re.sub(r"^https?://github\.com/", "", tokens[0]).rstrip("/,")
-        if not REPO_RE.match(candidate) or candidate.lower() in seen:
+
+        # `owner/repo:some/dir` watches commits touching that path instead of
+        # releases. Needed because a repo-level release says nothing about one
+        # subdirectory -- mattpocock/skills stopped releasing on 2026-08-06 while
+        # the directory we care about changed on 2026-08-15.
+        candidate, _, path = candidate.partition(":")
+        path = path.strip("/")
+        if ".." in path.split("/"):
+            continue  # never let a watchlist path climb out of the repo
+
+        if not REPO_RE.match(candidate):
+            continue
+        key = f"{candidate}:{path}".lower()
+        if key in seen:
             continue
 
         granularity = "patch"
@@ -78,8 +92,11 @@ def parse_watchlist(text: str) -> list[dict]:
                 granularity = marker
                 break
 
-        seen.add(candidate.lower())
-        entries.append({"repo": candidate, "granularity": granularity})
+        seen.add(key)
+        entry = {"repo": candidate, "granularity": granularity}
+        if path:
+            entry["path"] = path
+        entries.append(entry)
     return entries
 
 
@@ -213,6 +230,37 @@ def fetch_versions(repo: str, limit: int) -> tuple[list[dict], str]:
     return [], "none"  # both endpoints answered, neither carries a version
 
 
+def fetch_commits(repo: str, path: str, limit: int) -> tuple[list[dict], str]:
+    """Newest-first commits touching `path`, shaped like fetch_versions output.
+
+    Same record shape so poll() and the report need no special casing: `id` is
+    the SHA instead of a tag, and the watermark compares SHAs instead of tags.
+    """
+    quoted = urllib.parse.quote(path, safe="/")
+    commits = gh_json(f"repos/{repo}/commits?path={quoted}&per_page={limit}")
+    if commits is None:
+        return [], "error"
+    if not commits:
+        # Reachable repo, no commit ever touched this path -- almost always a
+        # typo in the watchlist. Reported once via the unwatchable bucket.
+        return [], "none"
+
+    out = []
+    for c in commits:
+        message = (c.get("commit", {}).get("message") or "").strip()
+        out.append(
+            {
+                "id": c.get("sha", ""),
+                "name": message.split("\n", 1)[0][:120],
+                "url": c.get("html_url", ""),
+                "published_at": c.get("commit", {}).get("author", {}).get("date", ""),
+                "prerelease": False,
+                "body": message,
+            }
+        )
+    return out, "commits"
+
+
 # --- poll ----------------------------------------------------------------
 
 
@@ -222,8 +270,14 @@ def poll(
     limit: int,
     fetch=fetch_versions,
     include_prerelease: bool = False,
+    fetch_path=fetch_commits,
 ) -> tuple[dict, dict]:
-    """Diff each repo against its last seen version. Returns (report, new_state)."""
+    """Diff each entry against its last seen version. Returns (report, new_state).
+
+    An entry with a `path` is diffed on commits touching that path instead of
+    releases; everything downstream is identical because both fetchers return
+    the same record shape.
+    """
     # Copy the nested entries too: a shallow copy would mutate the caller's state.
     new_state = {repo: dict(entry) for repo, entry in state.items()}
     fresh, baselined, unwatchable, failed = [], [], [], []
@@ -234,22 +288,30 @@ def poll(
         if isinstance(entry_spec, str):  # bare slugs stay accepted
             entry_spec = {"repo": entry_spec, "granularity": "patch"}
         repo = entry_spec["repo"]
+        watch_path = entry_spec.get("path")
+        # Keyed by repo:path so one repo can be watched at the repo level and at
+        # several paths at once without the entries colliding.
+        key = state_key(entry_spec)
         granularity = entry_spec.get("granularity", "patch")
-        versions, source = fetch(repo, limit)
+
+        if watch_path:
+            versions, source = fetch_path(repo, watch_path, limit)
+        else:
+            versions, source = fetch(repo, limit)
         if source == "error":
             # Do not touch state: an auth or rate failure must not be recorded
             # as "checked", or the next run would treat it as a quiet day.
             # Always reported, every run, until the human fixes it.
-            failed.append(repo)
+            failed.append(key)
             continue
 
-        entry = new_state.setdefault(repo, {})
+        entry = new_state.setdefault(key, {})
 
         if source == "none":
             # Reachable but ships no releases or tags. Report once, then stay
             # quiet -- a repo that never versions would otherwise nag daily.
             if not entry.get("unwatchable_reported"):
-                unwatchable.append(repo)
+                unwatchable.append(key)
                 entry["unwatchable_reported"] = True
             entry["last_checked"] = now
             continue
@@ -270,7 +332,7 @@ def poll(
             # Reporting history here would flood day one and train the human to
             # ignore the digest before it ever says anything useful.
             entry["last_seen"] = versions[0]["id"]
-            baselined.append({"repo": repo, "baseline": versions[0]["id"]})
+            baselined.append({"repo": key, "baseline": versions[0]["id"]})
             continue
 
         unseen = []
@@ -287,7 +349,7 @@ def poll(
             entry["truncated"] = len(unseen) == limit
             for version in unseen:
                 if clears_threshold(version["id"], last_seen, granularity):
-                    fresh.append({"repo": repo, **version})
+                    fresh.append({"repo": key, **version})
                 else:
                     suppressed += 1
 
@@ -339,24 +401,34 @@ def cmd_poll(args: argparse.Namespace) -> int:
     return 0
 
 
+def state_key(entry: dict) -> str:
+    """Key an entry's state by repo:path so one repo can be watched several ways."""
+    return f"{entry['repo']}:{entry['path']}" if entry.get("path") else entry["repo"]
+
+
 def cmd_list(args: argparse.Namespace) -> int:
     repos = load_watchlist(args.watchlist)
     state = load_state(args.state)
+    rows = []
+    for e in repos:
+        st = state.get(state_key(e), {})
+        rows.append(
+            {
+                "repo": e["repo"],
+                "path": e.get("path"),
+                "mode": "commits" if e.get("path") else "releases",
+                "granularity": e["granularity"],
+                "last_seen": st.get("last_seen"),
+                "last_checked": st.get("last_checked"),
+                "source": st.get("source"),
+                "unwatchable": st.get("unwatchable_reported", False),
+            }
+        )
     json.dump(
         {
             "watchlist": args.watchlist,
             "count": len(repos),
-            "repos": [
-                {
-                    "repo": e["repo"],
-                    "granularity": e["granularity"],
-                    "last_seen": state.get(e["repo"], {}).get("last_seen"),
-                    "last_checked": state.get(e["repo"], {}).get("last_checked"),
-                    "source": state.get(e["repo"], {}).get("source"),
-                    "unwatchable": state.get(e["repo"], {}).get("unwatchable_reported", False),
-                }
-                for e in repos
-            ],
+            "repos": rows,
         },
         sys.stdout,
         ensure_ascii=False,

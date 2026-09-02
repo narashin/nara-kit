@@ -40,6 +40,15 @@ $ python3 assets/watch.py poll --limit 5
 
 `checked: 12, new: [], quiet: true, needs_attention: false` → **Step 2에서 종료.** LLM 판정도, DM도 없다.
 
+## Watch Modes
+
+| watchlist 표기 | 감시 대상 | watermark |
+|---|---|---|
+| `owner/repo` | releases → 없으면 tags | 태그 |
+| `owner/repo:some/dir` | 그 경로를 건드린 커밋 | 커밋 SHA |
+
+경로 모드는 repo 릴리즈가 특정 디렉터리의 변경을 대변하지 못할 때 쓴다 — 릴리즈가 멈췄거나, repo 전체 커밋이 너무 잦아 노이즈일 때. state는 `repo:path`로 분리 기록되므로 같은 repo를 repo 레벨과 여러 경로로 동시에 감시할 수 있다. 판정 루브릭은 두 모드에 동일하게 적용된다.
+
 ## Noise Control
 
 - **prerelease 기본 제외** — API 플래그와 태그 문자열 둘 다 본다. `openai/codex`는 `rust-v0.153.0-alpha.5`를 플래그 없는 정식 릴리즈로 올린다. `--include-prerelease`로 해제.
