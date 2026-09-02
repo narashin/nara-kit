@@ -22,8 +22,9 @@ description: >-
    - 일 합계가 8시간을 넘거나 이상하면 승인을 구하기 **전에** 그 사실을 지적한다.
 4. **Jira 쓰기** — 승인된 날짜를 **오름차순**으로 `jira_add_worklog`, 날짜당 1건. `started`는 스크립트의 `jira_started` 값 그대로 쓴다(Jira는 밀리초 + 콜론 없는 offset을 요구). `comment`는 기본 생략, `original_estimate`·`remaining_estimate`는 사람이 명시하지 않으면 건드리지 않는다.
 5. **watermark 기록** — `python3 assets/worklog.py record <TICKET> --through <ISO> --seconds <N> --worklog-id <ID>`
+   - `--through`는 **offset을 포함한** ISO여야 한다(`2026-09-02T10:05:00+09:00`). offset 없는 값은 거부된다 — ledger는 append-only라 되돌릴 수 없고, naive watermark 하나가 이 티켓의 `spans`와 (디렉터리 전체를 훑는) `list`를 영구히 깨뜨린다. **`spans` 출력의 값을 그대로 복사해 쓴다.**
    - 전부 성공 → `--through`는 `spans` 출력의 `latest_event`.
-   - 중간 실패 → 성공한 **마지막 날짜의 마지막 span end**. 실패한 날은 다음 실행에 다시 제안된다.
+   - 중간 실패 → 성공한 **마지막 날짜의 마지막 span end**. 그 뒤의 날은 다시 제안되지만, **건너뛴 중간 날은 다시 제안되지 않는다** — watermark가 단일 커서라 구멍을 표현할 수 없다. 오름차순으로 쓰다가 실패하면 **거기서 멈추고** 그 직전까지만 기록할 것.
    - 쓰기 0건이면 record 금지. `jira_add_worklog`는 멱등이 아니라서 이 watermark가 유일한 중복 방지 장치다.
 6. **receipt** — Outcome / Evidence(날짜별 시간 + worklog id) / Artifact(ledger 경로) / Next Action.
 

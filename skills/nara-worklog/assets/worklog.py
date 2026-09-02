@@ -26,6 +26,10 @@ DEFAULT_LEDGER_DIR = os.environ.get(
     "NARA_WORKLOG_DIR", os.path.expanduser("~/.claude/worklog")
 )
 SPAN_EVENTS = ("prompt", "turn_end")
+# A day totalling under a minute cannot be posted -- Jira rejects a zero worklog.
+# Shared by aggregate() and cmd_list() so the threshold cannot drift between the
+# two commands; the literal 60 in fmt_duration is a unit conversion, not this.
+MIN_POSTABLE_SECONDS = 60
 
 
 def ledger_path(ledger_dir: str, ticket: str) -> str:
@@ -49,11 +53,22 @@ def read_events(path: str) -> list[dict]:
 
 
 def watermark(events: list[dict]) -> datetime | None:
-    stamps = [
-        datetime.fromisoformat(e["through"])
-        for e in events
-        if e.get("ev") == "logged" and e.get("through")
-    ]
+    """Latest recorded `through`, always offset-aware.
+
+    A naive value here would raise TypeError against the hook's aware `ts` on
+    every later run, and the ledger is append-only -- so a single bad record
+    would permanently break this ticket and, via cmd_list, every other one.
+    cmd_record rejects naive input; this promotes anything already on disk.
+    """
+    stamps = []
+    for event in events:
+        if event.get("ev") != "logged" or not event.get("through"):
+            continue
+        try:
+            stamp = datetime.fromisoformat(event["through"])
+        except (TypeError, ValueError):
+            continue  # unparseable watermark: ignore rather than crash the reduce
+        stamps.append(stamp if stamp.tzinfo else stamp.astimezone())
     return max(stamps) if stamps else None
 
 
@@ -149,8 +164,7 @@ def aggregate(spans: list[tuple[datetime, datetime]]) -> list[dict]:
         day["jira_started"] = jira_started(
             datetime.fromisoformat(day["spans"][0]["start"])
         )
-        # A day that rounds to 0m cannot be posted: Jira rejects a zero worklog.
-        day["postable"] = day["seconds"] >= 60
+        day["postable"] = day["seconds"] >= MIN_POSTABLE_SECONDS
         out.append(day)
     return out
 
@@ -160,7 +174,11 @@ def cmd_spans(args: argparse.Namespace) -> int:
     mark = watermark(events)
     spans = build_spans(events, args.gap_minutes, mark)
     days = aggregate(spans)
-    total = sum(d["seconds"] for d in days)
+    # Sum the per-day FLOORED minutes, not the raw seconds. Jira is written once
+    # per day, so a raw-seconds total revives the sub-minute remainders each day
+    # already discarded and reports more than what actually gets posted.
+    postable = [d for d in days if d["postable"]]
+    total = sum(d["seconds"] // 60 * 60 for d in postable)
     json.dump(
         {
             "ticket": args.ticket,
@@ -169,6 +187,7 @@ def cmd_spans(args: argparse.Namespace) -> int:
             "days": days,
             "total_seconds": total,
             "total_time_spent": fmt_duration(total),
+            "unpostable_days": [d["date"] for d in days if not d["postable"]],
             "latest_event": spans[-1][1].isoformat(timespec="seconds")
             if spans
             else None,
@@ -186,10 +205,26 @@ def cmd_record(args: argparse.Namespace) -> int:
     if not os.path.exists(path):
         sys.stderr.write(f"no ledger for {args.ticket}: {path}\n")
         return 1
+    try:
+        through = datetime.fromisoformat(args.through)
+    except ValueError:
+        sys.stderr.write(f"--through is not an ISO timestamp: {args.through!r}\n")
+        return 1
+    if through.tzinfo is None or through.utcoffset() is None:
+        # Refuse rather than normalise. The ledger is append-only, so a naive
+        # watermark here cannot be taken back and would raise TypeError against
+        # the hook's aware timestamps on every later spans/list run -- including
+        # for unrelated tickets, since cmd_list walks the whole directory.
+        sys.stderr.write(
+            f"--through must carry a UTC offset, got {args.through!r}. "
+            "Pass the `latest_event` value from `spans` verbatim.\n"
+        )
+        return 1
+
     record = {
         "ts": datetime.now().astimezone().isoformat(timespec="seconds"),
         "ev": "logged",
-        "through": datetime.fromisoformat(args.through).isoformat(timespec="seconds"),
+        "through": through.isoformat(timespec="seconds"),
         "seconds": args.seconds,
         "time_spent": fmt_duration(args.seconds),
         "worklog_ids": args.worklog_id or [],
@@ -211,7 +246,7 @@ def cmd_list(args: argparse.Namespace) -> int:
             events = read_events(os.path.join(args.ledger_dir, name))
             spans = build_spans(events, args.gap_minutes, watermark(events))
             total = sum(int((e - s).total_seconds()) for s, e in spans)
-            if total >= 60:
+            if total >= MIN_POSTABLE_SECONDS:
                 out.append(
                     {
                         "ticket": ticket,
@@ -226,32 +261,57 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--ledger-dir", default=DEFAULT_LEDGER_DIR)
-    parser.add_argument(
+    # Flags live on both the root and every subcommand so they work either side
+    # of the verb. Root-only placement rejects `spans TICKET --gap-minutes 60`,
+    # the form the skill's own docs lead you to write.
+    # SUPPRESS, not a real default: with `parents=`, the same option exists on
+    # the root and on each subparser, and a subparser default OVERWRITES what the
+    # root already parsed -- so `--ledger-dir X spans T` silently read the default
+    # directory. SUPPRESS leaves the attribute unset unless the user passes it,
+    # and apply_defaults() fills it in once, after both levels have had their say.
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--ledger-dir", default=argparse.SUPPRESS)
+    common.add_argument(
         "--gap-minutes",
         type=int,
-        default=int(os.environ.get("NARA_WORKLOG_GAP_MINUTES", "30")),
+        default=argparse.SUPPRESS,
         help="idle gap that splits one interaction window from the next",
     )
+
+    parser = argparse.ArgumentParser(description=__doc__, parents=[common])
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    p_spans = sub.add_parser("spans", help="propose unlogged per-day worklogs")
+    p_spans = sub.add_parser(
+        "spans", parents=[common], help="propose unlogged per-day worklogs"
+    )
     p_spans.add_argument("ticket")
     p_spans.set_defaults(func=cmd_spans)
 
-    p_record = sub.add_parser("record", help="append the logged watermark")
+    p_record = sub.add_parser(
+        "record", parents=[common], help="append the logged watermark"
+    )
     p_record.add_argument("ticket")
     p_record.add_argument("--through", required=True)
     p_record.add_argument("--seconds", type=int, required=True)
     p_record.add_argument("--worklog-id", action="append")
     p_record.set_defaults(func=cmd_record)
 
-    p_list = sub.add_parser("list", help="tickets carrying unlogged time")
+    p_list = sub.add_parser(
+        "list", parents=[common], help="tickets carrying unlogged time"
+    )
     p_list.set_defaults(func=cmd_list)
     return parser
 
 
+def apply_defaults(parsed: argparse.Namespace) -> argparse.Namespace:
+    """Fill options the user left off either side of the subcommand."""
+    if not hasattr(parsed, "ledger_dir"):
+        parsed.ledger_dir = DEFAULT_LEDGER_DIR
+    if not hasattr(parsed, "gap_minutes"):
+        parsed.gap_minutes = int(os.environ.get("NARA_WORKLOG_GAP_MINUTES", "30"))
+    return parsed
+
+
 if __name__ == "__main__":
-    parsed = build_parser().parse_args()
+    parsed = apply_defaults(build_parser().parse_args())
     sys.exit(parsed.func(parsed))

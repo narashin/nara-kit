@@ -11,6 +11,8 @@ chmod +x ~/.claude/hooks/nara-worklog-stamp.py
 
 심링크 대신 복사한다 — `~/.claude/hooks/*`는 실파일 규약이고, 스킬 디렉터리는 재설치 때 덮어써진다.
 
+**갱신**: 복사본이라 스킬 자산과 독립적으로 낡는다. `npx skills update` 뒤에는 위 `cp`를 다시 실행할 것. 정본은 `skills/nara-worklog/assets/nara-worklog-stamp.py`이고, 두 파일이 같은지는 `diff` 한 줄로 확인한다.
+
 ## 2. settings.json 배선
 
 `~/.claude/settings.json`의 `hooks.UserPromptSubmit`과 `hooks.Stop` 배열에 **각각 새 그룹을 append**한다. 기존 그룹은 건드리지 않는다.
@@ -59,9 +61,19 @@ python3 ~/.claude/skills/nara-worklog/assets/worklog.py list
 
 | 증상 | 원인 |
 |---|---|
-| ledger 디렉터리 자체가 없음 | settings.json 배선 누락, 또는 세션 재시작 안 함 |
-| 디렉터리는 있는데 파일 없음 | 브랜치명에 `ABC-123` 형태 티켓 키가 없음 (의도된 skip) |
+| ledger 디렉터리 자체가 없음 | settings.json 배선 누락, 또는 세션 재시작 안 함. hook은 티켓 브랜치가 아니어도 배선만 되면 디렉터리를 만든다 |
+| 디렉터리는 있는데 파일 없음 | 브랜치명에 `ABC-123` 형태 티켓 키가 없음 (의도된 skip). 팀 브랜치 규약이 소문자면(`feature/abc-123-x`) 정규식이 **영구히** 매칭하지 않는다 — 규약을 확인할 것 |
 | 파일은 있는데 `list`가 비어 있음 | 미기록 시간이 1분 미만 (정상) |
+
+**합격 기준은 "출력 없고 exit 0"이 아니다.** hook은 실패해도 조용히 종료하므로 고장 상태에서도 그 조건을 충족한다. 반드시 **ledger에 라인이 늘어났는지**로 판정할 것:
+
+```bash
+before=$(cat ~/.claude/worklog/<TICKET>.jsonl 2>/dev/null | wc -l)
+# ... 한 턴 주고받기 ...
+after=$(cat ~/.claude/worklog/<TICKET>.jsonl | wc -l)   # 늘어나야 정상
+```
+
+ledger 디렉터리가 쓰기 불가가 되거나 브랜치 규약이 어긋나면 수집이 조용히 멈추고, 몇 주 뒤 "올릴 시간이 없다"는 정상 응답만 받는다. 주기적으로 위 방식으로 확인할 것.
 
 hook은 실패해도 조용히 종료한다 (턴을 막지 않는 것이 우선). 직접 검증하려면:
 

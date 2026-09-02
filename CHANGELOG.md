@@ -13,6 +13,19 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Fixed
 
+- 8-리뷰어 코드 리뷰 반영 — `nara-worklog`·`nara-release-watch`·`eval-fixture` 신규 Python 933 LOC 대상. raw 51건 → R0/R1 21건 적용, R2/R3 17건 이월. 리포트: `docs/review/260902-worklog-release-watch-eval-fixture.md`
+  - **`fetch_versions`가 gh 실패를 "버전 없음"으로 오분류했다.** 판정이 `releases is None and tags is None`이라, 태그만 쓰는 repo(releases가 정상적으로 `[]`)에서 tags 호출만 실패하면 `unwatchable`로 낙인하고 `unwatchable_reported`를 영구 기록해 **그 repo가 영원히 조용해졌다**. 단계별 조기 반환으로 교체 — 부수적으로 실패 확정 후 두 번째 호출을 하지 않으므로 전 repo 실패 시 왕복이 절반이 된다
+  - **`PRERELEASE_RE`에 단어 경계가 없어 정식 릴리즈가 사라졌다.** `v1.0.0-aarch64`(a**rc**h64), `-source`(sou**rc**e), `-devtools`, `-nextgen`이 prerelease로 오탐. 구분자 앵커(`(?:^|[-._+])`)로 교체하고 안정 태그 부정 케이스 6종을 테스트로 고정
+  - **`--through`에 offset 없는 값이 들어가면 ledger가 영구 오염됐다.** naive watermark가 hook의 aware `ts`와 비교되며 `TypeError`를 내고, `list`는 디렉터리 전체를 훑으므로 **오염된 티켓 1개가 모든 티켓 조회를 죽였다.** `cmd_record`가 거부(exit 1, ledger 무변경)하고 `watermark()`는 디스크에 이미 있는 값을 승격한다
+  - `gh_json`이 `OSError`·`SubprocessError`를 잡는다 — docstring이 "any failure"를 주장했지만 gh 미설치·hang은 예외를 전파해 repo 1개가 poll 전체를 죽였다
+  - `argparse` 플래그를 서브커맨드 양쪽에서 사용 가능하게. **리뷰 중 자체 발견**: `parents=[common]`의 서브파서 default가 루트 파싱값을 clobber해서 `--state X list`가 X를 무시하고 **실제 state 파일**을 읽었다 — 원래 문제보다 나쁜 회귀였다. `argparse.SUPPRESS` + `apply_defaults()`로 해소
+  - `total_seconds`를 날짜별 **내림값의 합**으로. Jira는 날짜당 1회 쓰이므로 raw 초 합계는 날짜별로 버린 잔여를 되살려 실제 게시량보다 크게 보고했다(하루 최대 59초 × 날짜 수). `unpostable_days` 필드 추가
+  - hook의 `os.makedirs`를 티켓 매칭 판정 **앞으로** — 배선이 정상인데 디렉터리가 없어서 스킬이 "hook 미설치"로 오판하고 **거짓 재설치 루프**를 유발했다
+  - `save_state`가 `abspath`로 정규화(bare 상대 파일명에서 `os.makedirs("")` 크래시), watchlist 후행 주석 분리를 `\s+--\s`로 제한(`some/repo--name` 절단), `MIN_POSTABLE_SECONDS` 상수화(임계 드리프트)
+  - `eval-fixture.py`: `find("{")`의 -1을 슬라이스에 그대로 써서 `[-1:]`이 마지막 한 글자가 되어 의도한 진단 에러가 발화하지 않던 것, probe stale 재사용으로 거짓 green이 나던 것, 채점 0건에 성공을 반환하던 공허 통과, provenance 필드를 그레이더가 읽는다는 거짓 주석
+  - 테스트 46 → **93건**. 변이 테스트가 드러낸 무보호 지점을 고정했다 — API `prerelease` 플래그 단독 케이스(`rel(prerelease=True)` 호출이 0건이었다), `jira_started` **배선**(함수 단위 테스트만 있어 상수 치환에도 통과했다), `fetch_versions`/`gh_json`(테스트 참조 0건). `test_stamp.py` 신설 14건 — 69 LOC 훅이 모든 세션의 모든 턴에서 도는데 테스트가 없었다. `run()` 헬퍼가 `--gap-minutes`를 명시 전달해 환경 의존 거짓 실패(`NARA_WORKLOG_GAP_MINUTES=10`에서 5건 실패)를 제거
+  - **이월 중 가장 큰 것**: hook이 bare `python3`로 배선돼 pyenv shim 오버헤드를 지불한다(실측 484.7ms vs 절대경로 40.2ms). `nara-review-gate.py`도 같은 배선이고 PreToolUse라 **모든 Bash 호출마다** 발생한다
+
 - **eval 점수가 측정처럼 보이는 가짜였던 것을 막았다.** `waza run nara-gap`이 `4 passed / 4 failed`를 내놓고 있었는데, executor가 `mock`이라 스킬이 호출되지 않는다(`tool_call_count: 0`). mock의 출력은 `프롬프트 + 태스크명 + description + 픽스처 원문`을 그대로 이어붙인 것이라, 통과한 4건은 **단정 문자열이 자기 description에 이미 적혀 있어서** 통과한 동어반복이었다 — `Score`는 description의 `"produces docs/gap.md with a score (0-100)"`에 대소문자 무시로 매칭됐다
   - 원인은 2026-08-26 `f4dd7ac`의 `real_run` 그레이더 제거다. 사유("mock에서 절대 통과 못 하는 단정은 게이트가 아니다")는 **행동 게이트로는 맞고 출처(provenance) 게이트로는 틀렸다**. 제거 전엔 항상 0/8로 시끄럽게 고장났고, 제거 후엔 4/8로 조용히 그럴듯해졌다 — 나쁜 쪽으로 바뀐 거래다
   - `real_run`(`len(output) > 40`, `'Mock response for:' not in output`)을 **45개 스위트 전체**에 출처 게이트로 복원했다. mock 실행은 이제 8/8 실패하며 이유를 명시한다. 판별력은 그대로 — RIGHT 8/8 통과 / WRONG 0/8 통과 확인

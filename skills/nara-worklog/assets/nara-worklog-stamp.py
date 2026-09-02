@@ -35,6 +35,12 @@ def main() -> None:
     if event is None:
         return
 
+    # Create the ledger directory before the ticket check, not after. The skill
+    # treats a missing directory as "hook not installed" and stops; with this
+    # after the early return, a correctly wired hook left it absent until the
+    # first ticket-branch turn, sending the user into a false reinstall loop.
+    os.makedirs(LEDGER_DIR, exist_ok=True)
+
     cwd = payload.get("cwd") or os.getcwd()
     branch = subprocess.run(
         ["git", "-C", cwd, "branch", "--show-current"],
@@ -54,7 +60,6 @@ def main() -> None:
         "branch": branch,
         "cwd": cwd,
     }
-    os.makedirs(LEDGER_DIR, exist_ok=True)
     path = os.path.join(LEDGER_DIR, f"{match.group(1)}.jsonl")
     # One short line per append keeps concurrent worktrees from interleaving.
     with open(path, "a", encoding="utf-8") as handle:
