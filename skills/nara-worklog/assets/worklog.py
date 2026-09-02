@@ -8,7 +8,8 @@ The ledger is append-only JSONL written by the `nara-worklog-stamp.py` hook:
     {"ts": "...", "ev": "logged", "through": "...", "seconds": 5216, ...}
 
 `spans` groups prompt/turn_end events into interaction windows, splitting on
-idle gaps and on local midnight, then aggregates per calendar day. `record`
+idle gaps and on local midnight, then aggregates per (day, ticket) bucket.
+`record`
 appends the `logged` watermark after a Jira write succeeds, which is what makes
 re-running the skill idempotent.
 
@@ -19,6 +20,8 @@ the team reads, so it must be reproducible from the ledger alone.
 import argparse
 import json
 import os
+import re
+import subprocess
 import sys
 from datetime import datetime, timedelta, time as dtime
 
@@ -26,10 +29,28 @@ DEFAULT_LEDGER_DIR = os.environ.get(
     "NARA_WORKLOG_DIR", os.path.expanduser("~/.claude/worklog")
 )
 SPAN_EVENTS = ("prompt", "turn_end")
+SWITCH_EVENT = "switch"
+# Same shape the hook uses to derive a ledger file from a branch name.
+TICKET_RE = re.compile(r"([A-Z][A-Z0-9_]+-\d+)")
 # A day totalling under a minute cannot be posted -- Jira rejects a zero worklog.
 # Shared by aggregate() and cmd_list() so the threshold cannot drift between the
 # two commands; the literal 60 in fmt_duration is a unit conversion, not this.
 MIN_POSTABLE_SECONDS = 60
+# Idle gap that ends one work window. 90, not 30: measured against a real day,
+# 30 cut a 62m spec-review gap and a 55m gap out of billable time, while 90
+# keeps them and still drops the 707m overnight gap that no model should bill.
+DEFAULT_GAP_MINUTES = 90
+
+
+def as_aware(stamp: datetime) -> datetime:
+    """Attach the local offset to a naive timestamp.
+
+    build_spans, watermark and read_switches all compare timestamps against each
+    other, so all three must agree on this. One naive record on disk would
+    otherwise raise TypeError and, because the ledger is append-only, break that
+    ticket permanently.
+    """
+    return stamp if stamp.tzinfo else stamp.astimezone()
 
 
 def ledger_path(ledger_dir: str, ticket: str) -> str:
@@ -68,7 +89,7 @@ def watermark(events: list[dict]) -> datetime | None:
             stamp = datetime.fromisoformat(event["through"])
         except (TypeError, ValueError):
             continue  # unparseable watermark: ignore rather than crash the reduce
-        stamps.append(stamp if stamp.tzinfo else stamp.astimezone())
+        stamps.append(as_aware(stamp))
     return max(stamps) if stamps else None
 
 
@@ -92,8 +113,11 @@ def split_at_midnight(
 def build_spans(
     events: list[dict], gap_minutes: int, since: datetime | None
 ) -> list[tuple[datetime, datetime]]:
+    # Promote naive timestamps like watermark() and read_switches() do. Without
+    # it a naive ts on disk plus any marker raises TypeError in attribute(), and
+    # the ledger is append-only so that ticket could never be reduced again.
     stamps = sorted(
-        (datetime.fromisoformat(e["ts"]), e["ev"])
+        (as_aware(datetime.fromisoformat(e["ts"])), e["ev"])
         for e in events
         if e.get("ev") in SPAN_EVENTS and e.get("ts")
     )
@@ -141,30 +165,102 @@ def jira_started(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%S.000%z")
 
 
-def aggregate(spans: list[tuple[datetime, datetime]]) -> list[dict]:
-    days: dict[str, dict] = {}
+def read_switches(events: list[dict]) -> list[tuple[datetime, str]]:
+    """Oldest-first (timestamp, ticket) markers written by `mark`.
+
+    A marker means "from here on, this ticket". Without any marker every span
+    belongs to the branch ticket, which is the original behaviour.
+    """
+    out = []
+    for event in events:
+        if event.get("ev") != SWITCH_EVENT or not event.get("ticket"):
+            continue
+        try:
+            stamp = datetime.fromisoformat(event["ts"])
+        except (KeyError, TypeError, ValueError):
+            continue  # unreadable marker: ignore rather than crash the reduce
+        out.append((as_aware(stamp), event["ticket"]))
+    return sorted(out, key=lambda x: x[0])
+
+
+def attribute(
+    spans: list[tuple[datetime, datetime]],
+    switches: list[tuple[datetime, str]],
+    default_ticket: str,
+) -> list[tuple[str, datetime, datetime]]:
+    """Cut each span at every marker inside it and tag the pieces.
+
+    A marker subdivides work that already happened; it never creates or destroys
+    time, so the attributed seconds always sum to the input seconds.
+    """
+    if not switches:
+        return [(default_ticket, start, end) for start, end in spans]
+
+    out = []
     for start, end in spans:
-        key = start.date().isoformat()
-        day = days.setdefault(key, {"date": key, "spans": [], "seconds": 0})
-        seconds = (end - start).total_seconds()
-        day["spans"].append(
+        cuts = [t for t, _ in switches if start < t < end]
+        edges = [start, *cuts, end]
+        for left, right in zip(edges, edges[1:]):
+            if right <= left:
+                continue
+            # The owner is the last marker at or before this piece's start.
+            owner = default_ticket
+            for stamp, ticket in switches:
+                if stamp <= left:
+                    owner = ticket
+                else:
+                    break
+            out.append((owner, left, right))
+    return out
+
+
+def aggregate(
+    spans: list[tuple[datetime, datetime]],
+    switches: list[tuple[datetime, str]] | None = None,
+    default_ticket: str = "",
+) -> list[dict]:
+    """Group work into (date, ticket) buckets -- one Jira worklog per bucket."""
+    pieces = attribute(spans, switches or [], default_ticket)
+    days: dict[str, dict] = {}
+    for ticket, start, end in pieces:
+        date = start.date().isoformat()
+        day = days.setdefault(date, {"date": date, "tickets": {}, "seconds": 0})
+        bucket = day["tickets"].setdefault(
+            ticket, {"ticket": ticket, "spans": [], "seconds": 0}
+        )
+        seconds = int((end - start).total_seconds())
+        bucket["spans"].append(
             {
                 "start": start.isoformat(timespec="seconds"),
                 "end": end.isoformat(timespec="seconds"),
-                "seconds": int(seconds),
+                "seconds": seconds,
                 "duration": fmt_duration(seconds),
             }
         )
-        day["seconds"] += int(seconds)
+        bucket["seconds"] += seconds
+        day["seconds"] += seconds
 
     out = []
-    for key in sorted(days):
-        day = days[key]
+    for date in sorted(days):
+        day = days[date]
+        buckets = []
+        # Sort on the parsed datetime, not the ISO string: mixed offsets in one
+        # ledger (container TZ=UTC + host KST) make string order != time order,
+        # which would invert the documented ascending write order.
+        for bucket in sorted(
+            day["tickets"].values(),
+            key=lambda b: datetime.fromisoformat(b["spans"][0]["start"]),
+        ):
+            bucket["time_spent"] = fmt_duration(bucket["seconds"])
+            bucket["jira_started"] = jira_started(
+                datetime.fromisoformat(bucket["spans"][0]["start"])
+            )
+            bucket["postable"] = bucket["seconds"] >= MIN_POSTABLE_SECONDS
+            buckets.append(bucket)
+        day["tickets"] = buckets
         day["time_spent"] = fmt_duration(day["seconds"])
-        day["jira_started"] = jira_started(
-            datetime.fromisoformat(day["spans"][0]["start"])
-        )
-        day["postable"] = day["seconds"] >= MIN_POSTABLE_SECONDS
+        # A day is postable if any of its buckets is; per-bucket is what gates writes.
+        day["postable"] = any(b["postable"] for b in buckets)
         out.append(day)
     return out
 
@@ -173,12 +269,12 @@ def cmd_spans(args: argparse.Namespace) -> int:
     events = read_events(ledger_path(args.ledger_dir, args.ticket))
     mark = watermark(events)
     spans = build_spans(events, args.gap_minutes, mark)
-    days = aggregate(spans)
-    # Sum the per-day FLOORED minutes, not the raw seconds. Jira is written once
-    # per day, so a raw-seconds total revives the sub-minute remainders each day
-    # already discarded and reports more than what actually gets posted.
-    postable = [d for d in days if d["postable"]]
-    total = sum(d["seconds"] // 60 * 60 for d in postable)
+    days = aggregate(spans, read_switches(events), args.ticket)
+    # Jira is written once per (date, ticket) bucket, so the total sums the
+    # FLOORED per-bucket minutes -- anything coarser reports time that no write
+    # will actually carry.
+    buckets = [b for d in days for b in d["tickets"] if b["postable"]]
+    total = sum(b["seconds"] // 60 * 60 for b in buckets)
     json.dump(
         {
             "ticket": args.ticket,
@@ -187,7 +283,13 @@ def cmd_spans(args: argparse.Namespace) -> int:
             "days": days,
             "total_seconds": total,
             "total_time_spent": fmt_duration(total),
-            "unpostable_days": [d["date"] for d in days if not d["postable"]],
+            "unpostable": [
+                f"{d['date']} {b['ticket']}"
+                for d in days
+                for b in d["tickets"]
+                if not b["postable"]
+            ],
+            "tickets": sorted({b["ticket"] for d in days for b in d["tickets"]}),
             "latest_event": spans[-1][1].isoformat(timespec="seconds")
             if spans
             else None,
@@ -236,6 +338,54 @@ def cmd_record(args: argparse.Namespace) -> int:
     return 0
 
 
+def branch_ticket(cwd: str | None = None) -> str | None:
+    """Ticket key of the current branch -- the same rule the hook uses to pick
+    the ledger file, so `mark` always lands in the ledger being written."""
+    proc = subprocess.run(
+        ["git", "-C", cwd or os.getcwd(), "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    match = TICKET_RE.search(proc.stdout.strip())
+    return match.group(1) if match else None
+
+
+def cmd_mark(args: argparse.Namespace) -> int:
+    """Append a switch marker: from now on this work belongs to <ticket>.
+
+    The marker goes into the BRANCH ticket's ledger, because that is the file the
+    hook appends to. Marking a subtask therefore subdivides the parent's ledger
+    rather than starting a second one.
+    """
+    ledger_ticket = args.ledger_ticket or branch_ticket()
+    if not ledger_ticket:
+        sys.stderr.write(
+            "no ticket key in the current branch; pass --ledger-ticket <PARENT>\n"
+        )
+        return 1
+
+    path = ledger_path(args.ledger_dir, ledger_ticket)
+    if not os.path.exists(path):
+        sys.stderr.write(f"no ledger for {ledger_ticket}: {path}\n")
+        return 1
+    if not TICKET_RE.fullmatch(args.ticket):
+        sys.stderr.write(f"not a ticket key: {args.ticket!r}\n")
+        return 1
+
+    record = {
+        "ts": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "ev": SWITCH_EVENT,
+        "ticket": args.ticket,
+        "ledger": ledger_ticket,
+    }
+    with open(path, "a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+    json.dump({"marked": record}, sys.stdout, ensure_ascii=False, indent=2)
+    sys.stdout.write("\n")
+    return 0
+
+
 def cmd_list(args: argparse.Namespace) -> int:
     out = []
     if os.path.isdir(args.ledger_dir):
@@ -273,7 +423,7 @@ def build_parser() -> argparse.ArgumentParser:
     common.add_argument("--ledger-dir", default=argparse.SUPPRESS)
     common.add_argument(
         "--gap-minutes",
-        type=int,
+        type=parse_gap,
         default=argparse.SUPPRESS,
         help="idle gap that splits one interaction window from the next",
     )
@@ -296,6 +446,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_record.add_argument("--worklog-id", action="append")
     p_record.set_defaults(func=cmd_record)
 
+    p_mark = sub.add_parser(
+        "mark", parents=[common], help="attribute following work to a subtask"
+    )
+    p_mark.add_argument("ticket", help="subtask key the work now belongs to")
+    p_mark.add_argument(
+        "--ledger-ticket",
+        help="ledger to append to (default: ticket key of the current branch)",
+    )
+    p_mark.set_defaults(func=cmd_mark)
+
     p_list = sub.add_parser(
         "list", parents=[common], help="tickets carrying unlogged time"
     )
@@ -303,15 +463,43 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def parse_gap(raw: str) -> int:
+    """Idle threshold in minutes, >= 1.
+
+    Validated because it silently changes an official worklog: 0 or a negative
+    value splits every interval except prompt->turn_end, dropping all reading and
+    review time from the billed total with no error at all.
+    """
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        raise argparse.ArgumentTypeError(
+            f"gap minutes must be an integer >= 1, got {raw!r}"
+        ) from None
+    if value < 1:
+        raise argparse.ArgumentTypeError(
+            f"gap minutes must be >= 1, got {value}"
+        )
+    return value
+
+
 def apply_defaults(parsed: argparse.Namespace) -> argparse.Namespace:
     """Fill options the user left off either side of the subcommand."""
     if not hasattr(parsed, "ledger_dir"):
         parsed.ledger_dir = DEFAULT_LEDGER_DIR
     if not hasattr(parsed, "gap_minutes"):
-        parsed.gap_minutes = int(os.environ.get("NARA_WORKLOG_GAP_MINUTES", "30"))
+        parsed.gap_minutes = parse_gap(
+            os.environ.get("NARA_WORKLOG_GAP_MINUTES", str(DEFAULT_GAP_MINUTES))
+        )
     return parsed
 
 
 if __name__ == "__main__":
-    parsed = apply_defaults(build_parser().parse_args())
+    try:
+        parsed = apply_defaults(build_parser().parse_args())
+    except argparse.ArgumentTypeError as exc:
+        # argparse only formats errors it raises itself; a bad env value reaches
+        # here and must not surface as a traceback.
+        sys.stderr.write(f"NARA_WORKLOG_GAP_MINUTES: {exc}\n")
+        sys.exit(2)
     sys.exit(parsed.func(parsed))

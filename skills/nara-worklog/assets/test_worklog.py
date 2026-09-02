@@ -5,6 +5,7 @@ Run: python3 -m pytest skills/nara-worklog/assets/test_worklog.py -q
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
@@ -53,6 +54,16 @@ def run(tmp_path: Path, *args: str, gap: int = 30) -> dict:
     return json.loads(proc.stdout)
 
 
+def day_spans(day: dict) -> list[dict]:
+    """All spans of a day, ignoring ticket attribution.
+
+    Deliberately does NOT re-sort. Chronological emission order is part of the
+    contract (bucket `spans[0]` feeds `jira_started`), and sorting here masked a
+    reversed-emission regression that the pre-bucket assertions used to catch.
+    """
+    return [s for b in day["tickets"] for s in b["spans"]]
+
+
 # --- duration formatting -------------------------------------------------
 
 
@@ -99,7 +110,7 @@ def test_idle_gap_splits_spans(tmp_path):
     out = run(tmp_path, "spans", "PROJ-431")
     assert len(out["days"]) == 1
     day = out["days"][0]
-    assert [s["duration"] for s in day["spans"]] == ["53m", "34m"]
+    assert [s["duration"] for s in day_spans(day)] == ["53m", "34m"]
     assert out["total_time_spent"] == "1h 27m"
 
 
@@ -115,7 +126,7 @@ def test_long_turn_end_to_prompt_gap_splits(tmp_path):
         ],
     )
     out = run(tmp_path, "spans", "PROJ-431")
-    assert [s["duration"] for s in out["days"][0]["spans"]] == ["10m", "15m"]
+    assert [s["duration"] for s in day_spans(out["days"][0])] == ["10m", "15m"]
 
 
 def test_prompt_to_prompt_gap_splits_dead_session(tmp_path):
@@ -311,7 +322,7 @@ def test_unpostable_day_is_excluded_from_the_total_and_listed(tmp_path):
     )
     out = run(tmp_path, "spans", "PROJ-431")
     assert out["total_time_spent"] == "20m"
-    assert out["unpostable_days"] == ["2026-09-03"]
+    assert out["unpostable"] == ["2026-09-03 PROJ-431"]
 
 
 def test_jira_started_is_wired_to_each_days_first_span(tmp_path):
@@ -323,7 +334,7 @@ def test_jira_started_is_wired_to_each_days_first_span(tmp_path):
         [ev("2026-09-02T23:40:00"), ev("2026-09-03T00:10:00")],
     )
     out = run(tmp_path, "spans", "PROJ-431")
-    assert [d["jira_started"] for d in out["days"]] == [
+    assert [d["tickets"][0]["jira_started"] for d in out["days"]] == [
         "2026-09-02T23:40:00.000+0900",
         "2026-09-03T00:00:00.000+0900",
     ]
@@ -413,3 +424,402 @@ def test_hook_and_reducer_agree_on_the_default_ledger_directory():
     spec.loader.exec_module(stamp)
     assert stamp.LEDGER_DIR == worklog.DEFAULT_LEDGER_DIR
     assert set(stamp.EVENT_MAP.values()) == set(worklog.SPAN_EVENTS)
+
+
+# --- subtask attribution via switch markers ------------------------------
+
+
+def sw(ts: str, ticket: str) -> dict:
+    return {"ts": f"{ts}{TZ}", "ev": "switch", "ticket": ticket}
+
+
+def test_no_marker_attributes_everything_to_the_branch_ticket(tmp_path):
+    write_ledger(
+        tmp_path, "PROJ-431", [ev("2026-09-02T09:00:00"), ev("2026-09-02T09:20:00")]
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["tickets"] == ["PROJ-431"]
+    assert out["days"][0]["tickets"][0]["time_spent"] == "20m"
+
+
+def test_marker_splits_one_span_between_two_subtasks(tmp_path):
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            sw("2026-09-02T09:30:00", "PROJ-500"),
+            ev("2026-09-02T10:00:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    buckets = {b["ticket"]: b["time_spent"] for b in out["days"][0]["tickets"]}
+    assert buckets == {"PROJ-431": "30m", "PROJ-500": "30m"}
+    assert out["total_time_spent"] == "1h"
+
+
+def test_markers_never_create_or_destroy_time(tmp_path):
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            sw("2026-09-02T09:10:00", "PROJ-500"),
+            sw("2026-09-02T09:25:00", "PROJ-501"),
+            sw("2026-09-02T09:40:00", "PROJ-502"),
+            ev("2026-09-02T10:00:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    day = out["days"][0]
+    assert sum(b["seconds"] for b in day["tickets"]) == day["seconds"] == 3600
+    assert [b["ticket"] for b in day["tickets"]] == [
+        "PROJ-431", "PROJ-500", "PROJ-501", "PROJ-502",
+    ]
+    assert [b["time_spent"] for b in day["tickets"]] == ["10m", "15m", "15m", "20m"]
+
+
+def test_marker_carries_across_a_later_span(tmp_path):
+    # A marker is not scoped to one span: it stays in force until the next one.
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            sw("2026-09-02T09:05:00", "PROJ-500"),
+            ev("2026-09-02T09:20:00", "turn_end"),
+            ev("2026-09-02T11:00:00", "prompt"),  # new span after an idle gap
+            ev("2026-09-02T11:30:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    buckets = {b["ticket"]: b["time_spent"] for b in out["days"][0]["tickets"]}
+    assert buckets == {"PROJ-431": "5m", "PROJ-500": "45m"}
+
+
+def test_marker_inside_an_idle_gap_is_not_billed(tmp_path):
+    # The marker lands between two spans, so it owns no time of its own -- it
+    # only decides who owns the next span.
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            ev("2026-09-02T09:20:00", "turn_end"),
+            sw("2026-09-02T10:00:00", "PROJ-500"),
+            ev("2026-09-02T11:00:00", "prompt"),
+            ev("2026-09-02T11:30:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    buckets = {b["ticket"]: b["time_spent"] for b in out["days"][0]["tickets"]}
+    assert buckets == {"PROJ-431": "20m", "PROJ-500": "30m"}
+
+
+def test_each_bucket_gets_its_own_jira_started(tmp_path):
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            sw("2026-09-02T09:30:00", "PROJ-500"),
+            ev("2026-09-02T10:00:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    started = {b["ticket"]: b["jira_started"] for b in out["days"][0]["tickets"]}
+    assert started == {
+        "PROJ-431": "2026-09-02T09:00:00.000+0900",
+        "PROJ-500": "2026-09-02T09:30:00.000+0900",
+    }
+
+
+def test_sub_minute_bucket_is_unpostable_but_its_day_survives(tmp_path):
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            sw("2026-09-02T09:19:40", "PROJ-500"),
+            ev("2026-09-02T09:20:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["unpostable"] == ["2026-09-02 PROJ-500"]
+    assert out["total_time_spent"] == "19m"  # the 20s bucket floors to 0m
+    assert out["days"][0]["postable"] is True  # the day itself survives
+
+
+def test_unreadable_marker_is_ignored_not_fatal(tmp_path):
+    path = write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [ev("2026-09-02T09:00:00", "prompt"), ev("2026-09-02T09:20:00", "turn_end")],
+    )
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps({"ev": "switch", "ticket": "PROJ-500"}) + "\n")  # no ts
+        handle.write(json.dumps({"ev": "switch", "ts": "nope", "ticket": "X-1"}) + "\n")
+        handle.write(json.dumps({"ev": "switch", "ts": f"2026-09-02T09:00:00{TZ}"}) + "\n")
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["tickets"] == ["PROJ-431"]
+    assert out["total_time_spent"] == "20m"
+
+
+def test_mark_appends_to_the_branch_ledger(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(
+        ["git", "init", "-q", "-b", "feature/PROJ-431-x", str(repo)], check=True
+    )
+    write_ledger(tmp_path, "PROJ-431", [ev("2026-09-02T09:00:00")])
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--ledger-dir", str(tmp_path), "mark", "PROJ-500"],
+        capture_output=True, text=True, cwd=str(repo),
+    )
+    assert proc.returncode == 0, proc.stderr
+    last = json.loads(
+        (tmp_path / "PROJ-431.jsonl").read_text(encoding="utf-8").splitlines()[-1]
+    )
+    assert last["ev"] == "switch" and last["ticket"] == "PROJ-500"
+    assert last["ledger"] == "PROJ-431"
+
+
+def test_mark_rejects_a_non_ticket_argument(tmp_path):
+    write_ledger(tmp_path, "PROJ-431", [ev("2026-09-02T09:00:00")])
+    proc = subprocess.run(
+        [
+            sys.executable, str(SCRIPT), "--ledger-dir", str(tmp_path),
+            "mark", "not-a-ticket", "--ledger-ticket", "PROJ-431",
+        ],
+        capture_output=True, text=True,
+    )
+    assert proc.returncode == 1
+    assert (tmp_path / "PROJ-431.jsonl").read_text(encoding="utf-8").count("switch") == 0
+
+
+# --- regressions found by the focused review 2026-09-03 ------------------
+
+
+def test_bucket_spans_stay_chronological_and_pin_jira_started(tmp_path):
+    # A bucket owning TWO spans is the only shape that distinguishes "first span"
+    # from "last span". Without it, emitting spans in reverse order passed the
+    # whole suite while shifting Jira's `started` by hours.
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:12:00", "prompt"),
+            sw("2026-09-02T09:20:00", "PROJ-500"),
+            ev("2026-09-02T10:05:00", "turn_end"),
+            ev("2026-09-02T12:56:00", "prompt"),
+            ev("2026-09-02T13:30:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    bucket = next(b for b in out["days"][0]["tickets"] if b["ticket"] == "PROJ-500")
+    assert [s["duration"] for s in bucket["spans"]] == ["45m", "34m"]
+    assert bucket["jira_started"] == "2026-09-02T09:20:00.000+0900"
+
+
+def test_naive_switch_marker_on_disk_does_not_break_the_reduce(tmp_path):
+    # Mirrors the watermark case: cmd_mark always writes aware timestamps, so
+    # this guard exists for hand-edited or older ledgers.
+    path = write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [ev("2026-09-02T09:00:00", "prompt"), ev("2026-09-02T10:00:00", "turn_end")],
+    )
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(
+            json.dumps({"ts": "2026-09-02T09:30:00", "ev": "switch",
+                        "ticket": "PROJ-500"}) + "\n"
+        )
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["tickets"] == ["PROJ-431", "PROJ-500"]
+    assert out["total_time_spent"] == "1h"
+
+
+def test_naive_span_timestamp_plus_marker_does_not_break_the_reduce(tmp_path):
+    # The marker is the trigger: the same naive ledger reduced fine before
+    # markers existed, so this crash path was introduced with them.
+    path = tmp_path / "PROJ-431.jsonl"
+    path.write_text(
+        json.dumps({"ts": "2026-09-02T09:00:00", "ev": "prompt"}) + "\n"
+        + json.dumps({"ts": "2026-09-02T10:00:00", "ev": "turn_end"}) + "\n"
+        + json.dumps({"ts": f"2026-09-02T09:30:00{TZ}", "ev": "switch",
+                      "ticket": "PROJ-500"}) + "\n",
+        encoding="utf-8",
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["total_time_spent"] == "1h"
+
+
+def test_markers_written_out_of_order_do_not_overlap_or_invent_time(tmp_path):
+    # attribute()'s owner loop breaks early on the assumption that switches are
+    # sorted. Unsorted input made the pieces OVERLAP: 60 minutes of input billed
+    # as 100, with two subtasks vanishing.
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            sw("2026-09-02T09:40:00", "PROJ-502"),   # later marker written first
+            sw("2026-09-02T09:20:00", "PROJ-501"),
+            ev("2026-09-02T10:00:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    day = out["days"][0]
+    assert day["seconds"] == 3600  # exactly the input span, no overlap
+    assert [b["ticket"] for b in day["tickets"]] == [
+        "PROJ-431", "PROJ-501", "PROJ-502",
+    ]
+    assert [b["time_spent"] for b in day["tickets"]] == ["20m", "20m", "20m"]
+
+
+def test_out_of_order_span_events_do_not_produce_negative_spans(tmp_path):
+    # build_spans sorts defensively; without it a clock step or hand edit yields
+    # negative durations and a silently wrong total.
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T10:00:00", "turn_end"),
+            ev("2026-09-02T09:10:00", "prompt"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["total_time_spent"] == "50m"
+    assert all(s["seconds"] > 0 for s in day_spans(out["days"][0]))
+
+
+def test_default_gap_is_90_minutes_without_any_flag(tmp_path):
+    # Nothing pinned this: 90 -> 30 or -> 999999 both passed the whole suite,
+    # and every user's billed time moves with it.
+    assert worklog.DEFAULT_GAP_MINUTES == 90
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            ev("2026-09-02T10:29:00", "prompt"),   # 89m gap -> one span
+            ev("2026-09-02T10:30:00", "turn_end"),
+        ],
+    )
+    bare = json.loads(
+        subprocess.run(
+            [sys.executable, str(SCRIPT), "spans", "PROJ-431",
+             "--ledger-dir", str(tmp_path)],
+            capture_output=True, text=True, check=True,
+            env={k: v for k, v in os.environ.items()
+                 if k != "NARA_WORKLOG_GAP_MINUTES"},
+        ).stdout
+    )
+    assert bare["gap_minutes"] == 90
+    assert len(day_spans(bare["days"][0])) == 1
+
+
+def test_gap_env_knob_is_honoured(tmp_path):
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            ev("2026-09-02T09:20:00", "prompt"),   # 20m gap -> splits at gap=10
+            ev("2026-09-02T09:25:00", "turn_end"),
+        ],
+    )
+    out = json.loads(
+        subprocess.run(
+            [sys.executable, str(SCRIPT), "spans", "PROJ-431",
+             "--ledger-dir", str(tmp_path)],
+            capture_output=True, text=True, check=True,
+            env={**os.environ, "NARA_WORKLOG_GAP_MINUTES": "10"},
+        ).stdout
+    )
+    assert out["gap_minutes"] == 10
+    assert len(day_spans(out["days"][0])) == 2
+
+
+@pytest.mark.parametrize("bad", ["abc", "0", "-5", ""])
+def test_invalid_gap_value_fails_loudly_not_silently(tmp_path, bad):
+    # 0 or negative silently drops all reading/review time from the billed total.
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "list", "--ledger-dir", str(tmp_path)],
+        capture_output=True, text=True,
+        env={**os.environ, "NARA_WORKLOG_GAP_MINUTES": bad},
+    )
+    assert proc.returncode != 0
+    assert "Traceback" not in proc.stderr
+    assert "gap minutes must be" in proc.stderr
+
+
+def test_mark_refuses_to_create_a_ledger_that_the_hook_does_not_write(tmp_path):
+    # An orphan ledger holding only markers means the hook is appending elsewhere
+    # and those markers will never re-attribute anything.
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--ledger-dir", str(tmp_path),
+         "mark", "PROJ-500", "--ledger-ticket", "PROJ-999"],
+        capture_output=True, text=True,
+    )
+    assert proc.returncode == 1
+    assert "no ledger" in proc.stderr
+    assert list(tmp_path.glob("*.jsonl")) == []
+
+
+def test_mark_derives_the_ledger_from_the_branch_not_a_constant(tmp_path):
+    # Decoy: a differently-named ledger must stay untouched, so replacing
+    # branch_ticket() with a literal cannot pass.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(
+        ["git", "init", "-q", "-b", "feature/PROJ-777-x", str(repo)], check=True
+    )
+    write_ledger(tmp_path, "PROJ-777", [ev("2026-09-02T09:00:00")])
+    decoy = write_ledger(tmp_path, "PROJ-431", [ev("2026-09-02T09:00:00")])
+    before = decoy.read_text(encoding="utf-8")
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--ledger-dir", str(tmp_path),
+         "mark", "PROJ-500"],
+        capture_output=True, text=True, cwd=str(repo),
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "switch" in (tmp_path / "PROJ-777.jsonl").read_text(encoding="utf-8")
+    assert decoy.read_text(encoding="utf-8") == before
+
+
+def test_top_level_tickets_is_sorted_and_deduplicated(tmp_path):
+    # A marker carries across days, so the same ticket appears in several buckets.
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            sw("2026-09-02T09:10:00", "PROJ-500"),
+            ev("2026-09-02T09:30:00", "turn_end"),
+            ev("2026-09-03T09:00:00", "prompt"),
+            ev("2026-09-03T09:30:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["tickets"] == ["PROJ-431", "PROJ-500"]
+    assert [d["date"] for d in out["days"]] == ["2026-09-02", "2026-09-03"]
+
+
+def test_bucket_order_follows_real_time_across_mixed_offsets(tmp_path):
+    # Sorting on the ISO string put +00:00 before +09:00 even when the +09:00
+    # instant was earlier. One ledger can hold both (container TZ vs host TZ).
+    path = tmp_path / "PROJ-431.jsonl"
+    path.write_text(
+        json.dumps({"ts": "2026-09-02T09:00:00+09:00", "ev": "prompt"}) + "\n"
+        + json.dumps({"ts": "2026-09-02T01:00:00+00:00", "ev": "turn_end"}) + "\n"
+        + json.dumps({"ts": "2026-09-02T00:30:00+00:00", "ev": "switch",
+                      "ticket": "PROJ-500"}) + "\n",
+        encoding="utf-8",
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    starts = [
+        datetime.fromisoformat(b["spans"][0]["start"])
+        for d in out["days"] for b in d["tickets"]
+    ]
+    assert starts == sorted(starts)

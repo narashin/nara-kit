@@ -87,21 +87,23 @@ after=$(cat ~/.claude/worklog/<TICKET>.jsonl | wc -l)   # 늘어나야 정상
 
 ledger 디렉터리가 쓰기 불가가 되거나 브랜치 규약이 어긋나면 수집이 조용히 멈추고, 몇 주 뒤 "올릴 시간이 없다"는 정상 응답만 받는다. 주기적으로 위 방식으로 확인할 것.
 
-hook은 실패해도 조용히 종료한다 (턴을 막지 않는 것이 우선). 직접 검증하려면:
+### 별개 검사: 침묵 계약
+
+아래는 "수집이 되는지"가 아니라 **"hook이 턴을 오염시키지 않는지"**를 확인하는 것이다. 두 검사를 섞지 말 것 — 이건 고장 상태에서도 통과한다.
 
 ```bash
 echo '{"hook_event_name":"UserPromptSubmit","session_id":"test","cwd":"'$PWD'"}' \
   | python3 ~/.claude/hooks/nara-worklog-stamp.py; echo "exit=$?"
 ```
 
-출력이 없고 `exit=0`이면 정상이다 — `UserPromptSubmit` hook의 stdout은 모델 컨텍스트로 주입되므로 이 hook은 아무것도 출력하지 않아야 한다.
+출력이 없고 `exit=0`이어야 한다 — `UserPromptSubmit` hook의 stdout은 모델 컨텍스트로 주입되고 non-zero exit은 턴을 막는다. 수집이 되는지는 위의 ledger 라인 수로만 판정한다.
 
 ## 설정
 
 | 환경변수 | 기본값 | 용도 |
 |---|---|---|
 | `NARA_WORKLOG_DIR` | `~/.claude/worklog` | ledger 위치 |
-| `NARA_WORKLOG_GAP_MINUTES` | `30` | span을 자르는 idle 임계 |
+| `NARA_WORKLOG_GAP_MINUTES` | `90` | span을 자르는 idle 임계. 1 이상의 정수 |
 
 ## 제거
 
