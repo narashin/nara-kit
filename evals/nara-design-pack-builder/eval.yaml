@@ -1,0 +1,34 @@
+name: nara-design-pack-builder-eval
+description: Evaluation suite for design-pack-builder — extracts a nara-design-studio DS pack (tokens + standalone component bundle + manifest) from a React design-system codebase; hard-stops on non-React sources.
+skill: nara-design-pack-builder
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill correctly hard-stop on a non-React source instead of attempting a lossy adaptation/extraction?
+graders:
+  - type: code
+    name: real_run
+    config:
+      # Provenance gate, not a behavioural one: it asserts the graded output came
+      # from a real skill run. Under `executor: mock` it fails every task by
+      # construction -- that is the correct signal, because mock output grades the
+      # eval's own description and fixture text, never the skill. Measurement goes
+      # through `waza grade` on a real run; see CLAUDE.md.
+      assertions:
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
+  - type: text
+    name: relevant_content
+    config:
+      regex_match:
+        - "(?i)(pack|manifest|component|token|react)"
+tasks:
+  - "tasks/*.yaml"

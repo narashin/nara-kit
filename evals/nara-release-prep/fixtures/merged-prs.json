@@ -1,0 +1,7 @@
+[
+  { "number": 101, "title": "feat: add settlement download button (PROJ-101)", "headRefName": "feature/PROJ-101-settlement-download", "mergeCommit": { "oid": "1111111111111111111111111111111111111101" } },
+  { "number": 102, "title": "fix: date picker off-by-one", "headRefName": "fix/PROJ-102-date-picker", "mergeCommit": { "oid": "2222222222222222222222222222222222222202" } },
+  { "number": 103, "title": "PROJ-103 refactor list virtualization", "headRefName": "refactor/list-virtualization", "mergeCommit": { "oid": "3333333333333333333333333333333333333303" } },
+  { "number": 104, "title": "chore: bump dependencies", "headRefName": "chore/bump-deps", "mergeCommit": { "oid": "4444444444444444444444444444444444444404" } },
+  { "number": 105, "title": "feat: export csv (PROJ-101 follow-up)", "headRefName": "feature/PROJ-101-export-csv", "mergeCommit": { "oid": "5555555555555555555555555555555555555505" } }
+]

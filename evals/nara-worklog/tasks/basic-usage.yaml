@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "Spans are computed by the script and approved before any Jira write"
+description: |
+  Given a ledger with two interaction windows on one day, the skill runs
+  assets/worklog.py spans, presents a per-day table, and asks for approval
+  before calling jira_add_worklog. It must not add up timestamps in prose.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "이 티켓 작업시간 지라에 올려줘"
+  files:
+    - path: PROJ-431.jsonl
+expected:
+  output_contains:
+    - "1h 27m"
+    - "2026-09-02"
+  output_not_contains:
+    - "EVAL-FAKE-DO-NOT-USE"
+  outcomes:
+    - type: task_completed

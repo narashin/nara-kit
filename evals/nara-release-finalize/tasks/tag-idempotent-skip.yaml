@@ -1,0 +1,30 @@
+id: tag-idempotent-skip-001
+name: "Tag already exists remotely → idempotent stop, zero new side effects"
+description: |
+  Config exists. Merge PR #82 is MERGED. `git ls-remote --tags origin release@v1.5.0`
+  already returns the tag — a prior run (or a human) already finished Stage B. The skill
+  must report the existing tag/release and stop without re-tagging, re-pushing, or
+  re-dispatching anything.
+tags:
+  - idempotency
+  - safety
+inputs:
+  prompt: |
+    /nara-kit:release-finalize 1.5.0
+    (.claude/release-finalize.local.md 은 fixtures/config-sample.md 내용과 같다.
+    `gh pr list --head pre-release --base main --state all` 결과는
+    fixtures/pr-state-merged.json 이다 — PR #82, state MERGED.
+    `git ls-remote --tags origin release@v1.5.0` 결과는 이미 해당 태그가 존재함을 보여준다.
+    `gh release view release@v1.5.0` 는 이미 존재하는 release를 반환한다.)
+  files:
+    - fixtures/config-sample.md
+    - fixtures/pr-state-merged.json
+expected:
+  output_contains:
+    - "release@v1.5.0"
+  regex_match:
+    - "(?i)(already|이미|존재)"
+  output_not_contains:
+    - "git tag release@v1.5.0 a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+    - "gh release create"
+    - "gh workflow run"

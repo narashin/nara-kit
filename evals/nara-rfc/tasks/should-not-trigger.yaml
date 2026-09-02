@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "ADR request should not trigger RFC"
+description: |
+  Test that an ADR (Architecture Decision Record) request does NOT activate
+  the RFC skill. ADR uses a separate /adr skill.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "아키텍처 결정 기록 작성해줘. DB를 PostgreSQL에서 MongoDB로 변경한 이유"
+  files: []
+expected:
+  output_not_contains:
+    - "docs/rfc/"
+    - "## 1. Background"
+    - "## 3. Proposal"
+    - "Work to do"

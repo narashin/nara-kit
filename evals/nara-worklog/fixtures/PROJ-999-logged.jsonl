@@ -1,0 +1,3 @@
+{"ts": "2026-09-01T14:00:00+09:00", "ev": "prompt", "session": "bbbb2222", "branch": "fix/PROJ-999-tooltip", "cwd": "/repo"}
+{"ts": "2026-09-01T14:25:00+09:00", "ev": "turn_end", "session": "bbbb2222", "branch": "fix/PROJ-999-tooltip", "cwd": "/repo"}
+{"ts": "2026-09-01T14:26:03+09:00", "ev": "logged", "through": "2026-09-01T14:25:00+09:00", "seconds": 1500, "time_spent": "25m", "worklog_ids": ["10021"]}

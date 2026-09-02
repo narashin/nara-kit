@@ -1,0 +1,20 @@
+id: edge-case-001
+name: "Publish spec when Confluence MCP is unavailable"
+description: |
+  Verifies the fallback behavior when Confluence MCP tools are not available.
+  The skill should attempt REST API fallback, and if that also fails, export
+  the converted XHTML locally as confluence-draft.md rather than silently failing.
+tags:
+  - edge-case
+inputs:
+  prompt: "스펙 게시해줘 docs/plan/spec-auth.md -- Confluence MCP 연결 안 됨"
+  files: []
+expected:
+  output_contains:
+    - "storage"
+    - "publish"
+    - "confluence-draft"
+  output_not_contains:
+    - "page created successfully"
+  outcomes:
+    - type: task_completed

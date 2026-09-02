@@ -1,0 +1,22 @@
+id: known-issue-001
+name: "Thread already has a Jira link → COMMENT, not new ticket"
+description: |
+  When the thread already references an existing Jira ticket, the proposed
+  action must be COMMENT on that ticket, not CREATE a duplicate.
+tags:
+  - dedup
+  - known
+inputs:
+  prompt: |
+    아래는 이미 fetch된 Slack 스레드다. slack-to-jira로 처리해줘.
+    링크: https://example.slack.com/archives/C0123456789/p1700000000000003
+    스레드 내용:
+    @user: 로그인하면 가끔 흰 화면 떠요.
+    @dev: 이거 이미 ABC-321로 등록돼 있어요. 거기서 보고 있습니다.
+  files: []
+expected:
+  regex_match:
+    - "(?i)(comment|known|ABC-321)"
+  output_not_contains:
+    - "CREATE Bug"
+    - "jira_create_issue("

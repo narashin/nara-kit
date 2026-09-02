@@ -1,0 +1,29 @@
+id: bugfix-classify-001
+name: "Bug ticket (To Do) → 버그픽스 queue issue routed to Dev, never executes code"
+description: |
+  Given an already-fetched ready PROJ Bug ticket, classify 버그픽스, route to
+  the web-ui repo, and emit an UNASSIGNED Multica queue issue whose start path
+  is the Dev agent. Stage 1 must NOT run code or auto-assign.
+tags:
+  - classify
+  - bugfix
+  - thesis-guard
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    (issuetype 필드는 비어있다 — summary/description 의미로 판단하라.)
+    key: PROJ-412
+    status: To Do
+    summary: 정산 페이지 다운로드 버튼 무반응 (회귀)
+    description: 어제까진 정상. 오늘부터 클릭해도 아무 반응 없음. 콘솔 에러 없음.
+  files: []
+expected:
+  output_contains:
+    - "버그픽스"
+    - "web-ui"
+  regex_match:
+    - "(?i)(Dev agent|assign)"
+  output_not_contains:
+    - "구현 완료"
+    - "수정 완료"
+    - "implemented"

@@ -1,0 +1,16 @@
+id: should-not-trigger-001
+name: "Code explanation should not trigger ticket creation"
+description: |
+  A non-Slack, non-ticket request must not produce a Jira draft or MCP write.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "이 코드 뭐하는 건지 설명해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "jira_create_issue"
+    - "CREATE Bug"
+    - "draft 테이블"
+    - "Acceptance Criteria"

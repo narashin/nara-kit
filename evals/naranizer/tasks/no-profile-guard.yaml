@@ -1,0 +1,24 @@
+id: no-profile-guard-001
+name: "Hard gate: refuse transform without a style profile"
+description: |
+  Transform requested but the profile path does not exist.
+  Expect immediate failure block pointing to analyze mode — no guessed imitation.
+tags:
+  - error-path
+  - gate
+inputs:
+  prompt: |
+    스타일 프로필 경로: /nonexistent/naranizer/style-profile.md
+
+    아래 초안을 naranizer로 내 말투로 바꿔줘.
+
+    배포 파이프라인 점검 결과를 공유드립니다. 특이사항 없었습니다.
+  files: []
+expected:
+  output_contains:
+    - "❌ 실패"
+    - "analyze"
+  output_not_contains:
+    - "naranizer: register="
+  outcomes:
+    - type: task_completed

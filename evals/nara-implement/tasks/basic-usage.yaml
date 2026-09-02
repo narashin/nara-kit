@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "Gated implementation with strategy approval"
+description: |
+  Test that the skill proposes an execution strategy (direct/delegated + tdd/no-tdd)
+  before editing any files, verifies the change, and stops at a staged state without
+  running git commit.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "/nara-implement docs/plan.md 의 T-1 작업 단위를 구현해줘"
+  files: []
+expected:
+  output_contains:
+    - "전략"
+    - "Verification"
+  output_not_contains:
+    - "git commit -m"
+    - "git push"
+  outcomes:
+    - type: task_completed

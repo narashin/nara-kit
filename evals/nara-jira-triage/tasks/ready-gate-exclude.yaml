@@ -1,0 +1,22 @@
+id: ready-gate-exclude-001
+name: "Non-ready ticket (In Progress / Backlog) → excluded from queue, no issue"
+description: |
+  Only To Do / Selected for Development are queued. An In Progress (or Backlog)
+  ticket must be EXCLUDED — no Multica queue issue created for it. Ready gate.
+tags:
+  - ready-gate
+  - thesis-guard
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    ready 상태 = To Do, Selected for Development.
+    key: PROJ-478
+    status: In Progress
+    summary: "[FE] Enforce non-blank approve/reject comment client-side"
+    description: 이미 착수되어 진행 중인 작업.
+  files: []
+expected:
+  regex_match:
+    - "(?i)(제외|excluded|ready 아님|skip|스킵)"
+  output_not_contains:
+    - "Dev agent에 assign"

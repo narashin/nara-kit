@@ -1,0 +1,110 @@
+# Grader-validation table for nara-gap.
+#
+# `right` is what a correct run of the skill outputs. `wrong` reproduces observed
+# baseline behaviour -- real failures the skill actually produced, not invented
+# ones, because invented failures are trivially discriminated and prove nothing.
+#
+# Run: tools/eval-fixture.py validate nara-gap
+# Expected: every task passes on right and fails on wrong.
+#
+# Migrated 2026-09-02 from results/make-validation.py (untracked scratch).
+right:
+  basic-usage-001: 'docs/requirements.md 4 FR + 2 AC 를 대조해 docs/gap.md 를 생성했습니다.
+
+    - Total: 6 | Implemented: 2 | Partial: 0 | Missing: 4
+
+    - Score: 33/100
+
+    FR-3 verbatim grep 0건이라 Missing 강제.'
+  edge-case-001: '기존 docs/gap.md 의 Missing/Partial 2건만 재확인했습니다.
+
+    FR-2 email: src/notify/email.ts:12 확인.
+
+    - Score: 67/100'
+  evidence-path-audit-001: '인용 경로 전수 대조 결과입니다.
+
+    src/list/pagination.ts:12 → 해석 가능, 유지.
+
+    src/list/sort.ts:400 → 파일 31행, 라인 범위 밖 → unresolved evidence path.
+
+    src/list/removed-filter.ts → git ls-files 에 없음 → unresolved evidence path.
+
+    - Total: 3 | Implemented: 1 | Partial: 0 | Missing: 0 | Agreed Exception: 0
+
+    - Needs Confirm: 2
+
+    - Score: 33/100'
+  external-contract-sha-001: '외부 계약 핀 billing-api@a1b2c3d 을 이 워크스페이스에서 해석할 수 없습니다.
+
+    FR-4, FR-5 를 Needs Confirm 으로 내립니다 (unresolved external pin).
+
+    - Total: 5 | Implemented: 3 | Partial: 0 | Missing: 0
+
+    - Needs Confirm: 2
+
+    - Score: 60/100'
+  multi-surface-permission-001: 'FR-7 은 server enforcement 와 client gating 은 있으나 client-layer gating test
+    가 없습니다. rubric 3-bis 에 따라 Partial 강등하고 누락 수면을 명시합니다: server O / client gating test X.'
+  priority-correction-001: 'FR-1, FR-2 는 백틱 verbatim 이라 P1 에서 P0 로 격상했습니다(게이트를 조이는 방향이라 즉시 적용).
+
+    FR-3 는 원문에 AC 절이 없어 P0 근거가 성립하지 않으나, Missing 항목의 강등은 게이트를 여는 방향이므로 보류하고 비판정 관측에 제안만 기록했습니다.
+
+    - Total: 4 | Implemented: 1 | Partial: 0 | Missing: 3 | Agreed Exception: 0
+
+    - **P0 Missing (Critical): 3**
+
+    - Score: 25/100'
+  sampling-quorum-001: 'Needs Confirm 2건이 이미 정족수(Implemented 8 + Needs Confirm 2 의 20% = 2)를 충족하므로 추가
+    표집하지 않습니다. FR-9, FR-10 은 판정 기록이 없어 그대로 둡니다.
+
+    - Total: 10 | Implemented: 8 | Partial: 0 | Missing: 0 | Agreed Exception: 0
+
+    - Needs Confirm: 2
+
+    - Score: 80/100'
+  should-not-trigger-001: 코드 리뷰 요청이므로 갭 분석을 실행하지 않습니다. nara-gap 은 docs/requirements.md 대비 구현 상태를 재는 도구이고
+    코드 품질 축은 다루지 않습니다. nara-code-review 로 넘기십시오.
+wrong:
+  basic-usage-001: 이 변경사항의 코드 품질을 검토했습니다. 네이밍과 에러 처리에 개선 여지가 있습니다.
+  edge-case-001: docs/requirements.md 가 없습니다. /prep 을 먼저 실행하십시오. gap.md 재검증 불가. Score 산출 불가.
+  evidence-path-audit-001: 'src/list/sort.ts:400 은 범위 밖이라 재grep 으로 :14 로 교체하고 Implemented 유지. src/list/removed-filter.ts
+    는 없어 Needs Confirm.
+
+    - Total: 3 | Implemented: 2 | Partial: 0 | Missing: 0
+
+    - Score: 67/100'
+  external-contract-sha-001: 'billing-api@a1b2c3d 해석 불가. FR-4, FR-5 를 Partial 로 강등합니다.
+
+    - Total: 5 | Implemented: 3 | Partial: 2 | Missing: 0
+
+    - Needs Confirm: 2
+
+    - Score: 40/100'
+  multi-surface-permission-001: FR-7 은 server guard 와 client gating 이 모두 있으므로 Implemented 로 판정합니다.
+  priority-correction-001: 'FR-1, FR-2 를 P0 로 격상하고 FR-3 는 근거가 없어 P1 로 강등했습니다.
+
+    - Total: 4 | Implemented: 1 | Partial: 0 | Missing: 3 | Agreed Exception: 0
+
+    - **P0 Missing (Critical): 2**
+
+    - Score: 25/100'
+  sampling-quorum-001: 'rubric 4 에 따라 Implemented 중 20% 를 새로 표집합니다.
+
+    - Total: 10 | Implemented: 6 | Partial: 0 | Missing: 0
+
+    - Needs Confirm: 4
+
+    - Score: 60/100'
+  should-not-trigger-001: '# Gap Analysis
+
+    - **Gate: ⚠️ score 60**
+
+    ## Summary
+
+    - Total: 5 | Implemented: 3
+
+    - **P0 Missing (Critical): 0**
+
+    ### Agreed Exceptions
+
+    | ID | Requirement | Reason |'

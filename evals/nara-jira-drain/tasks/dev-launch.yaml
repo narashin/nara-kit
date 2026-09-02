@@ -1,0 +1,31 @@
+id: dev-launch-001
+name: "구현 큐 티켓 → aoe add(group/worktree) + dev-mode gate-as-stop 프롬프트 (dry-run)"
+description: |
+  Given a jira-triage queue issue for an 구현 ticket, jira-drain --dry-run must
+  assemble (not execute) an aoe add into the right session group + worktree branch
+  and an aoe send carrying the dev-mode gate-as-stop prompt. local_path is sourced
+  from local config (~/.claude/jira-triage.md), NOT from issue metadata. Must never
+  emit headless (claude -p / --print) or merge.
+tags:
+  - launch
+  - dev
+  - dry-run
+inputs:
+  prompt: |
+    아래 Multica 큐 이슈를 jira-drain --dry-run 으로 처리. 조립 커맨드만 출력 (aoe/Multica 쓰기 금지).
+    로컬 config(~/.claude/jira-triage.md)에 PROJ.fe.local_path = /Users/x/web-ui 로 채워져 있다고 가정.
+    issue metadata: jira_key=PROJ-425, triage_type=구현, sub_repo=fe,
+      repo=git.example.com/acme-sre/web-ui, session_group=web-ui, pr_language=en
+    issue title: "[PROJ-425] 구현: Add UI tooltips"
+  files: []
+expected:
+  regex_match:
+    - "(?i)aoe add"
+    - "(?i)-g (\"?)web-ui"
+    - "(?i)(-w |feature/)PROJ-425"
+    - "(?i)aoe send"
+    - "(?i)(gate|게이트|STOPPED|PR_RESULT)"
+  output_not_contains:
+    - "claude -p"
+    - "--print"
+    - "merge"

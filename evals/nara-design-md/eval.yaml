@@ -1,0 +1,39 @@
+name: nara-design-md-eval
+description: Evaluation suite for design-md skill — adopt, update, audit modes.
+skill: nara-design-md
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: mock
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill complete the assigned task correctly?
+graders:
+  - type: code
+    name: real_run
+    config:
+      # Provenance gate, not a behavioural one: it asserts the graded output came
+      # from a real skill run. Under `executor: mock` it fails every task by
+      # construction -- that is the correct signal, because mock output grades the
+      # eval's own description and fixture text, never the skill. Measurement goes
+      # through `waza grade` on a real run; see CLAUDE.md.
+      assertions:
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
+  - type: text
+    name: mode_detection
+    config:
+      regex_match:
+        - "(?i)(adopt|update|audit|DESIGN\\.md|template|token|drift)"
+  - type: text
+    name: no_raw_hex_in_body
+    config:
+      regex_not_match:
+        - "background:\\s*#[0-9a-fA-F]{6}"
+tasks:
+  - "tasks/*.yaml"

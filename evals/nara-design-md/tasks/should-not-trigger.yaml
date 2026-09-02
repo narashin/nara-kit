@@ -1,0 +1,14 @@
+id: no-trigger-001
+name: Should Not Trigger — Backend Task
+description: |
+  User asks about backend API implementation. Skill should NOT activate.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "Spring Boot에서 REST API 엔드포인트 만들어줘"
+expected:
+  output_not_contains:
+    - "DESIGN.md"
+    - "design.md"
+    - "getdesign"

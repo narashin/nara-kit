@@ -1,0 +1,19 @@
+id: basic-usage-001
+name: "One-question-at-a-time design validation"
+description: |
+  Test that the skill researches verifiable facts first, then surfaces the single
+  highest-impact open decision as one question with a recommendation, without
+  finalizing decisions on the user's behalf or mutating any document.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "/nara-grill 알림을 웹소켓으로 실시간 푸시하는 설계를 검토해줘"
+  files: []
+expected:
+  output_contains:
+    - "질문"
+  output_not_contains:
+    - "구현 완료"
+  outcomes:
+    - type: task_completed

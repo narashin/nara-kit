@@ -1,0 +1,19 @@
+id: should-not-trigger-001
+name: "Env comparison and screenshot-only requests route elsewhere"
+description: |
+  A request to compare QA against local, or to just capture PR screenshots, is not this
+  skill's job. It should redirect to nara-ui-diff / nara-local-shot instead of producing
+  an acceptance verdict.
+tags:
+  - routing
+  - negative
+inputs:
+  prompt: "QA랑 로컬 화면 비교해서 스타일 틀어진 데 찾아줘"
+  files: []
+expected:
+  output_contains:
+    - "ui-diff"
+  output_not_contains:
+    - "Status: Pass"
+  outcomes:
+    - type: task_completed

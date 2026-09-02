@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "Forge a skill through the full check → EPT → grade → ratchet → converge loop"
+description: |
+  Verifies that skill-forge runs the Phase 0 waza static gate, scaffolds/verifies
+  the eval, executes each task via a fresh EPT subagent, grades results, applies
+  one-theme fixes under the ratchet, and converges on consecutive clears.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "nara-commit 스킬 강화해줘"
+  files: []
+expected:
+  output_contains:
+    - "waza check"
+    - "ratchet"
+  output_not_contains:
+    - "git commit -m"
+    - "copilot login"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,17 @@
+id: auth-failure-001
+name: "gh failure is reported, never folded into a quiet day"
+description: |
+  needs_attention must break the early exit. A broken token looks identical to
+  a calm week, so silence here would hide the breakage forever.
+tags:
+  - edge-case
+  - negative
+inputs:
+  prompt: "/nara-release-watch"
+  files:
+    - path: failed-poll.json
+expected:
+  output_contains:
+    - "gh auth login"
+  outcomes:
+    - type: task_completed

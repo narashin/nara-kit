@@ -1,0 +1,20 @@
+id: default-to-depend-001
+name: "An ambiguous release is judged 의존, not 증류 후보"
+description: |
+  The rubric defaults to 의존. A 증류 후보 verdict requires naming the target
+  skill step, the cost argument, and the specific idea; an 이미 있음 verdict
+  requires naming the overlapping skill.
+tags:
+  - judgment
+  - rubric
+inputs:
+  prompt: "/nara-release-watch"
+  files:
+    - path: new-release-poll.json
+expected:
+  output_contains:
+    - "의존"
+  output_not_contains:
+    - "EVAL-FAKE-DO-NOT-USE"
+  outcomes:
+    - type: task_completed

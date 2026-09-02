@@ -1,0 +1,22 @@
+id: basic-usage-001
+name: "Env-diff run reports differing computed values as candidates"
+description: |
+  With a populated .claude/ui-diff/ profile (env.md baseline+local, login.md, a screen),
+  the skill drives both runtimes, measures computed-style + bounding-rect, and reports
+  ONLY the differing values as drift candidates — never a bug/OK verdict, never leaking
+  credentials, never dumping full computed styles inline.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "QA랑 로컬 UI 비교해줘 --screen create-ticket"
+  files: []
+expected:
+  output_contains:
+    - "drift"
+    - "side effects"
+  output_not_contains:
+    - "EVAL-FAKE-DO-NOT-USE"
+    - "this is a bug"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,19 @@
+id: edge-case-unmapped-001
+name: "Unknown column is a mapping failure, never zero"
+description: |
+  A marker referencing a column that does not exist in the CSV must be reported as
+  mapping_failure with the real header list. It must never be measured as 0 and it
+  must never cause the document value to be replaced.
+tags:
+  - edge-case
+  - negative
+inputs:
+  prompt: "수치 감사 돌려줘"
+  files: []
+expected:
+  output_contains:
+    - "mapping_failure"
+  output_not_contains:
+    - "measured 0"
+  outcomes:
+    - type: task_completed

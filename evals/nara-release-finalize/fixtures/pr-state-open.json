@@ -1,0 +1,9 @@
+[
+  {
+    "number": 82,
+    "state": "OPEN",
+    "url": "https://github.com/example/web-ui/pull/82",
+    "mergeCommit": null,
+    "body": "## Release v1.5.0\n\n10 PRs merged."
+  }
+]

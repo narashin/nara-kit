@@ -1,0 +1,24 @@
+id: subtask-container-001
+name: "Parent with subtask → container, excluded from queue (no parent issue)"
+description: |
+  Parent tasks are opened epic-like; the real work lives in subtasks. A ticket
+  that HAS subtasks is a container and must NOT be queued as itself — the open
+  subtask is the work unit. Subtask gate.
+tags:
+  - subtask-gate
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    (issuetype 필드는 비어있다 — summary/description 의미로 판단하라.)
+    key: PROJ-477
+    status: Selected for Development
+    summary: Approval 빈 코멘트 에러 메시지 개선
+    subtasks: [PROJ-478]
+    description: 빈 Approve 코멘트일 때 명확한 필드 메시지 노출.
+  files: []
+expected:
+  regex_match:
+    - "(?i)(컨테이너|container|제외|excluded)"
+  output_not_contains:
+    - "[PROJ-477] 버그픽스"
+    - "[PROJ-477] 구현"

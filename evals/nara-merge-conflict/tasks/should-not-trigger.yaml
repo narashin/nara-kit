@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "Conflict-free merge should not trigger hunk resolution"
+description: |
+  A request to merge a branch that has no conflicts should NOT activate
+  intent-based hunk resolution logic. The skill only triggers when actual
+  conflict markers are present.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "이 브랜치 main에 머지해줘, 충돌 없어"
+  files: []
+expected:
+  output_not_contains:
+    - "diff-filter=U"
+    - "ours-intent"
+    - "theirs-intent"

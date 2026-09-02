@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "My own PR's incoming review comments must not trigger pr-review"
+description: |
+  Responding to review comments on the user's own PR is nara-pr-respond's job.
+  pr-review must not activate.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "내 PR에 리뷰 코멘트 달렸는데 대응해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "PR-plane"
+    - "commit-composition"
+  outcomes:
+    - type: task_completed

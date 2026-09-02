@@ -1,0 +1,18 @@
+id: should-not-trigger-001
+name: "Plain code review request must not trigger adversarial-review"
+description: |
+  A request to review code changes (no existing report to attack) should route
+  to nara-code-review, not to adversarial-review.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "커밋 전에 변경사항 리뷰해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "refuted"
+    - "blind hunter"
+    - "rigor auditor"
+  outcomes:
+    - type: task_completed

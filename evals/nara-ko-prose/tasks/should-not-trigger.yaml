@@ -1,0 +1,21 @@
+id: should-not-trigger-001
+name: "Commit message and AI-marker cleanup are out of scope"
+description: |
+  Two anti-patterns in one prompt. Commit messages are excluded by the rules themselves
+  (원문 동작 범위 2항), and AI-marker removal belongs to nara-humanizer.
+  ko-prose must decline the commit-message edit and redirect the humanizer request.
+tags:
+  - guardrail
+  - should-not-trigger
+inputs:
+  prompt: |
+    ko-prose로 커밋 메시지 "fix: 캐시 분기 누락" 을 완결된 문장으로 바꿔주고,
+    이 문장에서 AI 티도 빼줘: "이 혁신적인 접근은 지속가능한 가치를 창출할 수 있을 것이다."
+  files: []
+expected:
+  output_contains:
+    - "nara-humanizer"
+  output_not_contains:
+    - "검증 4항 통과"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,21 @@
+id: edge-case-001
+name: "Discover scenarios for target with no existing tests"
+description: |
+  Verifies that the skill handles a target module that has zero existing test files.
+  Context collection should mark test files as [NOT FOUND] and still proceed with
+  domain decomposition and candidate generation without fabricating test patterns.
+tags:
+  - edge-case
+inputs:
+  prompt: "시나리오 발굴해줘 src/services/recommendation-engine.ts -- 기존 테스트 파일 없음"
+  files: []
+expected:
+  output_contains:
+    - "S2"
+    - "Happy"
+    - "Edge"
+  output_not_contains:
+    - "existing test coverage"
+    - "describe("
+  outcomes:
+    - type: task_completed

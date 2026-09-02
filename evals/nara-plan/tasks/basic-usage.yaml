@@ -1,0 +1,20 @@
+id: basic-usage-001
+name: "Vertical work-unit split with traceability"
+description: |
+  Test that the skill splits a spec into vertical behavior slices written to
+  docs/plan.md, each with goal/scope/AC/verification and per-requirement
+  traceability, and does NOT create horizontal type-only/API-only/test-only units
+  or post to a remote tracker.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "/nara-plan docs/requirements.md 를 구현 계획으로 나눠줘"
+  files: []
+expected:
+  output_contains:
+    - "plan.md"
+  output_not_contains:
+    - "jira_create_issue"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "Incident analysis report generation"
+description: |
+  Test that the skill generates a structured incident analysis report with
+  root cause hypotheses, evidence, proposed fix, and saves to docs/incident-report.md.
+  The skill must NOT modify any code.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "/incident PROD-555 주문 API에서 500 에러가 간헐적으로 발생하고 있어. 장애 분석해줘"
+  files: []
+expected:
+  output_contains:
+    - "incident-report.md"
+    - "가설"
+  output_not_contains:
+    - "git commit"
+    - "코드 수정"
+  outcomes:
+    - type: task_completed

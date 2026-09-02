@@ -1,0 +1,13 @@
+name: production-deploy
+
+on:
+  push:
+    tags:
+      - 'release@v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "deploy ${{ github.ref_name }} to production"

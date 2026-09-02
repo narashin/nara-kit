@@ -11,6 +11,24 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Fixed
+
+- **eval 점수가 측정처럼 보이는 가짜였던 것을 막았다.** `waza run nara-gap`이 `4 passed / 4 failed`를 내놓고 있었는데, executor가 `mock`이라 스킬이 호출되지 않는다(`tool_call_count: 0`). mock의 출력은 `프롬프트 + 태스크명 + description + 픽스처 원문`을 그대로 이어붙인 것이라, 통과한 4건은 **단정 문자열이 자기 description에 이미 적혀 있어서** 통과한 동어반복이었다 — `Score`는 description의 `"produces docs/gap.md with a score (0-100)"`에 대소문자 무시로 매칭됐다
+  - 원인은 2026-08-26 `f4dd7ac`의 `real_run` 그레이더 제거다. 사유("mock에서 절대 통과 못 하는 단정은 게이트가 아니다")는 **행동 게이트로는 맞고 출처(provenance) 게이트로는 틀렸다**. 제거 전엔 항상 0/8로 시끄럽게 고장났고, 제거 후엔 4/8로 조용히 그럴듯해졌다 — 나쁜 쪽으로 바뀐 거래다
+  - `real_run`(`len(output) > 40`, `'Mock response for:' not in output`)을 **45개 스위트 전체**에 출처 게이트로 복원했다. mock 실행은 이제 8/8 실패하며 이유를 명시한다. 판별력은 그대로 — RIGHT 8/8 통과 / WRONG 0/8 통과 확인
+  - CLAUDE.md의 실행 방법이 **없는 명령**(`waza eval <skill>`)이었다. 실제는 `waza run`이고, 어느 경로가 무엇을 재는지(정적 `check`·구조적 `coverage`·행동 `grade`) 표로 명시했다
+- `tools/eval-fixture.py` 추가 — 그레이더 판별력 검증을 `validate <skill>` 한 명령으로. 2026-08-24에 만들어졌지만 **untracked `results/`에 방치돼 유실 직전이던** `make-validation.py`를 일반화한 것이다. 테이블은 `evals/<skill>/validation.yaml`로 이관해 추적한다(`right`/`wrong`, task id 키). `wrong`은 **실제 관측된 실패**를 재현해야 한다 — 지어낸 실패는 판별이 너무 쉬워서 아무것도 증명하지 못한다
+  - 이관 과정에서 테이블이 픽스처와 어긋난 것도 잡혔다: `iris-api@a1b2c3d`(정화 전 사내 repo명)를 픽스처의 placeholder `billing-api@a1b2c3d`로 맞췄다. 식별자 게이트가 잡아준 건이다
+  - executor 블로커는 그대로다 — `copilot-sdk`는 seat 미할당, `mock`은 스킬을 호출하지 않는다. 즉 지금 측정 가능한 것은 **그레이더의 판별력**이고 스킬 행동은 실제 실행 경로가 뚫려야 한다
+
+### Changed
+
+- `evals/`를 추적 대상으로 전환 — 이전에는 `evals/*` ignore + 3개 스위트만 allowlist였다. 추적하지 않으면 **스킬 성능을 측정할 수 없고**, 측정하지 않는 스위트는 채점 대상 스킬에 대해 조용히 썩는다. 45개 스위트 / 205개 파일이 추적된다. `evals/**/results/`(실행 산출물)는 계속 ignore
+  - allowlist가 막아주던 것은 실재하는 위험이었다. 전환 전 스캔에서 **5개 스위트에 사내 식별자 61건**이 나왔다 — Jira 프로젝트 키, 내부 repo명, `git.linecorp.com` 호스트, 조직명, 그리고 **Slack 채널 ID와 실제 메시지 타임스탬프**. 공개 repo에 사내 식별자가 올라가 history rewrite까지 갔던 전례가 있어 전환 **전에** 정화했다
+  - 치환은 placeholder로: `PROJ`/`OPS`(티켓 키), `web-ui`/`api-server`(repo), `git.example.com`, `acme-sre`, `C0123456789`, Slack ts 무력화. `lyris-{fe,be}-classify.yaml`은 파일명까지 개명. **태스크가 검증하는 구분은 보존** — jira-triage 스위트가 FE→BE 라우팅을 채점하므로 두 placeholder repo명이 서로 반대편에 남아야 한다 (`output_not_contains` 대칭 유지 확인)
+  - CLAUDE.md에 **eval 식별자 스캔 게이트** 추가 — `evals/`를 건드리는 커밋을 막는다. allowlist를 없앤 대신 스캔이 그 자리를 대신한다
+  - 측정 공백 확인: eval이 없는 스킬 7개 (`eli5-note`, `local-shot`, `review-queue`, `review-reminder`, `spec-revision`, `trending-digest`, `wt`). 이번 전환의 목적이 측정이므로 기록해 둔다
+
 ### Added
 
 - `nara-release-watch` 신설 — watchlist repo의 신규 릴리즈를 폴링해 nara-kit에 증류할 값이 있는 것만 판정·보고한다. `nara-trending-digest`와 짝이지만 다른 일이다: trending은 **모르는 repo 발견**, 이건 **아는 repo 추적**. 배달 경로(Slack DM + Obsidian)만 공유

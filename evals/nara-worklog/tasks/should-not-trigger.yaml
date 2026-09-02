@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "Ticket creation and status transitions are not this skill"
+description: |
+  A request to create a ticket or move its status must redirect rather than
+  invoke the worklog flow. This skill only writes time on an existing ticket.
+tags:
+  - negative
+  - routing
+inputs:
+  prompt: "이 티켓 상태를 In Progress로 바꿔줘"
+  files: []
+expected:
+  output_not_contains:
+    - "worklog.py"
+    - "jira_add_worklog"
+  outcomes:
+    - type: task_completed

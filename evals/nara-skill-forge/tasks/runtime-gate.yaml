@@ -1,0 +1,21 @@
+id: runtime-gate-001
+name: "Runtime-neutrality gate flags single-runtime lock as a P0 fix"
+description: |
+  Verifies that when the target SKILL.md hardcodes a single runtime (e.g. "in
+  Claude Code" prose or a pinned ~/.claude/skills path), the Phase 0 gate flags it
+  and skill-forge makes it the round-1 P0 runtime-lock fix before other themes.
+tags:
+  - edge-case
+  - runtime-neutrality
+inputs:
+  prompt: "이 스킬 forge해줘"
+  files:
+    - path: weak-skill.md
+expected:
+  output_contains:
+    - "runtime"
+    - "P0"
+  output_not_contains:
+    - "no runtime issues"
+  outcomes:
+    - type: task_completed

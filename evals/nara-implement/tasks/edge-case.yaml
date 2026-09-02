@@ -1,0 +1,17 @@
+id: edge-case-001
+name: "No-TDD mechanical change still verifies"
+description: |
+  Test that a mechanical/config change recommends non-TDD but still runs verification
+  and classifies any failures, ending with a Pass|Fail|Blocked|Unverifiable verdict.
+tags:
+  - edge-case
+inputs:
+  prompt: "/nara-implement 환경변수 기본값 하나만 바꾸는 작은 변경이야"
+  files: []
+expected:
+  output_contains:
+    - "Verification"
+  output_not_contains:
+    - "git commit -m"
+  outcomes:
+    - type: task_completed

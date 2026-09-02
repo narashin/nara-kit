@@ -1,0 +1,25 @@
+id: fixversion-append-001
+name: "fixVersions append-only + idempotent skip"
+description: |
+  Ticket with existing fixVersion 1.1.0 → final state contains BOTH 1.1.0 and 1.2.3
+  (the required "final:" line format makes an overwrite that drops 1.1.0 fail the
+  regex). Ticket already at 1.2.3 → skipped. Empty ticket → 1.2.3 added.
+tags:
+  - jira
+  - idempotency
+inputs:
+  prompt: |
+    release-prep 6단계(Fix Version 적용)만 시뮬레이션해줘. 대상 버전 1.2.3.
+    PROJ-101: fixVersions=["1.1.0"] / PROJ-102: fixVersions=["1.2.3"] /
+    PROJ-103: fixVersions=[]. 티켓마다 최종 상태를 반드시 다음 형식 한 줄로 보고해:
+    "PROJ-XXX final: [쉼표로 구분된 전체 버전 목록] (updated|skipped)"
+  files:
+    - fixtures/config-sample.md
+expected:
+  regex_match:
+    - 'PROJ-101 final:[^\n]*1\.1\.0'
+    - 'PROJ-101 final:[^\n]*1\.2\.3'
+    - '(?i)PROJ-102 final:[^\n]*skip'
+    - 'PROJ-103 final:[^\n]*1\.2\.3'
+  output_not_contains:
+    - "jira_create_version"

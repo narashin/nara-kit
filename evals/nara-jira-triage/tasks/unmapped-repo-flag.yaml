@@ -1,0 +1,27 @@
+id: unmapped-repo-flag-001
+name: "Unmapped project → queue issue created but [UNVERIFIED] repo, no guess"
+description: |
+  A ready ticket from a project with no config mapping is still queued (so it is
+  visible), but its repo is flagged [UNVERIFIED] — never guess a repo. Human
+  must complete the mapping before assigning to Dev.
+tags:
+  - routing
+  - unmapped
+  - thesis-guard
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    config 매핑된 project: OPS, PROJ
+    key: FOO-1
+    status: To Do
+    summary: 미지의 프로젝트 기능 추가
+    description: config에 매핑 없는 project.
+  files: []
+expected:
+  output_contains:
+    - "UNVERIFIED"
+  regex_match:
+    - "(?i)(매핑 없음|repo 매핑)"
+  output_not_contains:
+    - "git.example.com/acme-sre/sandbox-dns"
+    - "git.example.com/acme-sre/web-ui"

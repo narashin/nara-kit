@@ -1,0 +1,27 @@
+id: fact-preservation-001
+name: "Preserve facts while transforming technical review comment"
+description: |
+  Technical opinion with numbers, a link, and a negative assertion.
+  Expect register ③, verbatim preservation of figures/links, hedged suggestion form,
+  no humor injection (source has none), and no assertion flips.
+tags:
+  - guardrail
+inputs:
+  prompt: |
+    스타일 프로필 경로: evals/naranizer/fixtures/style-profile.fixture.md
+
+    아래 리뷰 코멘트를 naranizer로 내 말투로 바꿔줘.
+
+    이 캐시 설정은 잘못되었습니다. TTL 300초는 너무 깁니다. 60초로 줄여야 합니다. 관련 문서는 https://example.com/docs/cache 를 참고하세요. 현재 구현은 stale 데이터를 반환할 수 있습니다.
+  files: []
+expected:
+  output_contains:
+    - "naranizer: register="
+    - "300"
+    - "60"
+    - "https://example.com/docs/cache"
+  output_not_contains:
+    - "줍줍"
+    - "찍먹"
+  outcomes:
+    - type: task_completed

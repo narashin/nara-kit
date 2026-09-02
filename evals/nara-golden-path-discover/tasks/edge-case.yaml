@@ -1,0 +1,21 @@
+id: edge-case-001
+name: "Golden-path discovery with no live env / no auth (degraded mode)"
+description: |
+  Verifies graceful degradation: with no env URL, no storageState, and no live
+  crawl, the skill falls back to static read (rung c), marks unobserved selectors
+  [UNVERIFIED: requires live crawl], states the crawl rung in frontmatter, and
+  emits the degraded-mode WARNING banner instead of presenting a placeholder
+  skeleton as full fidelity. Must not fabricate labels or write credentials.
+tags:
+  - edge-case
+inputs:
+  prompt: "라이브 E2E 시나리오 뽑아 /my-approvals -- env 없음, storageState 없음, crawl=off"
+  files: []
+expected:
+  output_contains:
+    - "[UNVERIFIED"
+    - "static"
+  output_not_contains:
+    - "password"
+  outcomes:
+    - type: task_completed

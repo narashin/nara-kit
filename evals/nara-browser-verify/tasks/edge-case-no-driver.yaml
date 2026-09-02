@@ -1,0 +1,19 @@
+id: edge-case-no-driver-001
+name: "No browser driver available returns Unverifiable, never a static Pass"
+description: |
+  With no chrome-devtools/playwright MCP connected, the skill must NOT fall back to
+  static source analysis and must NOT return Pass. It reports Unverifiable (requires
+  live runtime) and opens no visible browser as a workaround.
+tags:
+  - edge-case
+  - negative
+inputs:
+  prompt: "browser-verify"
+  files: []
+expected:
+  output_contains:
+    - "Unverifiable"
+  output_not_contains:
+    - "Status: Pass"
+  outcomes:
+    - type: task_completed

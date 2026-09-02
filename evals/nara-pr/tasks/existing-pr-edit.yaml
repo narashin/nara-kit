@@ -1,0 +1,22 @@
+id: existing-pr-edit-001
+name: "Existing PR URL — regenerate body via edit, not create"
+description: |
+  Test that when given an existing PR URL, the skill regenerates the PR body
+  in the current QA-first format and proposes `gh pr edit <N>` (updating the
+  existing PR), NOT `gh pr create`. The target repo may not be checked out in
+  cwd — the skill should fetch the PR via `gh pr view <N> --repo <host/owner/repo>`
+  and use the author's existing body as the source of truth.
+tags:
+  - existing-pr
+  - edit-mode
+inputs:
+  prompt: "https://git.example.com/OWNER/REPO/pull/123 PR 본문 현재 포맷으로 갱신해줘"
+  files: []
+expected:
+  output_contains:
+    - "gh pr edit"
+    - "gh pr view"
+  output_not_contains:
+    - "gh pr create"
+  outcomes:
+    - type: task_completed

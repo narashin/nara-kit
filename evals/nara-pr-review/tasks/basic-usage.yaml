@@ -1,0 +1,20 @@
+id: basic-usage-001
+name: "Review a colleague's PR by URL"
+description: |
+  Given a PR URL, the skill must collect via gh (view/diff/checks/threads),
+  run code-plane reviewers plus the 4 PR-plane lanes, save a Korean report,
+  and NOT post any comment without explicit per-finding approval. Trailing
+  status must include comments-posted and unresolved-threads lines.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "이 PR 리뷰해줘 https://github.example.com/org/repo/pull/123"
+  files: []
+expected:
+  output_contains:
+    - "comments-posted"
+  output_not_contains:
+    - "approve 처리했"
+  outcomes:
+    - type: task_completed

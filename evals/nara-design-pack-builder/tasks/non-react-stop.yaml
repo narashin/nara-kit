@@ -1,0 +1,25 @@
+id: non-react-stop-001
+name: "Vue design-system source should stop with manual-pack message"
+description: |
+  SKILL.md §2 (Step 1) is a hard gate: Vue, Svelte, Web Components, Angular, or a plain
+  CSS/HTML component library all fail it, because the skill only knows how to target
+  nara-design-studio's in-browser Babel + CDN React mount protocol. On a non-React source the
+  skill must tell the user to build the pack by hand (tokens/*.css + _ds_manifest.json per
+  manifest-schema.md) or use the bundled starter pack — never attempt component adaptation,
+  and never report having extracted or adapted components.
+tags:
+  - gate
+  - negative-test
+inputs:
+  prompt: "build a design studio pack from our design system at ~/repos/acme-ds — it's built with Vue 3 single-file components"
+  files: []
+expected:
+  output_contains:
+    - "(?i)(react-only|react only)"
+    - "(?i)(build a pack by hand|by hand)"
+    - "(?i)(starter pack)"
+  output_not_contains:
+    - "(?i)(successfully extracted|extraction complete|adapted all components|pack is ready)"
+    - "components extracted"
+  outcomes:
+    - type: task_completed

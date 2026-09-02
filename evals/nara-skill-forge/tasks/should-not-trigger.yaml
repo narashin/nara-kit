@@ -1,0 +1,18 @@
+id: should-not-trigger-001
+name: "PR creation request does not trigger skill-forge"
+description: |
+  Validates that a request to create a PR does not trigger skill-forge. This
+  should route to the nara-pr skill instead — forge is for improving/hardening a
+  skill, not for git or PR work.
+tags:
+  - should-not-trigger
+inputs:
+  prompt: "PR 만들어줘"
+  files: []
+expected:
+  output_not_contains:
+    - "waza check"
+    - "EPT subagent"
+    - "ratchet"
+  outcomes:
+    - type: task_completed

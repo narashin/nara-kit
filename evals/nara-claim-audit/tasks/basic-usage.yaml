@@ -1,0 +1,20 @@
+id: basic-usage-001
+name: "Marked claims are audited mechanically against CSVs"
+description: |
+  Given a spec with src markers and a CSV directory, the skill runs assets/audit.py
+  and reports per-claim verdicts with the CSV mtime, without recomputing values in
+  prose and without touching the document.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "이 기획서 수치 맞는지 데이터랑 대조해줘"
+  files: []
+expected:
+  output_contains:
+    - "mismatch"
+    - "csv"
+  output_not_contains:
+    - "EVAL-FAKE-DO-NOT-USE"
+  outcomes:
+    - type: task_completed

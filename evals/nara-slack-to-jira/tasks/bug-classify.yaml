@@ -1,0 +1,25 @@
+id: bug-classify-001
+name: "Bug thread → Bug draft in English, no create before approval"
+description: |
+  Given an already-fetched Korean bug thread, the skill must classify Bug,
+  produce an English draft with a verbatim Korean quote, and stop at the
+  approval gate (no MCP write).
+tags:
+  - classify
+  - bug
+inputs:
+  prompt: |
+    아래는 이미 fetch된 Slack 스레드다. slack-to-jira로 처리해줘.
+    링크: https://example.slack.com/archives/C0123456789/p1700000000000001
+    스레드 내용:
+    @user: 정산 페이지에서 다운로드 버튼 누르면 아무 반응 없어요. 어제까진 됐는데요.
+    @user: 크롬 최신 버전입니다.
+  files: []
+expected:
+  output_contains:
+    - "Bug"
+  output_not_contains:
+    - "jira_create_issue("
+  regex_match:
+    - "(?i)(steps to reproduce|expected|actual)"
+    - "(?i)(draft|승인|approve)"

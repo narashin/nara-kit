@@ -1,0 +1,19 @@
+id: should-not-trigger-001
+name: "Generic unit-test scenario request should not produce a golden-path export"
+description: |
+  Negative control. A request for generic/unit test scenarios belongs to
+  test-discover, not golden-path-discover. This skill must NOT emit its
+  golden-path export artifacts (Playwright-ready frontmatter, {worker} token,
+  Crawl rung) for a non-e2e, non-golden-path target.
+tags:
+  - negative
+inputs:
+  prompt: "단위 테스트 시나리오 만들어줘 src/utils/format.ts"
+  files: []
+expected:
+  output_not_contains:
+    - "Playwright-ready"
+    - "worker"
+    - "Crawl rung"
+  outcomes:
+    - type: task_completed

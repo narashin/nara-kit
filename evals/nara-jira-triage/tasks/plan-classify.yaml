@@ -1,0 +1,24 @@
+id: plan-classify-001
+name: "Spec ticket → 기획 queue issue routed to Planner (not Dev)"
+description: |
+  A planning/spec ticket has no code deliverable. Classify 기획 and emit a
+  queue issue whose start path is the Planner agent — not Dev.
+tags:
+  - classify
+  - plan
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    (issuetype 필드는 비어있다 — summary/description 의미로 판단하라.)
+    key: PROJ-500
+    status: To Do
+    summary: 알림 센터 리뉴얼 기획서 작성
+    description: 신규 알림 센터 UX 방향성과 정보구조 PRD 작성. 코드 작업 아님.
+  files: []
+expected:
+  output_contains:
+    - "기획"
+  regex_match:
+    - "(?i)(Planner|assign)"
+  output_not_contains:
+    - "Dev agent"

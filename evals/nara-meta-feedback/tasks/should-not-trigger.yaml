@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "Session learnings request belongs to reflect, not meta-feedback"
+description: |
+  Capturing session learnings (decisions/conventions) into project memory is reflect's job, not
+  meta-feedback. meta-feedback targets the nara-kit toolkit itself, not the consuming repo's
+  knowledge. The skill should not produce a meta-feedback proposal here.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "오늘 세션에서 내린 결정이랑 발견한 컨벤션 정리해서 다음 세션을 위해 메모리에 저장해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "Meta Feedback Summary"
+    - "Redaction Receipt"
+    - "cannot_generalize_safely"

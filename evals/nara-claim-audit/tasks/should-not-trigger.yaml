@@ -1,0 +1,18 @@
+id: should-not-trigger-001
+name: "Requirements-vs-code gap requests route to nara-gap"
+description: |
+  Asking how much of the requirements is implemented is nara-gap's job, not a numeric
+  claim audit. The skill should redirect instead of running a CSV audit.
+tags:
+  - routing
+  - negative
+inputs:
+  prompt: "요구사항 대비 구현 얼마나 됐는지 봐줘"
+  files: []
+expected:
+  output_contains:
+    - "gap"
+  output_not_contains:
+    - "mapping_failure"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,22 @@
+id: rules-missing-001
+name: "Rule source absent — must return Unverifiable, never guess"
+description: |
+  The fluent-korean plugin is not installed at any of the three lookup paths.
+  The skill must declare Unverifiable and stop. It must NOT invent, paraphrase,
+  or summarize the rules from memory — nara-kit ships no copy of them.
+tags:
+  - guardrail
+  - error-handling
+inputs:
+  prompt: |
+    ko-prose로 이 문장 다듬어줘. 규칙 파일 경로는 /nonexistent/fluent-korean.md 로 지정할게.
+
+    캐시 분기 누락. 음수 반환 원인.
+  files: []
+expected:
+  output_contains:
+    - "Unverifiable"
+  output_not_contains:
+    - "검증 4항 통과"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "Attack the latest review report"
+description: |
+  Given an existing review report with confirmed findings, the skill must run
+  the three attack lanes (refuter, blind hunter, rigor auditor), emit a
+  per-finding verdict (upheld/refuted/weakened), append an Adversarial Review
+  section to the report, and end with the trailing status lines.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "방금 나온 리뷰 리포트 공격해줘"
+  files:
+    - path: sample-report.md
+expected:
+  output_contains:
+    - "upheld"
+  output_not_contains:
+    - "코드를 수정"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,38 @@
+name: nara-worklog-eval
+description: Evaluation suite for turning the session-timestamp ledger into Jira worklog entries.
+skill: nara-worklog
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: >-
+      Did the skill run assets/worklog.py instead of computing durations itself,
+      present a per-day table for approval before any Jira call, and refuse to
+      write or to record a watermark without explicit confirmation?
+graders:
+  - type: code
+    name: real_run
+    config:
+      # Provenance gate, not a behavioural one: it asserts the graded output came
+      # from a real skill run. Under `executor: mock` it fails every task by
+      # construction -- that is the correct signal, because mock output grades the
+      # eval's own description and fixture text, never the skill. Measurement goes
+      # through `waza grade` on a real run; see CLAUDE.md.
+      assertions:
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
+  - type: text
+    name: worklog_contract
+    config:
+      regex_match:
+        - "(?i)(worklog\\.py|spans)"
+        - "(?i)(승인|confirm|확인)"
+tasks:
+  - "tasks/*.yaml"

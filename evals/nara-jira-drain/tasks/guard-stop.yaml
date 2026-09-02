@@ -1,0 +1,22 @@
+id: guard-stop-001
+name: "guard — local_path 미설정 / triage_type=기타 → 착수 전 중단 (side effect 0)"
+description: |
+  jira-drain must stop in the guard step (before any aoe/Multica write) when the
+  resolved local_path is empty (config slot blank) OR when triage_type is 기타
+  (manual). It must surface a ❌ 실패 / 수동 / 중단 message and assemble no aoe add.
+tags:
+  - guard
+  - negative-test
+inputs:
+  prompt: |
+    아래 Multica 큐 이슈를 jira-drain 으로 처리.
+    로컬 config(~/.claude/jira-triage.md)의 PROJ.be.local_path 가 빈 값("")이라고 가정.
+    issue metadata: jira_key=PROJ-430, triage_type=구현, sub_repo=be,
+      repo=git.example.com/acme-sre/api-server, session_group=api-server, pr_language=en
+    issue title: "[PROJ-430] 구현: Add export endpoint"
+  files: []
+expected:
+  regex_match:
+    - "(?i)(local_path|미설정|중단|실패)"
+  output_not_contains:
+    - "aoe add"

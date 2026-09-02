@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "Figma-vs-runtime is out of scope — no env-diff run"
+description: |
+  A figma-vs-runtime request must NOT run env-diff. The skill states figma-diff is an
+  out-of-scope future mode and redirects, running no measurement.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "figma 디자인이랑 실제 화면이랑 맞는지 비교해줘"
+  files: []
+expected:
+  output_contains:
+    - "scope"
+  output_not_contains:
+    - "drift candidates"
+    - "side effects: browser"

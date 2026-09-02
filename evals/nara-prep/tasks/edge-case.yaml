@@ -1,0 +1,19 @@
+id: edge-case-001
+name: "Prep with no external source — verbal requirements only"
+description: |
+  When no Jira/Confluence URL is provided and user gives verbal requirements,
+  prep should still structure them into docs/requirements.md with UNVERIFIED markers
+  for anything not explicitly confirmed.
+tags:
+  - edge-case
+inputs:
+  prompt: "로그인 기능 만들어야 해. OAuth2 쓰고, 세션은 Redis에 저장. 요구사항 정리해줘"
+  files: []
+expected:
+  output_contains:
+    - "requirements"
+  output_not_contains:
+    - "gap"
+    - "코드 리뷰"
+  outcomes:
+    - type: task_completed

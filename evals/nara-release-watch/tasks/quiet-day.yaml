@@ -1,0 +1,19 @@
+id: quiet-day-001
+name: "A quiet day sends nothing and wakes no judgment"
+description: |
+  When poll reports quiet with no needs_attention, the skill must stop at the
+  early-exit step. Sending "nothing today" six days a week trains the reader to
+  ignore the digest before it ever says anything useful.
+tags:
+  - basic
+  - early-exit
+inputs:
+  prompt: "/nara-release-watch"
+  files:
+    - path: quiet-poll.json
+expected:
+  output_not_contains:
+    - "post_message"
+    - "증류 후보"
+  outcomes:
+    - type: task_completed

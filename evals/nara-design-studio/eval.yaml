@@ -20,10 +20,16 @@ metrics:
     description: Did the skill resolve the pack the way §2 requires (ask when the project has recorded nothing, use the record when it has, never inherit a user default silently), then run the Studio Mode interview — instead of building straight away or drifting into an unrelated workflow (RFC, publish-spec)?
 graders:
   - type: code
-    name: has_output
+    name: real_run
     config:
+      # Provenance gate, not a behavioural one: it asserts the graded output came
+      # from a real skill run. Under `executor: mock` it fails every task by
+      # construction -- that is the correct signal, because mock output grades the
+      # eval's own description and fixture text, never the skill. Measurement goes
+      # through `waza grade` on a real run; see CLAUDE.md.
       assertions:
-        - "len(output) > 0"
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
   - type: text
     name: relevant_content
     config:

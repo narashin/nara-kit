@@ -1,0 +1,20 @@
+id: edge-case-already-logged-001
+name: "A ledger past its watermark proposes nothing and calls no Jira tool"
+description: |
+  When every span sits before the logged watermark, the skill must end with an
+  "already recorded" receipt. jira_add_worklog is not idempotent, so a second
+  write here would double-bill the ticket.
+tags:
+  - edge-case
+  - idempotency
+inputs:
+  prompt: "안 올린 시간 있나 확인해서 올려줘"
+  files:
+    - path: PROJ-999-logged.jsonl
+expected:
+  output_contains:
+    - "기록"
+  output_not_contains:
+    - "jira_add_worklog"
+  outcomes:
+    - type: task_completed

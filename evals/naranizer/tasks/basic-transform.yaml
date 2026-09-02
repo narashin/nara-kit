@@ -1,0 +1,27 @@
+id: basic-transform-001
+name: "Transform AI-drafted request message into profile style"
+description: |
+  AI-drafted formal Korean request message with greeting boilerplate.
+  Expect register ① detection, removal of forbidden patterns (greeting, closing cliché),
+  profile emoji usage within limits, and the trailing status line.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: |
+    스타일 프로필 경로: evals/naranizer/fixtures/style-profile.fixture.md
+
+    아래 초안을 naranizer로 내 말투로 바꿔줘.
+
+    안녕하세요, 김철수님. 다름이 아니라 다음 주 월요일(7/14)까지 스테이징 환경 접근 권한 승인이 필요합니다. 아래 링크에서 승인 부탁드립니다: https://example.com/approval/12345 확인 부탁드립니다. 감사합니다.
+  files: []
+expected:
+  output_contains:
+    - "naranizer: register="
+    - "7/14"
+    - "https://example.com/approval/12345"
+  output_not_contains:
+    - "안녕하세요"
+    - "다름이 아니라"
+  outcomes:
+    - type: task_completed

@@ -1,0 +1,23 @@
+id: basic-usage-001
+name: "Browser-visible AC is judged per axis with runtime evidence"
+description: |
+  Given an approved browser-visible criterion and a reachable local target, the skill
+  drives a headless runtime with trusted input, captures and actually inspects the
+  screenshots it cites, maps each criterion to an axis verdict, and ends with exactly
+  one terminal status token. It never cites element.click()/dispatchEvent() as
+  interaction evidence and never leaks credentials.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "이 화면 AC 브라우저로 검증해줘 --url http://localhost:3000/tickets"
+  files: []
+expected:
+  output_contains:
+    - "Status:"
+    - "criterion"
+  output_not_contains:
+    - "EVAL-FAKE-DO-NOT-USE"
+    - "dispatchEvent"
+  outcomes:
+    - type: task_completed

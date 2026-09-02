@@ -1,0 +1,20 @@
+id: edge-case-001
+name: "Missing incident report — abort with guidance"
+description: |
+  Test that the skill aborts when docs/incident-report.md does not exist
+  and instructs the user to run /incident first.
+tags:
+  - edge-case
+inputs:
+  prompt: "장애 수정 구현해줘"
+  files: []
+expected:
+  output_contains:
+    - "/incident"
+    - "incident-report.md"
+  output_not_contains:
+    - "Phase 1"
+    - "Phase 2"
+    - "git commit"
+  outcomes:
+    - type: task_completed

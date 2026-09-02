@@ -1,0 +1,22 @@
+id: basic-usage-001
+name: "Session learning capture"
+description: |
+  Test that the skill captures session learnings and routes them under the
+  Session Reflect header via the routing table (학습 | 타깃 | 동작 | 근거),
+  writing memory/handoff directly and recommending skill/hook/ADR only.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "세션 마무리해줘. 오늘 작업한 내용 정리하고 reflect 실행"
+  files: []
+expected:
+  output_contains:
+    - "Session Reflect"
+    - "타깃"
+    - "근거"
+  output_not_contains:
+    - "git commit"
+    - "설치됨"
+  outcomes:
+    - type: task_completed

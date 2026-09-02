@@ -1,0 +1,18 @@
+id: lyris-be-classify-001
+name: "PROJ [BE] ticket → be sub-repo (api-server) + api-server session group"
+description: |
+  A PROJ backend ticket routes to api-server repo + session group, English PR.
+tags: [classify, routing, lyris-be]
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    (issuetype 비어있음 — summary/description 의미 판단)
+    key: PROJ-491
+    status: Selected for Development
+    summary: "[BE] approve 엔드포인트 @NotBlank 검증 메시지 개선"
+    description: 서버 ChangeRequest approve API의 검증 에러 메시지 필드 특정화.
+  files: []
+expected:
+  output_contains: ["api-server"]
+  regex_match: ["(?i)(session.?group|api-server)"]
+  output_not_contains: ["web-ui"]

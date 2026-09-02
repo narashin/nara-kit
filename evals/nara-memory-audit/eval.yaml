@@ -27,11 +27,22 @@ metrics:
     weight: 1.0
     threshold: 0.8
     description: Did the run score the memory files and stop before mutating anything?
-# No eval-level graders. The obvious one — asserting the mock's own marker is
-# absent from the output — is unsatisfiable under `executor: mock` by
-# construction: the mock emits exactly that marker, so every task fails on it
-# regardless of the skill. An assertion that can never pass is not a gate, it is
-# noise that trains you to ignore the suite.
-graders: []
+# Eval-level graders apply to EVERY task, so they assert only universally-true
+# properties. Behavioural discrimination lives in each task's
+# `expected.output_contains` / `output_not_contains`.
+#
+# `real_run` asserts the graded output came from a real skill run. It is
+# unsatisfiable under `executor: mock` by construction — and that is the point.
+# Mock output is the eval's own prompt, description and fixture text echoed back,
+# so grading it measures this file against itself. Failing loudly under mock is
+# the correct signal; passing quietly is the bug. Measurement runs through
+# `waza grade` on a real run's JSON (see CLAUDE.md).
+graders:
+  - type: code
+    name: real_run
+    config:
+      assertions:
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
 tasks:
   - "tasks/*.yaml"

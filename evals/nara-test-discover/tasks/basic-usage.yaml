@@ -1,0 +1,23 @@
+id: basic-usage-001
+name: "Discover test scenarios for an API module"
+description: |
+  Verifies that the 4-stage pipeline runs end-to-end: context collection, domain
+  decomposition, S2 candidate over-generation, and S3 selection with detailed
+  scenarios output to docs/test-scenarios/scenarios-detailed.md.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "테스트 시나리오 만들어줘 src/api/orders.ts"
+  files: []
+expected:
+  output_contains:
+    - "S2"
+    - "S3"
+    - "scenario"
+  output_not_contains:
+    - "import "
+    - "describe("
+    - "it("
+  outcomes:
+    - type: task_completed

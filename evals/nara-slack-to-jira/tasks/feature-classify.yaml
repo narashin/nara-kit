@@ -1,0 +1,24 @@
+id: feature-classify-001
+name: "Feature request → Feature draft with conditional AC"
+description: |
+  Given a feature-request thread, classify Feature and emit an AC block that is
+  either a labeled proposed draft or TBD — never silently fabricated.
+tags:
+  - classify
+  - feature
+inputs:
+  prompt: |
+    아래는 이미 fetch된 Slack 스레드다. slack-to-jira로 처리해줘.
+    링크: https://example.slack.com/archives/C0123456789/p1700000000000002
+    스레드 내용:
+    @user: 정산 내역을 엑셀로 한 번에 내려받을 수 있으면 좋겠어요. 매번 복사하기 번거로워요.
+  files: []
+expected:
+  output_contains:
+    - "Feature"
+  regex_match:
+    - "(?i)(acceptance criteria)"
+    - "(?i)(proposed — needs confirmation|tbd — needs po|\\[proposed\\])"
+    - "(?i)(draft|승인|approve)"
+  output_not_contains:
+    - "jira_create_issue("

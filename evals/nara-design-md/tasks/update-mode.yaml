@@ -1,0 +1,16 @@
+id: update-mode-001
+name: Update Mode — Figma Change
+description: |
+  User reports Figma design change, wants DESIGN.md updated.
+  Skill should enter update mode: read existing, update changed sections, preserve rest.
+tags:
+  - update
+inputs:
+  prompt: "Figma에서 primary color가 #2B47FC로 바뀌었어. DESIGN.md 갱신해줘."
+  files:
+    - path: design-md-sample.md
+expected:
+  output_contains:
+    - "update"
+  outcomes:
+    - type: task_completed

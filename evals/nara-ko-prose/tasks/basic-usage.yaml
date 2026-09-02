@@ -1,0 +1,30 @@
+id: basic-usage-001
+name: "Repair a compressed Korean PR body"
+description: |
+  Telegraphic Korean draft with dropped particles, noun-phrase sentence breaks, and an em-dash.
+  Expect restored particles/endings, completed sentences, em-dash replaced, trailing status line.
+  Vocabulary must not be swapped in repair mode.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: |
+    아래 PR 본문 초안을 ko-prose로 다듬어줘.
+
+    ## 요약
+
+    토큰 카운트 함수 오류 수정. 지출 비용 추론 시 음수 반환 — 캐시 히트 케이스 누락 원인.
+
+    ## 주요 변경
+
+    - `countTokens()` 캐시 분기 추가
+    - 회귀 테스트 3건 추가. 기존 테스트 영향 없음
+  files: []
+expected:
+  output_contains:
+    - "ko-prose"
+    - "countTokens()"
+  output_not_contains:
+    - "지출 비용 추론 시 음수 반환 — 캐시 히트 케이스 누락 원인."
+  outcomes:
+    - type: task_completed

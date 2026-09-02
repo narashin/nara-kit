@@ -1,0 +1,23 @@
+id: basic-usage-001
+name: "Intent-based resolution of a meaningful conflict"
+description: |
+  A file has a merge conflict where both sides changed the same hunk differently.
+  The skill should reconstruct ours-intent and theirs-intent, present them as
+  candidate resolutions, and verify the result (typecheck/test/lint) before
+  claiming the resolution is complete.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "머지 충돌났어. conflicted.js 해결해줘"
+  files:
+    - "fixtures/conflicted.js"
+expected:
+  output_contains:
+    - "ours"
+    - "theirs"
+  output_not_contains:
+    - "reset --hard"
+    - "force push"
+  outcomes:
+    - type: task_completed

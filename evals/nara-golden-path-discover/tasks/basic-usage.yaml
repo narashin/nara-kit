@@ -1,0 +1,25 @@
+id: basic-usage-001
+name: "Discover golden-path E2E scenarios for a route"
+description: |
+  Verifies the 6-stage pipeline runs end-to-end: consumes test-discover E2E
+  decomposition, filters the golden-path spine with parallel-safety tagging,
+  stratifies S1 atomic paths, computes auditable coverage (represented / total),
+  and emits a Playwright-ready export to docs/test-scenarios/golden-paths.E2E.md
+  with the frontmatter + Crawl rung line + SKIP/WARNING taxonomy.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "golden path E2E 발굴해줘 /create-ticket"
+  files: []
+expected:
+  output_contains:
+    - "Playwright-ready"
+    - "coverage"
+    - "Crawl rung"
+  output_not_contains:
+    - "import "
+    - "describe("
+    - "it("
+  outcomes:
+    - type: task_completed

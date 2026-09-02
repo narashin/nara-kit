@@ -1,0 +1,19 @@
+id: should-not-trigger-001
+name: "Test implementation request does not trigger test-verify"
+description: |
+  Validates that a request to write or implement test code does not trigger
+  test-verify. This should route to test-implement instead.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "테스트 코드 작성해줘 src/api/users.ts"
+  files: []
+expected:
+  output_not_contains:
+    - "QA Lead"
+    - "Red Team"
+    - "PASS"
+    - "NEEDS_WORK"
+    - "FAIL"
+    - "scenarios-review.md"

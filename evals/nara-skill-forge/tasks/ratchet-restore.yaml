@@ -1,0 +1,22 @@
+id: ratchet-restore-001
+name: "Ratchet restores a fix that regresses a previously-passing grader"
+description: |
+  Verifies that when a one-theme fix improves the targeted dimension but breaks
+  another previously-passing grader (or grows the token budget), skill-forge
+  restores the pre-fix snapshot rather than keeping the regression, then moves to
+  the next-lowest theme.
+tags:
+  - edge-case
+  - ratchet
+inputs:
+  prompt: "이 스킬 개선하는데 방금 수정하니까 다른 task grader가 깨졌어. 어떻게 처리해?"
+  files:
+    - path: weak-skill.md
+expected:
+  output_contains:
+    - "restore"
+    - "snapshot"
+  output_not_contains:
+    - "keep the fix anyway"
+  outcomes:
+    - type: task_completed

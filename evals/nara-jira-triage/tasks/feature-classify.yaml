@@ -1,0 +1,24 @@
+id: feature-classify-001
+name: "Story ticket (Selected) → 구현 queue issue routed to Dev + sandbox-dns"
+description: |
+  Given a ready (Selected for Development) OPS ticket, classify 구현, route to
+  the sandbox-dns repo, and emit an UNASSIGNED queue issue whose start path is
+  the Dev agent.
+tags:
+  - classify
+  - feature
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    (issuetype 필드는 비어있다 — summary/description 의미로 판단하라.)
+    key: OPS-88
+    status: Selected for Development
+    summary: DNS 레코드 일괄 등록 API 추가
+    description: 현재 단건만 가능. CSV 업로드로 다건 등록하는 엔드포인트 신규 추가.
+  files: []
+expected:
+  output_contains:
+    - "구현"
+    - "sandbox-dns"
+  regex_match:
+    - "(?i)(Dev agent|assign)"

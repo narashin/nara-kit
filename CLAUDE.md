@@ -58,13 +58,44 @@ Skills inherit this contract automatically — do not duplicate the reference in
 name: <name>-eval
 skill: <name>
 graders:
-  - type: code    # Assertion-based
-  - type: text    # Regex/pattern matching
+  - type: code                 # eval-level: universally-true properties only
+    name: real_run             # provenance gate -- mandatory, see below
+    config:
+      assertions:
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
+  - type: text                 # Regex/pattern matching
 tasks:
   - "tasks/*.yaml"
 ```
 
-Run: `waza eval <skill-name>` (requires `.waza.yaml` config at root)
+Eval-level graders run against **every** task including anti-trigger ones, so they may assert only universally-true properties. All behavioural discrimination belongs in each task's `expected.output_contains` / `output_not_contains`.
+
+### What can and cannot be measured here
+
+There is no `waza eval` command — it is `waza run`. But neither engine measures a skill in this repo:
+
+| Path | Status |
+|---|---|
+| `waza run` with `executor: copilot-sdk` | Needs a Copilot seat (unassigned). Has never run |
+| `waza run` with `executor: mock` | Runs, prints scores, **measures nothing** — the mock never invokes the skill |
+| `waza check <skill>` | Works. Static only: tokens, links, frontmatter, description quality |
+| `waza coverage` | Works. Structural only: does a suite exist, which grader types |
+| `waza grade` on a real run's JSON | Works. The only path to a behavioural score |
+
+The mock echoes the prompt, the task's own `name`/`description`, and the fixture text verbatim. Grading that measures the eval against itself: `nara-gap` scored 4/8 purely because assertion strings appeared in its own description (`Score` matched `"produces docs/gap.md with a score (0-100)"`, case-insensitively). **Every suite therefore carries the `real_run` provenance gate, which fails all tasks under mock on purpose.** A loud 0/8 beats a quiet tautology that reads like a measurement. Never remove that gate to make a mock run look green.
+
+### Validating that graders discriminate
+
+What is measurable without an engine is the graders. Give them a correct output and an incorrect one; graders that cannot separate those cannot measure a skill either.
+
+```bash
+tools/eval-fixture.py validate <skill>      # probe → fill both sides → grade → report
+```
+
+The table lives in `evals/<skill>/validation.yaml` (`right:` / `wrong:` keyed by task id). Populate `wrong:` from **behaviour the skill actually produced** — invented failures are trivially discriminated and prove nothing. Expected result: every task passes on `right` and fails on `wrong`. A `wrong`-side pass means the assertion is satisfiable by incorrect output; a `right`-side failure means it is unsatisfiable by correct output. Both are grader defects, not skill findings.
+
+Reference suite: `evals/nara-gap/validation.yaml` — 8/8 discriminate. Run artifacts land in `results/` (gitignored).
 
 ## Workflow Architecture
 
@@ -82,7 +113,7 @@ See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagram
 
 1. Create `skills/nara-<name>/SKILL.md` with proper frontmatter — `nara-` prefix mandatory, `name:` field must equal the directory name
 2. Create `skills/nara-<name>/README.md` — thin human guide (Claude does NOT read it at runtime): purpose + invocation (`/nara-<name>`, `$nara-<name>`) + USE FOR / DO NOT USE FOR + backlinks to `../README.md` and `SKILL.md`. Derive from SKILL.md frontmatter to avoid drift. Every skill folder has one — `skills/*/README.md` is tracked (not gitignored). Setup-heavy skills (config/MCP) may add a rich hand-written guide instead (see `nara-slack-to-jira/README.md`)
-3. Create `evals/<name>/eval.yaml` + `tasks/` + `fixtures/`
+3. Create `evals/<name>/eval.yaml` + `tasks/` + `fixtures/` — the eval-level `real_run` provenance gate is mandatory (see Eval Structure). Add `validation.yaml` and run `tools/eval-fixture.py validate <name>` once the skill has produced real output to copy from
 4. Update `skills/README.md` catalog table — keep skill count accurate (root `README.md` has no per-skill table; the catalog + mermaids live in `skills/README.md`)
 5. If the skill sits in a flow, update `skills/README.md`'s recommended order and the relevant handoff lines
 6. New skill inherits output contract automatically — do not add per-skill output-contract reference (CLAUDE.md handles it)
@@ -114,7 +145,20 @@ grep -rn "](\.\./nara-[^)]*)" --include="*.md" skills/ | while IFS=: read -r f _
 
 No output = all sibling links resolve. Any `BROKEN` line blocks the release.
 
-**What ships:** only `skills/<name>/` directories. `README.md`, `skills/README.md`, `CLAUDE.md`, `CHANGELOG.md`, `references/`, and `evals/` (gitignored) never reach consumers — pushes touching only those need no consumer action.
+**What ships:** only `skills/<name>/` directories. `README.md`, `skills/README.md`, `CLAUDE.md`, `CHANGELOG.md`, `references/`, and `evals/` never reach consumers — pushes touching only those need no consumer action.
+
+**Eval identifier scan (blocks any commit touching `evals/`).** Suites are tracked so skill performance is measurable, but this repo is public. Tasks and fixtures must use placeholders (`PROJ-123`, `OPS-88`, `web-ui`, `api-server`, `git.example.com`, `acme-sre`, `C0123456789`), never real ticket keys, hosts, repo names, Slack channel IDs, or names:
+
+```bash
+grep -rInE 'LYRIS|SANDY|linecorp|LINE-SRE|iris-ui|iris-api|C0[0-9A-Z]{8,}|/p1[0-9]{15}' evals --exclude-dir=results \
+  | grep -vE 'C0123456789|/p170000000000000'
+```
+
+No output = safe to commit. Any hit blocks it. The second `grep -v` whitelists the placeholders themselves, which match the same shapes — extend it when you add a placeholder, never widen the first pattern.
+
+Two traps, both hit in practice:
+- **Preserve the distinctions a task asserts.** The jira-triage suites grade FE→BE repo routing, so the two placeholder repo names must stay opposed in `output_contains` / `output_not_contains`.
+- **Slack message timestamps are live pointers**, not just channel IDs. They are 16 digits after `p` (`/p1778744277781889`); an off-by-one in the digit count silently leaves them in place.
 
 **Renaming a skill is breaking:** consumers keep the old copy under the old name; they must remove it and reinstall.
 

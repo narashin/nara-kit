@@ -1,0 +1,30 @@
+id: ticket-extraction-001
+name: "Ticket keys = union of branch names + PR titles, deduped"
+description: |
+  Given merged PR fixtures, the skill must extract PROJ-101 (duplicated across two
+  PRs), PROJ-102 (branch name only), PROJ-103 (title only), classify PR #104 as
+  having no ticket key, and report exactly 3 unique keys (dedup enforced by the
+  required "unique keys: N" output line).
+tags:
+  - extraction
+inputs:
+  prompt: |
+    release-prep의 2단계(PR 수집)만 시뮬레이션해줘. 아래 JSON이 base..develop 범위의
+    merged PR 목록이다 (mergeCommit.oid는 전부 릴리즈 커밋 집합에 속한다고 가정).
+    티켓 키를 추출·dedup하고 반드시 다음 형식으로 보고해:
+    - "unique keys: <개수>" 한 줄
+    - 고유 키 목록
+    - 키 없는 PR 번호 목록
+  files:
+    - fixtures/merged-prs.json
+    - fixtures/config-sample.md
+expected:
+  output_contains:
+    - "PROJ-101"
+    - "PROJ-102"
+    - "PROJ-103"
+  regex_match:
+    - 'unique keys:\s*3'
+    - '(?i)(#?104)'
+  output_not_contains:
+    - "PROJ-104"

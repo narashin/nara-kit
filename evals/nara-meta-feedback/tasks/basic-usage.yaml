@@ -1,0 +1,36 @@
+id: basic-usage-001
+name: "Casual friction note redacted into generalized proposal"
+description: |
+  A casual request (no "public" cue) describing friction with the `prep` skill, rich with
+  project-specific detail. The skill must emit the 4-section template with all consumer-project
+  assets redacted — project codename, repo remote, branch, ticket ID, ticket title, spec URL,
+  PM person name, and domain-specific AC text must NOT appear.
+tags:
+  - basic
+  - happy-path
+  - privacy
+inputs:
+  prompt: |
+    Quick task. While working I hit some friction with a workflow tool and want to jot a short note so the tool can be improved later.
+    - I'm in the "Aurora" project (repo: ssh://git.northwind-internal.example/aurora/aurora-web.git, branch feature/AUR-318-coupon-stacking)
+    - I used a tool called `prep` that pulls a Jira/Confluence spec into a local docs/requirements.md
+    - It paraphrased the acceptance criteria instead of copying them verbatim, so the nuance of "동일 카테고리 쿠폰은 1개만, 카테고리 교차 시 최대 2개" got lost and I only noticed during gap analysis
+    - The Confluence source was https://wiki.northwind-internal.example/x/AbCdEf
+    - My PM Sarah Kim had written those AC very precisely
+    Write me a short improvement note for the `prep` tool capturing this friction.
+  files: []
+expected:
+  output_contains:
+    - "Meta Feedback Summary"
+    - "Redaction Receipt"
+    - "prep"
+    - "Unsafe details included: none"
+  output_not_contains:
+    - "Aurora"
+    - "AUR-318"
+    - "Sarah Kim"
+    - "northwind-internal"
+    - "동일 카테고리 쿠폰"
+    - "aurora-web"
+  outcomes:
+    - type: task_completed

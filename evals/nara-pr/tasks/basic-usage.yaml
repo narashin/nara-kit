@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "PR generation from branch commits"
+description: |
+  Test that the skill detects the base branch, collects commits via git log,
+  and generates a PR title with TICKET-ID and type, plus a Korean body
+  with 요약 / 주요 변경 / 확인 방법 (QA 가이드, 기존↔변경 후 대비) /
+  배포 시 주의사항 sections, followed by a naranizer post-pass.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "PR 만들어줘"
+  files: []
+expected:
+  output_contains:
+    - "git log"
+    - "gh pr create"
+  output_not_contains:
+    - "git commit"
+  outcomes:
+    - type: task_completed
