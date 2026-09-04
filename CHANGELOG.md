@@ -85,6 +85,15 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Changed
 
+- `nara-worklog`가 **사람 시간과 agent 시간을 가른다.** 모든 이벤트에 `role`이 붙고 Jira worklog에는 `role: human`만 올라간다. dispatch된 codex 워커는 티켓 이름이 붙은 브랜치에서 돌아 사람과 똑같은 이벤트를 만들기 때문에, 구분이 없으면 무인 실행 한 시간이 팀 스프린트 리포트에 내 시간으로 들어간다
+  - **역할 필터는 그룹화 전에 적용된다.** 나중에 걸러내면 워커의 턴이 사람의 유휴 간격을 메워 두 개의 별개 접속이 한 span으로 붙는다. 사람 10분 + agent 1시간 + 사람 10분이 `20m`이어야 하고 `2h 15m`이면 안 된다는 것을 테스트로 고정했다
+  - `agent_seconds`/`agent_time_spent`로 따로 보고한다. 청구액이 아니라 자동화가 얼마나 걷어갔는지의 지표이고 `total_seconds`에 합산하지 않는다
+  - 판별은 `NARA_WORKLOG_ROLE`(dispatcher가 워커에 심는다)이 1차, `~/orca/workspaces` 경로가 백스톱이다. 오타 같은 미지의 값은 `human`으로 떨어진다 — 인식 못 하는 역할을 만들면 사람 집계와 agent 집계 양쪽에서 사라진다
+  - role 없는 기존 이벤트는 `human`으로 읽는다. ledger는 append-only이므로 과거 기록이 계속 세어져야 한다
+- `nara-worklog` hook이 **harness에 의존하지 않는다.** 이벤트 이름을 `--event`로 받고 stdin 페이로드는 폴백이다. Claude Code와 Codex 둘 다 `UserPromptSubmit`/`Stop`을 노출하지만 두 페이로드 스키마가 계속 같다는 데 시계를 걸지 않는다 — 한쪽이 키를 바꾸면 조용히 멈춘다. Codex 배선 절차는 `references/hook-setup.md`에 추가
+  - **손으로 JSON을 편집하다 두 번 틀렸다.** `UserPromptSubmit` 대신 `PostToolUse`에 넣어 턴 경계가 무의미해졌고(도구 호출마다 발동), 닫는 괄호를 빠뜨려 `~/.codex/hooks.json` 전체가 파싱 불가가 됐다. 후자는 worklog만 죽는 게 아니라 그 파일의 **모든** hook이 함께 죽는다. 문서는 이제 파서를 거치는 스크립트를 제시한다
+  - **`-> str | None`을 추가했다가 3.9 폴백을 깨뜨렸다.** `TypeError`로 `exit=1`이고, 폴백이 발동하는 머신에서는 그게 모든 턴 차단이다. 첫 줄의 `from __future__ import annotations`가 그 방어이고, 문서에 실측 검증 한 줄을 넣었다
+  - 테스트 69 → **78건**. role 3건(청구 제외·유휴 간격 비브리지·필드 없음=human)과 argv 이벤트 5건
 - `nara-worklog` idle 임계 기본값 **30 → 90분**. 실측 하루에서 30분은 62분짜리 기획 검수 유휴와 55분 유휴를 청구에서 잘라냈다 — 생각·검수 시간도 작업 시간이라는 판단
   - "세션 시작~종료"를 그대로 쓰는 안은 실측으로 기각했다: 같은 ledger가 2h43m(30분 모델) vs **15h38m**(세션 모델)으로 갈렸고, 세션 하나가 18:34에 시작해 다음날 08:11까지 열려 있어 **707분 수면 구간이 청구**됐다. 문제는 세션 경계가 아니라 임계값이었다
   - 90분은 62·55·35분 유휴를 살리고 707분은 버리는 지점. 같은 날 값이 2h43m → 4h15m

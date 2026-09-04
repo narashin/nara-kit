@@ -20,8 +20,13 @@ SCRIPT = Path(__file__).parent / "worklog.py"
 TZ = "+09:00"
 
 
-def ev(ts: str, kind: str = "prompt") -> dict:
-    return {"ts": f"{ts}{TZ}", "ev": kind, "session": "abcd1234", "branch": "x"}
+def ev(ts: str, kind: str = "prompt", role: str | None = None) -> dict:
+    # `role` is omitted unless asked for: every event written before roles
+    # existed lacks the field, and the reducer must keep reading those as human.
+    out = {"ts": f"{ts}{TZ}", "ev": kind, "session": "abcd1234", "branch": "x"}
+    if role is not None:
+        out["role"] = role
+    return out
 
 
 def write_ledger(tmp_path: Path, ticket: str, events: list[dict]) -> Path:
@@ -823,3 +828,57 @@ def test_bucket_order_follows_real_time_across_mixed_offsets(tmp_path):
         for d in out["days"] for b in d["tickets"]
     ]
     assert starts == sorted(starts)
+
+
+# --- roles: agent time is measured, never billed -------------------------
+
+
+def test_agent_events_are_excluded_from_the_billable_total(tmp_path):
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt", role="human"),
+            ev("2026-09-02T09:30:00", "turn_end", role="human"),
+            ev("2026-09-02T14:00:00", "prompt", role="agent"),
+            ev("2026-09-02T15:00:00", "turn_end", role="agent"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["total_time_spent"] == "30m"
+    assert out["agent_time_spent"] == "1h"
+
+
+def test_agent_turns_do_not_bridge_a_humans_idle_gap(tmp_path):
+    # The failure this guards: filtering roles after grouping would let the
+    # worker's 10:00-11:00 turns fill the gap that must end the human's window,
+    # billing 2h of mostly unattended time as one continuous human span.
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt", role="human"),
+            ev("2026-09-02T09:10:00", "turn_end", role="human"),
+            ev("2026-09-02T10:00:00", "prompt", role="agent"),
+            ev("2026-09-02T11:00:00", "turn_end", role="agent"),
+            ev("2026-09-02T11:05:00", "prompt", role="human"),
+            ev("2026-09-02T11:15:00", "turn_end", role="human"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431", gap=30)
+    assert out["total_time_spent"] == "20m"  # 10m + 10m, not 2h 15m
+
+
+def test_events_without_a_role_are_read_as_human(tmp_path):
+    # The ledger is append-only, so every pre-role event must keep counting.
+    write_ledger(
+        tmp_path,
+        "PROJ-431",
+        [
+            ev("2026-09-02T09:00:00", "prompt"),
+            ev("2026-09-02T09:45:00", "turn_end"),
+        ],
+    )
+    out = run(tmp_path, "spans", "PROJ-431")
+    assert out["total_time_spent"] == "45m"
+    assert out["agent_seconds"] == 0

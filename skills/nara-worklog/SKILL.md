@@ -16,7 +16,9 @@ description: >-
 
 1. **티켓 결정** — 인자 우선. 없으면 `git branch --show-current`에서 `[A-Z][A-Z0-9_]+-\d+` 추출. 둘 다 실패면 `worklog.py list` 결과를 보여주고 선택 요청.
 2. **span 계산** — `python3 assets/worklog.py spans <TICKET>`. 이 JSON이 유일한 근거다. 내가 시각을 더하거나 빼지 않는다.
+   - `days`/`total_seconds`는 **사람의 시간만** 담는다. dispatch된 agent가 같은 티켓 브랜치에서 만든 이벤트는 `role: agent`로 찍혀 별도 집계(`agent_seconds`)로 빠진다. **`agent_seconds`를 Jira에 올리지 않는다** — 사람이 쓰지 않은 시간이다.
 3. **승인 게이트 (생략 불가)** — 아래 Example 형태의 표를 제시하고 명시적 승인을 받는다. 단위는 **(날짜 × 티켓)** 버킷이다.
+   - `agent_seconds`가 0이 아니면 표 아래에 한 줄로 함께 보고한다 (`이 티켓에서 agent가 1h 12m 무인 실행`). 청구액이 아니라 자동화가 얼마나 걷어갔는지의 지표다. 승인 대상이 아님을 문장에서 분명히 한다.
    - 사람이 수정하면 수정값이 `time_spent`로 우선한다 (span 시각은 근거로 표에 남긴다).
    - `postable: false`인 버킷(1분 미만)은 표시만 하고 쓰지 않는다 — Jira가 0 worklog를 거부한다. 목록은 `unpostable`.
    - 일 합계가 8시간을 넘거나 이상하면 승인을 구하기 **전에** 그 사실을 지적한다. Jira가 8시간을 `1d`로 렌더링하는 인스턴스에서는 승인한 `9h 34m`이 `1d 1h 34m`으로 보인다 — 저장된 초는 정확하니 사람이 오기로 오인해 지우지 않도록 함께 알린다.

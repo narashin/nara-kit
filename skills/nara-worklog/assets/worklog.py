@@ -3,8 +3,8 @@
 
 The ledger is append-only JSONL written by the `nara-worklog-stamp.py` hook:
 
-    {"ts": "...", "ev": "prompt",   "session": "...", "branch": "...", "cwd": "..."}
-    {"ts": "...", "ev": "turn_end", ...}
+    {"ts": "...", "ev": "prompt",   "role": "human", "session": "...", "branch": "...", "cwd": "..."}
+    {"ts": "...", "ev": "turn_end", "role": "agent", ...}
     {"ts": "...", "ev": "logged", "through": "...", "seconds": 5216, ...}
 
 `spans` groups prompt/turn_end events into interaction windows, splitting on
@@ -12,6 +12,12 @@ idle gaps and on local midnight, then aggregates per (day, ticket) bucket.
 `record`
 appends the `logged` watermark after a Jira write succeeds, which is what makes
 re-running the skill idempotent.
+
+Roles: a dispatched agent working on a ticket branch produces the same events a
+human does, but that time is not the human's. Only `role: human` events reach a
+Jira worklog; agent spans are reduced separately so the automation stays
+measurable without inflating a number the team reads. Events written before
+roles existed carry no field and are read as `human` -- which is what they were.
 
 Time arithmetic lives here, not in the model: an official worklog is a number
 the team reads, so it must be reproducible from the ledger alone.
@@ -30,6 +36,8 @@ DEFAULT_LEDGER_DIR = os.environ.get(
 )
 SPAN_EVENTS = ("prompt", "turn_end")
 SWITCH_EVENT = "switch"
+# Absent on every event written before roles existed, and those were all human.
+DEFAULT_ROLE = "human"
 # Same shape the hook uses to derive a ledger file from a branch name.
 TICKET_RE = re.compile(r"([A-Z][A-Z0-9_]+-\d+)")
 # A day totalling under a minute cannot be posted -- Jira rejects a zero worklog.
@@ -111,15 +119,25 @@ def split_at_midnight(
 
 
 def build_spans(
-    events: list[dict], gap_minutes: int, since: datetime | None
+    events: list[dict],
+    gap_minutes: int,
+    since: datetime | None,
+    role: str = DEFAULT_ROLE,
 ) -> list[tuple[datetime, datetime]]:
+    # Roles are filtered before grouping, not after. Interleaving a dispatched
+    # worker's turns with the human's would join two separate presences into one
+    # span: the worker's activity fills the idle gap that should have ended the
+    # human's window, so an hour of unattended agent work would be billed as
+    # continuous human time.
     # Promote naive timestamps like watermark() and read_switches() do. Without
     # it a naive ts on disk plus any marker raises TypeError in attribute(), and
     # the ledger is append-only so that ticket could never be reduced again.
     stamps = sorted(
         (as_aware(datetime.fromisoformat(e["ts"])), e["ev"])
         for e in events
-        if e.get("ev") in SPAN_EVENTS and e.get("ts")
+        if e.get("ev") in SPAN_EVENTS
+        and e.get("ts")
+        and e.get("role", DEFAULT_ROLE) == role
     )
     if since is not None:
         stamps = [s for s in stamps if s[0] > since]
@@ -275,6 +293,13 @@ def cmd_spans(args: argparse.Namespace) -> int:
     # will actually carry.
     buckets = [b for d in days for b in d["tickets"] if b["postable"]]
     total = sum(b["seconds"] // 60 * 60 for b in buckets)
+    # Reduced from the same ledger but kept out of `total`: agent time is a
+    # measure of how much of this ticket ran unattended, not something to bill.
+    # It is reported so the automation stays visible, never summed into a write.
+    agent_spans = build_spans(events, args.gap_minutes, mark, role="agent")
+    agent_seconds = sum(
+        int((end - start).total_seconds()) for start, end in agent_spans
+    )
     json.dump(
         {
             "ticket": args.ticket,
@@ -283,6 +308,8 @@ def cmd_spans(args: argparse.Namespace) -> int:
             "days": days,
             "total_seconds": total,
             "total_time_spent": fmt_duration(total),
+            "agent_seconds": agent_seconds,
+            "agent_time_spent": fmt_duration(agent_seconds),
             "unpostable": [
                 f"{d['date']} {b['ticket']}"
                 for d in days

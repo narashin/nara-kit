@@ -60,6 +60,77 @@ chmod +x ~/.claude/hooks/nara-worklog-stamp.py
 
 두 hook 모두 3.9에서 컴파일되므로 `/usr/bin/python3` 폴백이 실제로 유효하다. 이 파일들을 수정할 때 3.10+ 문법(`X | Y` 애노테이션 등)을 쓰면 폴백이 깨진다.
 
+**실제로 깨뜨린 적이 있다.** `-> str | None`을 추가했더니 3.9에서 `TypeError`로 `exit=1`이 났다. 폴백이 발동하는 머신에서는 그게 곧 모든 턴 차단이다. 첫 줄의 `from __future__ import annotations`가 이 방어이므로 지우지 말 것. 확인은 한 줄이다:
+
+```bash
+echo '{"hook_event_name":"Stop","cwd":"/"}' | /usr/bin/python3 ~/.claude/hooks/nara-worklog-stamp.py; echo $?
+```
+
+`0`이 아니면 폴백이 깨진 상태다.
+
+## 2b. Codex 배선
+
+Codex도 `UserPromptSubmit`과 `Stop`을 같은 이름으로 노출하므로 같은 스크립트를 쓴다. 배선은 `~/.codex/hooks.json`의 해당 배열에 그룹을 append한다.
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for P in /opt/homebrew/bin/python3 /usr/bin/python3; do [ -x \"$P\" ] && exec \"$P\" \"$HOME/.claude/hooks/nara-worklog-stamp.py\" --event prompt; done; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for P in /opt/homebrew/bin/python3 /usr/bin/python3; do [ -x \"$P\" ] && exec \"$P\" \"$HOME/.claude/hooks/nara-worklog-stamp.py\" --event turn_end; done; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**`--event`를 명시로 넘긴다.** 페이로드의 `hook_event_name`으로도 동작하지만, 그러면 두 harness의 페이로드 스키마가 계속 같다는 데 시계가 걸린다. 인자로 넘기면 페이로드가 비어도 찍힌다.
+
+**손으로 편집하지 말 것.** 실제로 두 번 틀렸다 — `UserPromptSubmit` 대신 `PostToolUse`에 넣었고(도구 호출마다 발동해 턴 경계가 무의미해진다), 닫는 괄호를 빠뜨려 파일 전체가 파싱 불가가 됐다. 후자는 worklog만 죽는 게 아니라 **그 파일의 모든 hook**(orca·paseo 등)이 함께 죽는다. 아래처럼 파서를 거쳐 append한다.
+
+```bash
+python3 - <<'PY'
+import json
+path = f"{__import__('os').path.expanduser('~')}/.codex/hooks.json"
+data = json.load(open(path, encoding="utf-8"))
+for event, name in (("UserPromptSubmit", "prompt"), ("Stop", "turn_end")):
+    arr = data["hooks"].setdefault(event, [])
+    if any("worklog" in h.get("command", "") for g in arr for h in g.get("hooks", [])):
+        continue
+    cmd = ('for P in /opt/homebrew/bin/python3 /usr/bin/python3; do '
+           '[ -x "$P" ] && exec "$P" "$HOME/.claude/hooks/nara-worklog-stamp.py" '
+           f'--event {name}; done; exit 0')
+    # A new group, not an existing one: the other groups carry matchers and
+    # belong to other tools, so sharing one lets an unrelated edit drop this.
+    arr.append({"hooks": [{"type": "command", "command": cmd, "timeout": 10}]})
+with open(path, "w", encoding="utf-8") as fh:
+    json.dump(data, fh, ensure_ascii=False, indent=2)
+    fh.write("\n")
+print("wired")
+PY
+```
+
+**⚠️ 이 배선 직후 hook 신뢰 모달이 다시 뜬다.** 앞서 "Trust all"을 눌러둔 상태에서도 `hooks.json`이 바뀌면 "Hooks need review — N hooks are new or changed"가 다시 뜬다(실측). 그리고 **그 모달은 초기 프롬프트를 삼킨다** — `codex "..."`로 넘긴 지시가 사라지고 빈 컴포저에 앉는다. `orca`는 모달이 열린 agent 터미널로의 입력 주입을 `agent_prompt_blocked`로 거부하므로 자동 응답도 불가능하다.
+
+따라서 배선 직후 **사람이 인터랙티브 세션에서 한 번 눌러야 한다**(`2` Trust all). 그 전까지 무인 워커 세션(`multica-dispatch.py`)은 전부 그 모달에서 멈춘다. 신뢰는 전역 저장이라 한 번으로 끝난다.
+
 ## 3. 확인
 
 티켓 브랜치가 있는 repo에서 한 턴 주고받은 뒤:
