@@ -13,6 +13,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Fixed
 
+- **dedup이 조회 창을 넘겨 이미 처리한 것을 다시 만들었다.** `nara-review-reminder`와 `nara-jira-triage` 모두 `multica issue list`를 통째로 훑어 비교했는데, 그 호출은 100건에서 잘린다(`has_more: true`). done/cancelled가 목록을 지배하므로 워크스페이스가 100건을 넘은 시점(2026-09-04 실측)부터 오래된 이슈가 창 밖으로 밀리고, **내가 취소해둔 PR에 리마인더가 다시 생기고 이미 큐잉한 티켓이 다시 큐에 들어간다.** 서버측 metadata 필터(`--metadata "pr_url=..."` / `"jira_key=..."`)로 교체 — 서버가 걸러 창과 무관하다
+  - 같은 결함이 `jira-reconcile.sh`에도 있었다(git 밖, `dotfiles/ops`). 그쪽은 열린 이슈만 필요하므로 `OPEN_STATUSES`별로 조회해 합치도록 고쳤다. 고친 직후 조회 결과에 `LYRIS-425`가 새로 나타났다 — 실제로 밀려 있었다는 증거다
+  - review-reminder에 **리뷰가 불필요한 PR을 무시하는 방법**을 명시했다: 카드를 `cancelled`로 옮긴다. dedup이 상태를 보지 않으므로 재생성되지 않는다. `done`은 "내가 리뷰했다"는 뜻으로 reconcile이 쓰므로 구분한다
 - `nara-pr-activity-reminder`가 **`main`에 없었다** — `multica-agent` 브랜치에만 존재하고 머지된 적이 없어, `main`이 곧 릴리즈인 이 repo에서 소비자에게 배포되지 않았다. 실행 주체(`~/.local/bin/pr-activity-reminder.py`)는 git 밖이라 동작에는 영향이 없었고, 없어진 것은 계약 문서와 배포였다. 그 브랜치는 `main`보다 39커밋 뒤처져 통째 머지하면 `evals/` 전체가 삭제로 들어가므로 스킬 디렉터리만 꺼내왔다
 - 스킬 카운트가 49에 멈춰 있었다 — 실제 54개(`nara-` 53 + `naranizer`). 스킬을 추가할 때 `README.md`·`CLAUDE.md`·`skills/README.md` 카운트 갱신이 반복적으로 빠진다
 - 8-리뷰어 코드 리뷰 반영 — `nara-worklog`·`nara-release-watch`·`eval-fixture` 신규 Python 933 LOC 대상. raw 51건 → R0/R1 21건 적용, R2/R3 17건 이월. 리포트: `docs/review/260902-worklog-release-watch-eval-fixture.md`

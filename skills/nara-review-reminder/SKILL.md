@@ -101,9 +101,22 @@ multica issue comment add <issue_id> \
 
 ## Dedup 규칙
 
-이슈 생성 전 `multica issue list` 로 기존 이슈 조회:
-- title에 `리뷰 필요:` + PR URL 동일한 이슈 이미 존재 → 생성 스킵 (멘션 코멘트도 스킵)
-- 존재하지 않으면 생성 (+ `--mention` 지정 시 멘션 코멘트 추가)
+이슈 생성 전 **서버측 metadata 필터**로 조회한다:
+
+```bash
+multica issue list --metadata "pr_url=<PR URL>" --output json
+```
+
+- 결과가 있으면 → 생성 스킵 (멘션 코멘트도 스킵). 상태는 보지 않는다 — `cancelled`도 "다시 만들지 말라"는 뜻이다
+- 없으면 생성 (+ `--mention` 지정 시 멘션 코멘트 추가)
+
+**`multica issue list`를 통째로 훑어 title로 비교하지 말 것.** 그 방식은 페이지 상한(100건, `has_more: true`)에 걸려 오래된 이슈가 조회 창 밖으로 밀린다. 워크스페이스 이슈가 100건을 넘은 시점(2026-09-04 실측)부터, 내가 취소해둔 PR에 리마인더가 **다시 생긴다**. metadata 필터는 서버가 걸러 창과 무관하다.
+
+`tracker_type=review`가 아닌 이슈도 같은 `pr_url`을 가질 수 있으므로(`activity` 트래커), 결과가 여럿이면 `tracker_type=review`인 것만 본다.
+
+### 리뷰가 불필요한 PR을 무시하는 방법
+
+사람이 판단해 리뷰를 안 하기로 한 PR은 **카드를 `cancelled`로 옮긴다**(`multica issue status <id> cancelled`). dedup이 상태를 보지 않으므로 다시 생성되지 않는다. `done`은 "내가 리뷰했다"는 뜻으로 reconcile이 쓰므로 구분해서 쓴다.
 
 ## 규칙
 

@@ -45,7 +45,7 @@ jira-triage [--assignee <currentUser|ACCOUNT_ID>] [--projects <KEY,KEY>] [--ment
 2. **classify** — 구현 \| 버그픽스 \| 기획 \| 기타 (summary/description 의미 판단)
 3. **subtask 게이트** — 컨테이너(subtask 보유)는 제외, 실제 작업 단위만
 4. **route** — project key → repo ([Config](references/config.md))
-5. **dedup** — `multica issue list`, metadata `jira_key` 있으면 스킵
+5. **dedup** — `multica issue list --metadata "jira_key=<KEY>"` (서버측 필터), 결과 있으면 스킵
 6. **emit** — 티켓당 UNASSIGNED 큐 이슈 + 신규에만 멘션
 
 Step 1~6은 **생성만** 한다. 미종료 큐 이슈를 PR/Jira 실측으로 되돌리는 건 out-of-band 크론 담당 — [Step 7](#step-7--reconcile-역방향-상태-동기화).
@@ -108,7 +108,9 @@ multica issue comment add <issue_id> \
   --content "[@<표시명>](mention://member/<MEMBER_ID>) <KEY> 큐에 추가됨 (<타입>)" --output json
 ```
 
-dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dry-run` 이면 Step 6 전체 스킵.
+dedup: `multica issue list --metadata "jira_key=<KEY>"` 결과 있으면 생성·멘션 스킵. `--dry-run` 이면 Step 6 전체 스킵.
+
+**전체 목록을 훑어 비교하지 말 것.** `multica issue list`는 100건에서 잘리고(`has_more: true`) 오래된 이슈가 조회 창 밖으로 밀린다. 워크스페이스가 100건을 넘은 시점(2026-09-04 실측)부터 이미 처리한 티켓이 **다시 큐에 들어간다**. metadata 필터는 서버가 걸러 창과 무관하다.
 
 ## Step 7 — reconcile (역방향 상태 동기화)
 
