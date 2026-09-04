@@ -3,6 +3,7 @@
 Run: python3 -m pytest skills/nara-release-watch/assets/test_watch.py -q
 """
 
+import argparse
 import json
 import subprocess
 import sys
@@ -537,6 +538,209 @@ def test_path_is_url_quoted_in_the_endpoint(monkeypatch):
     monkeypatch.setattr(watch, "gh_json", lambda e: seen.append(e) or [])
     watch.fetch_commits("a/b", "skills/pro ductivity/grill-me", 5)
     assert "path=skills/pro%20ductivity/grill-me" in seen[0]
+
+
+# --- stage contract ------------------------------------------------------
+
+
+def test_poll_report_declares_the_watch_stage_forbids_judgment():
+    # The contract must ride in the data: the skill ships a distillation rubric,
+    # so a watch note drifts into judging when only prose forbids it.
+    report, _ = watch.poll(["a/b"], {}, 5, fetch=faker({"a/b": ([rel("v1")], "releases")}))
+    assert report["stage"] == "watch"
+    assert report["judgment"] == "forbidden"
+
+
+def test_digest_report_declares_the_opposite_stage(tmp_path, capsys):
+    queue = tmp_path / "queue.json"
+    queue.write_text(json.dumps([{"repo": "a/b", "id": "v2"}]), encoding="utf-8")
+    watch.cmd_digest(argparse.Namespace(queue=str(queue), drain=False))
+    report = json.loads(capsys.readouterr().out)
+    assert (report["stage"], report["judgment"]) == ("digest", "required")
+
+
+# --- highlights filter (watch-stage note, digest queue) -------------------
+
+ORCA_BODY = """Thank you so much for using Orca! ❤️
+
+## Notable changes
+* Faster, smoother everyday use through renderer performance improvements.
+
+## UI / workspaces
+* Add parent worktree selection when creating workspace by @a in https://github.com/x/y/pull/1
+* fix(terminal): mount one surface per workspace id by @b in https://github.com/x/y/pull/2
+* Revert "fix(native-chat): preserve large results" by @c in https://github.com/x/y/pull/3
+* chore: bump deps by @d in https://github.com/x/y/pull/4
+* feat(browser-preview): reland remote HTML document previews by @e in https://github.com/x/y/pull/5
+
+## New Contributors
+* @someone made their first contribution in https://github.com/x/y/pull/6
+
+**Full Changelog**: https://github.com/x/y/compare/v1...v2
+"""
+
+
+def test_highlights_keep_features_and_drop_conventional_noise():
+    got = watch.extract_highlights(ORCA_BODY)
+    assert got == [
+        "Add parent worktree selection when creating workspace",
+        "feat(browser-preview): reland remote HTML document previews",
+    ]
+
+
+def test_highlights_drop_the_notable_changes_marketing_section():
+    # Those bullets carry no information the PR titles below do not carry better.
+    assert not any("everyday use" in h for h in watch.extract_highlights(ORCA_BODY))
+
+
+def test_highlights_strip_the_author_suffix_but_keep_plain_titles():
+    got = watch.extract_highlights("* Improve cmd j ranking with recency by @z in https://github.com/x/y/pull/9\n")
+    assert got == ["Improve cmd j ranking with recency"]
+
+
+def test_prose_body_yields_no_highlights():
+    # Hand-written notes have no bullets; the caller falls back to name + link.
+    assert watch.extract_highlights("We rewrote the planner.\nIt is faster now.") == []
+
+
+def test_highlights_are_capped():
+    body = "\n".join(f"* Add feature number {i}" for i in range(50))
+    assert len(watch.extract_highlights(body, cap=30)) == 30
+
+
+def test_fixup_style_words_are_not_mistaken_for_noise_prefixes():
+    # \b must sit on a real boundary: "Fixture loader" is not a fix() commit.
+    assert watch.extract_highlights("* Fixture loader for the palette\n") == [
+        "Fixture loader for the palette"
+    ]
+
+
+# --- digest queue ----------------------------------------------------------
+
+
+def queue_item(repo="a/b", vid="v2", highlights=None):
+    return {
+        "repo": repo,
+        "id": vid,
+        "name": vid,
+        "url": f"https://example.test/{vid}",
+        "published_at": "2026-09-01T00:00:00Z",
+        "prerelease": False,
+        "body": "* Add thing by @x in https://example.test/pr/1",
+        "highlights": highlights if highlights is not None else ["Add thing"],
+    }
+
+
+def test_enqueue_appends_and_dedupes_on_repo_and_id(tmp_path):
+    path = str(tmp_path / "queue.json")
+    assert watch.enqueue(path, [queue_item()]) == 1
+    # A rewound state re-polling the same release must not double the backlog.
+    assert watch.enqueue(path, [queue_item(), queue_item(vid="v3")]) == 1
+    items = watch.load_queue(path)
+    assert [(i["repo"], i["id"]) for i in items] == [("a/b", "v2"), ("a/b", "v3")]
+    assert items[0]["highlights"] == ["Add thing"]
+    assert "queued_at" in items[0]
+
+
+def test_enqueue_truncates_the_body_excerpt(tmp_path):
+    path = str(tmp_path / "queue.json")
+    item = queue_item()
+    item["body"] = "x" * 5000
+    watch.enqueue(path, [item])
+    assert len(watch.load_queue(path)[0]["body_excerpt"]) == 1500
+
+
+def test_corrupt_queue_file_loses_backlog_but_does_not_raise(tmp_path):
+    path = tmp_path / "queue.json"
+    path.write_text("{ not json", encoding="utf-8")
+    assert watch.load_queue(str(path)) == []
+
+
+def test_fresh_poll_items_carry_highlights():
+    version = rel("v2")
+    version["body"] = "* Add thing by @x in https://example.test/pr/1\n* fix: nope\n"
+    report, _ = watch.poll(
+        ["a/b"],
+        {"a/b": {"last_seen": "v1"}},
+        5,
+        fetch=faker({"a/b": ([version, rel("v1")], "releases")}),
+    )
+    assert report["new"][0]["highlights"] == ["Add thing"]
+
+
+def test_digest_cli_reads_then_drains_only_when_asked(tmp_path):
+    queue = tmp_path / "queue.json"
+    queue.write_text(json.dumps([{"repo": "a/b", "id": "v2"}]), encoding="utf-8")
+    flags = ["--queue", str(queue)]
+
+    read_only = json.loads(
+        subprocess.run(
+            [sys.executable, str(SCRIPT), "digest", *flags],
+            capture_output=True, text=True, check=True,
+        ).stdout
+    )
+    assert read_only["count"] == 1 and read_only["drained"] is False
+    assert json.loads(queue.read_text()) != []  # a plain read must not drain
+
+    drained = json.loads(
+        subprocess.run(
+            [sys.executable, str(SCRIPT), "digest", "--drain", *flags],
+            capture_output=True, text=True, check=True,
+        ).stdout
+    )
+    assert drained["count"] == 1 and drained["drained"] is True
+    assert json.loads(queue.read_text()) == []
+
+
+def cmd_poll_args(tmp_path, dry_run: bool) -> argparse.Namespace:
+    wl = tmp_path / "wl.md"
+    wl.write_text("- a/b\n", encoding="utf-8")
+    st = tmp_path / "st.json"
+    st.write_text(json.dumps({"a/b": {"last_seen": "v1"}}), encoding="utf-8")
+    return argparse.Namespace(
+        watchlist=str(wl),
+        state=str(st),
+        queue=str(tmp_path / "queue.json"),
+        limit=5,
+        dry_run=dry_run,
+        include_prerelease=False,
+    )
+
+
+def test_dry_run_poll_does_not_enqueue(tmp_path, monkeypatch, capsys):
+    # Queue and state must advance together: a dry run burns neither.
+    # poll()'s `fetch=fetch_versions` default binds at def time, so patching the
+    # fetcher name does nothing here; gh_json is resolved at call time instead.
+    monkeypatch.setattr(
+        watch,
+        "gh_json",
+        lambda endpoint: [{"tag_name": "v2"}, {"tag_name": "v1"}]
+        if "releases" in endpoint
+        else [],
+    )
+    args = cmd_poll_args(tmp_path, dry_run=True)
+    assert watch.cmd_poll(args) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert [r["id"] for r in report["new"]] == ["v2"]
+    assert report["queued"] == 0
+    assert not (tmp_path / "queue.json").exists()
+
+
+def test_real_poll_enqueues_the_fresh_items(tmp_path, monkeypatch, capsys):
+    # poll()'s `fetch=fetch_versions` default binds at def time, so patching the
+    # fetcher name does nothing here; gh_json is resolved at call time instead.
+    monkeypatch.setattr(
+        watch,
+        "gh_json",
+        lambda endpoint: [{"tag_name": "v2"}, {"tag_name": "v1"}]
+        if "releases" in endpoint
+        else [],
+    )
+    args = cmd_poll_args(tmp_path, dry_run=False)
+    assert watch.cmd_poll(args) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["queued"] == 1
+    assert [(i["repo"], i["id"]) for i in watch.load_queue(args.queue)] == [("a/b", "v2")]
 
 
 def test_a_hex_sha_can_never_look_like_a_prerelease():

@@ -38,6 +38,11 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Changed
 
+- `nara-release-watch` 2단계 분리 — **watch**(매일, 판정 없음)와 **digest**(사람 트리거, 증류 판정). 임계(`@minor`)가 알림과 판정을 동시에 죽여서 릴리즈 잦은 repo(stablyai/orca: minor 고정 + 일간 패치)를 감시할 수 없던 것이 동기
+  - watch는 새 릴리즈를 `highlights[]`(기계 필터: fix/chore 등 conventional prefix, "Notable changes" 마케팅 섹션, first-contribution 보일러플레이트 제거 — orca 실측 주간 617줄 중 8할이 fix)와 함께 판정 없이 알리고 큐(`~/.claude/release-watch-queue.json`)에 적재한다
+  - digest는 큐 누적분(여러 repo)을 한꺼번에 4분류 판정한다 — 누적이라 교차 repo 패턴 판정이 가능해졌다. 읽기와 드레인(`digest --drain`)을 분리해 판정·배달 실패 시 백로그를 잃지 않는다. jira-triage → jira-drain과 같은 자동 적재 + 사람 트리거 구조라 등록 잡은 계속 1개
+  - suppressed는 큐에 들어가지 않는다 — digest는 "알린 것 중에서" 판정한다. 테스트 59 → 74건
+
 - `evals/`를 추적 대상으로 전환 — 이전에는 `evals/*` ignore + 3개 스위트만 allowlist였다. 추적하지 않으면 **스킬 성능을 측정할 수 없고**, 측정하지 않는 스위트는 채점 대상 스킬에 대해 조용히 썩는다. 45개 스위트 / 205개 파일이 추적된다. `evals/**/results/`(실행 산출물)는 계속 ignore
   - allowlist가 막아주던 것은 실재하는 위험이었다. 전환 전 스캔에서 **5개 스위트에 사내 식별자 61건**이 나왔다 — Jira 프로젝트 키, 내부 repo명, `git.linecorp.com` 호스트, 조직명, 그리고 **Slack 채널 ID와 실제 메시지 타임스탬프**. 공개 repo에 사내 식별자가 올라가 history rewrite까지 갔던 전례가 있어 전환 **전에** 정화했다
   - 치환은 placeholder로: `PROJ`/`OPS`(티켓 키), `web-ui`/`api-server`(repo), `git.example.com`, `acme-sre`, `C0123456789`, Slack ts 무력화. `lyris-{fe,be}-classify.yaml`은 파일명까지 개명. **태스크가 검증하는 구분은 보존** — jira-triage 스위트가 FE→BE 라우팅을 채점하므로 두 placeholder repo명이 서로 반대편에 남아야 한다 (`output_not_contains` 대칭 유지 확인)

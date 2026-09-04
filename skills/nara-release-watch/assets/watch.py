@@ -7,12 +7,18 @@ and wakes no model at all.
 
 Watchlist  (human-owned) : ~/.claude/release-watch.md      -- markdown, owner/repo per line
 State      (machine-owned): ~/.claude/release-watch-state.json -- last seen tag per repo
+Queue      (machine-owned): ~/.claude/release-watch-queue.json -- items awaiting the digest stage
 
-The two files are deliberately separate. State is rewritten on every run; a
-human editing their watchlist must never race that write.
+The files are deliberately separate. State and queue are rewritten by the
+poller; a human editing their watchlist must never race those writes.
+
+`poll` feeds the daily watch stage (what shipped, no judgment) and appends
+every fresh item to the queue. `digest` hands the accumulated queue to the
+human-triggered distillation stage and, with --drain, clears it afterwards.
 
 Usage:
     watch.py poll [--limit N] [--dry-run]
+    watch.py digest [--drain]
     watch.py list
     watch.py seed [--top N]
 """
@@ -31,6 +37,9 @@ WATCHLIST = os.environ.get("NARA_WATCHLIST", os.path.join(HOME, ".claude/release
 STATE = os.environ.get(
     "NARA_WATCH_STATE", os.path.join(HOME, ".claude/release-watch-state.json")
 )
+QUEUE = os.environ.get(
+    "NARA_WATCH_QUEUE", os.path.join(HOME, ".claude/release-watch-queue.json")
+)
 REPO_RE = re.compile(r"^[A-Za-z0-9](?:[\w.-]*[A-Za-z0-9])?/[\w.-]+$")
 SEMVER_RE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 # Anchored on a separator so a keyword only counts as its own tag component:
@@ -41,6 +50,12 @@ PRERELEASE_RE = re.compile(
     re.I,
 )
 GRANULARITY = ("patch", "minor", "major")
+# Conventional-commit noise a what-shipped note should not carry. Measured on
+# stablyai/orca: 617 PR bullets in one week, ~80% fix()/Revert/chore.
+NOISE_PREFIX_RE = re.compile(
+    r"^(?:fix|revert|chore|refactor|test|docs|build|ci|perf|style)\b", re.I
+)
+AUTHOR_SUFFIX_RE = re.compile(r"\s+by @\S+(?:\s+in\s+\S+)?\s*$")
 
 
 # --- io ------------------------------------------------------------------
@@ -134,6 +149,46 @@ def clears_threshold(version_id: str, last_seen: str, granularity: str) -> bool:
     return new[:depth] != old[:depth]
 
 
+def extract_highlights(body: str, cap: int = 30) -> list[str]:
+    """Feature-looking bullet lines from a release body, noise removed.
+
+    Release bodies come in two shapes: generated PR lists (bullets) and
+    hand-written prose. Only bullets are considered; a prose body yields []
+    and the caller falls back to the release name + link. Dropped on purpose:
+
+    - conventional-commit noise prefixes (fix/revert/chore/... -- NOISE_PREFIX_RE)
+    - "made their first contribution" / "Full Changelog" boilerplate
+    - bullets under a "Notable changes" heading -- measured on stablyai/orca,
+      those are marketing summaries ("Faster, smoother everyday use") with no
+      information the PR titles below them do not carry better
+    - the trailing "by @user in <url>" author suffix (the item's own URL stays)
+    """
+    out: list[str] = []
+    skip_section = False
+    for raw in body.splitlines():
+        line = raw.strip()
+        if line.startswith("#"):
+            skip_section = bool(re.search(r"notable changes", line, re.I))
+            continue
+        bullet = re.match(r"^[*+-]\s+(.+)$", line)
+        if not bullet or skip_section:
+            continue
+        text = bullet.group(1).strip()
+        if NOISE_PREFIX_RE.match(text):
+            continue
+        lowered = text.lower()
+        if "made their first contribution" in lowered or lowered.startswith(
+            "full changelog"
+        ):
+            continue
+        text = AUTHOR_SUFFIX_RE.sub("", text).strip()
+        if text:
+            out.append(text)
+        if len(out) >= cap:
+            break
+    return out
+
+
 def load_state(path: str) -> dict:
     if not os.path.exists(path):
         return {}
@@ -153,6 +208,58 @@ def save_state(path: str, state: dict) -> None:
         json.dump(state, handle, ensure_ascii=False, indent=2, sort_keys=True)
         handle.write("\n")
     os.replace(tmp, path)  # atomic: never leave a half-written state behind
+
+
+def load_queue(path: str) -> list[dict]:
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, encoding="utf-8") as handle:
+            items = json.load(handle)
+    except (json.JSONDecodeError, OSError):
+        return []  # a corrupt queue loses its backlog but must not block the poll
+    return items if isinstance(items, list) else []
+
+
+def save_queue(path: str, items: list[dict]) -> None:
+    save_state(path, items)  # same atomic-write discipline, list payload
+
+
+def enqueue(path: str, fresh: list[dict]) -> int:
+    """Append fresh poll items for the digest stage. Returns how many were added.
+
+    Deduped on (repo, id): the watermark normally prevents re-polling the same
+    release, but a manually rewound state must not double items in the queue.
+    Suppressed releases never reach here -- the digest judges "what was
+    announced", and a threshold that mutes the announcement mutes the judgment.
+    """
+    items = load_queue(path)
+    seen = {(item.get("repo"), item.get("id")) for item in items}
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    added = 0
+    for version in fresh:
+        key = (version["repo"], version["id"])
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append(
+            {
+                "repo": version["repo"],
+                "id": version["id"],
+                "name": version["name"],
+                "url": version["url"],
+                "published_at": version["published_at"],
+                "queued_at": now,
+                "highlights": version.get("highlights", []),
+                # Full bodies would balloon the queue file; the digest gets the
+                # filtered highlights plus enough raw text to sanity-check them.
+                "body_excerpt": (version.get("body") or "")[:1500],
+            }
+        )
+        added += 1
+    if added:
+        save_queue(path, items)
+    return added
 
 
 # --- github --------------------------------------------------------------
@@ -349,11 +456,22 @@ def poll(
             entry["truncated"] = len(unseen) == limit
             for version in unseen:
                 if clears_threshold(version["id"], last_seen, granularity):
-                    fresh.append({"repo": key, **version})
+                    fresh.append(
+                        {
+                            "repo": key,
+                            **version,
+                            "highlights": extract_highlights(version["body"]),
+                        }
+                    )
                 else:
                     suppressed += 1
 
     report = {
+        # The stage contract travels in the data, not only in the prompt. The
+        # skill carries a distillation rubric, so an agent writing a watch note
+        # drifts into judging by default; prose alone does not hold it back.
+        "stage": "watch",
+        "judgment": "forbidden",
         "checked": len(entries),
         "suppressed": suppressed,
         "new": fresh,
@@ -395,7 +513,36 @@ def cmd_poll(args: argparse.Namespace) -> int:
     )
     if not args.dry_run:
         save_state(args.state, new_state)
+        # Queue and state advance together: a dry run must neither burn the
+        # watermark nor stack phantom items into the digest backlog.
+        report["queued"] = enqueue(args.queue, report["new"])
+    else:
+        report["queued"] = 0
     report["state_written"] = not args.dry_run
+    json.dump(report, sys.stdout, ensure_ascii=False, indent=2)
+    sys.stdout.write("\n")
+    return 0
+
+
+def cmd_digest(args: argparse.Namespace) -> int:
+    """Hand the accumulated queue to the distillation stage.
+
+    Read and drain are separate on purpose: the skill reads first, judges and
+    delivers, and only then drains. Draining on read would lose the backlog
+    whenever the judgment or the delivery dies mid-way.
+    """
+    items = load_queue(args.queue)
+    report = {
+        "stage": "digest",
+        "judgment": "required",  # mirrors poll's contract field; see poll()
+        "count": len(items),
+        "items": items,
+        "queue": args.queue,
+        "drained": False,
+    }
+    if args.drain and items:
+        save_queue(args.queue, [])
+        report["drained"] = True
     json.dump(report, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")
     return 0
@@ -483,6 +630,7 @@ def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--watchlist", default=argparse.SUPPRESS)
     common.add_argument("--state", default=argparse.SUPPRESS)
+    common.add_argument("--queue", default=argparse.SUPPRESS)
 
     parser = argparse.ArgumentParser(description=__doc__, parents=[common])
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -498,6 +646,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="report alpha/beta/rc versions too (off by default)",
     )
     p_poll.set_defaults(func=cmd_poll)
+
+    p_digest = sub.add_parser(
+        "digest", parents=[common], help="dump the queued items for the digest stage"
+    )
+    p_digest.add_argument(
+        "--drain",
+        action="store_true",
+        help="clear the queue after printing (run only after delivery succeeded)",
+    )
+    p_digest.set_defaults(func=cmd_digest)
 
     p_list = sub.add_parser(
         "list", parents=[common], help="show the watchlist and its state"
@@ -518,6 +676,8 @@ def apply_defaults(parsed: argparse.Namespace) -> argparse.Namespace:
         parsed.watchlist = WATCHLIST
     if not hasattr(parsed, "state"):
         parsed.state = STATE
+    if not hasattr(parsed, "queue"):
+        parsed.queue = QUEUE
     return parsed
 
 

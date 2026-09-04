@@ -32,6 +32,21 @@
 | 같은 repo 중복 (대소문자 무관) | 첫 항목만 |
 | 알 수 없는 마커 (`@nonsense`) | 기본값 `patch`로 폴백 — repo를 조용히 버리지 않는다 |
 
+## 노이즈 필터 (전부 `watch.py`, LLM 0)
+
+**highlights** — 릴리즈 본문의 PR 불릿에서 이런 것을 걷어내고 남은 줄이 watch 알림의 내용이 된다.
+
+| 제거 대상 | 이유 |
+|---|---|
+| `fix`·`revert`·`chore`·`refactor`·`test`·`docs`·`build`·`ci`·`perf`·`style` prefix | stablyai/orca 실측: 주간 PR 불릿 617줄 중 8할 |
+| `## Notable changes` 섹션 전체 | "Faster, smoother everyday use through..." 류의 마케팅 문장. 아래 PR 제목이 같은 정보를 더 잘 담는다 |
+| "made their first contribution", "Full Changelog" | 보일러플레이트 |
+| 후행 `by @user in <url>` | 항목 자체 URL은 남는다 |
+
+경계는 단어 단위다 (`Fixture loader`는 `fix` 커밋이 아니다). 불릿이 없는 산문 본문은 highlights가 비고, 알림은 릴리즈 이름 + 링크로 폴백한다. 상한 30줄.
+
+**첫 관측은 침묵** — 새 repo는 최신을 baseline으로 기록만 하고 아무것도 보고하지 않는다. 첫날 히스토리를 쏟으면 쓸모 있는 말을 하기 전에 무시당한다.
+
 prerelease(alpha·beta·rc·dev·canary·next·nightly·preview·snapshot)는 **기본 제외**다. 태그 문자열로도 판정하므로 API 플래그를 안 붙이는 repo도 걸러진다. 판정은 구분자에 앵커되므로 `v1.0.0-aarch64`·`-source`·`-devtools` 같은 정식 태그는 걸리지 않는다.
 
 ### 경로 감시를 쓰는 경우
@@ -60,12 +75,22 @@ python3 ~/.claude/skills/nara-release-watch/assets/watch.py seed --top 50
 
 파일이 깨져도 폴링은 죽지 않는다 — 빈 상태로 읽고 전부 re-baseline 한다 (그날은 침묵).
 
+## 큐 — `~/.claude/release-watch-queue.json`
+
+기계 소유. `poll`이 신규 항목(임계 통과분만)을 적재하고, digest가 판정·배달을 마친 뒤 `digest --drain`으로 비운다. `(repo, id)`로 dedup 하므로 state를 손으로 되감아 재폴링해도 중복 적재되지 않는다. 파일이 깨지면 백로그만 잃고 폴링은 계속된다.
+
+```bash
+python3 ~/.claude/skills/nara-release-watch/assets/watch.py digest           # 읽기만
+python3 ~/.claude/skills/nara-release-watch/assets/watch.py digest --drain   # 배달 완료 후에만
+```
+
 ## 설정
 
 | 환경변수 | 기본값 | 비고 |
 |---|---|---|
 | `NARA_WATCHLIST` | `~/.claude/release-watch.md` | **절대경로** 권장 |
 | `NARA_WATCH_STATE` | `~/.claude/release-watch-state.json` | **절대경로** 권장 |
+| `NARA_WATCH_QUEUE` | `~/.claude/release-watch-queue.json` | **절대경로** 권장 |
 
 상대경로도 동작하지만 실행 시 cwd 기준으로 해석되므로, cron·Multica처럼 cwd가 불확실한 환경에서는 다른 파일을 읽거나 쓰게 된다.
 
@@ -89,6 +114,8 @@ prompt:   /nara-release-watch
 ```
 
 조용한 날엔 이슈도 DM도 만들지 않는다. 즉 **매일 도는데 대개 아무 산출물이 없는 것이 정상**이다.
+
+**digest는 등록하지 않는다.** 사람이 원할 때 `/nara-release-watch digest`로 트리거한다 — jira-triage(자동 큐 적재) → jira-drain(사람 트리거)과 같은 구조다. 큐는 드레인 전까지 계속 쌓이므로 주기를 놓쳐도 잃는 것이 없다.
 
 ## 등록 — CronCreate (대안)
 

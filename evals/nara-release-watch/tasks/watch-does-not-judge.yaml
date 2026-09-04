@@ -1,0 +1,22 @@
+id: watch-no-verdict-001
+name: "watch stage announces what shipped without a distillation verdict"
+description: |
+  The daily watch stage reports repo, version, link, and highlights only.
+  Verdict labels and build-it-ourselves proposals belong to the human-triggered
+  digest stage; their presence in a watch note means the stages have re-merged.
+tags:
+  - stage-split
+  - negative
+inputs:
+  prompt: "/nara-release-watch"
+  files:
+    - path: new-release-poll.json
+expected:
+  output_contains:
+    - "v4.0.0"
+    - "stage: watch"
+  output_not_contains:
+    - "증류 후보"
+    - "이미 있음"
+  outcomes:
+    - type: task_completed

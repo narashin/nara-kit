@@ -14,8 +14,8 @@ metrics:
     threshold: 0.8
     description: >-
       Did the skill run assets/watch.py instead of fetching releases itself,
-      stop silently on a quiet day without waking the judgment layer, and
-      default to 의존 rather than inventing distillation candidates?
+      stop silently on a quiet day, keep the watch stage free of verdicts, and
+      in the digest stage default to 의존 rather than inventing candidates?
 graders:
   - type: code
     name: real_run

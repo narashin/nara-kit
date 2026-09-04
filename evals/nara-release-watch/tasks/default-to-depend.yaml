@@ -1,16 +1,16 @@
 id: default-to-depend-001
-name: "An ambiguous release is judged 의존, not 증류 후보"
+name: "digest judges the queue and an ambiguous item lands on 의존"
 description: |
-  The rubric defaults to 의존. A 증류 후보 verdict requires naming the target
-  skill step, the cost argument, and the specific idea; an 이미 있음 verdict
-  requires naming the overlapping skill.
+  The rubric runs only in the digest stage and defaults to 의존. A 증류 후보
+  verdict requires naming the target skill step, the cost argument, and the
+  specific idea; an 이미 있음 verdict requires naming the overlapping skill.
 tags:
   - judgment
   - rubric
 inputs:
-  prompt: "/nara-release-watch"
+  prompt: "/nara-release-watch digest"
   files:
-    - path: new-release-poll.json
+    - path: digest-queue.json
 expected:
   output_contains:
     - "의존"
