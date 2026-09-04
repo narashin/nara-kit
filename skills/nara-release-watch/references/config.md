@@ -115,7 +115,15 @@ prompt:   /nara-release-watch
 
 조용한 날엔 이슈도 DM도 만들지 않는다. 즉 **매일 도는데 대개 아무 산출물이 없는 것이 정상**이다.
 
-**digest는 등록하지 않는다.** 사람이 원할 때 `/nara-release-watch digest`로 트리거한다 — jira-triage(자동 큐 적재) → jira-drain(사람 트리거)과 같은 구조다. 큐는 드레인 전까지 계속 쌓이므로 주기를 놓쳐도 잃는 것이 없다.
+**digest는 별도 autopilot으로 등록한다.** 같은 MCP 설정을 쓰되 에이전트를 분리한다 — watch 에이전트의 지시문이 "판정하지 말 것"이므로 한 에이전트에 두 단계를 겸하게 하면 그 계약이 흐려진다.
+
+```
+name:     Release-Digest
+schedule: 주 1회, off-minute (예: 월 09:23 KST — `23 9 * * 1`)
+prompt:   /nara-release-watch digest
+```
+
+큐는 드레인 전까지 쌓이므로 한 주를 걸러도 잃는 것이 없다. 사람이 중간에 직접 쳐도 되고, 그 경우 다음 주간 실행은 빈 큐를 보고 조용히 끝난다.
 
 ## 등록 — CronCreate (대안)
 

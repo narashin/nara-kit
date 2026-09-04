@@ -47,7 +47,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 - `nara-release-watch` 2단계 분리 — **watch**(매일, 판정 없음)와 **digest**(사람 트리거, 증류 판정). 임계(`@minor`)가 알림과 판정을 동시에 죽여서 릴리즈 잦은 repo(stablyai/orca: minor 고정 + 일간 패치)를 감시할 수 없던 것이 동기
   - watch는 새 릴리즈를 `highlights[]`(기계 필터: fix/chore 등 conventional prefix, "Notable changes" 마케팅 섹션, first-contribution 보일러플레이트 제거 — orca 실측 주간 617줄 중 8할이 fix)와 함께 판정 없이 알리고 큐(`~/.claude/release-watch-queue.json`)에 적재한다
-  - digest는 큐 누적분(여러 repo)을 한꺼번에 4분류 판정한다 — 누적이라 교차 repo 패턴 판정이 가능해졌다. 읽기와 드레인(`digest --drain`)을 분리해 판정·배달 실패 시 백로그를 잃지 않는다. jira-triage → jira-drain과 같은 자동 적재 + 사람 트리거 구조라 등록 잡은 계속 1개
+  - digest는 큐 누적분(여러 repo)을 한꺼번에 4분류 판정한다 — 누적이라 교차 repo 패턴 판정이 가능해졌다. 읽기와 드레인(`digest --drain`)을 분리해 판정·배달 실패 시 백로그를 잃지 않는다
+  - 두 단계를 별도 autopilot으로 등록한다 (watch 매일 08:47 KST, digest 매주 월 09:23 KST). 에이전트도 분리했다 — watch 에이전트의 지시문이 "판정하지 말 것"이라 한 에이전트가 두 단계를 겸하면 그 계약이 흐려진다. 잡은 둘이지만 watchlist·폴러·큐를 공유하는 한 파이프라인이다
+  - 단계 계약을 데이터로 강제한다: `poll` 출력에 `"stage": "watch"` / `"judgment": "forbidden"`, `digest` 출력에 `"digest"` / `"required"`. receipt 첫 줄에도 stage를 쓰게 해 판정이 섞이면 자기 모순이 드러나게 했다. 스킬이 증류 루브릭을 함께 싣고 있어 산문 금지만으로는 watch 알림이 판정으로 흐른다
   - suppressed는 큐에 들어가지 않는다 — digest는 "알린 것 중에서" 판정한다. 테스트 59 → 74건
 
 - `evals/`를 추적 대상으로 전환 — 이전에는 `evals/*` ignore + 3개 스위트만 allowlist였다. 추적하지 않으면 **스킬 성능을 측정할 수 없고**, 측정하지 않는 스위트는 채점 대상 스킬에 대해 조용히 썩는다. 45개 스위트 / 205개 파일이 추적된다. `evals/**/results/`(실행 산출물)는 계속 ignore

@@ -1,21 +1,21 @@
 ---
 name: nara-release-watch
 description: >-
-  Poll a watchlist of GitHub repos, report what shipped without judging it, and queue each item; then judge the accumulated queue on request for what is worth distilling.
+  Poll a watchlist of GitHub repos, report what shipped without judging it, and queue each item; then judge the accumulated queue weekly for what is worth distilling.
   USE FOR: "release watch", "watchlist 확인", "새 릴리즈", "릴리즈 감시", "release digest", "증류할 거 있나".
   DO NOT USE FOR: 모르는 repo 발견 (→ nara-trending-digest), 라이브러리 문서 (→ Context7), 스킬 개선 (→ nara-skill-forge).
 ---
 
 # release-watch — 알림(watch)과 증류 판정(digest)의 2단계
 
-판정을 릴리즈 단위로 매일 하면 릴리즈 잦은 repo는 감시가 불가능하다 — 임계를 붙이면 알림까지 죽고, 안 붙이면 매일 발화한다 (stablyai/orca: minor 고정 + 일간 패치). 그래서 알림은 매일 기계 필터로, 판정은 큐 누적분을 놓고 사람이 트리거할 때 한다.
+판정을 릴리즈 단위로 매일 하면 릴리즈 잦은 repo는 감시가 불가능하다 — 임계를 붙이면 알림까지 죽고, 안 붙이면 매일 발화한다 (stablyai/orca: minor 고정 + 일간 패치). 그래서 알림은 매일 기계 필터로, 판정은 주 1회 큐 누적분을 놓고 한다.
 
 ```
 watchlist → poll (LLM 0) → quiet면 종료, 무알림
               ↓ 있을 때만
          [watch] 알림(판정 없음) → DM + Obsidian, 큐 적재
               ⋮
-         [digest · 사람 트리거] 큐 전체 판정 → 배달 → 드레인
+         [digest · 주 1회] 큐 전체 판정 → 배달 → 드레인
 ```
 
 ## Mode: watch (기본 — `/nara-release-watch`, autopilot이 도는 단계)
@@ -27,7 +27,7 @@ watchlist → poll (LLM 0) → quiet면 종료, 무알림
 5. **needs_attention** — `failed[]`(인증·rate·404)는 매 실행 보고. `unwatchable[]`은 최초 1회만 — 빼거나 둘지는 사람 판단.
 6. **receipt** — 첫 줄에 `stage: watch (판정 없음)` **필수**. 이어서 Outcome / Evidence(checked·new·suppressed·queued) / Artifact / Next Action(큐 N건 — `/nara-release-watch digest`). 이 줄 위에 판정이 있으면 단계를 벗어난 것이다. 판정을 지운다.
 
-## Mode: digest (사람 트리거 — `/nara-release-watch digest`)
+## Mode: digest (주간 — `/nara-release-watch digest`)
 
 1. **큐 읽기** — `python3 assets/watch.py digest`. `count: 0`이면 "빈 큐" 보고 후 종료.
 2. **판정** — 큐 전체를 [distill-rubric.md](references/distill-rubric.md) 4분류로. 누적 판정이므로 **교차 repo 패턴**을 별도 섹션으로 올릴 수 있다. `이미 있음` 주장에는 **스킬 이름 명시** — 못 대면 `이미 있음`이 아니다.
