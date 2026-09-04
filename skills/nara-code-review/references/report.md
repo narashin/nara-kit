@@ -15,6 +15,7 @@
 ║ 대상: {baseline_commit}..{head_commit}            ║
 ║ 변경 파일: {N}개 (untracked {M}개 포함)            ║
 ║ 리뷰어: core 4 + conditional {list}               ║
+║ 모델: 판단 {opus|fable|session fallback} · Verifier sonnet ║
 ║ 게이트: evidence ≥ E2 AND 신뢰도 ≥ {threshold}    ║
 ║ 라운드: {current}/{max} ({converged/stopped})     ║
 ║ specification: {available | unavailable}          ║

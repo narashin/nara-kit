@@ -38,6 +38,13 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Changed
 
+- `nara-code-review`에 판단 모델 선택을 도입 — 리뷰어·Judge·Fixer 3역이 `$JUDGMENT_MODEL` 하나를 공유하고, Verifier는 `sonnet` 고정. 세 역할은 열린 판단(무엇이 문제인가·유효한가·어떻게 고치는가)이라 모델 성능에 직접 좌우되지만, Verifier는 hash/hunk에 앵커된 확인 작업이라 같은 값을 치를 이유가 없다
+  - 리뷰어 dispatch 직전 1회 질문(`opus` 기본 권장 | `fable`)으로 정하고 재리뷰 라운드에서 다시 묻지 않는다. `--model=opus|fable`로 질문을 건너뛴다
+  - 미가용 시 **다른 모델로 대체하지 않는다** — `model`을 생략해 세션 모델을 상속하고 실제 사용 모델을 리포트 헤더에 기록한다. 조용한 강등이 리포트에 안 보이면 낮은 발견율을 모델 탓으로 돌릴 수 없다
+  - 오케스트레이션 자체(Flow 0–3, 5, 9)는 세션 모델 고정이다. 스킬 안에서 자기 모델을 바꿀 수 없다. 같은 이유로 main 세션이 직접 Fixer로 뛰면 배정 모델을 지킬 수 없으므로, 세션 모델이 배정 모델보다 약하면 위임하도록 명시했다
+  - Verifier의 3단계 중 **Resolved만은 관측 hunk만으로 결정되지 않는다**(`failure_path`가 더 이상 성립하지 않는지 판단해야 한다). 결정 불가일 때 Verifier 모델에서 판정하지 말고 그 항목만 리뷰어 모델로 재dispatch한다
+  - override는 이 값을 재배정할 수 있다. 자원 노브이지 base check가 아니므로 Conflict rule 대상이 아니다
+
 - `nara-release-watch` 2단계 분리 — **watch**(매일, 판정 없음)와 **digest**(사람 트리거, 증류 판정). 임계(`@minor`)가 알림과 판정을 동시에 죽여서 릴리즈 잦은 repo(stablyai/orca: minor 고정 + 일간 패치)를 감시할 수 없던 것이 동기
   - watch는 새 릴리즈를 `highlights[]`(기계 필터: fix/chore 등 conventional prefix, "Notable changes" 마케팅 섹션, first-contribution 보일러플레이트 제거 — orca 실측 주간 617줄 중 8할이 fix)와 함께 판정 없이 알리고 큐(`~/.claude/release-watch-queue.json`)에 적재한다
   - digest는 큐 누적분(여러 repo)을 한꺼번에 4분류 판정한다 — 누적이라 교차 repo 패턴 판정이 가능해졌다. 읽기와 드레인(`digest --drain`)을 분리해 판정·배달 실패 시 백로그를 잃지 않는다. jira-triage → jira-drain과 같은 자동 적재 + 사람 트리거 구조라 등록 잡은 계속 1개

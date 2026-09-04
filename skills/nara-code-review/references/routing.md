@@ -29,7 +29,13 @@ costs tokens; false-negative routing costs coverage.
 
 ## Launch rules
 
-- Dispatch all selected reviewers concurrently as parallel subagents (one batch).
+- Before dispatching, ask once: **"판단 역할(리뷰어·Judge·Fixer)에 쓸 모델을 고르세요."**
+  Options: `opus` (기본 권장) | `fable`. Save the answer as `$JUDGMENT_MODEL`; do
+  not ask again in re-review rounds. If the user supplied `--model=opus|fable`, use
+  it and skip the question. The Verifier always uses `sonnet`.
+- Dispatch all selected reviewers concurrently as parallel subagents (one batch),
+  each with `model: $JUDGMENT_MODEL`. If unavailable, do not substitute a different
+  model: omit `model` and record session-model fallback in the report.
 - Each reviewer prompt = [reviewer-contract](reviewer-contract.md)
   + its own `agents/<name>.md` + relevant [stack-specific](stack-specific.md) section
   + project override block (if loaded) + manifest + diff + context map.

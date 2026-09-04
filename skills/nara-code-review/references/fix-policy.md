@@ -8,7 +8,10 @@ agents causes: overwrites, duplicate fixes, divergent design directions,
 changed-but-unclaimed false alarms, and untraceable regressions.
 
 The main session may act as the Fixer directly, or delegate to one Fixer subagent —
-either way there is one writer, one ordering.
+either way there is one writer, one ordering. Only the delegated path can honor the
+Fixer's assigned model (SKILL.md "Role separation"); a direct main-session Fixer runs
+on the session model. When the session model is weaker than the assigned one,
+delegate rather than fixing directly, and record the actual model in the report header.
 
 Fix principles:
 - Scope each fix to its finding only — no opportunistic refactoring.

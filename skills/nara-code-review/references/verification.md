@@ -25,6 +25,9 @@ An entry becomes `verified` only when ALL hold:
 1. **Located**: observed hunks overlap the finding's `location.path` + `symbol`
    (fingerprint, not line numbers — lines drift).
 2. **Resolved**: re-reading the changed code, the `failure_path` no longer holds.
+   This is the one Verifier step that is not decidable from the observed hunk alone.
+   When it isn't, re-dispatch that entry on the Reviewer's model (SKILL.md
+   "Role separation") instead of ruling on it at the Verifier's.
 3. **Validated**: project validation commands (typecheck/lint/test) pass; for R1
    fixes, the reproducing/regression test passes (it must exist — see fix-policy).
 
