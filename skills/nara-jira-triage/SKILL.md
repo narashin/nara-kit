@@ -129,12 +129,13 @@ dedup: metadata `jira_key` 동일 이슈 존재 → 생성·멘션 스킵. `--dr
 | A. `MERGED` 0 + `OPEN` 1건 | `todo`\|`in_progress` → `in_review` | `pr_url` |
 | A. `MERGED` 2건+ / 매칭 0건 / `CLOSED`만 | 무변경 | 경고 로그 (종료 심사는 사람) |
 | B. Jira statusCategory `done` | → `done` | — |
-| B. Jira `indeterminate` | `todo` → `in_progress` | — |
+| B. Jira `indeterminate` | `todo` → `in_progress` | `drain_state=manual` |
 | C. A가 `done` 처리 + Jira assignee == 나 + Jira가 아직 done 카테고리 아님 | **Jira** → `$JIRA_CLOSE_STATUSES` 첫 매칭 | — (기본 OFF) |
 
 - **PR이 Jira보다 강한 증거** — Pass A 먼저. Jira 쪽이 밀려 있는 게 보통이다
 - `gh pr list --search`는 fuzzy(`PROJ-40` 질의에 PROJ-39·29도 온다) → `headRefName`\|`title`에 KEY가 **단어 경계**로 박힌 것만 채택: `(^|[^A-Za-z0-9])<KEY>([^0-9]|$)` (`PROJ-4` ≠ `PROJ-40`)
 - **`metadata.pr_url`은 근거 아님** — review-reminder가 KEY 검증 없이 심어 딴 티켓 PR이 붙기도 한다(실제 발생). strict 매칭 결과로 덮어씀
+- **Pass B의 `in_progress` 미러는 `drain_state=manual`을 함께 박는다** — 보드에서 카드를 `in_progress`로 옮기는 행위가 곧 착수 지시이고 `multica-dispatch.py`(크론)가 그걸 보고 워커를 띄운다. 미러는 "이미 다른 데서 손으로 하고 있다"는 뜻이라 그대로 두면 두 번째 워커가 붙는다. 착수 판별식은 `in_progress` + `jira_key` 있음 + `drain_state` **없음**
 - **Pass C가 유일한 외부 mutation이고 기본 OFF** — 팀이 보는 Jira라 `JIRA_SYNC=1` 로 명시 opt-in 해야 돈다. 켜더라도 가드 2중: assignee가 나인 티켓만, 그리고 Pass A의 `MERGED` 1건 분기에서만 호출. 현재 Jira 상태는 사람이 직접 관리
 - **종료 상태명은 프로젝트마다 다르다** — 전이 id 하드코딩 금지. `to.statusCategory.key == "done"` 인 전이 중 `$JIRA_CLOSE_STATUSES`(기본 `Closed,Done,Resolved`) 순서로 첫 매칭을 고른다. 어떤 프로젝트는 `Closed`, 다른 프로젝트는 `Done` 하나뿐 — 이름 하나로 고정하면 한쪽이 통째로 막힌다
 - Pass C 실패(PAT 권한 없음·해당 전이 미노출)는 경고 로그만 남기고 진행한다. Jira는 손대지 않은 상태로 남는다

@@ -13,6 +13,8 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Fixed
 
+- `nara-pr-activity-reminder`가 **`main`에 없었다** — `multica-agent` 브랜치에만 존재하고 머지된 적이 없어, `main`이 곧 릴리즈인 이 repo에서 소비자에게 배포되지 않았다. 실행 주체(`~/.local/bin/pr-activity-reminder.py`)는 git 밖이라 동작에는 영향이 없었고, 없어진 것은 계약 문서와 배포였다. 그 브랜치는 `main`보다 39커밋 뒤처져 통째 머지하면 `evals/` 전체가 삭제로 들어가므로 스킬 디렉터리만 꺼내왔다
+- 스킬 카운트가 49에 멈춰 있었다 — 실제 54개(`nara-` 53 + `naranizer`). 스킬을 추가할 때 `README.md`·`CLAUDE.md`·`skills/README.md` 카운트 갱신이 반복적으로 빠진다
 - 8-리뷰어 코드 리뷰 반영 — `nara-worklog`·`nara-release-watch`·`eval-fixture` 신규 Python 933 LOC 대상. raw 51건 → R0/R1 21건 적용, R2/R3 17건 이월. 리포트: `docs/review/260902-worklog-release-watch-eval-fixture.md`
   - **`fetch_versions`가 gh 실패를 "버전 없음"으로 오분류했다.** 판정이 `releases is None and tags is None`이라, 태그만 쓰는 repo(releases가 정상적으로 `[]`)에서 tags 호출만 실패하면 `unwatchable`로 낙인하고 `unwatchable_reported`를 영구 기록해 **그 repo가 영원히 조용해졌다**. 단계별 조기 반환으로 교체 — 부수적으로 실패 확정 후 두 번째 호출을 하지 않으므로 전 repo 실패 시 왕복이 절반이 된다
   - **`PRERELEASE_RE`에 단어 경계가 없어 정식 릴리즈가 사라졌다.** `v1.0.0-aarch64`(a**rc**h64), `-source`(sou**rc**e), `-devtools`, `-nextgen`이 prerelease로 오탐. 구분자 앵커(`(?:^|[-._+])`)로 교체하고 안정 태그 부정 케이스 6종을 테스트로 고정
@@ -59,6 +61,12 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - 측정 공백 확인: eval이 없는 스킬 7개 (`eli5-note`, `local-shot`, `review-queue`, `review-reminder`, `spec-revision`, `trending-digest`, `wt`). 이번 전환의 목적이 측정이므로 기록해 둔다
 
 ### Added
+
+- `nara-wip-sweep` 신설 — `In Progress`로 방치된 할당 티켓을 한 번에 쓸어내 분류한다. "In Progress 35건"은 작업량이 아니라 상태 부채이고, 그게 섞여 있으면 어떤 브리핑도 "오늘 무엇부터"를 답할 수 없다
+  - 분류 근거는 **실측**이다: 단어 경계 매칭(`(^|[^A-Za-z0-9])KEY([^0-9]|$)`) PR 조회, subtask 보유(컨테이너), 본문 AC 유무, 마지막 갱신 경과일. `gh pr list --search`는 fuzzy해서 `PROJ-4` 질의에 `PROJ-40`이 온다
+  - **티켓을 전이시키지 않는다.** 팀이 보는 Jira에서 상태 변경은 "이 일을 안 한다"는 선언이라 사람 판정이다. `metadata.pr_url` 같은 캐시된 링크도 근거로 쓰지 않는다 — 키 검증 없이 심어져 딴 티켓 PR이 붙은 사례가 있다
+  - 산출물은 실행 디렉터리의 `wip-sweep.md`. 여러 프로젝트를 걸치는 상태 보고서라 어느 repo의 `docs/`에도 넣지 않는다
+  - 첫 실행(35건)에서 사실상 종료 4건(머지 PR 보유), 착수 불가 3건(본문 없음), 컨테이너 3건, 방치 1건을 분리했다. `LYRIS-505`는 merged PR 19건이라 다수 규칙에 따라 모호로 남겼다
 
 - `nara-worklog` subtask 전환 마커 — `worklog.py mark <SUBTASK>`가 ledger에 `ev: "switch"`를 append하고, 리듀서가 마커 이후 구간을 그 티켓에 귀속시킨다. 브랜치 하나로 여러 subtask를 오가는 실제 작업 방식을 위한 것 (worklog를 leaf에 다는 방향)
   - 마커는 **브랜치 티켓의 ledger**에 들어간다 — hook이 쓰는 그 파일이므로 subtask별 ledger가 새로 생기지 않는다. 마커 이전 구간은 브랜치 티켓(대개 부모)에 남고, 그건 `mark`를 잊었다는 신호다

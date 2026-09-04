@@ -81,6 +81,8 @@
 | `nara-jira-triage` | Poll Jira for tickets assigned to you, classify 구현/버그픽스/기획/기타, emit a Multica issue with a ready-to-run launch kit (never executes code) / 내 Jira 티켓 폴링 → 분류 → 런치킷 Multica 이슈 발급 |
 | `nara-jira-drain` | Launch a chosen jira-triage queue ticket into an aoe session (group + worktree), drive the work to a PR — interactive ($0), human-triggered / 큐 티켓 1건 → aoe 세션 착수 → PR까지 자율 (인터랙티브 $0) |
 | `nara-worklog` | Reduce the hook-collected session-timestamp ledger into per-day Jira worklog entries behind a human confirm gate (idle-split, midnight-split, worktree union, floor-to-minute, watermark idempotency). Needs one-time hook setup / 세션 타임스탬프 → 날짜별 Jira worklog (승인 게이트) |
+| `nara-wip-sweep` | Sweep assigned tickets stuck at an in-progress status, classify each by measured evidence (merged/open PR by word-boundary key match, subtask container, missing AC, days idle), and report cleanup candidates. Never transitions a ticket / In Progress 상태 부채 일괄 분류 → 정리 후보 보고 (전이는 사람) |
+| `nara-pr-activity-reminder` | Detect new replies to your PR review comments and new commits pushed to PRs you review, via one persistent per-PR Multica tracking issue. Fully deterministic, so the spec here is executed by an out-of-band cron script, not an LLM autopilot / 리뷰 대댓글 + 새 커밋 감지 → PR당 추적 이슈 1개 (실행은 크론 스크립트) |
 | `nara-release-watch` | Two-stage watchlist follow-up: daily **watch** reports what shipped with machine-filtered highlights (no judgment, silent on quiet days) and queues items; weekly **digest** judges the accumulated queue (`이미 있음`/`의존`/`증류 후보`/`무시`, default `의존`, cross-repo patterns allowed). Pairs with `trending-digest` (unknown-repo discovery) / watch=릴리즈 알림+큐 적재, digest=누적 증류 판정 |
 
 ### Meta / 메타

@@ -1,6 +1,6 @@
 # nara-kit
 
-Agent Skills repo — 49 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
+Agent Skills repo — 54 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
 
 ## Structure
 
@@ -163,7 +163,7 @@ Two traps, both hit in practice:
 **Renaming a skill is breaking:** consumers keep the old copy under the old name; they must remove it and reinstall.
 
 **Verify after release (consumer side):**
-- `ls ~/.claude/skills | grep -c '^nara-'` → 48 (+ `naranizer` = 49)
+- `ls ~/.claude/skills | grep -c '^nara-'` → 53 (+ `naranizer` = 54)
 - Run a quick smoke test of the changed skill in a fresh session
 
 Note: `claude-mem:version-bump` no longer applies — there are no manifests to bump.

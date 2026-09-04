@@ -4,9 +4,9 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal workflow toolkit in the [Agent Skills](https://github.com/vercel-labs/skills) format — **49 skills** for structured software development and documentation work. Skills are invoked directly; `nara-now` reads the session state and names the next command. Works with Claude Code and Codex.
+Personal workflow toolkit in the [Agent Skills](https://github.com/vercel-labs/skills) format — **54 skills** for structured software development and documentation work. Skills are invoked directly; `nara-now` reads the session state and names the next command. Works with Claude Code and Codex.
 
-Agent Skills 포맷 워크플로우 툴킷 — 개발·문서화 작업을 위한 **49개 스킬**. 스킬을 직접 호출하고, 다음에 뭘 할지는 `nara-now`가 알려준다. Claude Code + Codex 지원.
+Agent Skills 포맷 워크플로우 툴킷 — 개발·문서화 작업을 위한 **54개 스킬**. 스킬을 직접 호출하고, 다음에 뭘 할지는 `nara-now`가 알려준다. Claude Code + Codex 지원.
 
 ## Install / 설치
 
@@ -17,7 +17,7 @@ npx skills add narashin/nara-kit --global --agent claude-code --agent codex --sk
 - `--global`: 모든 프로젝트에서 사용. 특정 스킬만: `--skill nara-gap --skill nara-code-review`
 - 호출: `/nara-<skill>` (예: `/nara-prep PROJ-1234`), Codex는 `$nara-<skill>`, 또는 자연어 트리거
 - **Update**: `npx skills update` — 단 **이미 설치된 스킬만 갱신한다.** 새로 추가된 스킬을 받으려면 위 `add` 명령을 다시 실행해야 하고, **제거된 스킬은 자동으로 지워지지 않아** 직접 삭제해야 한다
-- 검증: `ls ~/.claude/skills | grep -c '^nara-'` → 48 (+ `naranizer` = 49)
+- 검증: `ls ~/.claude/skills | grep -c '^nara-'` → 53 (+ `naranizer` = 54)
 
 ### v0.21.0 업그레이드 (breaking)
 
@@ -47,7 +47,7 @@ v0.16까지는 Claude Code 플러그인으로 배포. 스킬 포맷 전환에 �
 
 | 위치 | 내용 |
 |------|------|
-| **[skills/README.md](skills/README.md)** | 49개 스킬 카탈로그 + 권장 흐름(mermaid) + Gates + Artifacts + Override 규약 |
+| **[skills/README.md](skills/README.md)** | 54개 스킬 카탈로그 + 권장 흐름(mermaid) + Gates + Artifacts + Override 규약 |
 | **[CHANGELOG.md](CHANGELOG.md)** | 버전별 변경. 각 git tag = 여기 한 섹션 (breaking은 업그레이드 절차 포함) |
 | **[references/output-contract.md](references/output-contract.md)** | 모든 스킬이 따르는 공통 출력 규약 (영수증 형식, 상태 라벨, 격상 신호) |
 | `docs/`, `evals/` | per-project 작업물·평가 (gitignore — 설치 대상 아님) |
