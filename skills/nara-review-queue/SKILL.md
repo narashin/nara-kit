@@ -20,9 +20,11 @@ nara-review-queue [<issue-id | url>] [--limit N] [--done-status S]
 |------|------|------|
 | `<issue-id \| url>` | — | 단일 이슈만 처리. `.../issues/<uuid>` URL이면 UUID 추출. 생략 시 큐 전체 |
 | `--limit` | `50` | 큐 모드 최대 처리 건수 |
-| `--done-status` | `done` | 완료 후 전환할 status (보드 컬럼명에 맞춰 override) |
+| `--done-status` | `in_review` | 판정 후 전환할 status (보드 컬럼명에 맞춰 override) |
 
 리뷰 결과는 **멀티카 이슈 코멘트로만** 기록한다 — 원격 PR에는 절대 게시하지 않는다.
+
+**판정 후 status는 `done`이 아니라 `in_review`다.** 이 스킬은 PR에 아무것도 게시하지 않으므로, 에이전트 판정이 나와도 GitHub에서 나는 여전히 리뷰를 안 남긴 리뷰어다. `done`으로 닫으면 `nara-review-reminder`의 dedup이 카드를 다시 만들지 않아 **"아직 내 리뷰가 안 나갔다"는 신호가 보드에서 사라진다**(실측: 열린 PR 12건이 그렇게 카드 없이 남았다). 카드를 닫는 권한은 reminder의 reconcile 두 조건에만 있다 — PR이 `MERGED`/`CLOSED`거나 `reviews[].author.login`에 내가 있을 때. 플래그 이름은 하위호환으로 유지한다.
 
 ## Step 0 — Pre-flight
 
@@ -47,18 +49,19 @@ nara-review-queue [<issue-id | url>] [--limit N] [--done-status S]
 
 ## Step 3 — 리뷰 코멘트 처리
 
-리뷰 산출물의 종착지는 **원본 멀티카 이슈** — 트래커 안에서 리마인더 옆에 닫힌다. 동일 리뷰를 **한국어 + 영어 2개 코멘트**로 기록(같은 내용, 언어만 다름) 후 완료 표시:
+리뷰 산출물의 종착지는 **원본 멀티카 이슈** — 트래커 안에서 리마인더 옆에 선다. 동일 리뷰를 **한국어 + 영어 2개 코멘트**로 기록(같은 내용, 언어만 다름) 후 판정 표시:
 
 ```bash
 multica issue comment add <id> --content-file <ko.md>         # 한국어 본문 (다줄은 --content-file, 또는 --content)
 multica issue comment add <id> --content-file <en.md>         # 영어 본문
-multica issue metadata set <id> --key reviewed --value true   # dedup source of truth (KV는 항상 유효)
-multica issue status <id> <done-status>                       # positional. 유효값: backlog todo in_progress in_review done blocked cancelled
+multica issue metadata set <id> --key reviewed --value true   # dedup key. "에이전트가 판정함" — 전달됨이 아니다
+multica issue status <id> <done-status>                       # 기본 in_review. 유효값: backlog todo in_progress in_review done blocked cancelled
 ```
 
 ## 규칙
 
 - 원격 PR에는 리뷰를 게시하지 않는다 (read-only). 결과는 멀티카 이슈에만.
+- **카드를 `done`으로 닫지 않는다.** 판정은 전달이 아니다. 닫는 권한은 reminder의 reconcile에만 있다.
 - `GH_HOST` 는 PR URL에서 매번 도출. 호스트 하드코딩 금지.
 - 한 건 실패해도 큐를 멈추지 말고 `❌` 표시 후 다음 건 진행. 끝에 실패 합산.
 

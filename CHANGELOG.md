@@ -24,6 +24,11 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Fixed
 
+- **에이전트 판정이 카드를 `done`으로 닫아서 사람이 갚아야 할 리뷰가 보드에서 사라졌다.** 파이프라인은 설계상 PR에 아무것도 게시하지 않으므로, 판정이 나와도 GitHub 기준으로는 리뷰를 안 남긴 리뷰어 그대로다. 그런데 `reviewed=true` + `done`으로 카드를 닫았고, dedup이 `reviewed`를 보므로 리마인더가 다시 만들지도 않는다. **실측: 열린 PR 12건이 내 리뷰가 하나도 안 나간 상태로 카드 없이 남아 있었다.** 활동 추적 카드만 열려 있어서 그걸 보고 리뷰해야 하는 건지 헷갈리는 게 정상이었다
+  - `nara-review-reminder`의 reconcile 계약은 카드를 닫는 조건을 둘로 못 박아 뒀다. PR이 `MERGED`/`CLOSED`거나 `reviews[].author.login`에 내가 있을 때. 디스패처가 계약에 없는 세 번째 조건을 만들어 쓰고 있었다
+  - 판정 후 status를 `in_review`로 바꿨다. 뜻은 "판정 나왔고 게시는 사람 차례". 닫는 권한은 reconcile에만 남는다. `reviewed=true`는 중복 카드 방지용으로 유지하되 종료 의미를 뺐다
+  - `nara-review-queue`의 `--done-status` 기본값을 `in_review`로. 플래그 이름은 하위호환으로 유지
+  - 이미 닫힌 19건 백필: PR이 열려 있고 내 리뷰가 없는 15건을 `in_review`로 되살렸다. 머지된 4건은 그대로 `done`
 - **`pr-activity-reminder`의 열린 카드 조회도 창에 잘렸다.** 아래 dedup 결함과 같은 것인데 이 파일만 남아 있었다. `issue list --limit 100`을 통째로 받아 클라이언트에서 걸렀고, 정렬이 보드 position이라 done/cancelled가 창을 채운다(`has_more: true` 실측). 밀려난 추적 카드는 안 보이므로 **같은 PR에 활동 카드가 중복 생성**되고 머지된 PR이 안 닫힌다. 상태별 조회로 교체 — 열린 컬럼만 보면 창에 안 걸린다(실측 30건). `--metadata tracker_type=activity`로 좁히지 않은 이유는 고아 카드 복구가 **metadata가 빈** 행을 찾아야 해서다
 
 - **자동 PR 리뷰가 엔터프라이즈 호스트를 못 찾았고, 회복한 뒤에도 판정이 카드에 오르지 못했다.** `nara-pr-review` 1단계는 "체크아웃 없이 `gh --repo` 기준"이라고만 적혀 있어 호스트를 도출하라는 지시가 없었다. `gh`에 github.com과 엔터프라이즈 호스트가 둘 다 로그인돼 있으면 기본 호스트는 github.com이므로, `GH_HOST` 없는 `--repo <owner/repo>`는 diff를 한 줄도 받지 못한 채 `Could not resolve to a Repository`로 죽는다. PR URL의 hostname을 `GH_HOST`로 export하는 것을 1단계 계약으로 올리고, 실패 증상과 이유는 `references/pr-plane.md`로 내렸다. 그쪽에 있던 "GHES면 `GH_HOST` 설정 확인"은 환경 점검으로 읽혀서 도출 규칙 역할을 하지 못했다

@@ -83,7 +83,9 @@ multica issue metadata set <issue_id> --key request_via --value "<direct | team 
 
 `tracker_type=review` 없으면 Step 0 이 `pr-activity-reminder` 의 `activity` 이슈까지 닫는다(둘 다 `pr_url` 보유). `request_via` 는 reconcile 의 "팀 경유만" 판정용.
 
-이슈가 `--reviewer-agent` 에 assign되면 Multica가 해당 에이전트의 task를 enqueue → 에이전트가 nara-review-queue 스킬로 PR을 리뷰하고 결과를 이슈 코멘트(KO/EN)로 남긴 뒤 done 처리한다. 이것이 "리뷰 필요 생성 → 자동 리뷰" 트리거.
+이슈가 `--reviewer-agent` 에 assign되면 Multica가 해당 에이전트의 task를 enqueue → 에이전트가 nara-review-queue 스킬로 PR을 리뷰하고 결과를 이슈 코멘트(KO/EN)로 남긴 뒤 카드를 `in_review` 로 옮긴다. 이것이 "리뷰 필요 생성 → 자동 리뷰" 트리거.
+
+**에이전트 판정은 카드를 닫지 않는다.** 판정은 PR에 게시되지 않으므로 GitHub 기준으로 나는 여전히 리뷰를 안 남긴 리뷰어다. `done` 은 위 reconcile 두 조건(머지·내 리뷰 완료)에서만 찍는다. 판정으로 닫으면 dedup이 카드를 다시 만들지 않아 갚아야 할 리뷰가 보드에서 사라진다.
 
 ## 멘션 알림 (`--mention` 지정 시)
 
