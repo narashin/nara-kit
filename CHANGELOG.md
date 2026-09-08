@@ -11,8 +11,24 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Added
+
+- **활동 추적 카드에서 재리뷰를 요청할 수 있다.** 카드를 `in_progress`로 옮기면 PR 전체를 다시 판정하고, 결과를 그 카드에 붙인 뒤 카드를 `todo`로 되돌린다. 라운드마다 반복 가능하다. **새 커밋 감지로 자동 발동하지는 않는다** — 사람이 요청할 때만 돈다. 제스처를 `in_progress` 드래그로 고른 이유는 이 시스템에서 이미 "착수"를 뜻하는 어휘이고, 활동 카드가 그 컬럼에서 아무 반응이 없었기 때문이다(`dispatch()`·`rework()` 둘 다 `tracker_type` 있는 카드를 제외). 새 어휘를 만들지 않았다
+  - 수집 시 `reviewed_sha`를 남긴다. 나중에 증분 재리뷰로 갈 여지를 열어둔 기록이고, 지금 판정은 매번 전체다
+  - `reviewed`는 활동 카드에 쓰지 않는다. 그 키는 `nara-review-reminder` dedup의 source of truth라서, 활동 카드에 쓰면 아무 동작 없이 PR이 승인된 것처럼 읽힌다
+  - `review_state=dispatched`인 카드는 PR 종료 처리에서 건너뛴다. `done`으로 넘기면 디스패처의 수집 대상 상태에서 빠져 판정이 워크트리에 갇힌다 — 오늘 고친 `blocked` 종착 결함과 같은 모양이다
+- **활동 추적 카드가 형제 판정 카드를 링크한다.** 리뷰 요청 한 건에 카드가 둘 생기는데(판정용 `tracker_type=review` + 감시용 `tracker_type=activity`) 판정 결과는 앞쪽에만 달린다. 링크가 없으면 뒤쪽 카드만 보고 "리뷰가 안 돌아갔다"고 읽게 된다. 실제로 그렇게 읽힌 사례에서 출발했다
+  - 조회는 서버측 `--metadata "pr_url=..."` 필터. 판정 카드는 보통 이미 `done`이라 창에서 밀린다
+  - URL은 `{app_url}/{workspace slug}/issues/{ident}`로 조립하고 `app_url`·slug를 CLI 설정에서 읽는다. 하드코딩된 기존 상수(`multica-brief.py`)는 호스트도 경로도 이 머신 실제값과 달라서 링크가 죽어 있다
+  - 백필은 **PR 순회와 분리된 별도 패스**다. PR 순회는 login 단위 리뷰 요청이나 내가 GitHub에 남긴 리뷰가 있는 PR만 보는데, 팀 단위로 요청됐고 판정을 GitHub에 게시하지 않은 PR은 둘 다 아니다. 활동 감지에는 맞는 필터고 카드 링크에는 틀린 필터다 — 실측으로 발견했다(첫 구현은 문제의 그 카드에 닿지 못했다). 분리 후 11건 링크
+
 ### Fixed
 
+- **`pr-activity-reminder`의 열린 카드 조회도 창에 잘렸다.** 아래 dedup 결함과 같은 것인데 이 파일만 남아 있었다. `issue list --limit 100`을 통째로 받아 클라이언트에서 걸렀고, 정렬이 보드 position이라 done/cancelled가 창을 채운다(`has_more: true` 실측). 밀려난 추적 카드는 안 보이므로 **같은 PR에 활동 카드가 중복 생성**되고 머지된 PR이 안 닫힌다. 상태별 조회로 교체 — 열린 컬럼만 보면 창에 안 걸린다(실측 30건). `--metadata tracker_type=activity`로 좁히지 않은 이유는 고아 카드 복구가 **metadata가 빈** 행을 찾아야 해서다
+
+- **자동 PR 리뷰가 엔터프라이즈 호스트를 못 찾았고, 회복한 뒤에도 판정이 카드에 오르지 못했다.** `nara-pr-review` 1단계는 "체크아웃 없이 `gh --repo` 기준"이라고만 적혀 있어 호스트를 도출하라는 지시가 없었다. `gh`에 github.com과 엔터프라이즈 호스트가 둘 다 로그인돼 있으면 기본 호스트는 github.com이므로, `GH_HOST` 없는 `--repo <owner/repo>`는 diff를 한 줄도 받지 못한 채 `Could not resolve to a Repository`로 죽는다. PR URL의 hostname을 `GH_HOST`로 export하는 것을 1단계 계약으로 올리고, 실패 증상과 이유는 `references/pr-plane.md`로 내렸다. 그쪽에 있던 "GHES면 `GH_HOST` 설정 확인"은 환경 점검으로 읽혀서 도출 규칙 역할을 하지 못했다
+  - 실행 측(`multica-dispatch.py`, git 밖 `dotfiles/ops`) 결함 2건을 같이 고쳤다. 스크립트는 자기 `gh` 호출에는 `GH_HOST`를 넘기면서 리뷰어 프롬프트에는 호스트를 넘기지 않았다. 이제 PR URL에서 도출해 리터럴로 박는다 (스크립트가 이미 아는 결정값이라 워커 추론에 맡길 이유가 없다)
+  - 그리고 `blocked`가 종착 상태로 굳었다. 수집 루프가 `dispatched`만 보고 착수 루프는 state가 있는 카드를 건너뛰므로, 첫 `gh` 호출에 실패한 리뷰어가 스스로 회복해 결과 파일을 다시 써도 판정이 워크트리에 갇힌다. 실측 사례에서 16분 뒤 `changes_requested`가 쓰였는데 아무것도 걷어가지 않아 사람이 손으로 카드에 옮겼다. 이제 `blocked`도 계속 폴링하고, 상태가 실제 판정으로 바뀌면 정상 수집한다. 여전히 `blocked`인 동안은 재코멘트하지 않는다
 - **dedup이 조회 창을 넘겨 이미 처리한 것을 다시 만들었다.** `nara-review-reminder`와 `nara-jira-triage` 모두 `multica issue list`를 통째로 훑어 비교했는데, 그 호출은 100건에서 잘린다(`has_more: true`). done/cancelled가 목록을 지배하므로 워크스페이스가 100건을 넘은 시점(2026-09-04 실측)부터 오래된 이슈가 창 밖으로 밀리고, **내가 취소해둔 PR에 리마인더가 다시 생기고 이미 큐잉한 티켓이 다시 큐에 들어간다.** 서버측 metadata 필터(`--metadata "pr_url=..."` / `"jira_key=..."`)로 교체 — 서버가 걸러 창과 무관하다
   - 같은 결함이 `jira-reconcile.sh`에도 있었다(git 밖, `dotfiles/ops`). 그쪽은 열린 이슈만 필요하므로 `OPEN_STATUSES`별로 조회해 합치도록 고쳤다. 고친 직후 조회 결과에 `LYRIS-425`가 새로 나타났다 — 실제로 밀려 있었다는 증거다
   - review-reminder에 **리뷰가 불필요한 PR을 무시하는 방법**을 명시했다: 카드를 `cancelled`로 옮긴다. dedup이 상태를 보지 않으므로 재생성되지 않는다. `done`은 "내가 리뷰했다"는 뜻으로 reconcile이 쓰므로 구분한다

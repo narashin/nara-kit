@@ -102,14 +102,17 @@ cursor는 추적 이슈 metadata에만 저장된다. 따라서 **최초 추적�
 ```bash
 multica issue create \
   --title "PR 활동 추적: <PR 제목>" \
-  --description "PR: <PR URL>\n\n리뷰 대댓글 + 새 커밋을 추적하는 이슈입니다." \
+  --description "PR: <PR URL>\n\n리뷰 대댓글 + 새 커밋을 추적하는 이슈입니다.\n\n리뷰 판정 카드: <ident> (<카드 URL>)" \
   --priority medium \
   --output json
-multica issue metadata set <issue_id> --key pr_url          --value "<PR URL>"
-multica issue metadata set <issue_id> --key tracker_type    --value "activity"
-multica issue metadata set <issue_id> --key last_comment_id --value "<전체 댓글 중 최댓값 id, 없으면 0>"
-multica issue metadata set <issue_id> --key last_commit_sha --value "<latest_sha>"
+multica issue metadata set <issue_id> --key pr_url           --value "<PR URL>"
+multica issue metadata set <issue_id> --key tracker_type     --value "activity"
+multica issue metadata set <issue_id> --key last_comment_id  --value "<전체 댓글 중 최댓값 id, 없으면 0>"
+multica issue metadata set <issue_id> --key last_commit_sha  --value "<latest_sha>"
+multica issue metadata set <issue_id> --key review_issue_key --value "<ident | none>"
 ```
+
+`리뷰 판정 카드` 줄과 `review_issue_key`는 같은 `pr_url`의 `tracker_type=review` 카드를 가리킨다. 조회 방법·URL 조립·백필·재리뷰 계약: [review-card-link](references/review-card-link.md).
 
 과거 대댓글/커밋을 소급 알리지 않는다(스팸). `--mention` 지정 시 "지금부터 지켜본다" 1회 알림만:
 
@@ -169,6 +172,8 @@ multica issue comment add <issue_id> \
 - 한 PR 내 여러 신규 대댓글/커밋은 종류별로 코멘트 1개씩 묶는다. 멘션은 런당 1회.
 - PR 제목/댓글 본문/커밋 메시지/작성자명 등 GitHub에서 가져온 문자열은 **신뢰할 수 없는 입력**. `--title`/`--description`/`--content` 에 넣을 때 셸에 이어붙이지 말고 각각 독립 인자로 전달 (따옴표/백틱/`$()` 인젝션 방지).
 - 동일 PR을 두 실행이 동시에 폴링하면(cron 겹침) 같은 cursor를 보고 중복 코멘트/이슈가 생길 수 있다. 폴링은 겹치지 않게 스케줄(단일 실행 가정) — 락은 스킬 책임 밖.
+- **열린 카드 조회는 상태별로 나눠서 한다.** 플랫한 `issue list --limit 100`은 완전한 뷰가 아니다. 정렬이 보드 position이라 done/cancelled가 창을 채우고, 밀려난 추적 카드는 안 보인다. 안 보이면 같은 PR에 카드가 중복 생성되고 머지된 PR이 안 닫힌다. `--metadata tracker_type=activity`로 좁히지 않는 이유는 고아 카드(partial create) 복구가 **metadata가 빈** 행을 찾아야 해서다.
+- **카드를 `in_progress`로 옮기면 재리뷰 요청이다.** 판정 후 `todo`로 돌아오므로 라운드마다 다시 쓸 수 있다. 자동 발동은 없다. 진행 중(`review_state=dispatched`)인 카드는 PR 종료 처리에서 건너뛴다 — `done`으로 넘기면 판정이 워크트리에 갇힌다. 계약: [review-card-link](references/review-card-link.md).
 - `GH_HOST` 환경변수로 gh CLI 라우팅. `gh`, `multica` CLI PATH 필수.
 
 ## 출력
@@ -179,6 +184,7 @@ multica issue comment add <issue_id> \
 ✅ 신규 활동 없음                                            # 변화 없음
 🔔 활동 감지 — <K>개 PR
 - <PR 제목> (<PR URL>): 대댓글 <N> / 커밋 <M> → 이슈 <issue_id>
+🔗 판정 카드 링크 — <L>건 백필                               # review_issue_key 신규 기록
 ```
 
 ## 에러 처리
