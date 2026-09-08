@@ -34,9 +34,10 @@ description: >-
 4. **Aggregate + Judge**: fingerprint dedup. critical·major·보안 finding은
    독립 Judge 재확인 (원 confidence·fix 은닉).
 5. **Report** (한국어) → `./docs/review/YYMMDD-pr<번호>.md`.
-6. **Post (승인 게이트)**: 사용자가 승인한 finding만 `gh pr review --comment`로
-   게시. 승인 없이는 게시하지 않는다. approve/request-changes verdict는
-   항상 사람 몫 — 이 스킬은 제안만 한다.
+6. **Post (승인 게이트)** — [posting](references/posting.md):
+   사용자가 승인한 finding만 게시. 승인 없이는 게시하지 않는다.
+   approve/request-changes verdict는 항상 사람 몫 — 이 스킬은 제안만 한다.
+   같은 계약을 판정 후 별도 게시 실행도 쓴다 (그래서 별도 파일).
 
 ## Key rules
 
