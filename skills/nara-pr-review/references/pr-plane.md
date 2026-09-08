@@ -3,6 +3,7 @@
 ## Collection
 
 ```bash
+export GH_HOST=<PR URL의 hostname>   # 예: git.example.com. 첫 gh 호출 전에 반드시
 gh pr view <n|url> --repo <owner/repo> --json title,body,state,baseRefName,headRefName,commits,files,additions,deletions,labels,reviewRequests
 gh pr diff <n> --repo <owner/repo>
 gh pr checks <n> --repo <owner/repo>
@@ -11,8 +12,12 @@ gh api repos/<owner>/<repo>/pulls/<n>/comments      # inline threads
 gh pr view <n> --repo <owner/repo> --json comments  # conversation
 ```
 
-- GHES면 `GH_HOST` 설정 확인. 체크아웃하지 않는다 — 로컬 워킹트리 불변.
-- 수집 실패(GH_HOST 미설정, 권한, 404)는 `❌ 실패:` 블록으로 즉시 중단 —
+- **`GH_HOST`는 환경에서 확인하는 게 아니라 PR URL에서 도출해 직접 export한다.**
+  안 하면 `--repo <owner/repo>`가 엔터프라이즈 PR도 github.com에서 찾아
+  `Could not resolve to a Repository with the name '<owner/repo>'`로 실패한다.
+  gh에 두 호스트가 다 로그인돼 있어도 기본 호스트는 github.com이다.
+  체크아웃하지 않는다. 로컬 워킹트리는 불변.
+- 수집 실패(`GH_HOST` 미설정, 권한, 404)는 `❌ 실패:` 블록으로 즉시 중단한다.
   부분 데이터로 리뷰를 진행하지 않는다.
 - 변경 파일의 전체 컨텍스트: `gh api repos/<o>/<r>/contents/<path>?ref=<headRef>`
   (base 비교 필요 시 `ref=<baseRef>`도).
