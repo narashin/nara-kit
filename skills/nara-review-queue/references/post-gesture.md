@@ -4,18 +4,24 @@
 
 ## 제스처
 
-카드에 라벨을 붙인다. 둘 중 하나만.
+**카드에 코멘트를 쓴다.** 이게 기본 경로다.
 
-| 라벨 | 결과 |
+| 코멘트 | 결과 |
 |---|---|
-| `post-comment` | 판정을 PR 리뷰 코멘트로 게시 (`gh pr review --comment`) |
-| `post-approve` | approve + 코멘트 게시 (`gh pr review --approve`) |
+| `/post` | 판정을 PR 리뷰 코멘트로 게시 (`gh pr review --comment`) |
+| `/approve` | approve + 코멘트 게시 (`gh pr review --approve`) |
 
-**status 드래그가 아니라 라벨인 이유.** 남의 PR에 게시하는 것은 바깥으로 나가는 행동이고, 컬럼 이동이 암시할 성격이 아니다. 그리고 approve는 머지 신호다. `status: pass` 판정에서 자동 유도하면 안 되고, 사람이 approve를 명시한 것만이 근거다.
+토큰은 **코멘트 맨 앞**에 있어야 한다. 뒤에 하고 싶은 말을 이어 써도 된다(`/post 이대로 올려줘`). "나중에 /post 할게" 같은 문장은 발동하지 않고, `/poster`도 아니다. 스크립트가 쓰는 코멘트는 전부 멘션으로 시작하므로 자기 코멘트에 스스로 걸리지 않는다.
 
-둘 다 붙어 있으면 아무것도 게시하지 않고 카드에 알린다. 추측하지 않는다.
+라벨 `post-comment` / `post-approve`도 같은 동작을 한다. 다만 GUI에 라벨 UI가 없어서 CLI 전용 경로이고, `issue label add`가 이름이 아니라 label UUID를 받는다. **코멘트가 사람이 실제로 쓸 수 있는 경로다.**
 
-판정이 없는 카드(`review_state`가 `passed`/`changes_requested` 아님)에 라벨이 붙으면 라벨을 떼고 알린다. 빈 리뷰를 남의 PR에 올리지 않는다.
+**status 드래그가 아닌 이유.** 남의 PR에 게시하는 것은 바깥으로 나가는 행동이고, 컬럼 이동이 암시할 성격이 아니다. 그리고 approve는 머지 신호다. `status: pass` 판정에서 자동 유도하면 안 되고, 사람이 approve를 명시한 것만이 근거다.
+
+라벨이 둘 다 붙어 있으면 아무것도 게시하지 않고 카드에 알린다. 추측하지 않는다.
+
+**모든 거부는 카드에 이유를 남기고 트리거를 소비한다.** 판정 없는 카드, PR 주소 없음, repo 매핑 없음 모두 그렇다. 소비하지 않으면 같은 요청을 매 폴링마다 다시 읽어 같은 불만을 분당 하나씩 쌓는다. 조용히 무시하는 것은 이 파이프라인이 반복해서 만들어낸 실패 모양이라 하지 않는다.
+
+같은 카드에 다시 `/post`를 쓰면 다시 게시된다. 소비 기준은 **코멘트 id**(`post_trigger_id`)라서 새 코멘트는 새 요청이다.
 
 ## 왜 스크립트가 아니라 에이전트인가
 
@@ -40,7 +46,7 @@
 
 | 시점 | 상태 |
 |---|---|
-| 착수 | `post_state=dispatched` · `post_action=comment\|approve` · `post_worktree` · `post_worktree_sel` · `post_prompt_state=pending` |
+| 착수 | `post_state=dispatched` · `post_action=comment\|approve` · `post_trigger_id`(소비한 코멘트 id) · `post_worktree` · `post_worktree_sel` · `post_prompt_state=pending` |
 | 성공 | 라벨 제거 → `post_state=posted` → 워크트리 제거 → 게시 본문을 카드 코멘트로 |
 | 실패·거부 | 라벨 제거 → `post_state=failed\|refused` → **워크트리 유지**(원인 확인용). 다시 붙이려면 `post_state` 삭제 |
 

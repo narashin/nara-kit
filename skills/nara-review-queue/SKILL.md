@@ -62,7 +62,7 @@ multica issue status <id> <done-status>                       # 기본 in_review
 
 - 원격 PR에는 리뷰를 게시하지 않는다 (read-only). 결과는 멀티카 이슈에만.
 - **카드를 `done`으로 닫지 않는다.** 판정은 전달이 아니다. 닫는 권한은 reminder의 reconcile에만 있다.
-- 게시는 사람이 카드에 `post-comment` 또는 `post-approve` 라벨을 붙일 때만 일어난다. approve는 `status: pass`에서 유도하지 않는다 — 머지 신호라서 사람이 명시한 것만이 근거다. 계약: [post-gesture](references/post-gesture.md).
+- 게시는 사람이 카드에 `/post`(코멘트만) 또는 `/approve`(approve까지)라고 코멘트할 때만 일어난다. approve는 `status: pass`에서 유도하지 않는다 — 머지 신호라서 사람이 명시한 것만이 근거다. 계약: [post-gesture](references/post-gesture.md).
 - `GH_HOST` 는 PR URL에서 매번 도출. 호스트 하드코딩 금지.
 - 한 건 실패해도 큐를 멈추지 말고 `❌` 표시 후 다음 건 진행. 끝에 실패 합산.
 
