@@ -68,7 +68,8 @@ GH_HOST=<host> gh pr list \
 
 ```bash
 # description의 개행은 셸에서 실제 개행으로 만들어 전달 (인라인 리터럴 "\n"은 백슬래시-n으로 렌더됨)
-DESC=$(printf 'PR: %s\n\n리뷰 요청을 받았으나 아직 리뷰를 남기지 않은 PR입니다.' "<PR URL>")
+# 카드 본문에 코멘트 명령을 적어둔다 — 제스처를 외운 사람만 쓸 수 있으면 아무도 안 쓴다.
+DESC=$(printf 'PR: %s\n\n리뷰 요청을 받았으나 아직 리뷰를 남기지 않은 PR입니다.\n\n**카드 코멘트 명령** (토큰은 맨 앞에):\n\n- `/ask <질문>` — 판정에 되묻기 (답은 스레드로)\n- `/ask --sol <질문>` — 같은 되묻기를 무거운 모델로\n- `/post` — 판정을 PR에 게시\n- `/approve` — approve까지 게시' "<PR URL>")
 multica issue create \
   --title "리뷰 필요: <PR 제목>" \
   --description "$DESC" \
