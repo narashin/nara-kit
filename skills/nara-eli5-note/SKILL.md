@@ -4,8 +4,10 @@ description: >-
   Explain something the way /eli5 would — plain words, one analogy, HTML/SVG diagrams for
   anything that can be drawn (never ASCII art, never mermaid) — and save it as a note in
   the user's Obsidian vault, matching that vault's folder and frontmatter conventions.
+  Takes the reader as an argument (age, grade, job role, or relationship; defaults to age 5).
   USE FOR: "obsidian에 정리해", "옵시디언에 담아", "이거 노트로 남겨", "5살에게 설명하듯 정리해줘",
-  "그림으로 정리해줘", "eli5로 노트 써줘", "이거 나중에 볼 수 있게 정리해".
+  "15살 수준으로 노트 만들어", "매니저한테 설명하듯 정리해", "그림으로 정리해줘", "eli5로 노트 써줘",
+  "이거 나중에 볼 수 있게 정리해".
   DO NOT USE FOR: explanation with no saving (use /eli5), session learnings into memory or
   handoff (use /nara-reflect), Confluence publishing (use /nara-publish-spec),
   architecture decisions (use /nara-adr), repo-facing docs.
@@ -19,21 +21,33 @@ description: >-
 
 ## 참조 자원
 
-- **`references/vault-conventions.md`** — vault `narashin`의 폴더 두 계열, frontmatter 스키마, 톤, 노트 골격. 위치를 정하기 전에 읽는다.
-- **`references/diagram-patterns.md`** — HTML/SVG 그림 패턴 8종, 매체 선택 규칙, HTML 스타일 베이스. 그림을 그리기 전에 읽는다.
+- [vault 관례](references/vault-conventions.md) — vault `narashin`의 폴더 두 계열, frontmatter 스키마, 톤, 노트 골격. 위치를 정하기 전에 읽는다.
+- [그림 패턴](references/diagram-patterns.md) — HTML/SVG 그림 패턴 8종, 매체 선택 규칙, HTML 스타일 베이스. 그림을 그리기 전에 읽는다.
+- [대상 보정](references/audience.md) — 나이·학년·직군·관계 4계열과 각각의 어휘·비유·그림 비중. eli5 톤을 골랐고 대상이 5살이 아니면 읽는다.
 
 ## 절차
 
-### 1. 톤을 먼저 고정한다
+### 1. 인자를 읽어 톤과 대상을 고정한다
 
-**이걸 건너뛰면 실패한다.** 같은 내용이 두 톤으로 갈리고, 잘못 고르면 노트를 다시 써야 한다.
+**두 값을 정하기 전에 쓰기 시작하지 않는다.** 잘못 고르면 노트를 통째로 다시 써야 한다.
+
+**톤** — 어떤 종류의 노트인가.
 
 | 톤 | 언제 | 특징 |
 | --- | --- | --- |
 | **eli5** | 개념 자체가 처음이거나, 남에게 설명할 일이 생길 때 | 비유 하나로 끝까지 간다. 전문 용어는 나올 때마다 즉시 풀어쓴다. 그림이 많다 |
 | **실무 노트체** | 개념은 알고 이 사례의 원인·처방을 남길 때 | 용어를 그대로 쓴다. 코드·수치·검증이 중심 |
 
-사용자 발화에 `5살`·`쉽게`·`그림으로`가 있으면 eli5다. `정리해`만 있으면 **어느 쪽인지 한 번 묻는다** — 두 톤의 결과물이 많이 다르므로 추측하지 않는다.
+**대상** — 누가 읽나. eli5 톤일 때만 의미가 있고 **기본값은 5살**이다. 플래그가 아니라 인자에 쓴 자연어에서 읽는다(`/nara-eli5-note 15살에게 설명하듯 vite tree-shaking 정리해`).
+
+판정 순서.
+
+1. 인자에 대상이 있으면 그대로 쓴다. 되묻지 않는다.
+2. 대상은 없고 `5살`·`쉽게`·`그림으로`만 있으면 eli5 + 기본값 5살.
+3. `정리해`만 있으면 톤을 묻는다. eli5로 답하면 대상도 같이 묻되, 기본값 5살을 제시해 그냥 넘어갈 수 있게 한다.
+4. 대상이 엔지니어·대학원 수준이면 실무 노트체를 권한다. 그 대상에게 비유는 번역 한 겹이 더 붙는 일이다.
+
+대상이 5살이 아니면 [대상 보정](references/audience.md)을 읽고 어휘·비유 소재·그림 비중·절 개수를 맞춘다.
 
 eli5를 골랐어도 **수치와 코드는 지운다는 뜻이 아니다.** 쉬운 말로 감싸서 같이 넣는다.
 
@@ -47,7 +61,9 @@ eli5를 골랐어도 **수치와 코드는 지운다는 뜻이 아니다.** 쉬�
 
 ### 3. 그림이 될 것을 판정하고 매체를 고른다
 
-노트에 들어갈 개념을 훑고 **각각 "이건 그림이 되나"를 묻는다.** `references/diagram-patterns.md`의 8종 중 어디에 해당하는지 본다.
+노트에 들어갈 개념을 훑고 **각각 "이건 그림이 되나"를 묻는다.** [그림 패턴](references/diagram-patterns.md)의 8종 중 어디에 해당하는지 본다.
+
+몇 개를 그릴지는 대상이 정한다. 15살 아래면 절마다 하나를 목표로 잡고, 직군·대학원 대상으로 갈수록 그림은 줄고 표와 코드가 그 자리를 채운다.
 
 그림이 특히 잘 붙는 자리 셋.
 
@@ -65,7 +81,7 @@ eli5를 골랐어도 **수치와 코드는 지운다는 뜻이 아니다.** 쉬�
 
 ### 4. 위치를 정한다
 
-`references/vault-conventions.md`를 읽고 판정한다. 요지는 폴더가 두 계열이라는 것 —
+[vault 관례](references/vault-conventions.md)를 읽고 판정한다. 요지는 폴더가 두 계열이라는 것 —
 
 - **커리큘럼**(`*-core/`) — 기존 과정의 다음 차시로 들어갈 때만. 번호를 이어받고 index 목록에 한 줄 추가하며 `study_*` frontmatter를 채운다. 주제가 그 커리큘럼의 축과 다르면 넣지 않는다
 - **주제 노트**(`ai-agent/`·`react/` 등) — 실무에서 겪은 것은 여기. kebab-case 파일명, frontmatter는 `created`/`updated`/`tags`
@@ -76,7 +92,9 @@ eli5를 골랐어도 **수치와 코드는 지운다는 뜻이 아니다.** 쉬�
 
 ### 5. 노트를 쓴다
 
-골격은 `references/vault-conventions.md`에 있다. 두 절은 빼지 않는다.
+골격은 [vault 관례](references/vault-conventions.md)에 있다. 절 개수는 대상에 맞춰 줄이되 두 절은 빼지 않는다.
+
+**도입부 인용 블록에 대상을 한 줄 남긴다** — `> 대상: 15살 (비유 위주, 용어는 나올 때마다 풀이)`. 나중에 이 노트가 왜 이 톤인지 설명해 주고, 다른 대상으로 다시 쓸 때 기준이 된다. frontmatter는 건드리지 않는다(vault 스키마가 `created`/`updated`/`tags` 셋뿐이다).
 
 - **`TL;DR`** — 불릿 4~6개. 이것만 읽어도 결론이 선다
 - **`내가 틀렸던 것`** — 추적 중 잘못 짚은 것, 검색어에 속은 것, 오판한 것. **기존 vault 노트에서 가장 쓸모 있는 부분이 이 절이다.** 오판이 없었으면 절을 비우지 말고 생략한다
@@ -89,11 +107,15 @@ eli5를 골랐어도 **수치와 코드는 지운다는 뜻이 아니다.** 쉬�
 
 HTML·SVG 그림 파일은 MCP가 못 쓰므로 **vault 실경로에 직접 쓴다** — vault 경로는 `~/Library/Application Support/obsidian/obsidian.json`에서 얻는다. HTML을 열 때는 파일 탐색기에서 클릭한다는 안내를 노트에 한 줄 넣는다(HTML Reader 플러그인은 뷰어라 임베드 미지원).
 
-저장 뒤 보고에 담을 것 — 경로 · 고른 톤과 그 이유 · 새 폴더를 만들었으면 그 사실 · 그림 몇 개를 어느 매체(HTML/SVG)로 어디에 넣었는지 · 노트에 `[미확인]`으로 남긴 것.
+저장 뒤 보고에 담을 것 — 경로 · 고른 톤과 대상(그리고 그 근거가 인자였는지 되물음이었는지 기본값이었는지) · 새 폴더를 만들었으면 그 사실 · 그림 몇 개를 어느 매체(HTML/SVG)로 어디에 넣었는지 · 노트에 `[미확인]`으로 남긴 것.
 
 ## 규율
 
 **톤을 안 묻고 추측하지 않는다.** 이 스킬이 생긴 계기가 그 실패다 — "obsidian에 정리해라"를 받아 기존 vault 톤(실무 노트체)에 맞췄는데, 요청자가 원한 것은 eli5와 그림이었다.
+
+**대상은 인자에 있으면 묻지 않고, 없으면 5살로 간다.** 대상을 확인하겠다고 매번 되묻는 것도 실패다. 되묻는 자리는 톤조차 불분명한 `정리해` 한 경우뿐이다.
+
+**한 노트에 대상은 하나다.** 5살용 절과 매니저용 절을 섞지 않는다. 두 대상이 다 필요하면 노트를 두 개 쓰고 서로 `[[...]]`로 잇는다.
 
 **ASCII 아트·mermaid를 그리지 않는다.** 그림은 HTML 문서 또는 SVG 파일이다 (2026-08-26 유저 결정). 코드 펜스 안의 실제 코드는 그림이 아니므로 그대로 쓴다.
 
