@@ -186,7 +186,8 @@ body.wireframe .ds-shell-mid > div:first-child { filter: grayscale(1); }
   /* Browsers strip background colors/images in print by default (the blue header, status pills,
      etc. would vanish → a useless mono PDF). Force exact color so the brand renders. */
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  .studio-bar, .studio-note-strip, .studio-note-layer, .studio-export, .studio-copied { display: none !important; }
+  .studio-bar, .studio-note-strip, .studio-note-layer, .studio-export, .studio-copied,
+  .studio-tour { display: none !important; }
   .studio-root, .studio-stage { height: auto !important; overflow: visible !important; display: block !important; }
   .studio-candidate { display: block !important; }
   .studio-candidate + .studio-candidate { break-before: page; page-break-before: always; }
@@ -201,7 +202,53 @@ body.wireframe .ds-shell-mid > div:first-child { filter: grayscale(1); }
    viewport (incl. the interaction legend at the bottom). Expanding it lets the whole screen — legend
    included — flow into the document so fullPage catches it. Also drops the studio chrome for a clean
    shot. (Toggle it, dispatch a resize so hotspots re-anchor, screenshot, then remove it.) */
-body.capturing .studio-bar, body.capturing .studio-note-strip { display: none !important; }
+body.capturing .studio-bar, body.capturing .studio-note-strip,
+body.capturing .studio-tour { display: none !important; }
 body.capturing .studio-root, body.capturing .studio-stage { height: auto !important; overflow: visible !important; display: block !important; }
 body.capturing .studio-candidate main, body.capturing .ds-content, body.capturing .shell-main { overflow: visible !important; height: auto !important; }
 body.capturing .ds-header, body.capturing .shell header { position: static !important; }
+
+/* ---- first-run tour ----
+   A dimmed window with one control left lit, and a card pointing at it. The point is to
+   connect a label to the thing it acts on; that is what an arrow does and a list of
+   instructions does not. */
+.studio-tour { position: fixed; inset: 0; z-index: 60; }
+
+/* One element over the target, with a shadow large enough to cover everything else.
+   Cheaper and better supported than a clip-path cutout, and it leaves the control
+   itself untouched and readable. */
+.studio-tour-hole {
+  position: fixed; border-radius: 8px; pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(15, 18, 22, 0.55);
+  outline: 2px solid var(--studio-accent); outline-offset: 0;
+}
+
+.studio-tour-card {
+  position: fixed; width: min(320px, calc(100vw - 16px));
+  background: var(--ds-canvas); color: var(--ds-ink);
+  border: 1px solid var(--studio-hairline); border-radius: var(--studio-radius);
+  box-shadow: 0 12px 32px rgba(15, 18, 22, 0.22);
+  padding: 12px 14px 12px;
+}
+/* Points up at the control, which every step of this tour sits below. */
+.studio-tour-card::before {
+  content: ""; position: absolute; top: -7px; left: var(--arrow, 50%);
+  margin-left: -7px; width: 0; height: 0;
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
+  border-bottom: 7px solid var(--ds-canvas);
+  filter: drop-shadow(0 -1px 0 var(--studio-hairline));
+}
+
+.studio-tour-step  { font-size: 11px; font-weight: 600; color: var(--ds-stone); letter-spacing: 0.04em; }
+.studio-tour-title { font-size: 14px; font-weight: 600; margin-top: 2px; }
+.studio-tour-body  { font-size: 13px; line-height: 1.55; color: var(--ds-slate); margin-top: 5px; }
+.studio-tour-row   { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 11px; }
+
+.studio-tour-skip {
+  appearance: none; border: none; background: none; cursor: pointer;
+  font: inherit; font-size: 12px; color: var(--ds-stone); padding: 5px 2px;
+}
+.studio-tour-skip:hover { color: var(--ds-slate); text-decoration: underline; }
+
+/* The icon-only way back in. A tour dismissed by accident has to be reachable. */
+.studio-btn[data-role="help"] { padding: 5px 7px; }

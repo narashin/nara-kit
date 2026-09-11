@@ -657,14 +657,112 @@
     }, 0);
   }
 
+
+  /* ---- first-run tour ----
+   *
+   * Six controls, and two of them ("Export", and the pick button) name a mechanism
+   * rather than a reason. A list of instructions somewhere else does not fix that: the
+   * work is connecting a name to the thing it sits on, which an arrow does and prose
+   * does not.
+   *
+   * Shown once, skippable, and re-openable from the bar. A tour you dismissed by
+   * accident and cannot get back is worse than no tour.
+   *
+   * Seen-state is a cookie, not localStorage. This page is served from an ephemeral
+   * port, so its origin changes every run and localStorage goes with it; cookies are
+   * scoped by host and ignore the port, so they survive.
+   */
+  var TOUR_COOKIE = "studio_tour_seen";
+  var tourAt = -1;
+
+  function tourSeen() {
+    return document.cookie.split(";").some(function (c) {
+      return c.trim().indexOf(TOUR_COOKIE + "=") === 0;
+    });
+  }
+  function markTourSeen() {
+    document.cookie = TOUR_COOKIE + "=1; Max-Age=31536000; Path=/; SameSite=Strict";
+  }
+
+  function tourSteps() {
+    return [
+      { el: bar.querySelector(".studio-tabs"), title: "Directions",
+        body: "Each tab is a different take on the same screen. Switch between them to compare." },
+      { el: pickBtn, title: "Choose one",
+        body: "Records this take as the direction to build. It goes into the handoff as the selected one; the others are kept as alternatives." },
+      { el: bar.querySelector('[data-role="comment"]'), title: "Comment on anything",
+        body: "Turn this on, then click any element to leave a note about it. Notes are pinned to the element, not to the page." },
+      { el: bar.querySelector('[data-role="spec"]'), title: "Say what it does",
+        body: "Click an element to record what happens when it is used. Behaviour the picture cannot show." },
+      { el: bar.querySelector(".studio-count") && bar.querySelector(".studio-count").parentNode, title: "Send the notes back",
+        body: "Hands your notes to the agent, which revises the design from them. This is the loop: look, comment, send." },
+      { el: bar.querySelector('[data-role="export"]'), title: "Hand it over",
+        body: "Spec.md and this HTML for whoever implements it. PDF or PNG for everyone who just needs to see it." },
+    ].filter(function (s) { return !!s.el; });
+  }
+
+  function endTour() {
+    var overlay = document.querySelector(".studio-tour");
+    if (overlay) overlay.remove();
+    tourAt = -1;
+    markTourSeen();
+  }
+
+  function showTour(at) {
+    var steps = tourSteps();
+    if (!steps.length) return;
+    if (at >= steps.length) { endTour(); return; }
+    tourAt = at;
+
+    var step = steps[at];
+    var r = step.el.getBoundingClientRect();
+    var old = document.querySelector(".studio-tour");
+    if (old) old.remove();
+
+    /* One element, positioned over the target, with a shadow big enough to cover the
+       rest of the window. Cheaper and better supported than a clip-path cutout. */
+    var hole = h("div", { class: "studio-tour-hole" });
+    hole.style.top = (r.top - 4) + "px";
+    hole.style.left = (r.left - 4) + "px";
+    hole.style.width = (r.width + 8) + "px";
+    hole.style.height = (r.height + 8) + "px";
+
+    var next = h("button", { class: "studio-btn", onClick: function () { showTour(at + 1); } },
+      [at === steps.length - 1 ? "Got it" : "Next"]);
+    var skip = h("button", { class: "studio-tour-skip", onClick: endTour }, ["Skip"]);
+    var card = h("div", { class: "studio-tour-card" }, [
+      h("div", { class: "studio-tour-step" }, [(at + 1) + " / " + steps.length]),
+      h("div", { class: "studio-tour-title" }, [step.title]),
+      h("div", { class: "studio-tour-body" }, [step.body]),
+      h("div", { class: "studio-tour-row" }, [skip, next]),
+    ]);
+
+    var overlay = h("div", { class: "studio-tour" }, [hole, card]);
+    document.body.appendChild(overlay);
+
+    /* Measured after insertion: the card's width depends on its text. Kept on screen
+       and pointing down at the control, which all of these sit above. */
+    var cw = card.getBoundingClientRect().width;
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - cw / 2), window.innerWidth - cw - 8);
+    card.style.top = (r.bottom + 14) + "px";
+    card.style.left = left + "px";
+    card.style.setProperty("--arrow", (r.left + r.width / 2 - left) + "px");
+    next.focus();
+  }
+
   /* ---- top bar ---- */
   function buildBar() {
     var tabs = h("div", { class: "studio-tabs" }, (cfg.candidates || []).map(function (c) {
       return h("button", { class: "studio-tab", "data-id": c.id, title: c.note || "", onClick: function () { setActive(c.id); } }, [c.label]);
     }));
     pickBtn = h("button", { class: "studio-btn", title: "Record this candidate as the direction to build. Exported to Spec.md as the selected direction; the others are kept as alternatives.", onClick: function () { pick(state.activeId); flash("Selected " + labelOf(state.activeId)); } }, ["Select this direction"]);
-    /* Fidelity is fixed at build time (config.fidelity) — shown as a static badge, not a toggle. */
-    var fidBadge = h("span", { class: "studio-fidelity", title: "Fidelity was chosen when this was built. Ask Claude to re-generate at the other fidelity." }, [cfg.fidelity === "wireframe" ? "Wireframe" : "Styled"]);
+    /* Fidelity is fixed at build time (config.fidelity) — shown as a static badge, not a
+       toggle, and only when it is the surprising one. "Styled" is what anyone expects a
+       design to be, so a chip saying so was permanent chrome carrying no information. A
+       wireframe is worth labelling, because otherwise it reads as an unfinished design. */
+    var fidBadge = cfg.fidelity === "wireframe"
+      ? h("span", { class: "studio-fidelity", title: "Built as a wireframe. Ask for a re-generate if you want it styled." }, ["Wireframe"])
+      : null;
     var specBtn = h("button", { class: "studio-btn", "data-role": "spec", title: "Interaction mode: click an element to set / edit what it does (element → result). Auto-saved to a sidecar next to this file.", onClick: function () { setInteractionMode(!state.interactionMode); } }, [
       h("i", { "data-lucide": "mouse-pointer-click" }), "Interaction",
     ]);
@@ -674,7 +772,8 @@
     var count = h("span", { class: "studio-count", style: "display:none" }, ["0"]);
     var sendBtn = h("button", { class: "studio-btn", title: "Send your element comments to your coding agent (via the local server); falls back to clipboard", onClick: sendToAgent }, [h("i", { "data-lucide": "send" }), "Send to Agent", count]);
     var exportBtn = h("button", { class: "studio-btn", "data-role": "export", title: "Export for sharing / handoff — Spec.md (implementer) or PDF (stakeholders)", onClick: function (ev) { ev.stopPropagation(); toggleExportMenu(exportBtn); } }, [h("i", { "data-lucide": "download" }), "Export"]);
-    bar = h("div", { class: "studio-bar" }, [tabs, pickBtn, h("div", { class: "spacer" }), fidBadge, specBtn, commentBtn, sendBtn, exportBtn]);
+    var helpBtn = h("button", { class: "studio-btn", "data-role": "help", title: "How this page is meant to be used", onClick: function (ev) { ev.stopPropagation(); showTour(0); } }, [h("i", { "data-lucide": "help-circle" })]);
+    bar = h("div", { class: "studio-bar" }, [tabs, pickBtn, h("div", { class: "spacer" }), fidBadge, specBtn, commentBtn, sendBtn, exportBtn, helpBtn]);
     root.insertBefore(bar, root.firstChild);
   }
 
@@ -700,6 +799,10 @@
     setFidelity((cfg.fidelity || "styled") === "wireframe");
     updateCount();
     icons();
+    /* After icons(), so the controls have their final size to point at. */
+    if (!tourSeen()) setTimeout(function () { showTour(0); }, 400);
+    window.addEventListener("resize", function () { if (tourAt >= 0) showTour(tourAt); });
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && tourAt >= 0) endTour(); });
     /* Load the persisted interaction sidecar (if any), then (re)render legends + hotspots. Also
        retry once for React/Babel-mounted candidate content that lands after init. */
     loadSpecOverride().then(function () { renderLegends(); renderHotspots(); icons(); });
