@@ -684,21 +684,55 @@
     document.cookie = TOUR_COOKIE + "=1; Max-Age=31536000; Path=/; SameSite=Strict";
   }
 
+  /* Copy for the tour, in the languages this runtime ships.
+   *
+   * Here rather than in a file the page fetches: an extra request would 404 for every
+   * consumer that ships no translation, and the tour is fifteen strings. Chosen from
+   * `navigator.language`, so a Korean machine gets Korean without anyone passing a flag,
+   * and anything else falls back to English rather than to a half-translated mix. */
+  var TOUR_COPY = {
+    en: {
+      skip: "Skip", next: "Next", done: "Got it", help: "How this page is meant to be used",
+      steps: [
+        ["Directions", "Each tab is a different take on the same screen. Switch between them to compare."],
+        ["Choose one", "Records this take as the direction to build. It goes into the handoff as the selected one; the others are kept as alternatives."],
+        ["Comment on anything", "Turn this on, then click any element to leave a note about it. Notes are pinned to the element, not to the page."],
+        ["Say what it does", "Click an element to record what happens when it is used. Behaviour the picture cannot show."],
+        ["Send the notes back", "Hands your notes to the agent, which revises the design from them. This is the loop: look, comment, send."],
+        ["Hand it over", "Spec.md and this HTML for whoever implements it. PDF or PNG for everyone who just needs to see it."],
+      ],
+    },
+    ko: {
+      skip: "건너뛰기", next: "다음", done: "알겠어요", help: "이 화면을 쓰는 방법",
+      steps: [
+        ["방향", "탭마다 같은 화면의 다른 방향입니다. 눌러서 비교하세요."],
+        ["하나 고르기", "만들 방향으로 기록합니다. 핸드오프에 선택된 방향으로 나가고, 나머지는 검토한 대안으로 남습니다."],
+        ["어디든 코멘트", "켜고 아무 요소나 누르면 메모를 남깁니다. 메모는 페이지가 아니라 그 요소에 붙습니다."],
+        ["동작 적기", "요소를 누르고 눌렀을 때 무엇이 일어나는지 적습니다. 그림이 보여줄 수 없는 것입니다."],
+        ["메모 보내기", "메모를 에이전트에게 넘기면 그걸로 디자인을 고칩니다. 이게 반복입니다. 보고, 적고, 보내기."],
+        ["넘기기", "구현할 사람에게는 Spec.md와 이 HTML. 보기만 하면 되는 사람에게는 PDF나 PNG."],
+      ],
+    },
+  };
+
+  function tourCopy() {
+    var lang = (navigator.language || "en").toLowerCase();
+    return TOUR_COPY[lang.split("-")[0]] || TOUR_COPY.en;
+  }
+
   function tourSteps() {
-    return [
-      { el: bar.querySelector(".studio-tabs"), title: "Directions",
-        body: "Each tab is a different take on the same screen. Switch between them to compare." },
-      { el: pickBtn, title: "Choose one",
-        body: "Records this take as the direction to build. It goes into the handoff as the selected one; the others are kept as alternatives." },
-      { el: bar.querySelector('[data-role="comment"]'), title: "Comment on anything",
-        body: "Turn this on, then click any element to leave a note about it. Notes are pinned to the element, not to the page." },
-      { el: bar.querySelector('[data-role="spec"]'), title: "Say what it does",
-        body: "Click an element to record what happens when it is used. Behaviour the picture cannot show." },
-      { el: bar.querySelector(".studio-count") && bar.querySelector(".studio-count").parentNode, title: "Send the notes back",
-        body: "Hands your notes to the agent, which revises the design from them. This is the loop: look, comment, send." },
-      { el: bar.querySelector('[data-role="export"]'), title: "Hand it over",
-        body: "Spec.md and this HTML for whoever implements it. PDF or PNG for everyone who just needs to see it." },
-    ].filter(function (s) { return !!s.el; });
+    var copy = tourCopy().steps;
+    var targets = [
+      bar.querySelector(".studio-tabs"),
+      pickBtn,
+      bar.querySelector('[data-role="comment"]'),
+      bar.querySelector('[data-role="spec"]'),
+      bar.querySelector(".studio-count") && bar.querySelector(".studio-count").parentNode,
+      bar.querySelector('[data-role="export"]'),
+    ];
+    return targets
+      .map(function (el, i) { return { el: el, title: copy[i][0], body: copy[i][1] }; })
+      .filter(function (s) { return !!s.el; });
   }
 
   function endTour() {
@@ -727,9 +761,10 @@
     hole.style.width = (r.width + 8) + "px";
     hole.style.height = (r.height + 8) + "px";
 
+    var copy = tourCopy();
     var next = h("button", { class: "studio-btn", onClick: function () { showTour(at + 1); } },
-      [at === steps.length - 1 ? "Got it" : "Next"]);
-    var skip = h("button", { class: "studio-tour-skip", onClick: endTour }, ["Skip"]);
+      [at === steps.length - 1 ? copy.done : copy.next]);
+    var skip = h("button", { class: "studio-tour-skip", onClick: endTour }, [copy.skip]);
     var card = h("div", { class: "studio-tour-card" }, [
       h("div", { class: "studio-tour-step" }, [(at + 1) + " / " + steps.length]),
       h("div", { class: "studio-tour-title" }, [step.title]),
@@ -772,7 +807,7 @@
     var count = h("span", { class: "studio-count", style: "display:none" }, ["0"]);
     var sendBtn = h("button", { class: "studio-btn", title: "Send your element comments to your coding agent (via the local server); falls back to clipboard", onClick: sendToAgent }, [h("i", { "data-lucide": "send" }), "Send to Agent", count]);
     var exportBtn = h("button", { class: "studio-btn", "data-role": "export", title: "Export for sharing / handoff — Spec.md (implementer) or PDF (stakeholders)", onClick: function (ev) { ev.stopPropagation(); toggleExportMenu(exportBtn); } }, [h("i", { "data-lucide": "download" }), "Export"]);
-    var helpBtn = h("button", { class: "studio-btn", "data-role": "help", title: "How this page is meant to be used", onClick: function (ev) { ev.stopPropagation(); showTour(0); } }, [h("i", { "data-lucide": "help-circle" })]);
+    var helpBtn = h("button", { class: "studio-btn", "data-role": "help", title: tourCopy().help, onClick: function (ev) { ev.stopPropagation(); showTour(0); } }, [h("i", { "data-lucide": "help-circle" })]);
     bar = h("div", { class: "studio-bar" }, [tabs, pickBtn, h("div", { class: "spacer" }), fidBadge, specBtn, commentBtn, sendBtn, exportBtn, helpBtn]);
     root.insertBefore(bar, root.firstChild);
   }
