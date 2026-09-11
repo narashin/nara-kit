@@ -37,7 +37,7 @@
   }
   function icons() { if (window.lucide) window.lucide.createIcons(); }
 
-  var cfg, root, stage, bar, noteLayer;
+  var cfg, root, stage, bar, noteLayer, pickBtn;
   var state = { activeId: null, pickedId: null, wireframe: false, commentMode: false, comments: [], seq: 0,
                 interactionMode: false, specOverride: {} };
 
@@ -54,6 +54,7 @@
     var strip = root.querySelector(".studio-note-strip");
     if (strip) strip.textContent = noteOf(id);
     clearNoteEditor();
+    syncPick();
     renderPins();
     /* interaction hotspots need the (React-mounted) target elements; retry to catch async mount. */
     renderHotspots();
@@ -63,6 +64,17 @@
   function pick(id) {
     state.pickedId = id;
     Array.prototype.forEach.call(bar.querySelectorAll(".studio-tab"), function (t) { t.classList.toggle("is-picked", t.getAttribute("data-id") === state.pickedId); });
+    syncPick();
+  }
+  /* Which direction was chosen is exported to Spec.md as "Selected direction", so the
+     control that records it says what it records and shows whether it has been used.
+     A button labelled "Select", with a tick on a tab as its only feedback, did not read
+     as the decision it is. */
+  function syncPick() {
+    if (!pickBtn) return;
+    var chosen = !!state.pickedId && state.pickedId === state.activeId;
+    pickBtn.classList.toggle("is-active", chosen);
+    pickBtn.textContent = chosen ? "Selected direction" : "Select this direction";
   }
   /* Fidelity is a build-time choice (config.fidelity), applied once — not a live toggle. */
   function setFidelity(wire) {
@@ -650,7 +662,7 @@
     var tabs = h("div", { class: "studio-tabs" }, (cfg.candidates || []).map(function (c) {
       return h("button", { class: "studio-tab", "data-id": c.id, title: c.note || "", onClick: function () { setActive(c.id); } }, [c.label]);
     }));
-    var pickBtn = h("button", { class: "studio-btn", onClick: function () { pick(state.activeId); flash("Selected " + labelOf(state.activeId)); } }, ["Select"]);
+    pickBtn = h("button", { class: "studio-btn", title: "Record this candidate as the direction to build. Exported to Spec.md as the selected direction; the others are kept as alternatives.", onClick: function () { pick(state.activeId); flash("Selected " + labelOf(state.activeId)); } }, ["Select this direction"]);
     /* Fidelity is fixed at build time (config.fidelity) — shown as a static badge, not a toggle. */
     var fidBadge = h("span", { class: "studio-fidelity", title: "Fidelity was chosen when this was built. Ask Claude to re-generate at the other fidelity." }, [cfg.fidelity === "wireframe" ? "Wireframe" : "Styled"]);
     var specBtn = h("button", { class: "studio-btn", "data-role": "spec", title: "Interaction mode: click an element to set / edit what it does (element → result). Auto-saved to a sidecar next to this file.", onClick: function () { setInteractionMode(!state.interactionMode); } }, [
