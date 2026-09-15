@@ -37,7 +37,7 @@
   }
   function icons() { if (window.lucide) window.lucide.createIcons(); }
 
-  var cfg, root, stage, bar, noteLayer, pickBtn;
+  var cfg, root, stage, bar, noteLayer, pickBtn, fidStyled, fidWire;
   var state = { activeId: null, pickedId: null, wireframe: false, commentMode: false, comments: [], seq: 0,
                 interactionMode: false, specOverride: {} };
 
@@ -76,10 +76,20 @@
     pickBtn.classList.toggle("is-active", chosen);
     pickBtn.textContent = chosen ? "Selected direction" : "Select this direction";
   }
-  /* Fidelity is a build-time choice (config.fidelity), applied once — not a live toggle. */
+  /* `config.fidelity` decides where a design opens; this switches between the two
+     readings of it. The wireframe pass is a stylesheet over the same markup, so nothing
+     about the design changes — see the button in `buildBar`. */
   function setFidelity(wire) {
     state.wireframe = wire;
     document.body.classList.toggle("wireframe", wire);
+    if (fidStyled) {
+      fidStyled.classList.toggle("is-on", !wire);
+      fidStyled.setAttribute("aria-pressed", wire ? "false" : "true");
+    }
+    if (fidWire) {
+      fidWire.classList.toggle("is-on", wire);
+      fidWire.setAttribute("aria-pressed", wire ? "true" : "false");
+    }
   }
 
   /* ---- comment mode ---- */
@@ -333,6 +343,37 @@
   function commentsText() {
     return state.comments.map(function (c) { return "[" + c.candidateLabel + "] [" + c.hint + "]  " + c.note + "   (" + c.selector + ")"; }).join("\n");
   }
+  /* Does this page's host act on what the runtime sends it, or only store it?
+   *
+   * A host that drives the agent itself — the desktop app — declares
+   * `window.STUDIO_HOST = { fulfills: true }` before this script runs: comments go
+   * straight into a run, and a PNG request is photographed by the host and saved beside
+   * the design. serve.py declares nothing, because there the agent is a separate CLI
+   * session that still has to be told.
+   *
+   * A declaration rather than something read off each response, because one of the places
+   * that needs the answer is a menu label, built the instant the menu opens. It has to be
+   * right before the first click, not after it.
+   *
+   * What it decides: whether the user is handed a block of text to copy for work that is
+   * already done, and whether a menu item asks them to go set up a tool they do not need. */
+  function hostFulfills() {
+    return !!(window.STUDIO_HOST && window.STUDIO_HOST.fulfills);
+  }
+
+  /* Does this host ship the tool a layout contract is for?
+   *
+   * The JSON is worth nothing on its own. It exists to be diffed against the same JSON
+   * captured from the implemented page, which is `check-layout.py`'s whole job, and
+   * Spec.md's contract section is already the readable version for a human. A host that
+   * does not ship that script declares `layoutCheck: false` and stops being offered an
+   * export it has nothing to compare.
+   *
+   * Unset means yes, because serve.py sits in the same directory as the script. */
+  function hostChecksLayout() {
+    return !window.STUDIO_HOST || window.STUDIO_HOST.layoutCheck !== false;
+  }
+
   /* Primary path: POST comments to the capture server (serve.py) → the agent reads out/comments.jsonl.
      Fallback (plain http.server / file://): copy to clipboard so the user can paste into chat. */
   function sendToAgent() {
@@ -341,12 +382,14 @@
       return;
     }
     var text = commentsText(), n = state.comments.length;
+    var label = n + " comment" + (n > 1 ? "s" : "");
     var payload = JSON.stringify({ url: location.href, comments: state.comments });
     fetch("/__comments", { method: "POST", headers: { "Content-Type": "application/json" }, body: payload })
       .then(function (r) { if (!r.ok) throw new Error("no capture"); state.comments = []; renderPins(); updateCount();
-        showResult("Sent " + n + " comment" + (n > 1 ? "s" : "") + " to the agent", "Captured to out/comments.jsonl. If the agent doesn't pick it up automatically, just say “apply my comments” in the chat.", text); })
+        if (hostFulfills()) { flash("Sent " + label + " — the agent is applying them"); return; }
+        showResult("Sent " + label + " to the agent", "Captured to out/comments.jsonl. If the agent doesn't pick it up automatically, just say “apply my comments” in the chat.", text); })
       .catch(function () {
-        var done = function () { showResult("Copied " + n + " comment" + (n > 1 ? "s" : "") + " to clipboard", "No capture server running — paste into the chat and the agent will apply them.", text); };
+        var done = function () { showResult("Copied " + label + " to clipboard", "No capture server running — paste into the chat and the agent will apply them.", text); };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
         else { fallbackCopy(text); done(); }
       });
@@ -368,8 +411,10 @@
     try { document.execCommand("copy"); } catch (e) { /* clipboard unavailable */ }
     ta.remove();
   }
+  /* Classed as well as styled so a host can address it — a screenshot of the design, for
+     one, should not catch a toast that happens to still be on screen. */
   function flash(msg) {
-    var f = h("div", { style: "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;background:var(--studio-ink);color:#fff;font-size:13px;padding:8px 14px;border-radius:var(--studio-radius)" }, [msg]);
+    var f = h("div", { class: "studio-flash", style: "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;background:var(--studio-ink);color:#fff;font-size:13px;padding:8px 14px;border-radius:var(--studio-radius)" }, [msg]);
     document.body.appendChild(f); setTimeout(function () { f.remove(); }, 2400);
   }
 
@@ -399,10 +444,14 @@
     /* PNG is NOT an instant browser download (JS can't rasterize the DOM reliably) — it's an
        agent-fulfilled capture. Always show a persistent box so the click never looks like a no-op. */
     fetch("/__capture", { method: "POST", headers: { "Content-Type": "application/json" }, body: body })
-      .then(function (r) { if (!r.ok) throw new Error("no server"); showResult(
-        "PNG requested for “" + label + "” — an agent captures it",
-        "PNG can't be made in the browser, so this logged a request for this one candidate. An agent running watch-captures.sh with a browser MCP saves it to your Downloads folder now (<name>-" + id + ".png). Not watching? Just tell your agent “capture this candidate”. No browser-MCP agent at all → use PDF or an OS screenshot (⌘⇧4).",
-        recipe); })
+      .then(function (r) { if (!r.ok) throw new Error("no server");
+        /* The host takes the picture itself and says where it went. A recipe to hand an
+           agent would be instructions for work that is already finished. */
+        if (hostFulfills()) { flash("Capturing “" + label + "” — the host is saving it beside the design"); return; }
+        showResult(
+          "PNG requested for “" + label + "” — an agent captures it",
+          "PNG can't be made in the browser, so this logged a request for this one candidate. An agent running watch-captures.sh with a browser MCP saves it to your Downloads folder now (<name>-" + id + ".png). Not watching? Just tell your agent “capture this candidate”. No browser-MCP agent at all → use PDF or an OS screenshot (⌘⇧4).",
+          recipe); })
       .catch(function () { showResult(
         "PNG needs an agent with a browser MCP",
         "No capture server. Tell your agent the line below to shoot the current candidate, or use PDF from this menu / an OS screenshot (⌘⇧4).",
@@ -564,7 +613,11 @@
       var contract = contractOf(cand);
       if (contract && contract.sections.length) {
         L.push(""); L.push("### Layout contract — MUST match");
-        L.push("Pixel fidelity is not the bar; **this structure is**. Section order, table column order, field order and the side each action sits on are the design decision — an implementation that changes any line below has changed the design, not just its styling. Check it mechanically: Export → **Layout contract (JSON)**, capture the same JSON from the implemented page with `layout-contract.js`, then `python3 check-layout.py design.layout.json impl.layout.json`.");
+        /* The mechanical check is only named where it exists. Sending an implementer to a
+           menu item this host does not show, for a script it does not ship, spends their
+           time proving the instruction wrong. The contract below stands either way. */
+        L.push("Pixel fidelity is not the bar; **this structure is**. Section order, table column order, field order and the side each action sits on are the design decision — an implementation that changes any line below has changed the design, not just its styling."
+          + (hostChecksLayout() ? " Check it mechanically: Export → **Layout contract (JSON)**, capture the same JSON from the implemented page with `layout-contract.js`, then `python3 check-layout.py design.layout.json impl.layout.json`." : ""));
         L.push("");
         window.LAYOUT_CONTRACT.toMarkdownLines(contract).forEach(function (l) { L.push(l); });
       } else if (!window.LAYOUT_CONTRACT) {
@@ -642,8 +695,14 @@
     if (open) { open.remove(); return; }
     var menu = h("div", { class: "studio-export" }, [
       h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportSpec(); } }, [h("i", { "data-lucide": "file-text" }), "Spec.md — implementer handoff"]),
-      h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportLayoutContract(); } }, [h("i", { "data-lucide": "list-checks" }), "Layout contract (JSON) — for check-layout.py"]),
-      h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportPNG(); } }, [h("i", { "data-lucide": "image" }), "PNG per candidate — needs a browser-MCP agent"]),
+      hostChecksLayout()
+        ? h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportLayoutContract(); } }, [h("i", { "data-lucide": "list-checks" }), "Layout contract (JSON) — for check-layout.py"])
+        : null,
+      /* The label states what will happen here, not in general. Telling someone they need
+         a browser-MCP agent, in a host that photographs the page itself, sends them off to
+         set up a tool to get something they already have. */
+      h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportPNG(); } }, [h("i", { "data-lucide": "image" }),
+        hostFulfills() ? "PNG per candidate — saved beside the design" : "PNG per candidate — needs a browser-MCP agent"]),
       h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportPDF(); } }, [h("i", { "data-lucide": "printer" }), "PDF — print / Save as PDF (all candidates)"]),
       h("div", { class: "studio-export-note" }, ["Implementer handoff = the HTML source (real DS components) + Spec.md. PDF/PNG are for stakeholders / records."]),
     ]);
@@ -791,13 +850,30 @@
       return h("button", { class: "studio-tab", "data-id": c.id, title: c.note || "", onClick: function () { setActive(c.id); } }, [c.label]);
     }));
     pickBtn = h("button", { class: "studio-btn", title: "Record this candidate as the direction to build. Exported to Spec.md as the selected direction; the others are kept as alternatives.", onClick: function () { pick(state.activeId); flash("Selected " + labelOf(state.activeId)); } }, ["Select this direction"]);
-    /* Fidelity is fixed at build time (config.fidelity) — shown as a static badge, not a
-       toggle, and only when it is the surprising one. "Styled" is what anyone expects a
-       design to be, so a chip saying so was permanent chrome carrying no information. A
-       wireframe is worth labelling, because otherwise it reads as an unfinished design. */
-    var fidBadge = cfg.fidelity === "wireframe"
-      ? h("span", { class: "studio-fidelity", title: "Built as a wireframe. Ask for a re-generate if you want it styled." }, ["Wireframe"])
-      : null;
+    /* `config.fidelity` is where the design opens, not what it is allowed to be.
+     *
+     * This used to be a static badge, shown only for a wireframe, on the reasoning that
+     * fidelity was fixed at build time. That reasoning does not survive looking at what
+     * the wireframe pass does: it is a stylesheet over the same markup, the same sections
+     * in the same order with the same interaction targets. Both readings of a design are
+     * therefore equally true, and turning one off to see the other is a thing a reviewer
+     * wants several times in a sitting — structure now, styling next.
+     *
+     * Both states are named, and one of them is filled. A single "Wireframe" button was
+     * tried first and read as decoration: unpressed it gave no sign it could be pressed,
+     * and pressed it left the reader to work out what pressing it again would give.
+     */
+    fidStyled = h("button", {
+      class: "studio-seg-item", "data-role": "fidelity-styled",
+      title: "The design as built, with the design system's styling.",
+      onClick: function () { setFidelity(false); },
+    }, ["Styled"]);
+    fidWire = h("button", {
+      class: "studio-seg-item", "data-role": "fidelity-wireframe",
+      title: "Same structure, styling stripped. A stylesheet over this design, not a different one.",
+      onClick: function () { setFidelity(true); },
+    }, ["Wireframe"]);
+    var fidSeg = h("div", { class: "studio-seg", role: "group", "aria-label": "Fidelity" }, [fidStyled, fidWire]);
     var specBtn = h("button", { class: "studio-btn", "data-role": "spec", title: "Interaction mode: click an element to set / edit what it does (element → result). Auto-saved to a sidecar next to this file.", onClick: function () { setInteractionMode(!state.interactionMode); } }, [
       h("i", { "data-lucide": "mouse-pointer-click" }), "Interaction",
     ]);
@@ -808,7 +884,7 @@
     var sendBtn = h("button", { class: "studio-btn", title: "Send your element comments to your coding agent (via the local server); falls back to clipboard", onClick: sendToAgent }, [h("i", { "data-lucide": "send" }), "Send to Agent", count]);
     var exportBtn = h("button", { class: "studio-btn", "data-role": "export", title: "Export for sharing / handoff — Spec.md (implementer) or PDF (stakeholders)", onClick: function (ev) { ev.stopPropagation(); toggleExportMenu(exportBtn); } }, [h("i", { "data-lucide": "download" }), "Export"]);
     var helpBtn = h("button", { class: "studio-btn", "data-role": "help", title: tourCopy().help, onClick: function (ev) { ev.stopPropagation(); showTour(0); } }, [h("i", { "data-lucide": "help-circle" })]);
-    bar = h("div", { class: "studio-bar" }, [tabs, pickBtn, h("div", { class: "spacer" }), fidBadge, specBtn, commentBtn, sendBtn, exportBtn, helpBtn]);
+    bar = h("div", { class: "studio-bar" }, [tabs, pickBtn, h("div", { class: "spacer" }), fidSeg, specBtn, commentBtn, sendBtn, exportBtn, helpBtn]);
     root.insertBefore(bar, root.firstChild);
   }
 

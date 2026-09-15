@@ -38,8 +38,43 @@
 .studio-tab.is-picked { background: var(--ds-canvas); box-shadow: inset 0 0 0 1px var(--ds-positive); }
 .studio-tab.is-picked::after { content: "✓"; margin-left: 6px; color: var(--ds-positive); }
 
-/* static fidelity badge (fidelity is fixed at build time, not toggled) */
-.studio-fidelity { font-size: 11px; font-weight: 600; color: var(--ds-slate); background: var(--ds-canvas); border: 1px solid var(--studio-hairline); border-radius: 999px; padding: 3px 10px; }
+/* Fidelity, as a pair of named states rather than one button that turns something on.
+   A lone "Wireframe" button leaves the reader to work out what pressing it again gives,
+   and an unpressed one carried no hint that it was pressable at all. Both names visible
+   with one of them filled is the whole affordance. */
+/* Literal colours, deliberately, where the rest of the bar uses pack tokens.
+   Two reasons. The selected state must stay legible even where a pack's token chain has
+   a hole: `--studio-accent` resolved to nothing against one real pack, and because an
+   invalid `var()` makes a property `unset` rather than falling back to the declaration
+   before it, white-on-accent came out as white-on-white and the selected half of this
+   control disappeared. And the contrast here never comes from the fill alone — the text
+   darkens and bolds too — so the state survives even if a host's stylesheet wins the
+   background. */
+/* The container's radius is the bar's, and each end item repeats it on its outer corners.
+   A pill around square items left the selected one's ring cut off where the curve was,
+   and a clipped highlight reads as a rendering fault rather than a selection. */
+.studio-seg {
+  display: inline-flex; align-items: stretch;
+  border: 1px solid var(--studio-hairline); border-radius: var(--studio-radius);
+  background: #ffffff; overflow: hidden;
+}
+.studio-seg-item {
+  appearance: none; border: none; background: none; cursor: pointer;
+  font: inherit; font-size: 12px; font-weight: 500; color: #52525b;
+  padding: 5px 12px; display: inline-flex; align-items: center; gap: 5px;
+}
+.studio-seg-item:first-child {
+  border-radius: var(--studio-radius) 0 0 var(--studio-radius);
+}
+.studio-seg-item:last-child {
+  border-radius: 0 var(--studio-radius) var(--studio-radius) 0;
+}
+.studio-seg-item:hover { background: #f4f4f5; }
+.studio-seg-item.is-on {
+  background: #e8effd; color: #0b4bc4; font-weight: 700;
+  box-shadow: inset 0 0 0 1px #0b4bc4;
+}
+.studio-seg-item.is-on:hover { background: #e8effd; }
 
 .studio-btn {
   appearance: none; cursor: pointer; font: inherit; font-size: 12px; font-weight: 500;
