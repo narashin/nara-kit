@@ -30,7 +30,7 @@ nara-review-reminder --host <GH_HOST> --repo <OWNER/REPO> --reviewer <USERNAME> 
 
 [teams-and-reconcile.md](references/teams-and-reconcile.md) 절차를 따라 두 가지를 먼저 한다:
 
-1. **reconcile** — 열린 리마인더 이슈를 실제 PR 상태로 정리 (머지·내 리뷰 완료 → `done`, 팀원이 대신 리뷰 → `cancelled`). 안 하면 끝난 PR 이슈가 영구히 쌓인다
+1. **reconcile** — 열린 리마인더 이슈를 실제 PR 상태로 정리 (PR 머지·클로즈 → `done`, 팀원이 대신 리뷰 → `cancelled`). 안 하면 끝난 PR 이슈가 영구히 쌓인다. **내가 리뷰를 남긴 것만으로는 안 닫는다** — 카드는 요청부터 머지까지 살면서 대댓글·새 커밋을 받는다
 2. **내 팀 slug 셋** — `gh api /user/teams --paginate` → `<org>/<slug>`. 팀 요청 객체엔 `login` 이 없어 이 확장 없이는 팀 경유 건이 100% 누락된다
 
 ## Step 1 — PR 조회

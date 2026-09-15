@@ -24,7 +24,9 @@ nara-review-queue [<issue-id | url>] [--limit N] [--done-status S]
 
 리뷰 결과는 **멀티카 이슈 코멘트로만** 기록한다 — 원격 PR에는 절대 게시하지 않는다.
 
-**판정 후 status는 `done`이 아니라 `in_review`다.** 이 스킬은 PR에 아무것도 게시하지 않으므로, 에이전트 판정이 나와도 GitHub에서 나는 여전히 리뷰를 안 남긴 리뷰어다. `done`으로 닫으면 `nara-review-reminder`의 dedup이 카드를 다시 만들지 않아 **"아직 내 리뷰가 안 나갔다"는 신호가 보드에서 사라진다**(실측: 열린 PR 12건이 그렇게 카드 없이 남았다). 카드를 닫는 권한은 reminder의 reconcile 두 조건에만 있다 — PR이 `MERGED`/`CLOSED`거나 `reviews[].author.login`에 내가 있을 때. 플래그 이름은 하위호환으로 유지한다.
+**판정 후 status는 `done`이 아니라 `in_review`다.** 이 스킬은 PR에 아무것도 게시하지 않으므로, 에이전트 판정이 나와도 GitHub에서 나는 여전히 리뷰를 안 남긴 리뷰어다. `done`으로 닫으면 `nara-review-reminder`의 dedup이 카드를 다시 만들지 않아 **"아직 내 리뷰가 안 나갔다"는 신호가 보드에서 사라진다**(실측: 열린 PR 12건이 그렇게 카드 없이 남았다). 카드를 닫는 권한은 reminder의 reconcile에만 있고, 조건은 PR이 `MERGED`/`CLOSED`인 것 하나다. 플래그 이름은 하위호환으로 유지한다.
+
+판정 후에도 카드는 살아 있다. 그 카드가 이 PR의 유일한 카드이고, `pr-activity-reminder`가 대댓글·새 커밋을 여기에 적는다. `in_progress`로 옮기면 재리뷰 요청이다.
 
 ## Step 0 — Pre-flight
 

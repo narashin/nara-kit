@@ -104,6 +104,8 @@ config의 `model_context_window` 계열은 기본 모델 기준으로 잡혀 있
 
 ## status는 건드리지 않는다
 
-게시가 성공하면 GitHub의 `reviews[].author.login`에 내가 들어간다. 그 시점부터 `nara-review-reminder`의 reconcile이 카드를 `done`으로 닫는다. 여기서 별도로 닫으면 reconcile 계약에 없는 종료 조건을 또 만드는 것이고, 그게 바로 판정을 `done`으로 찍어서 갚아야 할 리뷰를 보드에서 지웠던 결함이다.
+게시해도 카드는 안 닫힌다. 닫는 권한은 `nara-review-reminder`의 reconcile에만 있고 조건은 PR이 `MERGED`/`CLOSED`인 것 하나다. 여기서 따로 닫으면 reconcile 계약에 없는 종료 조건을 또 만드는 것이고, 그게 바로 판정을 `done`으로 찍어서 갚아야 할 리뷰를 보드에서 지웠던 결함이다.
+
+게시 시점이 특히 그렇다. 게시하면 GitHub의 `reviews[].author.login`에 내가 들어가는데, 예전엔 그게 reconcile의 종료 조건이라 카드가 거기서 닫혔다. `dismiss_stale_reviews=False`라 그 뒤 저자가 push해도 재요청이 안 가므로, 대댓글과 새 커밋이 오기 시작하는 바로 그 순간에 카드가 사라진 셈이었다. 지금은 머지까지 살면서 그 활동을 코멘트로 받는다.
 
 `/ask`도 같다. 질문에 답한 것은 리뷰를 갚은 것이 아니므로 카드는 그대로 둔다.
