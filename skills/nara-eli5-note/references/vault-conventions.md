@@ -1,6 +1,8 @@
-# Obsidian vault 관례 (실측 2026-08-24)
+# Obsidian vault 관례 (실측 2026-09-11)
 
-vault `narashin` 한 개. 매번 조사하지 않기 위해 실측 결과를 고정해 둔 것.
+학습 노트 vault는 **`study`** 한 개다 (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/study/`). 2026-09-11에 개인 vault `narashin`의 `2_personal/Study/`에서 떼어내 독립 vault가 됐고, 이 스킬의 노트는 전부 이쪽에 들어간다. 매번 조사하지 않기 위해 실측 결과를 고정해 둔 것.
+
+폴더 경로는 **vault 루트 기준**이다. 분리 전의 `2_personal/Study/` 접두사는 더 이상 붙지 않는다.
 
 **구조가 바뀌었을 수 있으므로, 노트를 넣기 전에 대상 폴더의 기존 노트 하나를 읽어 frontmatter 스키마를 확인한다.** 아래는 출발점이고 정본은 vault 자체다.
 
@@ -10,12 +12,12 @@ vault `narashin` 한 개. 매번 조사하지 않기 위해 실측 결과를 고
 
 vault에는 성격이 다른 두 계열이 섞여 있고, **어느 쪽에 넣느냐로 frontmatter와 파일명이 갈린다.**
 
-### 커리큘럼 — `2_personal/Study/*-core/`
+### 커리큘럼 — `<주제>-core/`
 
 순서가 있는 학습 과정. `00-*-index.md` + 번호 붙은 노트 + `_inbox.md` 구성.
 
 ```
-2_personal/Study/
+study/
 ├── cs-core/     00-cs-index.md · 01-dns-… · B1-… · B6-…
 ├── git-core/    00-git-index.md · G1-… · _inbox.md
 ├── web-core/    00-web-index.md · W1-… · _inbox.md
@@ -37,14 +39,16 @@ study_status: index
 
 **여기에 넣는 경우** — 기존 커리큘럼의 다음 차시로 들어갈 때만. 그때는 index의 `## 목록`에 체크박스 한 줄을 추가하고 번호를 이어받는다. 주제가 그 커리큘럼의 축과 다르면 넣지 않는다(예: `web-core`는 "경계·계약·릴리스·실패 처리"이고 빌드 최적화는 그 축이 아니다).
 
-### 주제 노트 — `2_personal/Study/<주제>/`
+### 주제 노트 — `<주제>/`
 
 번호 없음, kebab-case 파일명, 진행 필드 없음. **실무에서 겪은 것을 정리한 노트가 여기 온다.**
 
 ```
-2_personal/Study/
+study/
 ├── ai-agent/    tool-vs-harness.md · negative-vs-positive-instructions.md · …
 ├── react/       react-query-invalidation-scope.md · react-derived-state-frozen-flag.md
+├── auth/        oauth2-oidc-local-idp.md · authorization-layers.md
+├── infra/       k8s-web-container-routing.md · k8s-how-a-site-runs.md
 ├── bundler/     vite-tree-shaking-bare-imports.md
 └── planning/    User Scenario vs User Story vs AC.md
 ```
@@ -64,11 +68,11 @@ tags:
 
 ### 그 밖
 
-- `2_personal/Study/_learning/` — `candidates.md`(세션에서 캐낸 발화 후보), `ledger.md`(원장). 직접 쓰지 않는다.
-- `3_work/Projects/<프로젝트>/` — 업무 기록. 회의록·요구사항 청취 등.
-- `3_work/Notes/` — 업무 메모.
+- `_learning/` — `candidates.md`(세션에서 캐낸 발화 후보), `ledger.md`(원장). 직접 쓰지 않는다.
+- `_assets/` — SVG 그림 단품이 모이는 곳.
+- `_web/` — 커리큘럼 학습 앱. `build.py`가 `*-core/` 노트를 읽어 `study.html` 한 파일로 빌드한다(`./build.sh --open`). 노트의 `## 예측 문제` 절과 `## 정리`에서 카드를 뽑아 localStorage 간격 반복으로 돌리고, 카드 id는 문항 내용 해시라서 순서를 바꿔도 이력이 유지된다. 이 파일들은 직접 고치지 않는다. 노트를 고치고 다시 빌드한다.
 
-학습 노트는 `2_personal`, 업무 산출물은 `3_work`. **개념 설명 노트는 항상 `2_personal/Study/` 아래다.**
+업무 기록·회의록·프로젝트 문서는 이 vault가 아니라 개인 vault `narashin`의 `3_work/` 아래다. **이 스킬이 만드는 개념 설명 노트는 항상 `study` vault 안이다.**
 
 ---
 
@@ -127,6 +131,8 @@ tags: [...]
 
 절 개수는 주제에 맞춰 줄인다. **`내가 틀렸던 것`과 `TL;DR`은 빼지 않는다.**
 
+커리큘럼 노트면 여기에 `## 예측 문제` 절을 더한다. `**Q1.**`로 시작하는 단락 하나가 카드 하나가 되고, `## 정리`의 불릿에서 되말하기 카드가 하나 더 생긴다. 이 두 절 이름을 바꾸면 `_web/build.py`가 못 찾는다. 주제 노트는 이 절 대신 그림 HTML 안에 JS 퀴즈를 넣는다.
+
 ---
 
 ## 링크
@@ -134,6 +140,7 @@ tags: [...]
 - 같은 폴더/커리큘럼 노트로 `[[파일명]]` 또는 `[[파일명|표시할 말]]`.
 - 아직 없는 노트로 링크를 걸어도 된다 — 나중에 쓸 자리 표시가 된다.
 - 커리큘럼에 넣었으면 그 index의 목록에 한 줄 추가. 주제 노트는 index가 없어 링크 의무가 없다.
+- **`.html` 그림 파일은 `![[파일명.html|-]]` 임베드로 건다.** 느낌표를 빼면 HTML Reader가 별도 탭으로 열면서 스크립트를 막고, 높이 토큰 `-`를 빼면 긴 문서가 잘린다. `.svg`는 `![[파일명]]`만으로 된다. 이름만 가리키는 자리(`관련:` 줄 같은 곳)에서만 링크를 쓴다.
 
 ## 시각
 
