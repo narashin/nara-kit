@@ -1,0 +1,26 @@
+id: subtask-foreign-assignee-001
+name: "Container's subtasks that did not come back from the poll → not queued"
+description: |
+  The poll is `assignee = currentUser()`, so a subtask assigned to me arrives
+  as its own row. A parent's `subtasks` field lists every child regardless of
+  assignee. Keys that appear only there belong to someone else and must not be
+  queued. Subtask gate, assignee boundary.
+tags:
+  - subtask-gate
+inputs:
+  prompt: |
+    아래는 `assignee = currentUser()` 로 조회된 Jira 티켓 전체다 (1건). jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    (issuetype 필드는 비어있다 — summary/description 의미로 판단하라.)
+    key: PROJ-293
+    status: Selected for Development
+    summary: "[RfC] 승인 체계를 공통 승인 시스템으로 교체"
+    subtasks: [PROJ-542 (Selected for Development), PROJ-543 (Selected for Development)]
+    description: 연동 설계 후 단계별 구현.
+  files: []
+expected:
+  regex_match:
+    - "(?i)(컨테이너|container|제외|excluded)"
+  output_not_contains:
+    - "[PROJ-293]"
+    - "[PROJ-542]"
+    - "[PROJ-543]"

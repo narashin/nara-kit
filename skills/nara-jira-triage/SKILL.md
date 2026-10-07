@@ -43,7 +43,7 @@ jira-triage [--assignee <currentUser|ACCOUNT_ID>] [--projects <KEY,KEY>] [--ment
 
 1. **poll** — ready 상태 할당 티켓 조회
 2. **classify** — 구현 \| 버그픽스 \| 기획 \| 기타 (summary/description 의미 판단)
-3. **subtask 게이트** — 컨테이너(subtask 보유)는 제외, 실제 작업 단위만
+3. **subtask 게이트** — 컨테이너(subtask 보유)는 제외, poll에 자기 행으로 온 작업 단위만
 4. **route** — project key → repo ([Config](references/config.md))
 5. **dedup** — `multica issue list --metadata "jira_key=<KEY>"` (서버측 필터), 결과 있으면 스킵
 6. **emit** — 티켓당 UNASSIGNED 큐 이슈 + 신규에만 멘션
@@ -84,7 +84,8 @@ SVC는 항상 default repo. 기획/기타는 sub-repo 무관.
 
 parent는 epic처럼 컨테이너로 열고 실제 작업은 subtask에 적는 일이 잦다:
 
-- 티켓에 **subtask가 있으면** → parent는 큐에 **안 넣음** (컨테이너). 열린 subtask가 ready 상태면 그게 큐에 (자기 행으로)
+- 티켓에 **subtask가 있으면** → parent는 큐에 **안 넣음** (컨테이너). 내 subtask는 poll 결과에 **자기 행으로** 따로 온다
+- **큐 대상은 poll 결과에 자기 행으로 온 티켓뿐.** parent의 `subtasks` 필드는 컨테이너 판정에만 쓰고, 거기서 키를 꺼내 큐잉하지 않는다 — 그 목록엔 assignee가 없어 남의 작업이 섞인다(내 RfC 하나가 남의 subtask 8건을 큐에 넣은 실측)
 - subtask거나 subtask 없으면 → 정상 큐잉
 - parent↔자식 중복 흡수
 
@@ -156,7 +157,7 @@ dedup: `multica issue list --metadata "jira_key=<KEY>"` 결과 있으면 생성�
 
 - **Stage 1은 코드 실행 금지** — 큐만 채운다. 착수는 사람이 jira-drain 트리거로 결정
 - 분류는 summary/description **LLM 의미 판단** — issuetype 필드 기대 안 함
-- 큐 대상 = ready 상태(To Do/Selected)만. Backlog·In Progress·Done·컨테이너 제외
+- 큐 대상 = ready 상태(To Do/Selected)이면서 **poll 결과에 직접 나온(= 내게 할당된)** 티켓만. Backlog·In Progress·Done·컨테이너·남의 subtask 제외
 - 큐 이슈는 **UNASSIGNED 생성** — autopilot이 자동 착수하지 않음 (사람 게이트)
 - dedup = metadata `jira_key`. 스킵 이슈엔 멘션 안 단다
 - **상태 되돌리기(reconcile)는 이 스킬이 실행하지 않는다** — 결정론이라 크론 스크립트 소유(§Step 7). 여기선 계약만 선언
