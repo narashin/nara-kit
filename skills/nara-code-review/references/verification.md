@@ -23,7 +23,11 @@ At the END of each round compare:
 An entry becomes `verified` only when ALL hold:
 
 1. **Located**: observed hunks overlap the finding's `location.path` + `symbol`
-   (fingerprint, not line numbers — lines drift).
+   (fingerprint, not line numbers — lines drift). For `symbol: <absent>`
+   (spec-fidelity `Missing`, see [finding-schema](finding-schema.md)) there is no
+   symbol to overlap: Located holds when a hunk in `location.path` introduces code
+   that the finding's `validation` names as the implementation. Any hunk in that
+   file is not enough.
 2. **Resolved**: re-reading the changed code, the `failure_path` no longer holds.
    This is the one Verifier step that is not decidable from the observed hunk alone.
    When it isn't, re-dispatch that entry on the Reviewer's model (SKILL.md
@@ -36,8 +40,13 @@ BEH-001:
   claimed: 결제 실패 시 상태 복원
   observed-change: OrderService.completeOrder 126-139
   proof: validation pass + PaymentFailureTest PASS   # R1: 테스트 증거 필수
-  result: VERIFIED | UNVERIFIED | MISMATCHED
+  result: VERIFIED | UNVERIFIED | MISMATCHED | DISPROVED
 ```
+
+`DISPROVED` is set by the rebuttal path in [adjudication](adjudication.md), never by
+the Fixer or the Verifier. Such an entry is removed from the Fixer's queue and is
+not a mismatch when its location is untouched; the trailing status counts it under
+neither verified nor unverified (report it on its own: `disproved: N`).
 
 Mismatch classes (all escalate, never reported as applied):
 - claimed-but-unchanged — Fixer 주장했으나 해당 위치 미변경 (fix 실패/환각)
@@ -84,7 +93,7 @@ the run `manual-only`, never `clean`).
 
 When a round applies ZERO fixes, the Verifier still runs its snapshot compare
 (claimed 0 vs observed 0) — report `fix-ledger: match` and
-`fix-verification: 0 verified, 0 unverified, 0 mismatched`, not `n/a` (`n/a` is
+`fix-verification: 0 verified, 0 unverified, 0 mismatched, 0 disproved`, not `n/a` (`n/a` is
 reserved for `--fix=none`). The final baseline review is skipped (no fix applied).
 Zero-fix runs are NOT required to execute validation commands — the `validation`
 status line reports what actually ran: the round-start baseline result if one was

@@ -19,13 +19,14 @@
 ║ 게이트: evidence ≥ E2 AND 신뢰도 ≥ {threshold}    ║
 ║ 라운드: {current}/{max} ({converged/stopped})     ║
 ║ specification: {available | unavailable}          ║
+║ fidelity: {ran (<source>) | skipped (<reason>)}   ║
 ╚══════════════════════════════════════════════════╝
 
 📊 요약
 ━━━━━━
 🔴 Critical: N건  🟠 Major: N건  🟡 Minor: N건  💡 Suggestion: N건
 ⚖️ Judge: confirmed N / downgraded N / rejected N / needs-context N
-✅ 수정 verified: N건  ⏳ unverified: N건  ❌ mismatched: N건
+✅ 수정 verified: N건  ⏳ unverified: N건  ❌ mismatched: N건  🚫 disproved: N건
 🔄 라운드: {N}회 (수렴: {✅ Clean / 🖐 Manual-only / ⚠️ Max rounds / 🔁 No progress})
 
 🔄 라운드별 이력
@@ -52,7 +53,7 @@ Final baseline review: {실행됨/스킵(수정 없음)} — 신규 발견 N건
 
 🟠 MAJOR / 🟡 MINOR / 💡 SUGGESTION — 동일 형식 (suggestion은 자동 수정 대상 아님)
 
-⏭️ SKIP (Judge rejected)
+⏭️ SKIP (Judge rejected / disproved)
 ━━━━━━━━━━━━━━━━━━━━━━━
 [XXX-nnn] {제목} — 사유: {Judge reason}
 
@@ -72,7 +73,8 @@ Final baseline review: {실행됨/스킵(수정 없음)} — 신규 발견 N건
 🔕 게이트 미달 (E1 이하 또는 신뢰도 <{threshold}): N건 (--show-all로 열람)
 ```
 
-Stats table rules: unadjudicated findings show `-(unadjudicated)` in the confirmed
+Stats table rules: a reviewer whose return was not accepted (no coverage — see
+routing) shows `unverifiable` across its row, never zeros. Unadjudicated findings show `-(unadjudicated)` in the confirmed
 column. Fingerprint-merged findings count ONCE under the merge representative's row;
 co-reporters keep their 발견 count with the merge noted in their row.
 
@@ -81,7 +83,7 @@ co-reporters keep their 발견 count with the merge noted in their row.
 ```
 overrides: applied (<path>) | none (<확인 명령> → <결과>) | unverifiable (<이유>)
 fix-ledger: match (<n> claimed, <n> changed, 0 unclaimed) | MISMATCH (<n> claimed-but-unchanged, <m> changed-but-unclaimed, <k> changed-but-unresolved)
-fix-verification: {N} verified, {N} unverified, {N} mismatched
+fix-verification: {N} verified, {N} unverified, {N} mismatched, {N} disproved
 scope-integrity: match (scope <n> → touched <n>) | expanded (scope <n> → touched <m>: <파일> — <사유>, 승인) | MISMATCH (scope <n> → touched <m>: <외부 변경 파일>)
 validation: pass (<cmd> → exit <code>[, baseline <base> → exit <code>]; …) | fail (<cmd> → exit <code>; …) | unavailable (<이유>)
 ```
@@ -125,11 +127,11 @@ evidence.** A bare verdict is a contract violation even when the verdict is righ
   common case is a fix phase that ran outside this session: it leaves no per-finding
   claim ledger, so `fix-ledger` and `fix-verification` have nothing to count. Never
   fill the numeric slots by inference; an invented `0 verified, 0 unverified,
-  0 mismatched` reads as a measurement that was taken.
+  0 mismatched, 0 disproved` reads as a measurement that was taken.
 
 `--fix=none` runs print `fix-ledger: n/a` and `fix-verification: n/a`.
 Fix-enabled runs that applied ZERO fixes (nothing eligible) print `fix-ledger: match`
-and `fix-verification: 0 verified, 0 unverified, 0 mismatched`; `validation` reflects
+and `fix-verification: 0 verified, 0 unverified, 0 mismatched, 0 disproved`; `validation` reflects
 whatever actually ran (`unavailable` if no validation was executed). Empty-scope
 stops: see scope.md (all `n/a`).
 

@@ -1,7 +1,8 @@
 # Phase 3: Routing — Core + Conditional Reviewers
 
 Not every change needs every lens. 4 core reviewers always run; conditional
-reviewers run only when their trigger matches the manifest + diff content.
+reviewers run only when their trigger matches the manifest + diff content — or,
+for spec-fidelity, when a written requirement exists.
 
 ## Core (always run)
 
@@ -23,6 +24,16 @@ reviewers run only when their trigger matches the manifest + diff content.
 | [database-migration](agents/database-migration.md) | schema, entity, repository, migration, query |
 | [operations-config](agents/operations-config.md) | config, logging, metrics, Dockerfile/Helm/CI, feature flag, env, rollback, deployment docs, 신규 failure path(새 catch/error branch, 새 외부 호출) |
 
+## Conditional (spec-matched)
+
+| Agent | Run when |
+|---|---|
+| [spec-fidelity](agents/spec-fidelity.md) | context map(2b)이 **문서로 된 요구사항**을 찾았을 때: `docs/requirements.md`, `docs/plan.md`의 해당 작업 단위, spec/PRD 파일, 연결된 티켓의 AC |
+
+Commit messages, test names, and the user's request wording alone do NOT trigger it —
+they say what was done, not what was asked. When it does not run, the report header
+records `fidelity: skipped (no written requirement)`; never silently omit it.
+
 Routing decisions go in the report header: which conditional agents ran and which
 triggers fired. When in doubt on a trigger, run the agent — false-positive routing
 costs tokens; false-negative routing costs coverage.
@@ -38,7 +49,15 @@ costs tokens; false-negative routing costs coverage.
   model: omit `model` and record session-model fallback in the report.
 - Each reviewer prompt = [reviewer-contract](reviewer-contract.md)
   + its own `agents/<name>.md` + relevant [stack-specific](stack-specific.md) section
-  + project override block (if loaded) + manifest + diff + context map.
+  + project override block (if loaded) + manifest + diff + context map (code context
+  and the **requested** bundle only — the claimed bundle is withheld, see
+  [context-map](context-map.md) 2b).
+- **A launched reviewer is not a result.** Accept a return only when it shows the
+  bound target was read: findings that cite manifest paths and symbols, or the
+  `coverage:` list the contract requires. A bare "no issues", an empty completion, or
+  an answer about something else is not a clean pass. Launch one fresh substitute;
+  if that also fails, record that reviewer as `unverifiable` in the report and never
+  count it as zero findings. The main session does not fill the seat itself.
 - Do NOT inject other agents' checklists or any shared cross-cutting checklist —
   orthogonality is the point. The only shared text is the reviewer contract.
 - `--focus=<agent>` runs exactly that reviewer (legacy aliases in [scope](scope.md)).

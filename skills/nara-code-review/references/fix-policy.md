@@ -16,6 +16,9 @@ delegate rather than fixing directly, and record the actual model in the report 
 Fix principles:
 - Scope each fix to its finding only — no opportunistic refactoring.
 - Match existing code style/conventions.
+- Disagreeing with a confirmed finding is not a reason to skip it or to write an
+  empty fix — take the counter-evidence through the rebuttal path in
+  [adjudication](adjudication.md).
 - After each fix, record in the ledger: finding id, files touched, hunks, and the
   claim of what was resolved (Verifier checks the claim — see [verification](verification.md)).
 

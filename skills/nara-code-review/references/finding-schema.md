@@ -5,7 +5,7 @@ are rejected at aggregation. Uniform structure enables dedup, adjudication, and
 issue-level verification.
 
 ```yaml
-id: BEH-001                      # <AGENT-PREFIX>-<seq> — BEH/CON/RES/TST/SEC/PRF/ARC/FUX/DBM/OPS
+id: BEH-001                      # <AGENT-PREFIX>-<seq> — BEH/CON/RES/TST/SEC/PRF/ARC/FUX/DBM/OPS/FID
 category: behavior-state         # agent id
 severity: critical | major | minor | suggestion    # impact only — never blended with confidence
 confidence: 92                   # per rubric in reviewer-contract.md
@@ -54,6 +54,12 @@ confidence. These fields are what make a finding adjudicable and verifiable.
 For `suggestion`/structural findings with no runtime failure, `failure_path` states
 the concrete COST path instead (drift on future change, reader confusion, dead-code
 maintenance) — still mandatory, still must be specific to this code.
+
+**Absent implementation (spec-fidelity `Missing`)**: there is no symbol to point at.
+Set `location.path` to the file where the work unit's implementation lives (the
+entry point the diff touches for that requirement) and `location.symbol: <absent>`.
+Never invent a symbol. The quoted requirement in `invariant` keeps the fingerprint
+unique.
 
 ## Fingerprint (dedup & tracking key)
 

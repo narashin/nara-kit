@@ -41,7 +41,7 @@ Override may reassign: 자원 노브이므로 base check가 아니고 Conflict r
    output per [finding-schema](references/finding-schema.md)
 5. **Aggregate**: fingerprint dedup (path+symbol+invariant); gate
    `evidence >= E2 AND confidence >= threshold` (default 80); E0/E1 → open questions
-6. **Adjudicate**: blind Judge for critical/major, all security, all auto-fix
+6. **Adjudicate**: blind Judge for critical/major/minor, all security, all auto-fix
    candidates, conflicts — [adjudication](references/adjudication.md)
 7. **Fix**: single Fixer, serial, risk tiers R0–R3 × `--fix` mode — [fix-policy](references/fix-policy.md)
 8. **Verify + re-review loop** (max 3 rounds) + final baseline review — [verification](references/verification.md)

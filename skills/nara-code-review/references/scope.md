@@ -111,6 +111,7 @@ re-review it silently — escalate in the report and set `scope-integrity: MISMA
               resilience-data-integrity | tests-regression
   조건부:     security-privacy | performance-resources | architecture-reuse |
               frontend-ux-a11y | database-migration | operations-config
+  기획문서 있을 때: spec-fidelity
 
 출력:
   리포트는 ./docs/review/YYMMDD-<설명>.md 로 자동 저장됨

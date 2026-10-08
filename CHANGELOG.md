@@ -13,12 +13,28 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Changed
 
+- **`nara-code-review`의 Judge가 지적을 기각하려면 직접적인 반대 증거가 있어야 한다.** 이미 있는 가드, 불가능한 상태, 이미 처리하는 호출자, 테스트 같은 것이다. "추측 같다"나 낮은 확신은 기각 사유가 아니고, 재현도 반박도 못 하면 `needs-context`로 둔다. `downgraded`는 영향이 실제로 작다고 잰 경우에만 쓴다
+  - 리뷰어가 돌아와도 대상을 읽은 흔적(`coverage:`)이 없으면 통과로 세지 않는다. 한 번 새로 띄우고, 그래도 안 되면 그 리뷰어를 `unverifiable`로 리포트에 남긴다. 빈 응답이 "지적 0건"으로 집계되던 구멍이다
+  - 구현자의 설명(구현 노트, 커밋 본문의 해명, "이미 처리됨", 테스트 통과 주장)은 리뷰어에게 주지 않고 Judge에게 단서로만 준다. 해명을 먼저 읽은 리뷰어는 코드가 아니라 해명을 리뷰한다
+  - 확정된 지적이 틀렸다는 증거가 있으면 새 Judge가 그 건만 다시 본다. 받아들여지면 `disproved`로 닫고 ledger에서도 `DISPROVED`로 빠진다(Verifier가 MISMATCH로 올리지 않는다). Fixer와 main 세션이 스스로 기각할 수는 없다
+  - 충실도 리뷰어의 `Missing` 지적은 symbol이 없다. Verifier의 Located 판정은 그 파일에서 `validation`이 지목한 구현이 생겼는지로 한다
+  - `docs/implementation-notes.md`의 Tradeoffs·Design decisions는 구현자 해명 묶음으로 수집해 Judge에게만 준다. **Deviations 절만 예외로 충실도 리뷰어에게 준다.** 의도적 이탈을 리뷰어가 못 보면 결함으로 잡히고, Judge는 코드 밖 이유로 기각할 수 없어 `--fix=safe`가 결정을 되돌린다. 선언된 이탈은 지적에서 사라지지 않고 `declared: <ID>` + R3로 올라가 사람이 정한다
+
+- **`nara-code-review`의 Judge가 minor finding도 사실 검토한다.** 그동안 자동 수정 대상이 아닌 minor는 Judge를 건너뛰고 `unadjudicated`로 리포트에 실렸다. 거짓인 minor도 읽는 사람의 수정 시간을 쓴다. 이제 건너뛰는 것은 어떤 모드에서도 고치지 않는 `suggestion`뿐이다. 리뷰당 Judge 호출이 늘어난다
+
 - **`nara-pr-review`가 리뷰어와 lane을 subagent로 띄우라고 명시한다.** 그동안 "4 lane, 병렬"이라고만 적혀 있어서 main 세션이 lane을 직접 순회해도 문구상 위반이 아니었다. 다른 리뷰 스킬 셋(`nara-code-review`, `nara-adversarial-review`, `nara-test-verify`)은 이미 subagent를 명시한다
   - code-plane 리뷰어와 PR-plane lane 4개를 한 배치로 띄우고 Judge도 별도 subagent로 둔다. `nara-code-review`가 없는 standalone fallback 경로에도 같은 규칙이 적용된다. 그 경로에는 디스패치 지시가 아예 없었다
   - subagent의 shell은 main의 `export GH_HOST`를 물려받지 않는다. 수집분을 프롬프트에 붙여 넣고, 추가 조회는 명령마다 `GH_HOST=<host>`를 붙이게 했다
   - trailing status에 `dispatch:` 줄을 추가했다. subagent를 못 띄우는 환경에서는 inline으로 내려가되 사유를 남긴다. code-plane 리뷰어에게는 변경 파일 전체 본문을 프롬프트에 넣어 주고 스스로 조회하게 두지 않는다
 
 ### Added
+
+- **`nara-code-review`에 기획 충실도 리뷰어 `spec-fidelity`가 생겼다.** 기존 리뷰어는 전부 "이 코드가 깨질 수 있나"를 묻는다. 기획문서는 참고 자료로만 들어가서, 내부적으로 흠 없는 코드가 요청과 다른 기능이어도 finding이 나오지 않았다
+  - 문서로 된 요구사항(`docs/requirements.md`, `docs/plan.md`의 해당 작업 단위, spec 파일, 티켓 AC)이 있을 때만 뜬다. 커밋 메시지나 테스트 이름만으로는 안 뜬다. 그건 한 일이지 요청받은 일이 아니다. 안 뜨면 리포트 헤더에 `fidelity: skipped`로 남긴다
+  - 누락, 다르게 구현, 부분 구현, 요청 없는 동작 네 가지로 분류한다. 요구사항을 원문 그대로 인용하지 않은 finding은 취합에서 떨어진다
+  - 기획문서가 말하지 않은 부분은 finding이 아니라 확인 질문으로 보낸다. 코드 쪽에 나중 결정의 흔적이 있으면 어느 쪽을 고칠지 사람이 정하도록 R3로 올린다
+  - `nara-gap`과 겹치지 않는다. 그쪽은 요구사항 전체 대비 점수이고 이쪽은 이번 변경에 대한 finding이다. `docs/gap.md`는 단서로만 쓰고 판정으로 베끼지 않는다
+  - `nara-pr-review`도 같은 라우팅을 재사용하므로, PR이 가리키는 티켓이나 스펙을 읽을 수 있을 때 함께 뜬다
 
 - **`nara-design-studio` 런타임이 호스트에게 무엇을 하는 호스트인지 묻는다.** 호스트가 페이지 스크립트보다 먼저 `window.STUDIO_HOST = { fulfills: true, layoutCheck: false }`를 선언하고, 런타임이 그걸 읽어 문구와 메뉴를 고른다. `serve.py`는 아무것도 선언하지 않고 지금 동작을 그대로 유지한다
   - `fulfills`는 **호스트가 받은 것을 이미 처리했다**는 뜻이다. 그러면 Send to Agent와 Export → PNG가 복사용 텍스트 상자를 띄우지 않고 토스트 한 줄로 끝낸다. 끝난 일을 복사하라고 내놓으면 실패한 일처럼 읽힌다. Export → PNG의 "watch-captures.sh를 돌리는 browser-MCP 에이전트가 Downloads에 저장한다" 안내도 같이 사라진다 — 에이전트를 직접 붙들고 있는 호스트에서는 전부 거짓이다

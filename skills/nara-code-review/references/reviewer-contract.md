@@ -21,6 +21,9 @@ reviewers share — specialization stays orthogonal (see `agents/*.md`).
 - Lightweight universal flag: if you happen to see a hardcoded secret or sensitive
   data in a log, flag it regardless of your specialization (primary owner:
   security-privacy). Do not run a full security pass outside your lane.
+- Every return ends with `coverage:` — the manifest files and symbols you actually
+  read, and any you could not. Required with zero findings too: a clean result
+  without it is discarded as unread.
 - If specification/intent is unavailable, restrict behavior claims to code
   invariants and existing tests, and mark findings accordingly.
 
