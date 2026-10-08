@@ -52,7 +52,7 @@ Bridges Jira ticket → branch name → shell `wt` helper, producing a worktree 
 - **No Jira-issue-type → git-prefix mapping.** Issue type (Story/Bug/Task/Sub-task) is not a reliable signal for branch type in this team. Always defer prefix choice to the user.
 - **If the branch already exists**, `wt` reuses it. State this in the report.
 - **Auto mode**: even in auto mode, the slug confirm and prefix selection steps are mandatory — naming is a decision the user must own. Skip confirm only if the user explicitly opts out for this session.
-- **Never call `EnterWorktree` (superpowers native tool)** — places worktree under `.claude/worktrees/`, which violates the `{repo}-{ticket}-{slug}` sibling convention.
+- **Never call the `EnterWorktree` native tool** — places worktree under `.claude/worktrees/`, which violates the `{repo}-{ticket}-{slug}` sibling convention.
 
 ## Examples
 
