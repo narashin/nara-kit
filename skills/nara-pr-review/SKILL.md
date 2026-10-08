@@ -29,9 +29,10 @@ description: >-
    `nara-code-review/references/`의 reviewer-contract + finding-schema +
    routing + agents/*.md 재사용 (core 4 + 조건부 라우팅). 없으면
    [pr-plane](references/pr-plane.md)의 lane 요약으로 대체 (standalone fallback).
-3. **PR-plane 리뷰** (4 lane, 병렬) — [pr-plane](references/pr-plane.md):
+3. **PR-plane 리뷰** (4 lane) — [pr-plane](references/pr-plane.md):
    description↔diff 정합 / commit 구성 / CI 신호 / discussion 커버리지.
-4. **Aggregate + Judge**: fingerprint dedup. critical·major·보안 finding은
+   2·3의 리뷰어와 lane은 한 배치의 병렬 subagent로 띄운다 (Dispatch 절).
+4. **Aggregate + Judge**: fingerprint dedup. critical·major·minor·보안 finding은
    독립 Judge 재확인 (원 confidence·fix 은닉).
 5. **Report** (한국어) → `./docs/review/YYMMDD-pr<번호>.md`.
 6. **Post (승인 게이트)** — [posting](references/posting.md):
@@ -51,6 +52,7 @@ description: >-
 
 ```
 report: <path>
+dispatch: subagent (code-plane N + pr-plane 4) | inline (<사유>)
 comments-posted: none | N개 (승인 근거: 사용자 응답 인용)
 ci: pass | fail (<checks>) | pending
 unresolved-threads: N

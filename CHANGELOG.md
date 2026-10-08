@@ -11,6 +11,13 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Changed
+
+- **`nara-pr-review`가 리뷰어와 lane을 subagent로 띄우라고 명시한다.** 그동안 "4 lane, 병렬"이라고만 적혀 있어서 main 세션이 lane을 직접 순회해도 문구상 위반이 아니었다. 다른 리뷰 스킬 셋(`nara-code-review`, `nara-adversarial-review`, `nara-test-verify`)은 이미 subagent를 명시한다
+  - code-plane 리뷰어와 PR-plane lane 4개를 한 배치로 띄우고 Judge도 별도 subagent로 둔다. `nara-code-review`가 없는 standalone fallback 경로에도 같은 규칙이 적용된다. 그 경로에는 디스패치 지시가 아예 없었다
+  - subagent의 shell은 main의 `export GH_HOST`를 물려받지 않는다. 수집분을 프롬프트에 붙여 넣고, 추가 조회는 명령마다 `GH_HOST=<host>`를 붙이게 했다
+  - trailing status에 `dispatch:` 줄을 추가했다. subagent를 못 띄우는 환경에서는 inline으로 내려가되 사유를 남긴다. code-plane 리뷰어에게는 변경 파일 전체 본문을 프롬프트에 넣어 주고 스스로 조회하게 두지 않는다
+
 ### Added
 
 - **`nara-design-studio` 런타임이 호스트에게 무엇을 하는 호스트인지 묻는다.** 호스트가 페이지 스크립트보다 먼저 `window.STUDIO_HOST = { fulfills: true, layoutCheck: false }`를 선언하고, 런타임이 그걸 읽어 문구와 메뉴를 고른다. `serve.py`는 아무것도 선언하지 않고 지금 동작을 그대로 유지한다

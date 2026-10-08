@@ -34,10 +34,35 @@ gh pr view <n> --repo <owner/repo> --json comments  # conversation
 - **resilience-data-integrity**: 예외·retry·timeout·transaction·idempotency·race
 - **tests-regression**: 변경 동작 테스트 충분성·잘못된 assertion·누락 회귀 테스트
 
+spec-fidelity(기획 충실도) 리뷰어는 PR이 가리키는 티켓이나 스펙 문서를 실제로
+읽을 수 있을 때만 띄운다. PR 본문은 요구사항이 아니다. 본문과 diff의 정합은
+description-alignment lane이 본다. 못 읽으면 리포트에 skipped로 남긴다.
+
 finding 최소 필드: location(path+symbol) / invariant / preconditions /
 failure_path / impact / counterevidence_checked.
 
-## PR-plane lanes (항상 4개, 병렬)
+## Dispatch (code-plane + PR-plane 공통)
+
+리뷰어와 lane은 main 세션이 직접 순회하지 않는다. code-plane 리뷰어(설치 시
+routing이 고른 것, 미설치 시 위 fallback 4개)와 PR-plane lane 4개를 **한 배치의
+병렬 subagent**로 동시에 띄우고, main 세션은 취합만 한다. Judge도 별도
+subagent다 (리뷰어 컨텍스트를 물려받지 않아야 독립이다).
+
+- subagent는 전부 read-only. 코멘트 게시·approve·push를 하지 않는다. 게시는
+  main 세션의 승인 게이트만 한다.
+- code-plane 리뷰어 프롬프트에는 routing이 정한 구성(reviewer-contract + agents 파일 + manifest + diff)에 더해 Collection에서 받은 **변경 파일의 전체 본문**(`gh api contents` 결과)을 붙여 넣는다. 리뷰어가 스스로 조회하게 두지 않는다.
+- lane 프롬프트에는 Collection 결과 중 그 lane이 쓰는 것을 붙여 넣는다
+  (description-alignment: 본문+diff, commit-composition: commits+diff,
+  ci-signal: checks+변경 파일 목록, discussion-coverage: reviews+threads+diff).
+  경로만 넘기지 않는다.
+- subagent의 shell은 main의 `export GH_HOST`를 물려받지 않는다. 추가 조회가
+  필요하면 매 명령에 `GH_HOST=<host> gh ...`를 붙이라고 프롬프트에 host를 적는다.
+- 모델은 code-plane 리뷰어와 같게 맞춘다 (nara-code-review 설치 시
+  `$JUDGMENT_MODEL`). 미설치면 `model`을 생략하고 세션 모델을 쓴다.
+- subagent를 띄울 수 없는 환경이면 main 세션이 lane을 순차 수행하고, trailing
+  status의 `dispatch:`에 `inline (<사유>)`로 남긴다. 조용히 inline으로 내려가지 않는다.
+
+## PR-plane lanes (항상 4개, 병렬 subagent)
 
 Lane 산출물은 lane 요약(프로세스 평면)으로만 리포트에 실린다 — finding-schema로
 변환하지 않으며 fingerprint dedup·Judge 대상이 아니다. lane이 코드 결함을
