@@ -14,7 +14,8 @@
 defaults:
   assignee: currentUser()
   mention: <SHINNARA_MEMBER_UUID>
-  ready_statuses: [To Do, Selected for Development]
+  ready_statuses: [To Do, Selected for Development]   # 큐로 들어가는 상태 (todo 카드, readiness 판정)
+  mirror_statuses: [In Progress, In Review]           # 미러 카드만 만드는 상태 (없으면 미러 안 함)
   misc_session_group: nara-kit        # 기타 타입 세션그룹
 profiles:
   - jira_project: SVC

@@ -1,0 +1,31 @@
+id: dedup-cancelled-only-001
+name: "Only a cancelled card exists → a new card is created"
+description: |
+  Dedup skips a ticket when a live card exists. A cancelled card is not a live
+  card: if every match is cancelled, the ticket is still on Jira and must get
+  a new card. A done card still blocks creation.
+tags:
+  - dedup
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓 2건과, 각 키로 `multica issue list --metadata "jira_key=<KEY>"`를 돌린 결과다.
+    jira-triage로 분류하고 (dry-run) 어떤 티켓에 큐 이슈를 만들지 알려줘.
+    ready 상태 = To Do, Selected for Development.
+
+    key: OPS-88
+    status: To Do
+    summary: "배포 알림에 버전 줄 추가"
+    description: 배포 완료 Slack 알림 본문에 배포된 버전 문자열을 한 줄로 넣는다. 버전이 비면 줄을 생략한다.
+    기존 카드: [{identifier: Q-14, status: cancelled}]
+
+    key: OPS-90
+    status: To Do
+    summary: "헬스체크 타임아웃 3초로 조정"
+    description: 헬스체크 요청 타임아웃을 10초에서 3초로 줄인다.
+    기존 카드: [{identifier: Q-20, status: done}]
+  files: []
+expected:
+  output_contains:
+    - "[OPS-88]"
+  output_not_contains:
+    - "[OPS-90]"

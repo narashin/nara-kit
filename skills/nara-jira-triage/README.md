@@ -2,7 +2,7 @@
 
 > 사람용 문서. Claude는 런타임에 이 파일을 읽지 않음 (SKILL.md + references만 로드). 호출·용도 안내.
 
-Triage ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues — classified, repo-routed, human-judged before Stage 2. Creation only: reverse status sync (merged PR → queue done) is a cron script whose contract this skill declares. Stage 1 never runs code.
+Triage my assigned Jira tickets into per-ticket Multica queue cards: classified, repo-routed, spec-checked, human-judged before Stage 2. Ready tickets queue as todo; in-progress ones are mirrored. Creation only: status sync is a cron script whose contract this skill declares. Stage 1 never runs code.
 
 ## 호출
 

@@ -1,0 +1,27 @@
+id: mirror-in-progress-001
+name: "In Progress ticket → mirror card, no mention, no readiness verdict"
+description: |
+  A ticket already In Progress is work being done by hand that the board does
+  not show yet. It gets a card marked card_origin=mirror. It is not a start
+  order: no mention, no readiness verdict, and the skill does not move the
+  card itself (reconcile does).
+tags:
+  - mirror
+  - thesis-guard
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    ready 상태 = To Do, Selected for Development. mirror 상태 = In Progress, In Review.
+    key: PROJ-505
+    status: In Progress
+    summary: "[FE] 팀 목록 화면에 소유자 필터 추가"
+    description: 팀 목록 필터 패널에 소유자 검색을 넣는다. 이미 브랜치에서 작업 중.
+  files: []
+expected:
+  output_contains:
+    - "[PROJ-505]"
+    - "mirror"
+  output_not_contains:
+    - "Dev agent에 assign"
+    - "needs-spec"
+    - "mention://"

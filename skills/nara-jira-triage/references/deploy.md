@@ -49,6 +49,7 @@ projects = SVC,APP
 ## 동기화 체크리스트
 
 - [ ] SKILL.md 변경 → `multica skill update` 재실행
+- [ ] `references/` 변경·추가 → 파일마다 `multica skill files upsert <skill_id> --path references/<file> --content-file <local>` (`skill update`는 본문만 옮긴다)
 - [ ] config(`~/.claude/jira-triage.md`) profiles에 신규 project 매핑 추가
 - [ ] jira MCP 토큰 = 대상 assignee 본인
 - [ ] 실행 머신에 `herdr`·`claude`·`git` CLI + repo `local_path` 확인

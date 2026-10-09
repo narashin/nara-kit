@@ -1,0 +1,33 @@
+id: readiness-needs-spec-001
+name: "Implementation ticket with an open decision → blocked card with triage_block"
+description: |
+  A ready implementation ticket whose body leaves a decision open cannot be
+  handed to a worker. The card is still created (the board mirrors Jira) but
+  lands in blocked with a triage_block reason, and the gap is asked as a
+  question. A sibling ticket that states target, done-condition and no open
+  question stays ready.
+tags:
+  - readiness
+inputs:
+  prompt: |
+    아래는 이미 조회된 Jira 티켓 2건이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
+    ready 상태 = To Do, Selected for Development. 기존 카드는 없다.
+
+    key: PROJ-611
+    status: To Do
+    summary: "[FE] 승인 요청 실패 처리"
+    description: 승인 요청 제출이 실패했을 때 처리가 필요함. 재시도로 할지 초안으로 되돌릴지는 TBD.
+
+    key: PROJ-612
+    status: To Do
+    summary: "[FE] 승인 코멘트 빈 값 차단"
+    description: 승인/반려 다이얼로그에서 코멘트가 공백뿐이면 제출 버튼을 비활성화한다. 한 글자 이상 입력하면 활성화된다.
+  files: []
+expected:
+  output_contains:
+    - "[PROJ-611]"
+    - "[PROJ-612]"
+    - "triage_block"
+  regex_match:
+    - "(?s)PROJ-611.*(blocked|needs-spec)"
+    - "\\?"

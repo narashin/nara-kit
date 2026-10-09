@@ -102,6 +102,12 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Changed
 
+- **`nara-jira-triage`의 보드가 Jira의 거울이 됐다.** 지금까지는 착수 가능한 티켓만 큐에 넣고 Jira로는 아무것도 되쓰지 않아서, 손으로 In Progress로 옮긴 티켓은 보드에 없고 PR이 열린 티켓은 Jira에서 계속 In Progress였다
+  - **폴링이 In Progress와 In Review까지 본다.** 이 상태의 티켓은 `card_origin=mirror` 카드로 들어온다. 착수 지시가 아니라서 멘션도 구현 가능성 판정도 없고, 카드 상태는 스킬이 아니라 reconcile이 옮긴다. config에 `mirror_statuses`가 없으면 예전처럼 동작한다
+  - **구현 가능성을 큐에 넣는 시점에 본다.** 구현·버그픽스 티켓이 무엇을 바꾸는지, 끝났다는 조건이 무엇인지, 미결 사항이 남았는지를 판정해서 부족하면 카드를 `blocked`로 두고 빠진 것을 질문으로 단다. 표시는 `triage_block`이고 `drain_state`와 다른 키다(착수 실행기가 모르는 `drain_state` 값을 보면 `/drain`을 거부한다). 판정은 후보라서 애매하면 막지 않고, 막힌 카드도 사람이 `/drain`으로 넘길 수 있다
+  - **취소된 카드는 dedup에서 없는 것으로 본다.** 한 번 취소된 티켓은 Jira에서 다시 To Do가 돼도 영영 큐에 안 들어왔다. `done` 카드는 스킵 근거로 남겼다. 머지됐는데 Jira 전이가 실패한 티켓이 회차마다 다시 들어오는 것을 막기 위해서다
+  - **reconcile 계약을 `references/reconcile.md`로 옮기고 넓혔다.** Jira 되쓰기가 기본 ON이 됐고 "열린 PR → In Review" 전이, Jira In Review와 To Do 복귀의 카드 반영, draft PR 제외, 본문이 바뀐 `blocked` 카드의 해제가 추가됐다. 스킬 본문은 257 토큰 줄었다. reference 모듈이 3개에서 5개가 되면서 `waza check`의 module-count 권고가 새로 뜬다
+
 - **`nara-eli5-note`의 그림 HTML이 노트 안에 임베드되고 JS가 돈다.** `![[<파일>.html|-]]`로 쓰면 Embed HTML 플러그인이 sandbox 속성 없는 `srcdoc` iframe으로 렌더한다. 그동안 "HTML은 임베드 미지원, 파일 탐색기에서 클릭해 별도 탭으로 연다, 스크립트 차단이니 `<style>` + 순수 마크업만"으로 못박아 뒀던 제약이 전부 사실이 아니었다
   - 낡은 서술의 출처는 플러그인을 하나만 본 것이다. vault에 HTML Reader와 Embed HTML 둘이 깔려 있고 **역할이 갈린다.** `[[...]]` 링크는 HTML Reader가 별도 탭으로 열면서 스크립트를 막고, `![[...]]` 임베드는 Embed HTML이 iframe으로 렌더하면서 스크립트를 살린다. 같은 파일이 걸린 방식에 따라 다르게 동작한다
   - **임베드가 안 보인다고 불가능으로 읽지 않는다.** 첫 실측에서 빈 파일 카드로 떨어졌는데 원인은 플러그인이 설치만 되고 `community-plugins.json`에 없었던 것이다. 그래서 스킬이 노트에 "박스 대신 파일 카드만 보이면 Embed HTML 플러그인을 켠다"를 한 줄 넣게 했다. 새 머신·iOS에서 같은 증상이 난다

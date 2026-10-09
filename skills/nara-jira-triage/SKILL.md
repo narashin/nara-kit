@@ -1,23 +1,23 @@
 ---
 name: nara-jira-triage
 description: >-
-  Triage ready Jira tickets (To Do / Selected) into per-ticket Multica queue issues — classified, repo-routed, human-judged before Stage 2. Creation only: reverse status sync (merged PR → queue done) is a cron script whose contract this skill declares. Stage 1 never runs code.
+  Triage my assigned Jira tickets into per-ticket Multica queue cards: classified, repo-routed, spec-checked, human-judged before Stage 2. Ready tickets queue as todo; in-progress ones are mirrored. Creation only: status sync is a cron script whose contract this skill declares. Stage 1 never runs code.
   USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", "큐 상태 정리", Multica Jira autopilot.
   DO NOT USE FOR: 티켓 생성 (→ slack-to-jira), 버그 원인 분석 (→ /nara-incident).
 ---
 
 # jira-triage — 내 Jira 티켓 → Multica 작업 큐
 
-내게 할당된 **착수 가능(To Do / Selected for Development)** Jira 티켓을 폴링해 **구현/버그픽스/기획/기타**로 분류하고, **티켓당 Multica 이슈**(UNASSIGNED, status To Do)로 만들어 watching 큐를 채운다.
+내게 할당된 Jira 티켓을 폴링해 **구현/버그픽스/기획/기타**로 분류하고, **티켓당 Multica 이슈**(UNASSIGNED)로 만든다. 보드는 Jira의 거울이다. 착수 가능(To Do / Selected) 티켓은 큐로, 이미 진행 중(In Progress / In Review)인 티켓은 미러 카드로 들어온다. Backlog와 Done은 올리지 않는다.
 
 > **테제 가드:** autopilot은 코드를 실행하지 않는다. 큐만 채운다. 네가 **큐에서 골라 착수 트리거(판단)**하는 순간이 착수 결정(심사) — 그때부터 [Stage 2](#stage-2--착수-네가-트리거)가 돈다.
 
-참조: [Config](references/config.md) (project→repo·ready 상태) · [Issue body](references/issue-body.md) (타입별 큐 이슈 본문) · [Deploy](references/deploy.md) (Multica autopilot + herdr Stage 2 셋업)
+참조: [Config](references/config.md) (project→repo·폴링 상태) · [Issue body](references/issue-body.md) (타입별 큐 이슈 본문) · [Readiness](references/readiness.md) (구현 가능성 판정) · [Reconcile](references/reconcile.md) (상태 동기화 계약) · [Deploy](references/deploy.md) (Multica autopilot + herdr Stage 2 셋업)
 
 ## 2-stage 루프
 
 ```
-[Stage 1] jira-triage 크론 → ready 티켓 → 티켓당 Multica 이슈(큐, UNASSIGNED) + 멘션
+[Stage 1] jira-triage 크론 → ready·진행 중 티켓 → 티켓당 Multica 이슈(UNASSIGNED) + 신규 ready에만 멘션
 [Stage 2] 너: 큐 판단 → /nara-jira-drain <KEY> → herdr worktree(space=repo@branch)에 Claude Code 세션
           → 구현/기획 흐름으로 PR까지 (게이트 미달→정지+리포트) · 인터랙티브 $0
 [Stage 3] review-queue → PR 리뷰 → 너: merge → herdr worktree cleanup
@@ -41,22 +41,32 @@ jira-triage [--assignee <currentUser|ACCOUNT_ID>] [--projects <KEY,KEY>] [--ment
 
 ## 파이프라인
 
-1. **poll** — ready 상태 할당 티켓 조회
+1. **poll** — ready + mirror 상태 할당 티켓 조회
 2. **classify** — 구현 \| 버그픽스 \| 기획 \| 기타 (summary/description 의미 판단)
 3. **subtask 게이트** — 컨테이너(subtask 보유)는 제외, poll에 자기 행으로 온 작업 단위만
 4. **route** — project key → repo ([Config](references/config.md))
-5. **dedup** — `multica issue list --metadata "jira_key=<KEY>"` (서버측 필터), 결과 있으면 스킵
-6. **emit** — 티켓당 UNASSIGNED 큐 이슈 + 신규에만 멘션
+5. **dedup** — `multica issue list --metadata "jira_key=<KEY>"` (서버측 필터), 살아 있는 카드가 있으면 스킵
+6. **readiness** — ready 상태의 구현/버그픽스만: 티켓만으로 구현 가능한지 판정 ([Readiness](references/readiness.md))
+7. **emit** — 티켓당 UNASSIGNED 큐 이슈 + 신규 ready에만 멘션
 
-Step 1~6은 **생성만** 한다. 미종료 큐 이슈를 PR/Jira 실측으로 되돌리는 건 out-of-band 크론 담당 — [Step 7](#step-7--reconcile-역방향-상태-동기화).
+이 단계들은 **생성만** 한다. 만든 뒤의 상태를 PR/Jira 실측에 맞추는 건 out-of-band 크론 담당이다. [Step 7](#step-7--reconcile-역방향-상태-동기화) 참조.
 
 ```bash
-# Step 1 — poll. ready 상태만 (Backlog/In Progress/Done 제외)
-jira_search jql='assignee = currentUser() AND status in ("To Do", "Selected for Development") AND project IN (SVC, APP) ORDER BY updated DESC' \
+# Step 1 — poll. ready + mirror 상태 (Backlog/Done 제외)
+jira_search jql='assignee = currentUser() AND status in ("To Do", "Selected for Development", "In Progress", "In Review") AND project IN (SVC, APP) ORDER BY updated DESC' \
   fields='key,summary,status,description,labels,subtasks,parent'   # issuetype 보통 빈값 — 의미로 분류
 ```
 
-ready 상태 목록은 config `ready_statuses` 로 조정. 폴링 윈도우 없음 — dedup이 재처리 차단.
+상태 목록은 config의 `ready_statuses`·`mirror_statuses`로 조정. 폴링 윈도우 없음(dedup이 재처리 차단).
+
+### 상태 그룹
+
+| 그룹 | Jira 상태 (config 키) | 카드 | 멘션 | readiness |
+|---|---|---|---|---|
+| ready | To Do / Selected (`ready_statuses`) | `todo`로 생성 | 신규에만 | 판정 |
+| mirror | In Progress / In Review (`mirror_statuses`) | `todo`로 생성 + metadata `card_origin=mirror` | 안 함 | 안 함 |
+
+mirror 카드는 "이미 손으로 하고 있는 일이 보드에 없다"를 메우는 용도다. 착수 지시가 아니고, 다음 reconcile 회차가 Jira 상태대로 `in_progress`(+`drain_state=manual`) 또는 `in_review`로 옮긴다. 이 스킬이 직접 옮기지 않는다. 상태를 맞추는 주체는 하나여야 한다.
 
 ### classify 스키마
 
@@ -109,39 +119,22 @@ multica issue comment add <issue_id> \
   --content "[@<표시명>](mention://member/<MEMBER_ID>) <KEY> 큐에 추가됨 (<타입>)" --output json
 ```
 
-dedup: `multica issue list --metadata "jira_key=<KEY>"` 결과 있으면 생성·멘션 스킵. `--dry-run` 이면 Step 6 전체 스킵.
+mirror 그룹이면 `card_origin=mirror`를 추가로 박고 멘션을 생략한다. readiness가 `needs-spec`이면 생성 직후 `blocked`로 두고 `triage_block`을 박는다. 절차는 [Readiness](references/readiness.md).
+
+dedup: `multica issue list --metadata "jira_key=<KEY>" --output json` 결과에 **`cancelled`가 아닌 카드**가 하나라도 있으면 생성·멘션 스킵. `cancelled` 카드만 있으면 없는 것으로 보고 새로 만든다. Jira에 살아 있는 티켓은 카드가 있어야 거울이고, 카드를 없애려면 Jira 상태를 바꾸는 게 맞다. `done` 카드는 스킵 근거로 남긴다(머지됐는데 Jira 전이가 실패한 티켓이 회차마다 다시 큐에 들어오는 것을 막는다). `--dry-run` 이면 emit 전체 스킵.
 
 **전체 목록을 훑어 비교하지 말 것.** `multica issue list`는 100건에서 잘리고(`has_more: true`) 오래된 이슈가 조회 창 밖으로 밀린다. 워크스페이스가 100건을 넘은 시점(2026-09-04 실측)부터 이미 처리한 티켓이 **다시 큐에 들어간다**. metadata 필터는 서버가 걸러 창과 무관하다.
 
 ## Step 7 — reconcile (역방향 상태 동기화)
 
-큐는 채워지기만 하고 되돌아오지 않는다 — 큐 `done` 전이는 jira-drain cleanup에만 있고 그건 사람이 herdr space를 정리할 때만 돈다. cleanup 미실행 건·큐 밖 손PR 건은 머지 뒤에도 `in_review`에 박제된다.
-
-**이 스킬은 reconcile을 실행하지 않는다.** 순수 결정론(`gh`/`jq`/`multica`, LLM 판단 0)이라 out-of-band 셸 스크립트 + OS 크론이 담당한다 — 오토파일럿(헤드리스 claude)에 얹으면 빈 런마다 토큰만 태운다. 역할 분리는 고정:
+**이 스킬은 reconcile을 실행하지 않는다.** 순수 결정론(`gh`/`jq`/`multica`, LLM 판단 0)이라 out-of-band 셸 스크립트 + OS 크론이 담당한다. 역할 분리는 고정:
 
 | 주체 | 책임 |
 |---|---|
-| 오토파일럿(이 스킬 Step 1~6) | **없는 큐 이슈 생성**만 (classify에 LLM 필요) |
-| `jira-reconcile.sh` (크론) | **있는 큐 이슈 상태 sync**만. 생성 안 함 |
+| 오토파일럿(이 스킬) | **없는 큐 이슈 생성**만 (classify·readiness에 LLM 필요) |
+| `jira-reconcile.sh` (크론) | **있는 큐 이슈 상태 sync** + Jira 되쓰기. 생성 안 함 |
 
-스크립트가 지키는 전이 계약 (Pass A = PR 실측 우선, Pass B = Jira 미러, Pass C = Jira 역기록):
-
-| 근거 | 전이 | 부수 write |
-|---|---|---|
-| A. strict 매칭 `MERGED` 1건 | → `done` | `drain_state=done` · `pr_url` |
-| A. `MERGED` 0 + `OPEN` 1건 | `todo`\|`in_progress` → `in_review` | `pr_url` |
-| A. `MERGED` 2건+ / 매칭 0건 / `CLOSED`만 | 무변경 | 경고 로그 (종료 심사는 사람) |
-| B. Jira statusCategory `done` | → `done` | — |
-| B. Jira `indeterminate` | `todo` → `in_progress` | `drain_state=manual` |
-| C. A가 `done` 처리 + Jira assignee == 나 + Jira가 아직 done 카테고리 아님 | **Jira** → `$JIRA_CLOSE_STATUSES` 첫 매칭 | — (기본 OFF) |
-
-- **PR이 Jira보다 강한 증거** — Pass A 먼저. Jira 쪽이 밀려 있는 게 보통이다
-- `gh pr list --search`는 fuzzy(`PROJ-40` 질의에 PROJ-39·29도 온다) → `headRefName`\|`title`에 KEY가 **단어 경계**로 박힌 것만 채택: `(^|[^A-Za-z0-9])<KEY>([^0-9]|$)` (`PROJ-4` ≠ `PROJ-40`)
-- **`metadata.pr_url`은 근거 아님** — review-reminder가 KEY 검증 없이 심어 딴 티켓 PR이 붙기도 한다(실제 발생). strict 매칭 결과로 덮어씀
-- **Pass B의 `in_progress` 미러는 `drain_state=manual`을 함께 박는다** — 보드에서 카드를 `in_progress`로 옮기는 행위가 곧 착수 지시이고 `multica-dispatch.py`(크론)가 그걸 보고 워커를 띄운다. 미러는 "이미 다른 데서 손으로 하고 있다"는 뜻이라 그대로 두면 두 번째 워커가 붙는다. 착수 판별식은 `in_progress` + `jira_key` 있음 + `drain_state` **없음**
-- **Pass C가 유일한 외부 mutation이고 기본 OFF** — 팀이 보는 Jira라 `JIRA_SYNC=1` 로 명시 opt-in 해야 돈다. 켜더라도 가드 2중: assignee가 나인 티켓만, 그리고 Pass A의 `MERGED` 1건 분기에서만 호출. 현재 Jira 상태는 사람이 직접 관리
-- **종료 상태명은 프로젝트마다 다르다** — 전이 id 하드코딩 금지. `to.statusCategory.key == "done"` 인 전이 중 `$JIRA_CLOSE_STATUSES`(기본 `Closed,Done,Resolved`) 순서로 첫 매칭을 고른다. 어떤 프로젝트는 `Closed`, 다른 프로젝트는 `Done` 하나뿐 — 이름 하나로 고정하면 한쪽이 통째로 막힌다
-- Pass C 실패(PAT 권한 없음·해당 전이 미노출)는 경고 로그만 남기고 진행한다. Jira는 손대지 않은 상태로 남는다
+스크립트가 지키는 전이 계약(PR 실측 → 카드, Jira ↔ 카드, `blocked` 해제)은 [Reconcile](references/reconcile.md)에 있다. 큐 상태가 실제와 어긋나 보이면 이 스킬을 다시 돌리지 말고 스크립트를 본다.
 
 ## Stage 2 — 착수 (네가 트리거)
 
@@ -157,10 +150,12 @@ dedup: `multica issue list --metadata "jira_key=<KEY>"` 결과 있으면 생성�
 
 - **Stage 1은 코드 실행 금지** — 큐만 채운다. 착수는 사람이 jira-drain 트리거로 결정
 - 분류는 summary/description **LLM 의미 판단** — issuetype 필드 기대 안 함
-- 큐 대상 = ready 상태(To Do/Selected)이면서 **poll 결과에 직접 나온(= 내게 할당된)** 티켓만. Backlog·In Progress·Done·컨테이너·남의 subtask 제외
+- 큐 대상 = ready·mirror 상태이면서 **poll 결과에 직접 나온(= 내게 할당된)** 티켓만. Backlog·Done·컨테이너·남의 subtask 제외
+- mirror 카드는 멘션·readiness 판정 없이 만들고 상태를 직접 옮기지 않는다
+- readiness는 후보 판정이다. `blocked`로 둔 카드도 사람이 `/drain`으로 넘길 수 있다. 애매하면 막지 않는다
 - 큐 이슈는 **UNASSIGNED 생성** — autopilot이 자동 착수하지 않음 (사람 게이트)
-- dedup = metadata `jira_key`. 스킵 이슈엔 멘션 안 단다
-- **상태 되돌리기(reconcile)는 이 스킬이 실행하지 않는다** — 결정론이라 크론 스크립트 소유(§Step 7). 여기선 계약만 선언
+- dedup = metadata `jira_key` + `cancelled` 아닌 카드. 스킵 이슈엔 멘션 안 단다
+- **상태 되돌리기(reconcile)는 이 스킬이 실행하지 않는다** — 결정론이라 크론 스크립트 소유. 계약은 [Reconcile](references/reconcile.md)
 - 큐 상태 SoT = PR 실측 > Jira 상태 > `pr_url` metadata(오염 가능, 근거 아님) 순
 - `--dry-run` 이면 Multica 쓰기 전체 스킵
 - config에 비밀값 없음 — Jira 인증은 MCP 레이어
@@ -173,8 +168,8 @@ dedup: `multica issue list --metadata "jira_key=<KEY>"` 결과 있으면 생성�
 | 상황 | 처리 |
 |------|------|
 | `jira_search` 실패 | 3회 재시도 후 `❌ 실패: Jira 조회 실패` |
-| 조회 0건 | `✅ 신규 ready 티켓 없음` |
+| 조회 0건 | `✅ 신규 티켓 없음` |
 | project repo 매핑 없음 | 큐 이슈는 생성하되 `[UNVERIFIED: repo 매핑 없음]` (트리거 전 수동 확인) |
 | `multica issue create` 실패 | 해당 티켓 격리, 다음 계속, `→ ESCALATE` |
 | 멘션 차단 (classifier) | 이슈는 생성, 멘션만 `→ ESCALATE: 멘션 차단` |
-| 큐 상태가 실제와 어긋남 (머지됐는데 `in_review` 등) | 이 스킬 소관 아님 — reconcile 크론(§Step 7) 담당. 즉시 필요하면 스크립트 수동 실행 |
+| 큐 상태가 실제와 어긋남 (머지됐는데 `in_review` 등) | 이 스킬 소관 아님 — reconcile 크론(Step 7) 담당. 즉시 필요하면 스크립트 수동 실행 |

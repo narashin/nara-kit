@@ -1,6 +1,6 @@
 # issue-body — Multica 큐 이슈 본문 템플릿
 
-티켓당 1개 이슈. **UNASSIGNED, status To Do** 로 생성. 본문은 사람이 읽고 착수 결정하는 데 쓰고, 착수 시 metadata(`jira_key`/`repo`)를 Stage 2 agent가 읽는다.
+티켓당 1개 이슈. **UNASSIGNED, status To Do** 로 생성(readiness가 `needs-spec`이면 생성 직후 `blocked`). 본문은 사람이 읽고 착수 결정하는 데 쓰고, 착수 시 metadata(`jira_key`/`repo`)를 Stage 2 agent가 읽는다.
 
 ## dev 큐 이슈 (구현 / 버그픽스)
 
@@ -43,6 +43,19 @@
 **착수:** 역할 agent 없음 — 직접 처리. (repo 매핑 없으면 config 보완 후 재분류)
 ```
 
+## mirror 카드 (In Progress / In Review 티켓)
+
+타입별 본문은 위와 같되 첫 줄에 표기를 붙이고 `**착수:**` 줄을 뺀다.
+
+```markdown
+**미러 카드:** Jira에서 이미 <상태>. 착수 지시가 아니다.
+```
+
+## readiness 표기
+
+- `needs-spec`: 본문 끝에 `**기획 보완 필요:** <빠진 것>` 한 줄. 상세 질문은 코멘트로 단다
+- 애매해서 통과시킨 경우: 해당 자리에 `[확인 필요: <무엇>]`
+
 ## metadata (모든 큐 이슈 공통)
 
 | key | value | 용도 |
@@ -53,3 +66,5 @@
 | `session_group` | svc / app-fe / app-be / nara-kit | legacy — herdr Stage 2는 무시 (참고용) |
 | `pr_language` | ko / en | Stage 2 PR 작성 언어 |
 | `sub_repo` | default / fe / be | APP FE/BE 구분 |
+| `card_origin` | `mirror` | mirror 카드에만. 착수 대기가 아니라 진행 중인 일의 반영임을 표시 |
+| `triage_block` | 빠진 것 한 줄 | `needs-spec` 카드에만. reconcile이 이 키로 해제 대상을 고른다 |
