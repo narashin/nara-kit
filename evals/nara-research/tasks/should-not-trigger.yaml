@@ -1,0 +1,20 @@
+id: should-not-trigger-001
+name: "Pressure-testing a design the user already holds routes to nara-grill"
+description: |
+  Asking to poke holes in the user's own API design is nara-grill's job. There is no
+  external source to compare and no distillation target, so the skill should redirect
+  instead of writing a research report.
+tags:
+  - routing
+  - negative
+inputs:
+  prompt: "내 API 설계 구멍 좀 찔러줘"
+  files: []
+expected:
+  output_contains:
+    - "grill"
+  output_not_contains:
+    - "distill: keep"
+    - "docs/research/"
+  outcomes:
+    - type: task_completed

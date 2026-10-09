@@ -29,6 +29,13 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Added
 
+- **`nara-research` 신설: 결정 하나를 위한 외부 선행 사례 비교와 남의 스킬·repo 증류를 리포트 한 장으로 남긴다.** 외부 repo를 보고 "뭘 가져올까"를 정하는 일이 매번 대화 안에서 끝나서 어느 revision을 읽었는지, 왜 안 가져왔는지가 남지 않았다
+  - 두 모드다. 선행 사례 비교는 결정과 후보를 받아 외부 증거로 가르고, 증류(`--source`)는 스킬·워크플로·repo를 `keep | adapt | omit`으로 가르고 형태(reference 추가 / 기존 스킬 개선 / 독립 스킬 / no-op)를 판정한다. 결과는 제안이고 적용은 `nara-skill-forge`, 기록은 `nara-adr`이 한다
+  - 출처는 revision을 고정하고(SHA·버전·접근일) 결정에 걸리는 주장은 구절을 인용한다. 링크가 열리는 것과 주장을 뒷받침하는 것은 다른 검사다. 못 읽은 주장은 `[UNVERIFIED: requires <source>]`로 남기고 재현 안 한 효능은 그렇다고 적는다. trailing status가 `sources`·`claims`·`verdict`·`distill`을 센다
+  - 산출물은 `docs/research/YYMMDD-<slug>.md` 하나다. 상태 파일은 없고 같은 결정을 다시 보면 `--update`로 갱신 절을 덧붙인다
+  - 출발점은 tiger-kit `tk-research`(`fd7a7a0`)다. 증거 규율, 증류 절차, 출처 색인 형식을 가져왔고 영속 연구 상태(frontier 재생성, 체크포인트 ID, `--resume`)와 실험 하네스, HTML 리포트는 안 가져왔다. 워크플로를 상태머신으로 포장한 스킬은 nara-kit에서 쓰이지 않았다
+  - evals는 트리거·안티트리거 2건이고 실제 실행 전이라 `validation.yaml`은 아직 없다
+
 - **`nara-qa-sheet` 신설: 자동 검증이 못 닿은 화면을 사람이 볼 체크리스트로 넘긴다.** `nara-gap`과 `nara-browser-verify`는 증거가 없으면 `Unverifiable`을 낸다. 맞는 판정이지만 그 항목을 누가 확인하는지는 남지 않았다
   - 산출물은 HTML 파일 하나(`docs/qa/YYMMDD-<slug>.html`)다. 체크와 메모가 브라우저에 저장되고, "결과 복사"가 PR 본문에 붙일 Markdown을 만든다
   - 자동으로 밟은 줄(`auto-verified`)과 사람이 볼 줄을 분리한다. 그 뒤 커밋이 해당 화면의 렌더·요청 경로를 건드리면 자동 표시를 `manual`로 내리고 옛 증거는 이전 증거로만 남긴다

@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**55 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**56 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -24,6 +24,7 @@
 | `nara-gap` | Requirements vs implementation gap analysis → `docs/gap.md` (0-100 score) / 요구사항 vs 구현 갭 분석 |
 | `nara-claim-audit` | Audit numeric claims in a spec against CSV snapshots (script-owned, deterministic) / 기획서 수치 주장을 CSV와 대조 — 스크립트 소유·결정론 |
 | `nara-grill` | Pressure-test an idea/design/plan — fact-first, one question at a time (설계 탐색 단계) / 사실 조사 후 한 번에 한 질문씩 설계 검증 |
+| `nara-research` | Compare external prior art for one pending decision, or distill a source skill/repo into keep/adapt/omit (every source pinned to a revision) → `docs/research/*.md` / 결정 하나를 위한 외부 선행 사례 비교 또는 남의 스킬·repo 증류. 제안만, 적용은 skill-forge·adr |
 | `nara-plan` | Split a spec into independently verifiable vertical work units → `docs/plan.md` / 스펙을 독립 검증 가능한 수직 작업 단위로 분할 |
 | `nara-incident` | Structured incident analysis report with red-capable reproduction gate (no code changes) / 재현 게이트 기반 장애 분석 리포트 (코드 수정 없음) |
 | `nara-incident-fix` | TDD-based fix from `docs/incident-report.md` / 장애 리포트 기반 TDD 수정 |
@@ -145,6 +146,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    RS["research<br>외부 선행 사례"] -. 조건부 .-> B
     C{clarity?} -->|clear| B["grill"] --> PR[prep]
     C -->|vague| AC[ac-draft]
     PR --> AG{AC Gate}
@@ -158,6 +160,7 @@ flowchart LR
 
 - **Revision loop**: `publish-spec` 이후 피드백 수집되면 별개 세션에서 `/nara-spec-revision <URL>` — 라운드마다 버전 append (워크플로 재진입 아닌 standalone).
 - `adr`(구조 결정), `rfc`(기술 결정)는 필요 시 spec 산출 후 호출.
+- `research`(외부 선행 사례 비교, 남의 스킬·repo 증류)는 결정 하나가 외부 근거에 걸릴 때 `grill` 앞에서 호출. 산출물은 제안이고 적용은 `skill-forge`·`adr`이 한다.
 
 **Legend**: 🟢 green border = 핵심 5단계 · 🟡/🔴 = gate / block. 전부 개별 스킬 직접 호출이다.
 
@@ -193,6 +196,7 @@ flowchart LR
 | `docs/test-scenarios/*.md` | `test-discover` / `golden-path-discover` | AC↔시나리오 1:1 매핑, Playwright-ready E2E export |
 | `docs/incident-report.md` | `incident` | root cause 가설 + 증거 + 제안 수정 |
 | `docs/plan/*.md` | 기획 흐름 | spec / RFC / design artifact (AC 박힌 채) |
+| `docs/research/YYMMDD-<slug>.md` | `research` | 결정 하나의 외부 선행 사례 비교 또는 증류 제안. 출처 revision 고정, 인용된 주장, keep/adapt/omit 표. 재조사는 갱신 절 append |
 
 **AC lifecycle**: AC는 모든 스킬의 공유 SoT. `prep`이 외부 SoT의 AC를 **verbatim 보존** → `docs/requirements.md`의 `## Acceptance Criteria`에 박힘 → `gap`(P0 자동분류) / `test-discover`(시나리오 1:1) 가 소비. SoT에 AC 없으면 `ac-draft`가 작성 강제.
 

@@ -1,0 +1,25 @@
+id: basic-usage-001
+name: "Distilling a source skill yields a pinned keep/adapt/omit proposal, not a skill edit"
+description: |
+  Given a sample external skill directory, the skill reads it, records the revision it
+  read, classifies each element as keep/adapt/omit against existing nara-kit owners,
+  judges the shape (reference / existing-skill improvement / independent skill / no-op),
+  writes docs/research/<slug>.md and ends with the trailing status. It must not modify
+  any SKILL.md or claim efficacy it did not reproduce.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "sample-skill.md 에서 nara-kit이 가져올 게 있는지 증류해줘. 결정은 '이 체크리스트 절차를 스킬로 둘지'야."
+  files:
+    - path: sample-skill.md
+expected:
+  output_contains:
+    - "sources:"
+    - "distill: keep"
+    - "verdict:"
+  output_not_contains:
+    - "EVAL-FAKE-DO-NOT-USE"
+    - "SKILL.md를 수정했"
+  outcomes:
+    - type: task_completed
