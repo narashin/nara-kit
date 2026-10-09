@@ -1,0 +1,29 @@
+name: nara-qa-sheet-eval
+description: Evaluation suite for qa-sheet — manual QA checklist HTML for acceptance criteria automation could not verify.
+skill: nara-qa-sheet
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 300
+  parallel: false
+  executor: mock
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill produce a manual QA inventory without inventing UI labels or claiming product acceptance?
+graders:
+  - type: code
+    name: real_run
+    config:
+      # Provenance gate, not a behavioural one: it asserts the graded output came
+      # from a real skill run. Under `executor: mock` it fails every task by
+      # construction -- that is the correct signal, because mock output grades the
+      # eval's own description and fixture text, never the skill. Measurement goes
+      # through `waza grade` on a real run; see CLAUDE.md.
+      assertions:
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
+tasks:
+  - "tasks/*.yaml"

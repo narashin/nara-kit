@@ -29,6 +29,17 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Added
 
+- **`nara-qa-sheet` 신설: 자동 검증이 못 닿은 화면을 사람이 볼 체크리스트로 넘긴다.** `nara-gap`과 `nara-browser-verify`는 증거가 없으면 `Unverifiable`을 낸다. 맞는 판정이지만 그 항목을 누가 확인하는지는 남지 않았다
+  - 산출물은 HTML 파일 하나(`docs/qa/YYMMDD-<slug>.html`)다. 체크와 메모가 브라우저에 저장되고, "결과 복사"가 PR 본문에 붙일 Markdown을 만든다
+  - 자동으로 밟은 줄(`auto-verified`)과 사람이 볼 줄을 분리한다. 그 뒤 커밋이 해당 화면의 렌더·요청 경로를 건드리면 자동 표시를 `manual`로 내리고 옛 증거는 이전 증거로만 남긴다
+  - 화면에 직접 못 들어가 본 줄은 `code-only`로 표시하고 라벨을 지어내지 않는다
+  - 출발점은 MTGVim/tiger-kit의 `tk-qa-sheet`이고 템플릿과 점검 스크립트(`check_sheet.py`)는 새로 썼다. 그쪽이 하는 시트 자체의 헤드리스 재검증과 JS 없는 정적 목록 재생성은 가져오지 않았다
+  - verify의 세 번째 트랙이 아니다. 판정은 여전히 두 트랙이 하고 이 스킬은 인계만 한다. `nara-now`는 gap의 `Needs Confirm`이나 browser-verify의 `Unverifiable`이 남아 있으면 리뷰 준비 문구 뒤에 인계 한 줄을 덧붙인다
+  - `nara-browser-verify` 영수증에 `head:` 줄이 생겼다(run 디렉터리에도 같은 값). 시트의 자동 검증 표시가 어느 커밋의 증거인지 여기서 읽는다. 이 값이 없던 run은 증거로 쓰지 않는다
+
+- **UI 라벨과 진입 경로는 본 것만 쓴다는 규칙을 다섯 군데에 넣었다.** PR 본문의 "어디서", 테스트 시나리오의 진입경로, 골든패스 export의 Entry path, QA 시트, 충실도 리뷰어의 문구 비교가 대상이다. 라우트·컴포넌트명·i18n 키·티켓 문구는 라벨의 증거가 아니고, 확인 못 한 것은 `code-only`로 두고 채우는 데 필요한 가장 작은 입력을 적는다
+  - 수집 방법(초기 렌더 뒤 화면 텍스트를 한 번에 받기, breadcrumb이 증명하는 범위, 못 구했을 때 적을 네 가지)은 `nara-browser-verify/references/ui-evidence.md`가 소유한다. 나머지는 핵심 문단을 직접 갖고 형제 링크로 가리키므로 그 파일이 없어도 동작한다
+
 - **`nara-code-review`에 기획 충실도 리뷰어 `spec-fidelity`가 생겼다.** 기존 리뷰어는 전부 "이 코드가 깨질 수 있나"를 묻는다. 기획문서는 참고 자료로만 들어가서, 내부적으로 흠 없는 코드가 요청과 다른 기능이어도 finding이 나오지 않았다
   - 문서로 된 요구사항(`docs/requirements.md`, `docs/plan.md`의 해당 작업 단위, spec 파일, 티켓 AC)이 있을 때만 뜬다. 커밋 메시지나 테스트 이름만으로는 안 뜬다. 그건 한 일이지 요청받은 일이 아니다. 안 뜨면 리포트 헤더에 `fidelity: skipped`로 남긴다
   - 누락, 다르게 구현, 부분 구현, 요청 없는 동작 네 가지로 분류한다. 요구사항을 원문 그대로 인용하지 않은 finding은 취합에서 떨어진다

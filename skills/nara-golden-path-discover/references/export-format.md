@@ -70,6 +70,14 @@ coverage = represented / (represented + dropped)
 
 Required fields: `Entry path`, `Setup`, numbered steps. (KO: `진입경로` / `시나리오 준비` / steps.)
 
+**Write only UI text and entry paths you have seen.** Quote existing labels verbatim
+(language, case, punctuation, spacing). An entry path is guidance only when every menu
+step was actually observed; a route, component name, identifier, i18n key, or ticket
+wording is not evidence of a label. Never invent one: give the known route, mark it
+`code-only`, and state what is missing and the smallest input that would fill it.
+Collection method: [ui-evidence](../../nara-browser-verify/references/ui-evidence.md)
+(sibling skill file — if absent, this paragraph is the whole rule).
+
 ## Step grammar (overrides nara-test-discover conventions.md)
 
 - Numbered **from 1** (NOT 0).

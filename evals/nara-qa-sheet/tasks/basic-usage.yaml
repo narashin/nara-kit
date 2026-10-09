@@ -1,0 +1,21 @@
+id: basic-usage-001
+name: "Build a manual QA sheet for the current branch"
+description: |
+  Given a branch whose changed screens could not all be exercised at runtime,
+  the skill must fix the target range, list checks per screen, mark screens it
+  never entered as source-only, and save one HTML file. The trailing status
+  must report the sheet path, the check breakdown, and the self-check line.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "이 브랜치 수동으로 확인할 화면 QA 시트 만들어줘"
+  files: []
+expected:
+  output_contains:
+    - "self-check:"
+    - "unverified-paths:"
+  output_not_contains:
+    - "검증 완료했습니다"
+  outcomes:
+    - type: task_completed

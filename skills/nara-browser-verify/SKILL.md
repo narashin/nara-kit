@@ -40,7 +40,7 @@ test -f .claude/overrides/browser-verify.md && cat .claude/overrides/browser-ver
 2. **환경** — 새 의존성 설치 없이 드라이버 선택. 사다리는 [../nara-ui-diff/references/drivers.md](../nara-ui-diff/references/drivers.md) (같이 설치된 스킬 파일 참조 — 없으면 chrome-devtools MCP 기본으로 진행). 새 Chrome 프로세스는 `--headless=new`와 run-owned `user-data-dir`를 증명한다.
 3. **서버** — dev 서버가 필요하면 이 스킬이 기동·readiness·정리를 소유한다. repo의 dev 명령을 run-owned 백그라운드로 띄우고, **프로세스 exit 대기 금지** — HTTP/port readiness를 bounded timeout으로 poll. 상세 [session-lifecycle](references/session-lifecycle.md).
 4. **인증** — 우선순위: 인증 불필요 → run-owned 검증된 세션 재사용 → repo가 지원하는 header/cookie/storage bootstrap → OTP·MFA·SSO·CAPTCHA 없는 완전 비대화형 로그인. 메커니즘은 [../nara-local-shot/references/auth-bypass.md](../nara-local-shot/references/auth-bypass.md) (없으면 repo 근거로 판단, 추측 금지). 주입 방식을 지어내지 않는다. 못 세우면 `Unverifiable`.
-5. **검증** — 알려진 초기 상태에서 시작해 criterion이 요구하는 상호작용과 최종 상태를 관찰. 결정에 관련된 최종 상태마다 run-owned 스크린샷을 최소 1장 남기고 **실제로 열어본다**.
+5. **검증** — 알려진 초기 상태에서 시작해 criterion이 요구하는 상호작용과 최종 상태를 관찰. 결정에 관련된 최종 상태마다 run-owned 스크린샷을 최소 1장 남기고 **실제로 열어본다**. 다른 스킬이 쓸 UI 라벨·진입 경로를 수집할 때는 [ui-evidence](references/ui-evidence.md).
 6. **판정** — criterion을 축에 매핑하고 축마다 `Pass|Fail|Unverifiable`. 미검사 축은 Pass로 올리지 않는다.
 7. **정리** — run-created page → context → browser 순. 잔여물은 판정을 바꾸지 않고 사실로 보고.
 
@@ -48,12 +48,14 @@ test -f .claude/overrides/browser-verify.md && cat .claude/overrides/browser-ver
 
 ```
 브라우저 AC 검증 완료 (recorded only).
-- criterion: `<id 또는 한 줄>` · driver: `chrome-devtools` · viewport: `<WxHxDPR>` · auth mode: `token-headless`
+- criterion: `<id 또는 한 줄>` · head: `<git rev-parse HEAD 결과>` · driver: `chrome-devtools` · viewport: `<WxHxDPR>` · auth mode: `token-headless`
 - 축 판정: geometry ✅ / content ✅ / asset ⚠️ Unverifiable(스크린샷 없음) / behavior ❌ (기대 request 없음)
 - side effects: browser 1 runtime opened (`<target host>`), dev server run-owned PID `<n>` 종료, 0 writes to app
 - artifact: `.claude/browser-verify/runs/<ts>/` (스크린샷 N장, network log)
 - Status: Unverifiable
 ```
+
+`head:`는 검증한 작업 트리의 커밋이다. 같은 값을 `<run dir>/head`에도 한 줄로 남긴다. 뒤에 `nara-qa-sheet`가 이 run을 재사용할지, head가 움직여 버릴지를 이 값으로 정한다. 없으면 그 run은 어떤 시트에서도 자동 검증 증거로 쓰이지 않는다.
 
 마지막 줄은 정확히 하나의 terminal token — `Status: Pass | Fail | Blocked | Unverifiable`. `--dry-run`이면 브라우저를 열지 않고 계획만, status `skipped`.
 

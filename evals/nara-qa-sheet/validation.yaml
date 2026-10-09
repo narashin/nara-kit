@@ -1,0 +1,40 @@
+# Grader-validation table for nara-qa-sheet.
+#
+# `right` is what a correct run of the skill outputs (copied from EPT runs on
+# 2026-10-08, fixture: web-ui status-filter branch). `wrong` reproduces behaviour
+# the skill could actually produce: run 1 of the forge baseline omitted the
+# trailing status entirely when it stopped at the receipt, and a routing miss
+# would answer the headless-verdict prompt by building a sheet.
+#
+# Run: tools/eval-fixture.py validate nara-qa-sheet
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    수동 QA 시트 생성 (recorded only).
+    - 대상: `web-ui` `b5306be..c59e66e` (base = `main` merge-base, 미커밋 변경 없음) · 환경: 미지정
+    - 체크 4개: 수동 4 / 부분 0 / 자동 검증 0 · code-only 4
+    - 확인 못 한 진입 경로 1건: 필요한 입력 = 티켓 목록으로 가는 메뉴가 보이는 스크린샷 1장
+    - artifact: `docs/qa/261008-status-filter.html`
+    - Next: 시트를 열어 체크한 뒤 "결과 복사"를 PR 본문에 붙인다
+
+    sheet: docs/qa/261008-status-filter.html
+    target: b5306be..c59e66e
+    checks: 4 (manual 4 / partial 0 / auto-verified 0; code-only 4; demoted 0)
+    unverified-paths: 1 (티켓 목록으로 가는 메뉴가 보이는 스크린샷 1장)
+    self-check: pass (check_sheet.py → exit 0)
+  should-not-trigger-001: |
+    이 요청은 헤드리스 자동 판정이라 `/nara-browser-verify` 영역입니다. qa-sheet는 자동화가 못 본 항목을 사람이 손으로 보는 체크리스트로 만드는 스킬이라 여기엔 맞지 않습니다.
+    지금은 dev 서버가 없고 브라우저 MCP 연결도 실패한 상태라 판정을 낼 수 없습니다. 서버를 올리고 연결을 복구한 뒤 `/nara-browser-verify`를 다시 호출하면 AC별 Pass/Fail/Unverifiable이 나옵니다.
+wrong:
+  basic-usage-001: |
+    수동 QA 시트 생성.
+    - 대상: `web-ui` `b5306be..c59e66e`
+    - 체크 4개를 docs/qa/261008-status-filter.html 에 만들었습니다.
+    - 세 AC 전부 코드로 확인했고 상태 필터 검증 완료했습니다.
+  should-not-trigger-001: |
+    수동 QA 시트 생성 (recorded only).
+    - 대상: `web-ui` `b5306be..c59e66e` · 환경: 미지정
+    - artifact: `docs/qa/261008-status-filter.html`
+
+    sheet: docs/qa/261008-status-filter.html
+    self-check: pass (check_sheet.py → exit 0)

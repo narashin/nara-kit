@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**51 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**55 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -36,7 +36,7 @@
 | `nara-implement` | Gated code implementation (strategy approval → TDD option → verify → stop at staged, never auto-commit) — 구현 단계 / 검증 게이트 구현 (전략 승인·TDD 옵션·자동 커밋 없음) |
 | `nara-commit` | Generate conventional commit message with ticket ID / 커밋 메시지 생성 |
 | `nara-pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
-| `nara-code-review` | Evidence-based multi-agent review (core 4 + conditional 6, Reviewer→Judge→Fixer→Verifier) / 증거 기반 멀티에이전트 코드 리뷰 |
+| `nara-code-review` | Evidence-based multi-agent review (core 4 + conditional 7, Reviewer→Judge→Fixer→Verifier) / 증거 기반 멀티에이전트 코드 리뷰 |
 | `nara-pr-review` | Remote PR review via gh (code plane + PR plane: description/commits/CI/discussion), approval-gated comments / 원격 PR 리뷰 |
 | `nara-adversarial-review` | Attack an existing review report (refuter / blind hunter / rigor auditor), append-only / 리뷰 리포트 공격 검증 |
 | `nara-pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
@@ -72,6 +72,7 @@
 | `nara-ui-diff` | Env-diff visual regression: QA/Prod baseline vs local target computed-style + rect diff (candidates only) / 환경 간 UI 회귀 비교 — computed-style·bounding-rect 차이 후보 |
 | `nara-local-shot` | Screenshots of locally-running web apps (SSO-gated via dummy-cookie bypass) for PR visual comparison / 로컬 앱 스크린샷 캡쳐 |
 | `nara-browser-verify` | Judge browser-visible AC against a headless runtime — per-axis verdict from trusted input, network req/res, inspected screenshots / 브라우저 AC 런타임 판정 (축별 증거 기반) |
+| `nara-qa-sheet` | Single-file HTML checklist of screens a human must check by hand, for AC automation left `Unverifiable` / 자동 검증이 못 닿은 화면의 수동 QA 체크리스트 (체크·메모 브라우저 저장) |
 
 ### Automation / 자동화
 
@@ -124,6 +125,7 @@ flowchart LR
     G["gap<br>brownfield 인수인계"] -. 조건부 .-> P
     V --- V1["코드 AC → gap"]
     V --- V2["browser-visible AC → browser-verify"]
+    V -. Needs Confirm / Unverifiable .-> Q["qa-sheet<br>(사람에게 인계)"]
     RF -. 구조 결정 .-> A[adr] -.-> F
 
     style P fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
@@ -135,7 +137,7 @@ flowchart LR
 
 - **진입 (조건부)**: 외부 SoT 있으면 `prep`, 한 줄 의도면 `ac-draft`. AC Gate 통과 후 아래 순서.
 - **조건부 satellites**: `grill`(large/greenfield 설계 검증), `gap`(brownfield 인수인계 — 구현 전 진행률 파악이 먼저 필요할 때만), `adr`(구조 결정 시), impl-notes(medium/large — `nara-implement`가 소유). `small`/bugfix는 전부 skip하고 5단계 직행.
-- **verify는 2-track**: 코드 AC는 `gap`(이 시점에 `gap.md` 생성+판정 1회), `browser-visible: yes` AC는 `browser-verify`(런타임 증거 기반 축별 판정). gap이 spine 맨 앞에서 빠진 이유는 `docs/adr/0001-verify-browser-ac-at-runtime.md` (repo-local, 배포 대상 아님).
+- **verify는 2-track**: 코드 AC는 `gap`(이 시점에 `gap.md` 생성+판정 1회), `browser-visible: yes` AC는 `browser-verify`(런타임 증거 기반 축별 판정). 두 트랙이 판정 못 한 항목(gap의 `Needs Confirm`, browser-verify의 `Unverifiable`)은 `qa-sheet`가 사람이 볼 체크리스트로 넘긴다(판정이 아니라 인계). gap이 spine 맨 앞에서 빠진 이유는 `docs/adr/0001-verify-browser-ac-at-runtime.md` (repo-local, 배포 대상 아님).
 - **plan = `nara-plan`** (수직 작업 단위 → `docs/plan.md`), **execute = `nara-implement`** (검증 게이트 + TDD 옵션, 자동 커밋 없음 → `/nara-commit`).
 - **plan 승인**은 plan 단계에 흡수 (별도 pre-execution phase 없음). 완료 전 AI 점수 판정 단계는 제거됨 (AI-as-judge 안티패턴 — `verify` + `code-review`가 검증 담당).
 

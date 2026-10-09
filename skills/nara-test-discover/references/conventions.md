@@ -9,6 +9,8 @@
 - `**선행 생성**:` -- only when dependent on another scenario's output
 - `**데이터 힌트**:` -- data token format `{PREFIX}-{YYYYMMDD-HHmm}`
 
+**UI 문구와 진입 경로는 본 것만 쓴다.** 기존 화면의 라벨은 언어·대소문자·문장부호·띄어쓰기까지 그대로 인용한다. 진입 경로는 메뉴 단계마다 실제로 확인한 것만 안내문으로 쓴다. 라우트·컴포넌트명·식별자·i18n 키·티켓 문구는 라벨의 증거가 아니다. 확인 못 한 라벨은 지어내지 않는다. 아는 라우트만 적고 `code-only`로 표시한 뒤, 무엇이 빠졌고 무엇을 받으면 채울 수 있는지(스크린샷 한 장 등) 남긴다. 수집 방법은 [ui-evidence](../../nara-browser-verify/references/ui-evidence.md) (같이 설치된 스킬 파일. 없으면 이 문단만으로 진행).
+
 ## Step Conventions
 
 - Steps numbered from 0

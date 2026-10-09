@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA Sheet</title>
+<style>
+  :root { --bg:#fff; --fg:#1b1f24; --muted:#5b6470; --line:#d8dde3; --card:#f6f8fa; --accent:#0969da; --warn:#9a6700; --ok:#1a7f37; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9aa4af; --line:#30363d; --card:#161b22; --accent:#58a6ff; --warn:#d29922; --ok:#3fb950; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 -apple-system, "Pretendard", "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 32px 0 8px; }
+  h3 { font-size: 15px; margin: 0; }
+  code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+  a { color: var(--accent); }
+  .meta, .sub { color: var(--muted); font-size: 13px; }
+  .bar { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 0; margin: 12px 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; z-index: 1; }
+  .bar .count { font-weight: 600; margin-right: auto; }
+  button { font: inherit; color: var(--fg); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+  .screen { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 10px 0; }
+  .check { display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .check:first-of-type { margin-top: 10px; }
+  .check input[type=checkbox] { width: 18px; height: 18px; margin-top: 2px; }
+  .expect { margin: 2px 0; }
+  textarea { width: 100%; min-height: 34px; margin-top: 6px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; resize: vertical; }
+  .badge { display: inline-block; font-size: 11px; border: 1px solid var(--line); border-radius: 10px; padding: 0 7px; margin-left: 6px; color: var(--muted); vertical-align: 1px; }
+  .badge.warn { color: var(--warn); border-color: var(--warn); }
+  .badge.ok { color: var(--ok); border-color: var(--ok); }
+  .limits { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+  .limits ul { margin: 4px 0 0; padding-left: 18px; }
+  details.auto { margin-top: 32px; }
+  details.auto summary { cursor: pointer; font-weight: 600; }
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 6px 14px; border-radius: 6px; font-size: 13px; display: none; }
+  #fallback { width: 100%; min-height: 160px; display: none; }
+</style>
+</head>
+<body>
+<main>
+  <noscript><p>이 시트는 JavaScript로 그려집니다. 체크와 메모 저장에도 JavaScript가 필요합니다.</p></noscript>
+  <div id="app"></div>
+  <textarea id="fallback" readonly aria-label="복사용 결과"></textarea>
+</main>
+<div id="toast" role="status"></div>
+
+<!-- Replace ONLY this block. Schema: references/sheet-data.md -->
+<script type="application/json" id="qa-data">
+{
+  "sample": true,
+  "storageKey": "qa-sample",
+  "title": "QA 시트 예시",
+  "target": { "repo": "web-ui", "base": "0000000", "head": "1111111", "env": "local" },
+  "generatedAt": "1970-01-01",
+  "limitations": ["예시 한계 문구"],
+  "areas": [
+    { "name": "예시 영역", "screens": [
+      { "title": "/example", "route": "/example", "provenance": "code-only", "checks": [
+        { "id": "sample-manual", "trigger": "(행 클릭)", "expect": "예시 기대 결과", "source": "예시 근거", "state": "manual", "provenance": "code-only" },
+        { "id": "sample-auto", "trigger": "`저장` 클릭", "expect": "예시 기대 결과", "source": "예시 근거", "state": "auto-verified", "provenance": "observed", "evidence": "예시 실행 @1111111" }
+      ] }
+    ] }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  'use strict';
+  var data = JSON.parse(document.getElementById('qa-data').textContent);
+  var KEY = 'nara-qa-sheet:' + data.storageKey;
+  var memory = { checks: {}, notes: {} };
+  var persistent = true;
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) memory = JSON.parse(raw);
+    } catch (e) { persistent = false; }
+    memory.checks = memory.checks || {};
+    memory.notes = memory.notes || {};
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(memory)); } catch (e) { persistent = false; }
+  }
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) appendRich(node, String(text));
+    return node;
+  }
+  // Text only: backtick spans become <code>, nothing is parsed as HTML.
+  function appendRich(node, text) {
+    text.split('`').forEach(function (part, i) {
+      if (!part) return;
+      if (i % 2) { var c = document.createElement('code'); c.textContent = part; node.appendChild(c); }
+      else node.appendChild(document.createTextNode(part));
+    });
+  }
+  function badge(text, cls) { var b = el('span', 'badge' + (cls ? ' ' + cls : '')); b.textContent = text; return b; }
+
+  var manualIds = [];
+  var allChecks = [];
+
+  function renderCheck(screen, check, locked) {
+    var row = el('div', 'check');
+    var box = document.createElement('input');
+    box.type = 'checkbox';
+    box.id = 'c-' + check.id;
+    if (locked) { box.checked = true; box.disabled = true; }
+    else {
+      box.checked = !!memory.checks[check.id];
+      box.addEventListener('change', function () { memory.checks[check.id] = box.checked; save(); updateCount(); });
+    }
+    row.appendChild(box);
+
+    var body = el('div');
+    var label = document.createElement('label');
+    label.htmlFor = box.id;
+    appendRich(label, check.trigger);
+    body.appendChild(label);
+    if (check.state === 'partial') body.appendChild(badge('부분 자동', 'warn'));
+    if (check.provenance === 'code-only') body.appendChild(badge('code-only', 'warn'));
+    if (check.provenance === 'spec-only') body.appendChild(badge('spec-only', 'warn'));
+    if (check.provenance === 'user-provided') body.appendChild(badge('user-provided'));
+    body.appendChild(el('div', 'expect', '기대: ' + check.expect));
+    if (check.source) body.appendChild(el('div', 'sub', '근거: ' + check.source));
+    if (check.evidence) body.appendChild(el('div', 'sub', '자동 증거: ' + check.evidence));
+    if (check.previousEvidence) body.appendChild(el('div', 'sub', '이전 증거(현재 head에는 무효): ' + check.previousEvidence));
+    if (!locked) {
+      var note = document.createElement('textarea');
+      note.placeholder = '메모';
+      note.setAttribute('aria-label', '메모');
+      note.value = memory.notes[check.id] || '';
+      note.addEventListener('input', function () { memory.notes[check.id] = note.value; save(); });
+      body.appendChild(note);
+    }
+    row.appendChild(body);
+    return row;
+  }
+
+  function renderScreen(screen, checks, locked) {
+    var card = el('section', 'screen');
+    var head = el('h3', null, screen.title || screen.route);
+    if (screen.provenance === 'code-only') head.appendChild(badge('code-only', 'warn'));
+    card.appendChild(head);
+    var meta = el('div', 'sub');
+    if (screen.route) { var r = document.createElement('code'); r.textContent = screen.route; meta.appendChild(r); }
+    if (screen.entry) { meta.appendChild(document.createTextNode('  진입: ')); appendRich(meta, screen.entry); }
+    if (screen.link && /^https?:\/\//.test(screen.link)) {
+      meta.appendChild(document.createTextNode('  '));
+      var a = document.createElement('a'); a.href = screen.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = '열기';
+      meta.appendChild(a);
+    }
+    card.appendChild(meta);
+    checks.forEach(function (c) { card.appendChild(renderCheck(screen, c, locked)); });
+    return card;
+  }
+
+  function updateCount() {
+    var done = manualIds.filter(function (id) { return memory.checks[id]; }).length;
+    document.getElementById('count').textContent = done + ' / ' + manualIds.length + ' 확인';
+  }
+
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.style.display = 'block';
+    setTimeout(function () { t.style.display = 'none'; }, 1800);
+  }
+
+  function resultMarkdown() {
+    var t = data.target || {};
+    var lines = ['### 수동 QA 결과', '', '대상: ' + [t.repo, (t.base || '') + '..' + (t.head || ''), t.env].filter(Boolean).join(' · '), ''];
+    allChecks.forEach(function (item) {
+      var c = item.check;
+      var mark = c.state === 'auto-verified' ? '[x] (자동)' : (memory.checks[c.id] ? '[x]' : '[ ]');
+      var line = '- ' + mark + ' ' + (item.screen.title || item.screen.route) + ': ' + c.trigger + ' → ' + c.expect;
+      if (c.provenance === 'code-only') line += ' (code-only)';
+      if (c.provenance === 'spec-only') line += ' (spec-only)';
+      lines.push(line);
+      var note = (memory.notes[c.id] || '').trim();
+      if (note) lines.push('  - 메모: ' + note.replace(/\n/g, ' '));
+    });
+    if ((data.limitations || []).length) {
+      lines.push('', '확인 못 한 것:');
+      data.limitations.forEach(function (l) { lines.push('- ' + l); });
+    }
+    return lines.join('\n');
+  }
+
+  function copyResult() {
+    var text = resultMarkdown();
+    function showFallback() {
+      var box = document.getElementById('fallback');
+      box.value = text; box.style.display = 'block'; box.focus(); box.select();
+      toast('아래 상자에서 직접 복사하세요');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast('결과를 복사했습니다'); }, showFallback);
+    } else showFallback();
+  }
+
+  function render() {
+    load();
+    var app = document.getElementById('app');
+    document.title = data.title || 'QA Sheet';
+    app.appendChild(el('h1', null, data.title || 'QA Sheet'));
+    var t = data.target || {};
+    app.appendChild(el('div', 'meta', [t.repo, '`' + (t.base || '?') + '..' + (t.head || '?') + '`', t.env, data.generatedAt].filter(Boolean).join(' · ')));
+
+    var bar = el('div', 'bar');
+    var count = el('span', 'count'); count.id = 'count'; bar.appendChild(count);
+    var copy = el('button', null, '결과 복사'); copy.type = 'button'; copy.addEventListener('click', copyResult); bar.appendChild(copy);
+    var reset = el('button', null, '체크 초기화'); reset.type = 'button';
+    reset.addEventListener('click', function () {
+      memory.checks = {}; save();
+      manualIds.forEach(function (id) { var b = document.getElementById('c-' + id); if (b) b.checked = false; });
+      updateCount(); toast('체크를 지웠습니다 (메모는 유지)');
+    });
+    bar.appendChild(reset);
+    app.appendChild(bar);
+
+    if ((data.limitations || []).length) {
+      var lim = el('div', 'limits');
+      lim.appendChild(el('strong', null, '확인 못 한 것'));
+      var ul = el('ul');
+      data.limitations.forEach(function (l) { ul.appendChild(el('li', null, l)); });
+      lim.appendChild(ul);
+      app.appendChild(lim);
+    }
+
+    var auto = el('details', 'auto');
+    var autoCount = 0;
+    (data.areas || []).forEach(function (area) {
+      var areaHead = el('h2', null, area.name);
+      var manualScreens = [];
+      (area.screens || []).forEach(function (screen) {
+        var manual = [], locked = [];
+        (screen.checks || []).forEach(function (c) {
+          allChecks.push({ screen: screen, check: c });
+          if (c.state === 'auto-verified') locked.push(c); else { manual.push(c); manualIds.push(c.id); }
+        });
+        if (manual.length) manualScreens.push(renderScreen(screen, manual, false));
+        if (locked.length) { autoCount += locked.length; auto.appendChild(renderScreen(screen, locked, true)); }
+      });
+      if (manualScreens.length) { app.appendChild(areaHead); manualScreens.forEach(function (s) { app.appendChild(s); }); }
+    });
+    if (autoCount) {
+      var summary = el('summary', null, '자동 검증됨 ' + autoCount + '건 (사람이 다시 볼 필요 없음)');
+      auto.insertBefore(summary, auto.firstChild);
+      app.appendChild(auto);
+    }
+    if (!persistent) app.appendChild(el('p', 'sub', '이 브라우저에서는 저장소를 쓸 수 없어 체크와 메모가 새로고침 후 사라집니다.'));
+    updateCount();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

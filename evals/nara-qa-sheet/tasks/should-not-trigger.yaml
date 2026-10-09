@@ -1,0 +1,17 @@
+id: should-not-trigger-001
+name: "A request to judge an AC at runtime must not trigger qa-sheet"
+description: |
+  Judging a browser-visible acceptance criterion in a headless runtime is
+  nara-browser-verify's job. qa-sheet must not activate.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "이 화면 AC 통과했는지 헤드리스로 확인해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "self-check:"
+    - "docs/qa/"
+  outcomes:
+    - type: task_completed

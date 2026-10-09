@@ -14,6 +14,7 @@
 | 4 | gap.md 있음, **P0 Missing ≥ 1** | "P0 ({N}건) 보완 1순위 (점수 무관). gap.md Critical 섹션 참조" |
 | 5 | gap.md 있음, P0 Missing 0건, 점수 < 80 | gap.md Next Actions 분석 후 실행 방법 추천 (아래 실행 방법 판단 참조) |
 | 6 | gap.md 있음, P0 Missing 0건, 점수 ≥ 80 | "review-ready. commit + `/nara-code-review`" |
+| 6-bis | 6의 조건이고, gap.md에 `Needs Confirm` 항목이 있거나 browser-verify 영수증에 `Unverifiable` 축이 있음 | 6의 문구 뒤에 "사람이 볼 항목 {N}건: `/nara-qa-sheet`로 체크리스트 인계" 를 덧붙인다. 판정은 바꾸지 않는다 |
 
 **`gap.md` 부재는 결함이 아니다.** gap은 spine 맨 앞이 아니라 **verify 단계**에서 1회 생성된다 (ADR-0001). 구현 전에 없는 것이 정상이므로 3행에서 `/nara-gap`을 권고하지 않는다 — 구현 변경이 관측될 때(3-ter)부터 verify 대상이다. brownfield 인수인계처럼 "이 코드 얼마나 됐나"를 먼저 알아야 하는 경우에만 사용자가 `gap`을 직접 호출한다.
 

@@ -34,7 +34,7 @@ frontmatter에 `fetched_at` 없거나 `sources` 배열 누락 → `legacy prep` 
 
 수집 결과로 판단 후 추천. Load [references/now-tables.md](references/now-tables.md) for judgment tables and output format.
 
-핵심 로직: main 브랜치 → `/nara-prep` | requirements 없음 → `/nara-prep` | **requirements stale (>7일) → `/nara-prep` 재실행 권고** | plan 없음 → `/nara-plan` | **plan에 미완료 유닛 있음 → `/nara-implement T-N`(다음 유닛 번호를 실제로 박아서)** | 전 유닛 done, gap 없음 → verify (`/nara-gap` + browser AC면 `/nara-browser-verify`) | **P0 Missing ≥ 1 → P0 보완 (점수 무관)** | P0 0 + gap < 80 → 실행 방법 판단 | P0 0 + gap ≥ 80 → 리뷰/마무리.
+핵심 로직: main 브랜치 → `/nara-prep` | requirements 없음 → `/nara-prep` | **requirements stale (>7일) → `/nara-prep` 재실행 권고** | plan 없음 → `/nara-plan` | **plan에 미완료 유닛 있음 → `/nara-implement T-N`(다음 유닛 번호를 실제로 박아서)** | 전 유닛 done, gap 없음 → verify (`/nara-gap` + browser AC면 `/nara-browser-verify`) | **P0 Missing ≥ 1 → P0 보완 (점수 무관)** | P0 0 + gap < 80 → 실행 방법 판단 | P0 0 + gap ≥ 80 → 리뷰/마무리 (`Needs Confirm`·`Unverifiable` 잔존 시 `/nara-qa-sheet` 인계 한 줄 추가).
 
 **추천은 실행 가능한 명령 형태로 낸다** — "구현하세요"가 아니라 `/nara-implement T-2`. 인자가 있는 스킬은 인자까지 채운다(`/nara-prep PROJ-123`, `/nara-browser-verify --url …`). 그대로 복사해 붙일 수 있어야 한다.
 
