@@ -11,21 +11,7 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
-### Changed
-
-- **`nara-code-review`의 Judge가 지적을 기각하려면 직접적인 반대 증거가 있어야 한다.** 이미 있는 가드, 불가능한 상태, 이미 처리하는 호출자, 테스트 같은 것이다. "추측 같다"나 낮은 확신은 기각 사유가 아니고, 재현도 반박도 못 하면 `needs-context`로 둔다. `downgraded`는 영향이 실제로 작다고 잰 경우에만 쓴다
-  - 리뷰어가 돌아와도 대상을 읽은 흔적(`coverage:`)이 없으면 통과로 세지 않는다. 한 번 새로 띄우고, 그래도 안 되면 그 리뷰어를 `unverifiable`로 리포트에 남긴다. 빈 응답이 "지적 0건"으로 집계되던 구멍이다
-  - 구현자의 설명(구현 노트, 커밋 본문의 해명, "이미 처리됨", 테스트 통과 주장)은 리뷰어에게 주지 않고 Judge에게 단서로만 준다. 해명을 먼저 읽은 리뷰어는 코드가 아니라 해명을 리뷰한다
-  - 확정된 지적이 틀렸다는 증거가 있으면 새 Judge가 그 건만 다시 본다. 받아들여지면 `disproved`로 닫고 ledger에서도 `DISPROVED`로 빠진다(Verifier가 MISMATCH로 올리지 않는다). Fixer와 main 세션이 스스로 기각할 수는 없다
-  - 충실도 리뷰어의 `Missing` 지적은 symbol이 없다. Verifier의 Located 판정은 그 파일에서 `validation`이 지목한 구현이 생겼는지로 한다
-  - `docs/implementation-notes.md`의 Tradeoffs·Design decisions는 구현자 해명 묶음으로 수집해 Judge에게만 준다. **Deviations 절만 예외로 충실도 리뷰어에게 준다.** 의도적 이탈을 리뷰어가 못 보면 결함으로 잡히고, Judge는 코드 밖 이유로 기각할 수 없어 `--fix=safe`가 결정을 되돌린다. 선언된 이탈은 지적에서 사라지지 않고 `declared: <ID>` + R3로 올라가 사람이 정한다
-
-- **`nara-code-review`의 Judge가 minor finding도 사실 검토한다.** 그동안 자동 수정 대상이 아닌 minor는 Judge를 건너뛰고 `unadjudicated`로 리포트에 실렸다. 거짓인 minor도 읽는 사람의 수정 시간을 쓴다. 이제 건너뛰는 것은 어떤 모드에서도 고치지 않는 `suggestion`뿐이다. 리뷰당 Judge 호출이 늘어난다
-
-- **`nara-pr-review`가 리뷰어와 lane을 subagent로 띄우라고 명시한다.** 그동안 "4 lane, 병렬"이라고만 적혀 있어서 main 세션이 lane을 직접 순회해도 문구상 위반이 아니었다. 다른 리뷰 스킬 셋(`nara-code-review`, `nara-adversarial-review`, `nara-test-verify`)은 이미 subagent를 명시한다
-  - code-plane 리뷰어와 PR-plane lane 4개를 한 배치로 띄우고 Judge도 별도 subagent로 둔다. `nara-code-review`가 없는 standalone fallback 경로에도 같은 규칙이 적용된다. 그 경로에는 디스패치 지시가 아예 없었다
-  - subagent의 shell은 main의 `export GH_HOST`를 물려받지 않는다. 수집분을 프롬프트에 붙여 넣고, 추가 조회는 명령마다 `GH_HOST=<host>`를 붙이게 했다
-  - trailing status에 `dispatch:` 줄을 추가했다. subagent를 못 띄우는 환경에서는 inline으로 내려가되 사유를 남긴다. code-plane 리뷰어에게는 변경 파일 전체 본문을 프롬프트에 넣어 주고 스스로 조회하게 두지 않는다
+## [0.23.0] - 2026-10-12
 
 ### Added
 
@@ -100,7 +86,42 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - 카드가 `cancelled`로 가면 리뷰어와 답변 세션을 **둘 다** 정리한다. `review_state`만 보고 판단하면 진행 중인 질문이 워크트리째 남는다
   - 카드 코멘트 조회를 실행 단위로 memoise했다. 두 패스가 같은 카드에서 같은 목록을 읽고 그런 카드가 20여 개라서, 안 하면 분당 CLI 호출이 두 배가 된다. `comment()`가 자기가 쓴 카드의 캐시를 버리므로 패스 실행 순서에 의존하지 않는다
 
+- `nara-wip-sweep` 신설 — `In Progress`로 방치된 할당 티켓을 한 번에 쓸어내 분류한다. "In Progress 35건"은 작업량이 아니라 상태 부채이고, 그게 섞여 있으면 어떤 브리핑도 "오늘 무엇부터"를 답할 수 없다
+  - 분류 근거는 **실측**이다: 단어 경계 매칭(`(^|[^A-Za-z0-9])KEY([^0-9]|$)`) PR 조회, subtask 보유(컨테이너), 본문 AC 유무, 마지막 갱신 경과일. `gh pr list --search`는 fuzzy해서 `PROJ-4` 질의에 `PROJ-40`이 온다
+  - **티켓을 전이시키지 않는다.** 팀이 보는 Jira에서 상태 변경은 "이 일을 안 한다"는 선언이라 사람 판정이다. `metadata.pr_url` 같은 캐시된 링크도 근거로 쓰지 않는다 — 키 검증 없이 심어져 딴 티켓 PR이 붙은 사례가 있다
+  - 산출물은 실행 디렉터리의 `wip-sweep.md`. 여러 프로젝트를 걸치는 상태 보고서라 어느 repo의 `docs/`에도 넣지 않는다
+  - 첫 실행(35건)에서 사실상 종료 4건(머지 PR 보유), 착수 불가 3건(본문 없음), 컨테이너 3건, 방치 1건을 분리했다. `LYRIS-505`는 merged PR 19건이라 다수 규칙에 따라 모호로 남겼다
+
+- `nara-worklog` subtask 전환 마커 — `worklog.py mark <SUBTASK>`가 ledger에 `ev: "switch"`를 append하고, 리듀서가 마커 이후 구간을 그 티켓에 귀속시킨다. 브랜치 하나로 여러 subtask를 오가는 실제 작업 방식을 위한 것 (worklog를 leaf에 다는 방향)
+  - 마커는 **브랜치 티켓의 ledger**에 들어간다 — hook이 쓰는 그 파일이므로 subtask별 ledger가 새로 생기지 않는다. 마커 이전 구간은 브랜치 티켓(대개 부모)에 남고, 그건 `mark`를 잊었다는 신호다
+  - 마커는 시간을 만들거나 없애지 않는다. span을 자를 뿐이라 귀속 합계 = 원본 합계 (테스트로 고정). 유휴 구간의 마커는 자기 시간 없이 다음 span의 소유자만 정한다
+  - 출력이 `(날짜 × 티켓)` 버킷 구조로 바뀌어 Jira 쓰기가 버킷당 1건이 된다. 승인 게이트에 **부모 귀속 경고**(subtask 있는 티켓인데 마커 없이 부모로 잡힌 구간)와 **쓰기 전 `jira_get_worklog` 대조**를 추가 — watermark는 이 ledger 안에서만 유효해서 다른 경로로 올라간 기록을 모른다
+  - **마커 없이 지난 시간은 사후 분리 불가.** hook은 브랜치명의 티켓 키만 안다. 추측으로 채우지 않는다
+  - 3-리뷰어 집중 코드 리뷰 반영 (17건 → R0/R1 15건 적용, R2 2건 이월). 리포트: `docs/review/260903-worklog-marker-mode.md`
+    - **시간이 창조되는 경로 2개**를 테스트로 막았다: `read_switches`의 `sorted()`를 제거하면 조각이 겹쳐 60분 입력이 100분으로 청구되고(subtask 2개 소실), `build_spans`의 `sorted()`를 제거하면 span이 -2h 20m가 된다. 둘 다 `attribute`의 `else: break`가 전제하는 정렬인데 테스트가 0건이었다
+    - naive `ts` + 마커가 `TypeError`를 냈다 — `read_switches`는 승격하는데 `build_spans`는 안 했다. 마커가 방아쇠라 이 변경이 만든 새 크래시 경로다. `as_aware()` 헬퍼로 세 리더를 통일
+    - 버킷 정렬 키가 ISO **문자열**이었다. 한 ledger에 offset이 섞이면(컨테이너 TZ=UTC + 호스트 KST) 문자열 순서 ≠ 시각 순서라 문서화된 오름차순 쓰기가 역전된다
+    - `NARA_WORKLOG_GAP_MINUTES` 검증 추가 — 문서에 "1 이상의 정수"라 적어놓고 코드에 검사가 없었다. `0`은 조용히 모든 유휴를 분할해 읽기·검토 시간을 전부 빼먹는다
+    - 승인 게이트 Example 표에 **티켓 열**을 넣었다. "단위는 (날짜×티켓) 버킷"이라 선언하면서 표는 티켓 열이 없어, 하루 2버킷이 한 행으로 접히고 사람이 일 합계만 승인하는 동안 쓰기는 서로 다른 issue_key에 2건 나갔다
+    - 내가 추가한 `day_spans()` 테스트 헬퍼가 **정렬을 해서** `reversed(spans)` 회귀를 가렸다 — 실제로는 `jira_started`가 3h36m 어긋난다. 정렬 제거 + 버킷 1개가 span 2개를 갖는 픽스처로 pin. 리뷰 전 assertion은 이 변이를 잡았으므로 커버리지 순손실이었다
+    - 테스트 54 → **69건**, 변이 재검증 **12/12 KILLED**(전부 이전엔 생존)
+    - 이월 R2 2건은 같은 뿌리 — watermark가 아직 날짜 단위 가정이라 하루 안에서 귀속이 교차하면 부분실패 시 시간 소실/중복 게시가 가능하고, `day["time_spent"]`가 raw 합계를 한 번만 내려 승인값(`3h 59m`)과 실제 기록(`3h 56m`)이 어긋난다
+
 ### Changed
+
+- **`nara-code-review`의 Judge가 지적을 기각하려면 직접적인 반대 증거가 있어야 한다.** 이미 있는 가드, 불가능한 상태, 이미 처리하는 호출자, 테스트 같은 것이다. "추측 같다"나 낮은 확신은 기각 사유가 아니고, 재현도 반박도 못 하면 `needs-context`로 둔다. `downgraded`는 영향이 실제로 작다고 잰 경우에만 쓴다
+  - 리뷰어가 돌아와도 대상을 읽은 흔적(`coverage:`)이 없으면 통과로 세지 않는다. 한 번 새로 띄우고, 그래도 안 되면 그 리뷰어를 `unverifiable`로 리포트에 남긴다. 빈 응답이 "지적 0건"으로 집계되던 구멍이다
+  - 구현자의 설명(구현 노트, 커밋 본문의 해명, "이미 처리됨", 테스트 통과 주장)은 리뷰어에게 주지 않고 Judge에게 단서로만 준다. 해명을 먼저 읽은 리뷰어는 코드가 아니라 해명을 리뷰한다
+  - 확정된 지적이 틀렸다는 증거가 있으면 새 Judge가 그 건만 다시 본다. 받아들여지면 `disproved`로 닫고 ledger에서도 `DISPROVED`로 빠진다(Verifier가 MISMATCH로 올리지 않는다). Fixer와 main 세션이 스스로 기각할 수는 없다
+  - 충실도 리뷰어의 `Missing` 지적은 symbol이 없다. Verifier의 Located 판정은 그 파일에서 `validation`이 지목한 구현이 생겼는지로 한다
+  - `docs/implementation-notes.md`의 Tradeoffs·Design decisions는 구현자 해명 묶음으로 수집해 Judge에게만 준다. **Deviations 절만 예외로 충실도 리뷰어에게 준다.** 의도적 이탈을 리뷰어가 못 보면 결함으로 잡히고, Judge는 코드 밖 이유로 기각할 수 없어 `--fix=safe`가 결정을 되돌린다. 선언된 이탈은 지적에서 사라지지 않고 `declared: <ID>` + R3로 올라가 사람이 정한다
+
+- **`nara-code-review`의 Judge가 minor finding도 사실 검토한다.** 그동안 자동 수정 대상이 아닌 minor는 Judge를 건너뛰고 `unadjudicated`로 리포트에 실렸다. 거짓인 minor도 읽는 사람의 수정 시간을 쓴다. 이제 건너뛰는 것은 어떤 모드에서도 고치지 않는 `suggestion`뿐이다. 리뷰당 Judge 호출이 늘어난다
+
+- **`nara-pr-review`가 리뷰어와 lane을 subagent로 띄우라고 명시한다.** 그동안 "4 lane, 병렬"이라고만 적혀 있어서 main 세션이 lane을 직접 순회해도 문구상 위반이 아니었다. 다른 리뷰 스킬 셋(`nara-code-review`, `nara-adversarial-review`, `nara-test-verify`)은 이미 subagent를 명시한다
+  - code-plane 리뷰어와 PR-plane lane 4개를 한 배치로 띄우고 Judge도 별도 subagent로 둔다. `nara-code-review`가 없는 standalone fallback 경로에도 같은 규칙이 적용된다. 그 경로에는 디스패치 지시가 아예 없었다
+  - subagent의 shell은 main의 `export GH_HOST`를 물려받지 않는다. 수집분을 프롬프트에 붙여 넣고, 추가 조회는 명령마다 `GH_HOST=<host>`를 붙이게 했다
+  - trailing status에 `dispatch:` 줄을 추가했다. subagent를 못 띄우는 환경에서는 inline으로 내려가되 사유를 남긴다. code-plane 리뷰어에게는 변경 파일 전체 본문을 프롬프트에 넣어 주고 스스로 조회하게 두지 않는다
 
 - **`nara-jira-triage`의 보드가 Jira의 거울이 됐다.** 지금까지는 착수 가능한 티켓만 큐에 넣고 Jira로는 아무것도 되쓰지 않아서, 손으로 In Progress로 옮긴 티켓은 보드에 없고 PR이 열린 티켓은 Jira에서 계속 In Progress였다
   - **폴링이 In Progress와 In Review까지 본다.** 이 상태의 티켓은 `card_origin=mirror` 카드로 들어온다. 착수 지시가 아니라서 멘션도 구현 가능성 판정도 없고, 카드 상태는 스킬이 아니라 reconcile이 옮긴다. config에 `mirror_statuses`가 없으면 예전처럼 동작한다
@@ -157,6 +178,66 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - 모델 표기는 카드 metadata의 `review_model`을 먼저 보고 없으면 판정문 헤더를 본다. 둘 다 없으면 줄을 생략한다. 게시 세션 자신의 모델로 채우지 않는다. 게시는 리뷰를 돌린 세션이 아니라서 그 값을 적으면 얇은 판정이 무거운 모델의 판정처럼 보인다
   - 본문은 게시 직전 `nara-ko-prose`를 태운다. 스킬이 없으면 건너뛰고, 영어 repo에서는 애초에 돌리지 않는다
 
+- `nara-code-review`에 판단 모델 선택을 도입 — 리뷰어·Judge·Fixer 3역이 `$JUDGMENT_MODEL` 하나를 공유하고, Verifier는 `sonnet` 고정. 세 역할은 열린 판단(무엇이 문제인가·유효한가·어떻게 고치는가)이라 모델 성능에 직접 좌우되지만, Verifier는 hash/hunk에 앵커된 확인 작업이라 같은 값을 치를 이유가 없다
+  - 리뷰어 dispatch 직전 1회 질문(`opus` 기본 권장 | `fable`)으로 정하고 재리뷰 라운드에서 다시 묻지 않는다. `--model=opus|fable`로 질문을 건너뛴다
+  - 미가용 시 **다른 모델로 대체하지 않는다** — `model`을 생략해 세션 모델을 상속하고 실제 사용 모델을 리포트 헤더에 기록한다. 조용한 강등이 리포트에 안 보이면 낮은 발견율을 모델 탓으로 돌릴 수 없다
+  - 오케스트레이션 자체(Flow 0–3, 5, 9)는 세션 모델 고정이다. 스킬 안에서 자기 모델을 바꿀 수 없다. 같은 이유로 main 세션이 직접 Fixer로 뛰면 배정 모델을 지킬 수 없으므로, 세션 모델이 배정 모델보다 약하면 위임하도록 명시했다
+  - Verifier의 3단계 중 **Resolved만은 관측 hunk만으로 결정되지 않는다**(`failure_path`가 더 이상 성립하지 않는지 판단해야 한다). 결정 불가일 때 Verifier 모델에서 판정하지 말고 그 항목만 리뷰어 모델로 재dispatch한다
+  - override는 이 값을 재배정할 수 있다. 자원 노브이지 base check가 아니므로 Conflict rule 대상이 아니다
+
+- `nara-release-watch` 2단계 분리 — **watch**(매일, 판정 없음)와 **digest**(사람 트리거, 증류 판정). 임계(`@minor`)가 알림과 판정을 동시에 죽여서 릴리즈 잦은 repo(stablyai/orca: minor 고정 + 일간 패치)를 감시할 수 없던 것이 동기
+  - watch는 새 릴리즈를 `highlights[]`(기계 필터: fix/chore 등 conventional prefix, "Notable changes" 마케팅 섹션, first-contribution 보일러플레이트 제거 — orca 실측 주간 617줄 중 8할이 fix)와 함께 판정 없이 알리고 큐(`~/.claude/release-watch-queue.json`)에 적재한다
+  - digest는 큐 누적분(여러 repo)을 한꺼번에 4분류 판정한다 — 누적이라 교차 repo 패턴 판정이 가능해졌다. 읽기와 드레인(`digest --drain`)을 분리해 판정·배달 실패 시 백로그를 잃지 않는다
+  - 두 단계를 별도 autopilot으로 등록한다 (watch 매일 08:47 KST, digest 매주 월 09:23 KST). 에이전트도 분리했다 — watch 에이전트의 지시문이 "판정하지 말 것"이라 한 에이전트가 두 단계를 겸하면 그 계약이 흐려진다. 잡은 둘이지만 watchlist·폴러·큐를 공유하는 한 파이프라인이다
+  - 단계 계약을 데이터로 강제한다: `poll` 출력에 `"stage": "watch"` / `"judgment": "forbidden"`, `digest` 출력에 `"digest"` / `"required"`. receipt 첫 줄에도 stage를 쓰게 해 판정이 섞이면 자기 모순이 드러나게 했다. 스킬이 증류 루브릭을 함께 싣고 있어 산문 금지만으로는 watch 알림이 판정으로 흐른다
+  - suppressed는 큐에 들어가지 않는다 — digest는 "알린 것 중에서" 판정한다. 테스트 59 → 74건
+
+- `evals/`를 추적 대상으로 전환 — 이전에는 `evals/*` ignore + 3개 스위트만 allowlist였다. 추적하지 않으면 **스킬 성능을 측정할 수 없고**, 측정하지 않는 스위트는 채점 대상 스킬에 대해 조용히 썩는다. 45개 스위트 / 205개 파일이 추적된다. `evals/**/results/`(실행 산출물)는 계속 ignore
+  - allowlist가 막아주던 것은 실재하는 위험이었다. 전환 전 스캔에서 **5개 스위트에 사내 식별자 61건**이 나왔다 — Jira 프로젝트 키, 내부 repo명, `git.linecorp.com` 호스트, 조직명, 그리고 **Slack 채널 ID와 실제 메시지 타임스탬프**. 공개 repo에 사내 식별자가 올라가 history rewrite까지 갔던 전례가 있어 전환 **전에** 정화했다
+  - 치환은 placeholder로: `PROJ`/`OPS`(티켓 키), `web-ui`/`api-server`(repo), `git.example.com`, `acme-sre`, `C0123456789`, Slack ts 무력화. `lyris-{fe,be}-classify.yaml`은 파일명까지 개명. **태스크가 검증하는 구분은 보존** — jira-triage 스위트가 FE→BE 라우팅을 채점하므로 두 placeholder repo명이 서로 반대편에 남아야 한다 (`output_not_contains` 대칭 유지 확인)
+  - CLAUDE.md에 **eval 식별자 스캔 게이트** 추가 — `evals/`를 건드리는 커밋을 막는다. allowlist를 없앤 대신 스캔이 그 자리를 대신한다
+  - 측정 공백 확인: eval이 없는 스킬 7개 (`eli5-note`, `local-shot`, `review-queue`, `review-reminder`, `spec-revision`, `trending-digest`, `wt`). 이번 전환의 목적이 측정이므로 기록해 둔다
+
+- `nara-worklog`가 **사람 시간과 agent 시간을 가른다.** 모든 이벤트에 `role`이 붙고 Jira worklog에는 `role: human`만 올라간다. dispatch된 codex 워커는 티켓 이름이 붙은 브랜치에서 돌아 사람과 똑같은 이벤트를 만들기 때문에, 구분이 없으면 무인 실행 한 시간이 팀 스프린트 리포트에 내 시간으로 들어간다
+  - **역할 필터는 그룹화 전에 적용된다.** 나중에 걸러내면 워커의 턴이 사람의 유휴 간격을 메워 두 개의 별개 접속이 한 span으로 붙는다. 사람 10분 + agent 1시간 + 사람 10분이 `20m`이어야 하고 `2h 15m`이면 안 된다는 것을 테스트로 고정했다
+  - `agent_seconds`/`agent_time_spent`로 따로 보고한다. 청구액이 아니라 자동화가 얼마나 걷어갔는지의 지표이고 `total_seconds`에 합산하지 않는다
+  - 판별은 `NARA_WORKLOG_ROLE`(dispatcher가 워커에 심는다)이 1차, `~/orca/workspaces` 경로가 백스톱이다. 오타 같은 미지의 값은 `human`으로 떨어진다 — 인식 못 하는 역할을 만들면 사람 집계와 agent 집계 양쪽에서 사라진다
+  - role 없는 기존 이벤트는 `human`으로 읽는다. ledger는 append-only이므로 과거 기록이 계속 세어져야 한다
+- `nara-worklog` hook이 **harness에 의존하지 않는다.** 이벤트 이름을 `--event`로 받고 stdin 페이로드는 폴백이다. Claude Code와 Codex 둘 다 `UserPromptSubmit`/`Stop`을 노출하지만 두 페이로드 스키마가 계속 같다는 데 시계를 걸지 않는다 — 한쪽이 키를 바꾸면 조용히 멈춘다. Codex 배선 절차는 `references/hook-setup.md`에 추가
+  - **손으로 JSON을 편집하다 두 번 틀렸다.** `UserPromptSubmit` 대신 `PostToolUse`에 넣어 턴 경계가 무의미해졌고(도구 호출마다 발동), 닫는 괄호를 빠뜨려 `~/.codex/hooks.json` 전체가 파싱 불가가 됐다. 후자는 worklog만 죽는 게 아니라 그 파일의 **모든** hook이 함께 죽는다. 문서는 이제 파서를 거치는 스크립트를 제시한다
+  - **`-> str | None`을 추가했다가 3.9 폴백을 깨뜨렸다.** `TypeError`로 `exit=1`이고, 폴백이 발동하는 머신에서는 그게 모든 턴 차단이다. 첫 줄의 `from __future__ import annotations`가 그 방어이고, 문서에 실측 검증 한 줄을 넣었다
+  - 테스트 69 → **78건**. role 3건(청구 제외·유휴 간격 비브리지·필드 없음=human)과 argv 이벤트 5건
+- `nara-worklog` idle 임계 기본값 **30 → 90분**. 실측 하루에서 30분은 62분짜리 기획 검수 유휴와 55분 유휴를 청구에서 잘라냈다 — 생각·검수 시간도 작업 시간이라는 판단
+  - "세션 시작~종료"를 그대로 쓰는 안은 실측으로 기각했다: 같은 ledger가 2h43m(30분 모델) vs **15h38m**(세션 모델)으로 갈렸고, 세션 하나가 18:34에 시작해 다음날 08:11까지 열려 있어 **707분 수면 구간이 청구**됐다. 문제는 세션 경계가 아니라 임계값이었다
+  - 90분은 62·55·35분 유휴를 살리고 707분은 버리는 지점. 같은 날 값이 2h43m → 4h15m
+
+- `nara-release-watch` 경로 감시 모드 — watchlist 항목을 `owner/repo:some/dir`로 쓰면 릴리즈가 아니라 **그 경로를 건드린 커밋**을 본다. repo 릴리즈가 특정 디렉터리의 변경을 대변하지 못할 때 필요하다
+  - 실측 동기: `mattpocock/skills`는 릴리즈가 2026-08-06에 멈췄는데 `skills/productivity/grill-me`는 2026-08-15에 바뀌었고 repo 전체는 계속 활발했다. 릴리즈로 감시하면 그 변경을 영구히 못 보고, repo 전체 커밋으로 감시하면 하루 여러 건이라 노이즈다. 해당 경로 커밋은 2026-04 이후 6건 — 감시 대상으로 적정
+  - state가 `repo` vs `repo:path`로 분리되므로 같은 repo를 repo 레벨과 여러 경로로 동시에 감시해도 충돌하지 않는다. watermark 단위는 태그 대신 커밋 SHA
+  - `@minor`/`@major`와 prerelease 필터는 SHA에 무의미해 실질적으로 무시된다 — 16진수 SHA에는 prerelease 키워드가 나올 수 없다(모든 키워드가 비-16진수 문자를 포함). 특수 분기 없이 안전함을 테스트로 고정
+  - 경로에 커밋이 0건이면 `unwatchable`로 1회 보고(거의 항상 오타), `..`가 든 경로는 파싱 단계에서 폐기
+  - 판정 루브릭은 두 모드에 동일 적용 — 스킬 diff는 그 자체로 "증류할 게 있나"라는 질문이다
+
+- `nara-release-watch` 신설 — watchlist repo의 신규 릴리즈를 폴링해 nara-kit에 증류할 값이 있는 것만 판정·보고한다. `nara-trending-digest`와 짝이지만 다른 일이다: trending은 **모르는 repo 발견**, 이건 **아는 repo 추적**. 배달 경로(Slack DM + Obsidian)만 공유
+  - **2층 구조가 설계의 핵심.** "새 릴리즈 있나"는 GitHub API 한 방(LLM 0), "증류할 만한가"는 스킬 표면을 알아야 하는 판단이다. 분리하면 신규 0건인 날 모델을 아예 안 깨운다 — 기존 autopilot이 Claude 풀 절반을 쓰고 있어 실질적인 절약
+  - **조용한 날엔 아무것도 보내지 않는다.** AI 툴링 repo 릴리즈는 버스티해서, 매일 "없음"을 보내면 6일치 무소식이 7일째 진짜 소식을 덮는다. 폴링은 매일, 알림은 있을 때만. 예외는 `needs_attention` — `gh` 인증 실패는 조용한 날과 구별이 안 되므로 조용함으로 접지 않고 매 실행 보고한다 (이게 없으면 토큰 만료 후 영구히 "평온"해 보인다)
+  - 노이즈 통제는 실측으로 정했다. `openai/codex`가 `rust-v0.153.0-alpha.5`를 플래그 없는 정식 릴리즈로 올려서 **prerelease를 태그 문자열로도 판정**하고, `anthropics/claude-code`가 `v2.1.258`(패치 거의 매일)이라 watchlist 항목별 **`@minor`/`@major` 임계**를 뒀다. 억제된 릴리즈도 `last_seen`은 전진시킨다 — 안 그러면 같은 패치를 매 실행 재평가하고 수렴하지 않는다. 첫 관측은 baseline만 기록하고 침묵(첫날 히스토리를 쏟으면 쓸모 있는 말을 하기 전에 무시당한다). 버전을 파싱 못 하면 억제하지 않는다
+  - 릴리즈·태그가 둘 다 없는 repo는 `unwatchable`로 **1회 보고 후 억제** — 조용히 감시하는 척 하지 않되 매일 조르지도 않는다 (실제로 `browserbase/skills`가 이 경로로 걸렸다)
+  - 판정 루브릭 4분류(`이미 있음`/`의존`/`증류 후보`/`무시`)의 **기본값은 `의존`**. 이 잡은 구조상 흡수 루프라서 기본값이 `증류 후보`면 매일 "우리도 만들자" 후보만 쌓인다 — vendor-free는 배포 산출물 속성이고 nativize는 이식이 싸고 테제가 날카로울 때만. `이미 있음`은 겹치는 **스킬 이름을 대야** 쓸 수 있다 (인상으로 릴리즈를 버리면 진짜 새로운 것을 놓친다)
+  - config는 `~/.claude/release-watch.md`(사람, 마크다운 산문 허용) + `~/.claude/release-watch-state.json`(기계, 원자적 재작성) 분리. 상태가 매번 덮어써지므로 사람이 편집하는 목록과 같은 파일에 둘 수 없다. 목록은 `watch.py seed`가 스타에서 후보만 제시하고 **자동 추가하지 않는다** — 스타는 다른 이유로도 누르니 노이즈다
+
+- `nara-worklog` 신설 — 세션 타임스탬프를 날짜별 Jira worklog로 올린다. **수집(hook)과 쓰기(스킬)를 분리한 것이 설계의 핵심**: 시작 시각은 "기록해야 한다는 걸 알기 전"에 지나가므로 LLM 선언으로는 안 지켜지고(hook이 필요), 반대로 팀이 읽는 티켓에 확인 없이 숫자가 올라가면 안 되며 hook은 shell이라 MCP를 못 쓴다(스킬이 필요)
+  - 수집: `assets/nara-worklog-stamp.py`를 `UserPromptSubmit` + `Stop`에 배선. 브랜치명의 `ABC-123`으로 티켓을 판정하고 `~/.claude/worklog/<TICKET>.jsonl`에 append. 티켓 키 없는 브랜치는 skip. stdout 무출력·항상 exit 0 계약 — `UserPromptSubmit` hook의 stdout은 모델 컨텍스트로 주입되고 non-zero는 턴을 막는다. 설치는 일회성 수동 작업 ([references/hook-setup.md](skills/nara-worklog/references/hook-setup.md)) — `~/.claude/hooks/`와 `settings.json`은 배포 대상이 아니다
+  - 산정: `assets/worklog.py`(표준 라이브러리만)가 소유한다. LLM이 시각을 더하면 같은 ledger에서 매번 다른 숫자가 나오고 그 숫자는 스프린트 리포트에 들어간다. `prompt → turn_end` 구간은 길어도 자르지 않고(에이전트 실행 = 작업 시간), `turn_end → prompt`(자리 비움)와 `turn_end` 없는 `prompt → prompt`(턴 중간에 죽은 세션)만 idle 임계 30분으로 자른다. 자정 분할로 날짜별 1건 — 여러 날 걸린 티켓이 PR 날짜에 뭉치지 않는다. 한 티켓 워크트리 여러 개는 합집합 병합(세션별 합산이면 중복 계상). 분 단위 **내림** — 안 쓴 1분을 청구하지 않고, 정확히 30초일 때 banker's rounding도 피한다
+  - 멱등성: `jira_add_worklog`가 멱등이 아니라서 ledger의 `logged` watermark가 유일한 중복 방지 장치다. 날짜 오름차순으로 쓰고 중간 실패 시 **성공한 날짜까지만** watermark를 올려 실패한 날이 다시 제안되게 한다. Jira 쓰기 0건이면 record하지 않는다
+  - `nara-pr` 스텝 8 추가 — PR 생성 후 미기록 시간을 한 줄 알리기만 한다. 쓰기는 승인 게이트가 있는 `nara-worklog` 소관 (스크립트 없으면 스킵)
+
+- `nara-eli5-note` 편입 — 로컬 전용 스킬(`~/.agents/skills`, 2026-08-24 신설)을 nara-kit으로 올림. 실무에서 막힌 것을 eli5 또는 실무 노트체로 풀어 Obsidian vault 관례(폴더 두 계열·frontmatter·노트 골격)에 맞춰 저장하고, 그림을 필수로 동반한다
+  - **그림 매체는 HTML/SVG — ASCII 아트·mermaid 금지** (2026-08-26 유저 결정. 노트는 글, 그림은 렌더되는 파일). 그림 3개 이상·연결된 설명이면 노트 옆 `<slug>-그림.html`(HTML 뷰어 플러그인으로 열고, 절 번호를 노트와 1:1로 맞춤), 독립 그림 1~2개면 `_assets/` SVG 인라인 임베드
+  - `references/diagram-patterns.md`가 패턴 8종의 판정 기준(before/after·생애주기·층 구조·트리·비율·대조·비유·상태 지도)을 매체 무관으로 유지하고, HTML 스타일 베이스 CSS + 의미 고정 색 팔레트(초록=해결·빨강=문제·파랑=강조·노랑=보류)를 제공 — 노트마다 그림 스타일을 재발명하지 않는다
+  - 규율: 톤(eli5 vs 실무 노트체)을 추측하지 않고 묻는다 · `TL;DR`·`내가 틀렸던 것` 절 필수 · 비유는 하나만 · 개념어는 실제 식별자(필드명·파일명)와 1:1 대응
+  - `references/vault-conventions.md`는 설치자 vault 실측 스냅샷 — 포크 시 자기 vault에 맞게 갱신해서 쓴다
+
 ### Fixed
 
 - **`nara-jira-triage`가 남의 subtask를 내 큐에 넣었다.** subtask 게이트가 "컨테이너는 빼고 ready 상태인 subtask를 대신 큐에 넣는다"로 읽혔는데, parent의 `subtasks` 필드에는 assignee가 없다. 내가 담당인 RfC 하나가 걸리자 다른 사람이 담당인 하위 작업 8건이 한 번에 큐 카드가 됐다. 이제 큐 대상은 poll 결과에 자기 행으로 온 티켓뿐이다. poll이 `assignee = currentUser()`라서 내 subtask는 어차피 따로 오고, `subtasks` 필드는 컨테이너 판정에만 쓴다. 추가 조회는 없다
@@ -199,93 +280,6 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 - `tools/eval-fixture.py` 추가 — 그레이더 판별력 검증을 `validate <skill>` 한 명령으로. 2026-08-24에 만들어졌지만 **untracked `results/`에 방치돼 유실 직전이던** `make-validation.py`를 일반화한 것이다. 테이블은 `evals/<skill>/validation.yaml`로 이관해 추적한다(`right`/`wrong`, task id 키). `wrong`은 **실제 관측된 실패**를 재현해야 한다 — 지어낸 실패는 판별이 너무 쉬워서 아무것도 증명하지 못한다
   - 이관 과정에서 테이블이 픽스처와 어긋난 것도 잡혔다: `iris-api@a1b2c3d`(정화 전 사내 repo명)를 픽스처의 placeholder `billing-api@a1b2c3d`로 맞췄다. 식별자 게이트가 잡아준 건이다
   - executor 블로커는 그대로다 — `copilot-sdk`는 seat 미할당, `mock`은 스킬을 호출하지 않는다. 즉 지금 측정 가능한 것은 **그레이더의 판별력**이고 스킬 행동은 실제 실행 경로가 뚫려야 한다
-
-### Changed
-
-- `nara-code-review`에 판단 모델 선택을 도입 — 리뷰어·Judge·Fixer 3역이 `$JUDGMENT_MODEL` 하나를 공유하고, Verifier는 `sonnet` 고정. 세 역할은 열린 판단(무엇이 문제인가·유효한가·어떻게 고치는가)이라 모델 성능에 직접 좌우되지만, Verifier는 hash/hunk에 앵커된 확인 작업이라 같은 값을 치를 이유가 없다
-  - 리뷰어 dispatch 직전 1회 질문(`opus` 기본 권장 | `fable`)으로 정하고 재리뷰 라운드에서 다시 묻지 않는다. `--model=opus|fable`로 질문을 건너뛴다
-  - 미가용 시 **다른 모델로 대체하지 않는다** — `model`을 생략해 세션 모델을 상속하고 실제 사용 모델을 리포트 헤더에 기록한다. 조용한 강등이 리포트에 안 보이면 낮은 발견율을 모델 탓으로 돌릴 수 없다
-  - 오케스트레이션 자체(Flow 0–3, 5, 9)는 세션 모델 고정이다. 스킬 안에서 자기 모델을 바꿀 수 없다. 같은 이유로 main 세션이 직접 Fixer로 뛰면 배정 모델을 지킬 수 없으므로, 세션 모델이 배정 모델보다 약하면 위임하도록 명시했다
-  - Verifier의 3단계 중 **Resolved만은 관측 hunk만으로 결정되지 않는다**(`failure_path`가 더 이상 성립하지 않는지 판단해야 한다). 결정 불가일 때 Verifier 모델에서 판정하지 말고 그 항목만 리뷰어 모델로 재dispatch한다
-  - override는 이 값을 재배정할 수 있다. 자원 노브이지 base check가 아니므로 Conflict rule 대상이 아니다
-
-- `nara-release-watch` 2단계 분리 — **watch**(매일, 판정 없음)와 **digest**(사람 트리거, 증류 판정). 임계(`@minor`)가 알림과 판정을 동시에 죽여서 릴리즈 잦은 repo(stablyai/orca: minor 고정 + 일간 패치)를 감시할 수 없던 것이 동기
-  - watch는 새 릴리즈를 `highlights[]`(기계 필터: fix/chore 등 conventional prefix, "Notable changes" 마케팅 섹션, first-contribution 보일러플레이트 제거 — orca 실측 주간 617줄 중 8할이 fix)와 함께 판정 없이 알리고 큐(`~/.claude/release-watch-queue.json`)에 적재한다
-  - digest는 큐 누적분(여러 repo)을 한꺼번에 4분류 판정한다 — 누적이라 교차 repo 패턴 판정이 가능해졌다. 읽기와 드레인(`digest --drain`)을 분리해 판정·배달 실패 시 백로그를 잃지 않는다
-  - 두 단계를 별도 autopilot으로 등록한다 (watch 매일 08:47 KST, digest 매주 월 09:23 KST). 에이전트도 분리했다 — watch 에이전트의 지시문이 "판정하지 말 것"이라 한 에이전트가 두 단계를 겸하면 그 계약이 흐려진다. 잡은 둘이지만 watchlist·폴러·큐를 공유하는 한 파이프라인이다
-  - 단계 계약을 데이터로 강제한다: `poll` 출력에 `"stage": "watch"` / `"judgment": "forbidden"`, `digest` 출력에 `"digest"` / `"required"`. receipt 첫 줄에도 stage를 쓰게 해 판정이 섞이면 자기 모순이 드러나게 했다. 스킬이 증류 루브릭을 함께 싣고 있어 산문 금지만으로는 watch 알림이 판정으로 흐른다
-  - suppressed는 큐에 들어가지 않는다 — digest는 "알린 것 중에서" 판정한다. 테스트 59 → 74건
-
-- `evals/`를 추적 대상으로 전환 — 이전에는 `evals/*` ignore + 3개 스위트만 allowlist였다. 추적하지 않으면 **스킬 성능을 측정할 수 없고**, 측정하지 않는 스위트는 채점 대상 스킬에 대해 조용히 썩는다. 45개 스위트 / 205개 파일이 추적된다. `evals/**/results/`(실행 산출물)는 계속 ignore
-  - allowlist가 막아주던 것은 실재하는 위험이었다. 전환 전 스캔에서 **5개 스위트에 사내 식별자 61건**이 나왔다 — Jira 프로젝트 키, 내부 repo명, `git.linecorp.com` 호스트, 조직명, 그리고 **Slack 채널 ID와 실제 메시지 타임스탬프**. 공개 repo에 사내 식별자가 올라가 history rewrite까지 갔던 전례가 있어 전환 **전에** 정화했다
-  - 치환은 placeholder로: `PROJ`/`OPS`(티켓 키), `web-ui`/`api-server`(repo), `git.example.com`, `acme-sre`, `C0123456789`, Slack ts 무력화. `lyris-{fe,be}-classify.yaml`은 파일명까지 개명. **태스크가 검증하는 구분은 보존** — jira-triage 스위트가 FE→BE 라우팅을 채점하므로 두 placeholder repo명이 서로 반대편에 남아야 한다 (`output_not_contains` 대칭 유지 확인)
-  - CLAUDE.md에 **eval 식별자 스캔 게이트** 추가 — `evals/`를 건드리는 커밋을 막는다. allowlist를 없앤 대신 스캔이 그 자리를 대신한다
-  - 측정 공백 확인: eval이 없는 스킬 7개 (`eli5-note`, `local-shot`, `review-queue`, `review-reminder`, `spec-revision`, `trending-digest`, `wt`). 이번 전환의 목적이 측정이므로 기록해 둔다
-
-### Added
-
-- `nara-wip-sweep` 신설 — `In Progress`로 방치된 할당 티켓을 한 번에 쓸어내 분류한다. "In Progress 35건"은 작업량이 아니라 상태 부채이고, 그게 섞여 있으면 어떤 브리핑도 "오늘 무엇부터"를 답할 수 없다
-  - 분류 근거는 **실측**이다: 단어 경계 매칭(`(^|[^A-Za-z0-9])KEY([^0-9]|$)`) PR 조회, subtask 보유(컨테이너), 본문 AC 유무, 마지막 갱신 경과일. `gh pr list --search`는 fuzzy해서 `PROJ-4` 질의에 `PROJ-40`이 온다
-  - **티켓을 전이시키지 않는다.** 팀이 보는 Jira에서 상태 변경은 "이 일을 안 한다"는 선언이라 사람 판정이다. `metadata.pr_url` 같은 캐시된 링크도 근거로 쓰지 않는다 — 키 검증 없이 심어져 딴 티켓 PR이 붙은 사례가 있다
-  - 산출물은 실행 디렉터리의 `wip-sweep.md`. 여러 프로젝트를 걸치는 상태 보고서라 어느 repo의 `docs/`에도 넣지 않는다
-  - 첫 실행(35건)에서 사실상 종료 4건(머지 PR 보유), 착수 불가 3건(본문 없음), 컨테이너 3건, 방치 1건을 분리했다. `LYRIS-505`는 merged PR 19건이라 다수 규칙에 따라 모호로 남겼다
-
-- `nara-worklog` subtask 전환 마커 — `worklog.py mark <SUBTASK>`가 ledger에 `ev: "switch"`를 append하고, 리듀서가 마커 이후 구간을 그 티켓에 귀속시킨다. 브랜치 하나로 여러 subtask를 오가는 실제 작업 방식을 위한 것 (worklog를 leaf에 다는 방향)
-  - 마커는 **브랜치 티켓의 ledger**에 들어간다 — hook이 쓰는 그 파일이므로 subtask별 ledger가 새로 생기지 않는다. 마커 이전 구간은 브랜치 티켓(대개 부모)에 남고, 그건 `mark`를 잊었다는 신호다
-  - 마커는 시간을 만들거나 없애지 않는다. span을 자를 뿐이라 귀속 합계 = 원본 합계 (테스트로 고정). 유휴 구간의 마커는 자기 시간 없이 다음 span의 소유자만 정한다
-  - 출력이 `(날짜 × 티켓)` 버킷 구조로 바뀌어 Jira 쓰기가 버킷당 1건이 된다. 승인 게이트에 **부모 귀속 경고**(subtask 있는 티켓인데 마커 없이 부모로 잡힌 구간)와 **쓰기 전 `jira_get_worklog` 대조**를 추가 — watermark는 이 ledger 안에서만 유효해서 다른 경로로 올라간 기록을 모른다
-  - **마커 없이 지난 시간은 사후 분리 불가.** hook은 브랜치명의 티켓 키만 안다. 추측으로 채우지 않는다
-  - 3-리뷰어 집중 코드 리뷰 반영 (17건 → R0/R1 15건 적용, R2 2건 이월). 리포트: `docs/review/260903-worklog-marker-mode.md`
-    - **시간이 창조되는 경로 2개**를 테스트로 막았다: `read_switches`의 `sorted()`를 제거하면 조각이 겹쳐 60분 입력이 100분으로 청구되고(subtask 2개 소실), `build_spans`의 `sorted()`를 제거하면 span이 -2h 20m가 된다. 둘 다 `attribute`의 `else: break`가 전제하는 정렬인데 테스트가 0건이었다
-    - naive `ts` + 마커가 `TypeError`를 냈다 — `read_switches`는 승격하는데 `build_spans`는 안 했다. 마커가 방아쇠라 이 변경이 만든 새 크래시 경로다. `as_aware()` 헬퍼로 세 리더를 통일
-    - 버킷 정렬 키가 ISO **문자열**이었다. 한 ledger에 offset이 섞이면(컨테이너 TZ=UTC + 호스트 KST) 문자열 순서 ≠ 시각 순서라 문서화된 오름차순 쓰기가 역전된다
-    - `NARA_WORKLOG_GAP_MINUTES` 검증 추가 — 문서에 "1 이상의 정수"라 적어놓고 코드에 검사가 없었다. `0`은 조용히 모든 유휴를 분할해 읽기·검토 시간을 전부 빼먹는다
-    - 승인 게이트 Example 표에 **티켓 열**을 넣었다. "단위는 (날짜×티켓) 버킷"이라 선언하면서 표는 티켓 열이 없어, 하루 2버킷이 한 행으로 접히고 사람이 일 합계만 승인하는 동안 쓰기는 서로 다른 issue_key에 2건 나갔다
-    - 내가 추가한 `day_spans()` 테스트 헬퍼가 **정렬을 해서** `reversed(spans)` 회귀를 가렸다 — 실제로는 `jira_started`가 3h36m 어긋난다. 정렬 제거 + 버킷 1개가 span 2개를 갖는 픽스처로 pin. 리뷰 전 assertion은 이 변이를 잡았으므로 커버리지 순손실이었다
-    - 테스트 54 → **69건**, 변이 재검증 **12/12 KILLED**(전부 이전엔 생존)
-    - 이월 R2 2건은 같은 뿌리 — watermark가 아직 날짜 단위 가정이라 하루 안에서 귀속이 교차하면 부분실패 시 시간 소실/중복 게시가 가능하고, `day["time_spent"]`가 raw 합계를 한 번만 내려 승인값(`3h 59m`)과 실제 기록(`3h 56m`)이 어긋난다
-
-### Changed
-
-- `nara-worklog`가 **사람 시간과 agent 시간을 가른다.** 모든 이벤트에 `role`이 붙고 Jira worklog에는 `role: human`만 올라간다. dispatch된 codex 워커는 티켓 이름이 붙은 브랜치에서 돌아 사람과 똑같은 이벤트를 만들기 때문에, 구분이 없으면 무인 실행 한 시간이 팀 스프린트 리포트에 내 시간으로 들어간다
-  - **역할 필터는 그룹화 전에 적용된다.** 나중에 걸러내면 워커의 턴이 사람의 유휴 간격을 메워 두 개의 별개 접속이 한 span으로 붙는다. 사람 10분 + agent 1시간 + 사람 10분이 `20m`이어야 하고 `2h 15m`이면 안 된다는 것을 테스트로 고정했다
-  - `agent_seconds`/`agent_time_spent`로 따로 보고한다. 청구액이 아니라 자동화가 얼마나 걷어갔는지의 지표이고 `total_seconds`에 합산하지 않는다
-  - 판별은 `NARA_WORKLOG_ROLE`(dispatcher가 워커에 심는다)이 1차, `~/orca/workspaces` 경로가 백스톱이다. 오타 같은 미지의 값은 `human`으로 떨어진다 — 인식 못 하는 역할을 만들면 사람 집계와 agent 집계 양쪽에서 사라진다
-  - role 없는 기존 이벤트는 `human`으로 읽는다. ledger는 append-only이므로 과거 기록이 계속 세어져야 한다
-- `nara-worklog` hook이 **harness에 의존하지 않는다.** 이벤트 이름을 `--event`로 받고 stdin 페이로드는 폴백이다. Claude Code와 Codex 둘 다 `UserPromptSubmit`/`Stop`을 노출하지만 두 페이로드 스키마가 계속 같다는 데 시계를 걸지 않는다 — 한쪽이 키를 바꾸면 조용히 멈춘다. Codex 배선 절차는 `references/hook-setup.md`에 추가
-  - **손으로 JSON을 편집하다 두 번 틀렸다.** `UserPromptSubmit` 대신 `PostToolUse`에 넣어 턴 경계가 무의미해졌고(도구 호출마다 발동), 닫는 괄호를 빠뜨려 `~/.codex/hooks.json` 전체가 파싱 불가가 됐다. 후자는 worklog만 죽는 게 아니라 그 파일의 **모든** hook이 함께 죽는다. 문서는 이제 파서를 거치는 스크립트를 제시한다
-  - **`-> str | None`을 추가했다가 3.9 폴백을 깨뜨렸다.** `TypeError`로 `exit=1`이고, 폴백이 발동하는 머신에서는 그게 모든 턴 차단이다. 첫 줄의 `from __future__ import annotations`가 그 방어이고, 문서에 실측 검증 한 줄을 넣었다
-  - 테스트 69 → **78건**. role 3건(청구 제외·유휴 간격 비브리지·필드 없음=human)과 argv 이벤트 5건
-- `nara-worklog` idle 임계 기본값 **30 → 90분**. 실측 하루에서 30분은 62분짜리 기획 검수 유휴와 55분 유휴를 청구에서 잘라냈다 — 생각·검수 시간도 작업 시간이라는 판단
-  - "세션 시작~종료"를 그대로 쓰는 안은 실측으로 기각했다: 같은 ledger가 2h43m(30분 모델) vs **15h38m**(세션 모델)으로 갈렸고, 세션 하나가 18:34에 시작해 다음날 08:11까지 열려 있어 **707분 수면 구간이 청구**됐다. 문제는 세션 경계가 아니라 임계값이었다
-  - 90분은 62·55·35분 유휴를 살리고 707분은 버리는 지점. 같은 날 값이 2h43m → 4h15m
-
-- `nara-release-watch` 경로 감시 모드 — watchlist 항목을 `owner/repo:some/dir`로 쓰면 릴리즈가 아니라 **그 경로를 건드린 커밋**을 본다. repo 릴리즈가 특정 디렉터리의 변경을 대변하지 못할 때 필요하다
-  - 실측 동기: `mattpocock/skills`는 릴리즈가 2026-08-06에 멈췄는데 `skills/productivity/grill-me`는 2026-08-15에 바뀌었고 repo 전체는 계속 활발했다. 릴리즈로 감시하면 그 변경을 영구히 못 보고, repo 전체 커밋으로 감시하면 하루 여러 건이라 노이즈다. 해당 경로 커밋은 2026-04 이후 6건 — 감시 대상으로 적정
-  - state가 `repo` vs `repo:path`로 분리되므로 같은 repo를 repo 레벨과 여러 경로로 동시에 감시해도 충돌하지 않는다. watermark 단위는 태그 대신 커밋 SHA
-  - `@minor`/`@major`와 prerelease 필터는 SHA에 무의미해 실질적으로 무시된다 — 16진수 SHA에는 prerelease 키워드가 나올 수 없다(모든 키워드가 비-16진수 문자를 포함). 특수 분기 없이 안전함을 테스트로 고정
-  - 경로에 커밋이 0건이면 `unwatchable`로 1회 보고(거의 항상 오타), `..`가 든 경로는 파싱 단계에서 폐기
-  - 판정 루브릭은 두 모드에 동일 적용 — 스킬 diff는 그 자체로 "증류할 게 있나"라는 질문이다
-
-- `nara-release-watch` 신설 — watchlist repo의 신규 릴리즈를 폴링해 nara-kit에 증류할 값이 있는 것만 판정·보고한다. `nara-trending-digest`와 짝이지만 다른 일이다: trending은 **모르는 repo 발견**, 이건 **아는 repo 추적**. 배달 경로(Slack DM + Obsidian)만 공유
-  - **2층 구조가 설계의 핵심.** "새 릴리즈 있나"는 GitHub API 한 방(LLM 0), "증류할 만한가"는 스킬 표면을 알아야 하는 판단이다. 분리하면 신규 0건인 날 모델을 아예 안 깨운다 — 기존 autopilot이 Claude 풀 절반을 쓰고 있어 실질적인 절약
-  - **조용한 날엔 아무것도 보내지 않는다.** AI 툴링 repo 릴리즈는 버스티해서, 매일 "없음"을 보내면 6일치 무소식이 7일째 진짜 소식을 덮는다. 폴링은 매일, 알림은 있을 때만. 예외는 `needs_attention` — `gh` 인증 실패는 조용한 날과 구별이 안 되므로 조용함으로 접지 않고 매 실행 보고한다 (이게 없으면 토큰 만료 후 영구히 "평온"해 보인다)
-  - 노이즈 통제는 실측으로 정했다. `openai/codex`가 `rust-v0.153.0-alpha.5`를 플래그 없는 정식 릴리즈로 올려서 **prerelease를 태그 문자열로도 판정**하고, `anthropics/claude-code`가 `v2.1.258`(패치 거의 매일)이라 watchlist 항목별 **`@minor`/`@major` 임계**를 뒀다. 억제된 릴리즈도 `last_seen`은 전진시킨다 — 안 그러면 같은 패치를 매 실행 재평가하고 수렴하지 않는다. 첫 관측은 baseline만 기록하고 침묵(첫날 히스토리를 쏟으면 쓸모 있는 말을 하기 전에 무시당한다). 버전을 파싱 못 하면 억제하지 않는다
-  - 릴리즈·태그가 둘 다 없는 repo는 `unwatchable`로 **1회 보고 후 억제** — 조용히 감시하는 척 하지 않되 매일 조르지도 않는다 (실제로 `browserbase/skills`가 이 경로로 걸렸다)
-  - 판정 루브릭 4분류(`이미 있음`/`의존`/`증류 후보`/`무시`)의 **기본값은 `의존`**. 이 잡은 구조상 흡수 루프라서 기본값이 `증류 후보`면 매일 "우리도 만들자" 후보만 쌓인다 — vendor-free는 배포 산출물 속성이고 nativize는 이식이 싸고 테제가 날카로울 때만. `이미 있음`은 겹치는 **스킬 이름을 대야** 쓸 수 있다 (인상으로 릴리즈를 버리면 진짜 새로운 것을 놓친다)
-  - config는 `~/.claude/release-watch.md`(사람, 마크다운 산문 허용) + `~/.claude/release-watch-state.json`(기계, 원자적 재작성) 분리. 상태가 매번 덮어써지므로 사람이 편집하는 목록과 같은 파일에 둘 수 없다. 목록은 `watch.py seed`가 스타에서 후보만 제시하고 **자동 추가하지 않는다** — 스타는 다른 이유로도 누르니 노이즈다
-
-- `nara-worklog` 신설 — 세션 타임스탬프를 날짜별 Jira worklog로 올린다. **수집(hook)과 쓰기(스킬)를 분리한 것이 설계의 핵심**: 시작 시각은 "기록해야 한다는 걸 알기 전"에 지나가므로 LLM 선언으로는 안 지켜지고(hook이 필요), 반대로 팀이 읽는 티켓에 확인 없이 숫자가 올라가면 안 되며 hook은 shell이라 MCP를 못 쓴다(스킬이 필요)
-  - 수집: `assets/nara-worklog-stamp.py`를 `UserPromptSubmit` + `Stop`에 배선. 브랜치명의 `ABC-123`으로 티켓을 판정하고 `~/.claude/worklog/<TICKET>.jsonl`에 append. 티켓 키 없는 브랜치는 skip. stdout 무출력·항상 exit 0 계약 — `UserPromptSubmit` hook의 stdout은 모델 컨텍스트로 주입되고 non-zero는 턴을 막는다. 설치는 일회성 수동 작업 ([references/hook-setup.md](skills/nara-worklog/references/hook-setup.md)) — `~/.claude/hooks/`와 `settings.json`은 배포 대상이 아니다
-  - 산정: `assets/worklog.py`(표준 라이브러리만)가 소유한다. LLM이 시각을 더하면 같은 ledger에서 매번 다른 숫자가 나오고 그 숫자는 스프린트 리포트에 들어간다. `prompt → turn_end` 구간은 길어도 자르지 않고(에이전트 실행 = 작업 시간), `turn_end → prompt`(자리 비움)와 `turn_end` 없는 `prompt → prompt`(턴 중간에 죽은 세션)만 idle 임계 30분으로 자른다. 자정 분할로 날짜별 1건 — 여러 날 걸린 티켓이 PR 날짜에 뭉치지 않는다. 한 티켓 워크트리 여러 개는 합집합 병합(세션별 합산이면 중복 계상). 분 단위 **내림** — 안 쓴 1분을 청구하지 않고, 정확히 30초일 때 banker's rounding도 피한다
-  - 멱등성: `jira_add_worklog`가 멱등이 아니라서 ledger의 `logged` watermark가 유일한 중복 방지 장치다. 날짜 오름차순으로 쓰고 중간 실패 시 **성공한 날짜까지만** watermark를 올려 실패한 날이 다시 제안되게 한다. Jira 쓰기 0건이면 record하지 않는다
-  - `nara-pr` 스텝 8 추가 — PR 생성 후 미기록 시간을 한 줄 알리기만 한다. 쓰기는 승인 게이트가 있는 `nara-worklog` 소관 (스크립트 없으면 스킵)
-
-- `nara-eli5-note` 편입 — 로컬 전용 스킬(`~/.agents/skills`, 2026-08-24 신설)을 nara-kit으로 올림. 실무에서 막힌 것을 eli5 또는 실무 노트체로 풀어 Obsidian vault 관례(폴더 두 계열·frontmatter·노트 골격)에 맞춰 저장하고, 그림을 필수로 동반한다
-  - **그림 매체는 HTML/SVG — ASCII 아트·mermaid 금지** (2026-08-26 유저 결정. 노트는 글, 그림은 렌더되는 파일). 그림 3개 이상·연결된 설명이면 노트 옆 `<slug>-그림.html`(HTML 뷰어 플러그인으로 열고, 절 번호를 노트와 1:1로 맞춤), 독립 그림 1~2개면 `_assets/` SVG 인라인 임베드
-  - `references/diagram-patterns.md`가 패턴 8종의 판정 기준(before/after·생애주기·층 구조·트리·비율·대조·비유·상태 지도)을 매체 무관으로 유지하고, HTML 스타일 베이스 CSS + 의미 고정 색 팔레트(초록=해결·빨강=문제·파랑=강조·노랑=보류)를 제공 — 노트마다 그림 스타일을 재발명하지 않는다
-  - 규율: 톤(eli5 vs 실무 노트체)을 추측하지 않고 묻는다 · `TL;DR`·`내가 틀렸던 것` 절 필수 · 비유는 하나만 · 개념어는 실제 식별자(필드명·파일명)와 1:1 대응
-  - `references/vault-conventions.md`는 설치자 vault 실측 스냅샷 — 포크 시 자기 vault에 맞게 갱신해서 쓴다
 
 ## [0.22.0] - 2026-08-26
 
