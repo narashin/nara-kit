@@ -11,6 +11,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Added
+- `tools/eval-fixture.py generate <skill> [--task id]`: Copilot 좌석 없이 실제 모델 출력을 얻는 경로. `claude -p`를 설정·MCP·도구 없이 돌리고 SKILL.md와 references를 시스템 프롬프트에, 태스크 프롬프트와 fixture를 stdin에 넣는다. `validate --right-from gen`이 그 출력을 right 쪽에 쓴다. 도구가 꺼져 있어 스킬 벤치마크가 아니라 그레이더 검증용이고, 생성마다 헤드리스 과금이 든다(nara-gap 1회 약 0.26달러)
+
 ### Changed
 - 출력 계약 9절에 ESCALATE 자리 규칙 추가: 답을 받아야 진행하는 항목은 receipt의 마지막 산문 블록, 꼬리 산문은 앞으로. 근거는 2026-10-12 로컬 transcript 68개 측정(턴 종료 메시지의 10~14%가 질문 뒤 꼬리 산문)
 

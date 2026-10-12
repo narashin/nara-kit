@@ -82,6 +82,7 @@ There is no `waza eval` command — it is `waza run`. But neither engine measure
 | `waza check <skill>` | Works. Static only: tokens, links, frontmatter, description quality |
 | `waza coverage` | Works. Structural only: does a suite exist, which grader types |
 | `waza grade` on a real run's JSON | Works. The only path to a behavioural score |
+| `tools/eval-fixture.py generate <skill>` | Works, bills the headless quota. Hermetic `claude -p` (no settings, MCP or tools) with SKILL.md + references appended as system prompt. Real text for grader validation (`validate --right-from gen`), not a skill benchmark: tools are off, so git/gh steps are narrated, never run. Model is the CLI built-in default unless `--model` pins one; only the skill's own `references/*.md` are appended (sibling links are not followed); validate warns when a generation predates a SKILL.md change |
 
 The mock echoes the prompt, the task's own `name`/`description`, and the fixture text verbatim. Grading that measures the eval against itself: `nara-gap` scored 4/8 purely because assertion strings appeared in its own description (`Score` matched `"produces docs/gap.md with a score (0-100)"`, case-insensitively). **Every suite therefore carries the `real_run` provenance gate, which fails all tasks under mock on purpose.** A loud 0/8 beats a quiet tautology that reads like a measurement. Never remove that gate to make a mock run look green.
 
