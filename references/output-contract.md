@@ -171,6 +171,8 @@ vs 단순 추천:
 다음 추천: /nara-code-review
 ```
 
+**자리 규칙**: 답을 받아야 진행하는 ESCALATE는 receipt의 마지막 산문 블록이다. 뒤에 올 수 있는 것은 trailing status 블록과 답 형식 안내뿐이고, "참고로"·"그 밖의"·"남은 일은" 꼬리 산문은 ESCALATE **앞**으로 옮긴다. receipt에 다른 내용이 있으면 Outcome 줄에 `pending escalation`을 적어 첫 줄이 질문을 가리키게 한다. 답 없이도 진행 가능한 항목은 ESCALATE가 아니라 추천이다. (근거: 2026-10-12 로컬 transcript 68개 측정, 턴 종료 메시지의 10~14%가 질문 뒤 꼬리 산문. 분기마다 재측정)
+
 ---
 
 ## 10. Receipt 템플릿

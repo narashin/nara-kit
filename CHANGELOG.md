@@ -11,6 +11,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Changed
+- 출력 계약 9절에 ESCALATE 자리 규칙 추가: 답을 받아야 진행하는 항목은 receipt의 마지막 산문 블록, 꼬리 산문은 앞으로. 근거는 2026-10-12 로컬 transcript 68개 측정(턴 종료 메시지의 10~14%가 질문 뒤 꼬리 산문)
+
 ## [0.23.0] - 2026-10-12
 
 ### Added
