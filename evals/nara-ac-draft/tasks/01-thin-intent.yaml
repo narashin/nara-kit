@@ -19,7 +19,6 @@ expected:
     - "When"
     - "Then"
     - "Unknown"
-    - "(?i)(\\[UNVERIFIED|\\[NEEDS_CONFIRMATION\\]|\\[NOT FOUND\\])"
   output_not_contains:
     - "PUT /api"
     - "HTTP 200"

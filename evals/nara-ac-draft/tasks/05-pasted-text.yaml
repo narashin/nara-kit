@@ -15,7 +15,7 @@ expected:
     - "requirements"
     - "OAuth2"
     - "Redis"
-    - "(?i)\\[UNVERIFIED"
+    - "[UNVERIFIED"
   output_not_contains:
     - "30분"
     - "24시간"

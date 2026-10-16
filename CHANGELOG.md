@@ -13,6 +13,11 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Fixed
 - **`nara-ac-draft`의 다음 단계 안내가 파일마다 다르던 문제.** `SKILL.md`는 `nara-plan`, references는 `nara-gap`·`nara-grill`이었다. gap은 구현 뒤 verify에서 부르므로(ADR-0001) 모두 `nara-plan`(설계가 흔들리면 `nara-grill` 먼저)으로 맞췄다
+- **`nara-ac-draft` 평가 세트의 채점 조건이 이제 맞는 답과 틀린 답을 가른다(6/6).** `validation.yaml`을 처음 만들었다. 맞는 답은 현재 스킬을, 틀린 답은 실제로 나온 동작(옛 ac-draft, 옛 prep, 스킬 없는 응답, 비발동 요청에 스킬을 억지로 적용한 결과)을 서브에이전트로 돌려 얻었다
+  - waza의 task 수준 `output_contains`·`output_not_contains`는 정규식이 아니라 글자 그대로 찾는다. `(?i)(...)` 패턴은 어떤 출력에도 맞지 않아, "Why 없음" task는 만들어진 뒤로 늘 실패하는 조건이었다. 넷을 반드시 들어가는 문자열로 바꿨다
+  - 원문 AC task가 금지하던 `[draft]`는 올바른 영수증의 "[draft] 0개"에도 걸렸다. 옛 버전이 지어 붙이던 `AC-4`를 금지하는 조건으로 바꿨다
+  - `executor`를 `copilot-sdk`에서 `mock`으로 바꿨다. copilot은 좌석이 없어 probe가 오류로 끝나고 채점기에 빈 출력이 갔다
+  - 다른 평가 세트의 task 조건에도 정규식처럼 보이는 문자열이 29개 있다(design-studio 22, design-pack-builder 4, rewrite 2, retro 1). 하나씩 확인하지 않았다
 
 ## [0.26.0] - 2026-10-16
 

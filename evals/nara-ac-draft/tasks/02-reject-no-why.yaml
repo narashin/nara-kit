@@ -12,8 +12,9 @@ inputs:
   files: []
 expected:
   output_contains:
-    - "(?i)(blocking|Open Question|so that|benefit|Why)"
+    - "Why"
   output_not_contains:
+    - "US-1"
     - "성능 향상"
     - "코드 품질 개선"
   outcomes:

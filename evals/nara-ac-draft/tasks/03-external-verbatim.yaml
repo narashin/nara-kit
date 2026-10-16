@@ -18,7 +18,7 @@ expected:
     - "배송이 완료된 주문은 배송 예정일 대신 배송 완료일을 표시한다."
     - "browser-visible"
   output_not_contains:
-    - "[draft]"
+    - "AC-4"
     - "so that"
   outcomes:
     - type: task_completed

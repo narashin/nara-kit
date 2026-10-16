@@ -17,6 +17,6 @@ expected:
     - "[draft]"
     - "Given"
     - "Then"
-    - "(?i)(unknown|needs confirmation|open question)"
+    - "Unknown"
   outcomes:
     - type: task_completed
