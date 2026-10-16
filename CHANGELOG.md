@@ -11,6 +11,16 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+## [0.27.5] - 2026-10-16
+
+### Fixed
+- **실사용 상위 8개 스킬(code-review, pr-review, research, pr, pr-respond, implement, worklog, grill)의 평가 세트에 `validation.yaml`을 만들고, 맞는 답과 틀린 답을 못 가르던 조건을 고쳤다.** 32개 task 전부 가른다. 처음 쟀을 때는 17개였다. 이제 `validation.yaml`이 있는 19개 세트가 모두 판별된다
+  - **eval 수준 grader가 비발동 task와 질문 라운드를 걸었다.** pr·pr-respond·worklog의 내용 grader를 일반 task로 옮겼다. grill의 eval 수준 grader는 모든 출력에 판정 라벨(`confirmed|pending|…`)을 요구했는데, grill 계약은 질문 라운드에서 Receipt를 쓰지 않는다(`skills/nara-grill/SKILL.md:37`). 그 패턴을 뺐다
+  - **틀린 답이 통과하던 task 7개**는 스킬의 출력 계약으로 가르게 했다: code-review의 trailing status(`fix-ledger:` 와 `fix-ledger: match (`), 빈 범위의 `skipped`, nara-pr 실패의 `❌ 실패`, 비발동 task의 다른 스킬 안내(`/nara-incident`, `/nara-pr-respond`, `/nara-pr`). 잘못 불린 pr-respond가 `gh pr view`로 절차를 시작하는 것도 막는다
+  - **fixture가 없어 맞는 답이 일을 할 수 없던 task 3개.** pr-respond 두 task는 PR 없이 "리뷰 대응해줘"만 줬다. 리뷰 코멘트 3개(blocking 버그, 이름 nit, 제품 판단이 필요한 설계 질문)를 담은 `pr-review-comments.md`를 붙였다. nara-pr 템플릿 task는 저장소를 만드는 셸 스크립트를 돌려야 했는데, 그 결과(PR 템플릿, CONTRIBUTING, 커밋, diff)를 `template-repo-state.md`로 떠서 붙였다
+  - pr-respond dry-run task의 `suggestion` 필수와 `Fixed.` 금지는 각각 nitpick 분류와 "게시 안 함" 답글 초안을 떨어뜨려서, `(suggestion|nitpick)`으로 넓히고 `Fixed.` 금지는 뺐다(커밋·푸시 금지는 남김)
+- 남은 것: `validation.yaml`이 없는 32개 세트. 그중 26개는 정적 점검에서 eval 수준 grader와 비발동 task가 같이 있는 조합이었다
+
 ## [0.27.4] - 2026-10-16
 
 ### Changed
