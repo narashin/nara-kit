@@ -3,14 +3,14 @@ name: nara-explain
 description: >-
   Generate shareable explanations of code, features, projects, or PRs tailored to a specific audience.
   USE FOR: "explain", "설명해줘", "explain to PM", "발표 자료", "온보딩 문서", "이 PR 뭐 바꿨는지 설명해줘", "이 커밋 설명", "diff 설명".
-  DO NOT USE FOR: learning-focused explanations (use explain-like-senior), code review, documentation generation, a single repo question answered with path:line evidence (use nara-ask-repo).
+  DO NOT USE FOR: own study notes (use nara-eli5-note), code review, documentation generation, a single repo question answered with path:line evidence (use nara-ask-repo).
 ---
 
 # Explain
 
 > 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
 
-Generate shareable explanations for others. Unlike `explain-like-senior` (learning-focused), this skill produces content the user delivers to a target audience.
+Generate shareable explanations for others. Unlike `nara-eli5-note` (a study note the user keeps for their own learning), this skill produces content the user delivers to a target audience.
 
 ## Step 1: Identify audience and scope
 

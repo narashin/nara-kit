@@ -14,7 +14,7 @@
 
 ```
 /nara-eli5-note 15살에게 설명하듯 vite tree-shaking 정리해
-/nara-eli5-note 매니저한테 설명하듯 이번 장애 노트로 남겨
+/nara-eli5-note 매니저 눈높이로 이번 장애 노트로 남겨
 /nara-eli5-note 옵시디언에 정리해            ← 대상 없음 → 5살(기본값) 또는 되물음
 ```
 
@@ -22,14 +22,15 @@
 
 ## 언제 쓰나
 
-- **USE FOR:** "obsidian에 정리해", "옵시디언에 담아", "이거 노트로 남겨", "5살에게 설명하듯 정리해줘", "15살 수준으로 노트 만들어", "매니저한테 설명하듯 정리해", "그림으로 정리해줘", "eli5로 노트 써줘".
-- **DO NOT USE FOR:** 설명만 필요 (use /eli5), 세션 학습을 memory로 (use /nara-retro), 하다 만 일 인계 (use /nara-handoff), Confluence 게시 (use /nara-publish-spec), 아키텍처 결정 (use /nara-adr).
+- **USE FOR:** "obsidian에 정리해", "옵시디언에 담아", "이거 노트로 남겨", "5살에게 설명하듯 정리해줘", "15살 수준으로 노트 만들어", "공부하게 정리해", "그림으로 정리해줘", "eli5로 노트 써줘", "이거 나중에 볼 수 있게 정리해".
+- **DO NOT USE FOR:** 남에게 건넬 설명, PR·diff 설명 (use /nara-explain), 설명만 필요 (use /eli5), 세션 학습을 memory로 (use /nara-retro), 하다 만 일 인계 (use /nara-handoff), Confluence 게시 (use /nara-publish-spec), 아키텍처 결정 (use /nara-adr).
 
 ## 기존 스킬과의 자리
 
 | | 설명 | 저장 | 그림 |
 | --- | --- | --- | --- |
 | `/eli5` | ● 청중별 톤 | ✕ | ✕ |
+| `/nara-explain` | ● 남에게 건넬 설명 (PR·diff·온보딩·PM) | ● repo `docs/` | 변경 설명만 HTML |
 | `/nara-retro` · `/nara-handoff` | ✕ | ● memory · handoff | ✕ |
 | **`/nara-eli5-note`** | ● eli5(청중별) 또는 실무 노트체 | ● Obsidian | ● 필수 (HTML/SVG) |
 

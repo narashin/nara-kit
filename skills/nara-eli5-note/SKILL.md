@@ -6,9 +6,10 @@ description: >-
   the user's Obsidian vault, matching that vault's folder and frontmatter conventions.
   Takes the reader as an argument (age, grade, job role, or relationship; defaults to age 5).
   USE FOR: "obsidian에 정리해", "옵시디언에 담아", "이거 노트로 남겨", "5살에게 설명하듯 정리해줘",
-  "15살 수준으로 노트 만들어", "매니저한테 설명하듯 정리해", "그림으로 정리해줘", "eli5로 노트 써줘",
+  "15살 수준으로 노트 만들어", "공부하게 정리해", "그림으로 정리해줘", "eli5로 노트 써줘",
   "이거 나중에 볼 수 있게 정리해".
-  DO NOT USE FOR: explanation with no saving (use /eli5), session learnings into memory or
+  DO NOT USE FOR: an explanation to hand to someone else, PR or diff explanations (use
+  /nara-explain), explanation with no saving (use /eli5), session learnings into memory or
   handoff (use /nara-retro or /nara-handoff), Confluence publishing (use /nara-publish-spec),
   architecture decisions (use /nara-adr), repo-facing docs.
 ---
@@ -38,7 +39,7 @@ description: >-
 
 | 톤 | 언제 | 특징 |
 | --- | --- | --- |
-| **eli5** | 개념 자체가 처음이거나, 남에게 설명할 일이 생길 때 | 비유 하나로 끝까지 간다. 전문 용어는 나올 때마다 즉시 풀어쓴다. 그림이 많다 |
+| **eli5** | 개념 자체가 처음일 때 | 비유 하나로 끝까지 간다. 전문 용어는 나올 때마다 즉시 풀어쓴다. 그림이 많다 |
 | **실무 노트체** | 개념은 알고 이 사례의 원인·처방을 남길 때 | 용어를 그대로 쓴다. 코드·수치·검증이 중심 |
 
 **대상** — 누가 읽나. eli5 톤일 때만 의미가 있고 **기본값은 5살**이다. 플래그가 아니라 인자에 쓴 자연어에서 읽는다(`/nara-eli5-note 15살에게 설명하듯 vite tree-shaking 정리해`).
