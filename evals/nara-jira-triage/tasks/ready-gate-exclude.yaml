@@ -16,8 +16,12 @@ inputs:
     description: 아직 우선순위가 정해지지 않은 작업.
   files: []
 expected:
-  regex_match:
-    - "(?i)(제외|excluded|backlog|skip|스킵)"
   output_not_contains:
     - "Dev agent에 assign"
     - "[PROJ-478]"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(제외|excluded|backlog|skip|스킵)"

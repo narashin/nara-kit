@@ -19,13 +19,17 @@ inputs:
     issue title: "[PROJ-425] 구현: Add UI tooltips"
   files: []
 expected:
-  regex_match:
-    - "(?i)aoe add"
-    - "(?i)-g (\"?)web-ui"
-    - "(?i)(-w |feature/)PROJ-425"
-    - "(?i)aoe send"
-    - "(?i)(gate|게이트|STOPPED|PR_RESULT)"
   output_not_contains:
     - "claude -p"
     - "--print"
     - "merge"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)aoe add"
+        - "(?i)-g (\"?)web-ui"
+        - "(?i)(-w |feature/)PROJ-425"
+        - "(?i)aoe send"
+        - "(?i)(gate|게이트|STOPPED|PR_RESULT)"

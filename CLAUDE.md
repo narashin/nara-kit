@@ -96,7 +96,7 @@ What is measurable without an engine is the graders. Give them a correct output 
 tools/eval-fixture.py validate <skill>      # probe → fill both sides → grade → report
 ```
 
-Task-level `output_contains` / `output_not_contains` match literal substrings, not regex: `(?i)(a|b)` matches nothing.
+Task-level `output_contains` / `output_not_contains` match literal substrings, not regex: `(?i)(a|b)` matches nothing. A task that needs a pattern puts it in a task-level grader (`graders: [{type: text, name: task_regex, config: {regex_match: [...]}}]` at the task root; it runs for that task only and fails on a non-match). `expected.regex_match` is not a waza field and makes the whole suite fail to load.
 
 The table lives in `evals/<skill>/validation.yaml` (`right:` / `wrong:` keyed by task id). Populate `wrong:` from **behaviour the skill actually produced** — invented failures are trivially discriminated and prove nothing. Expected result: every task passes on `right` and fails on `wrong`. A `wrong`-side pass means the assertion is satisfiable by incorrect output; a `right`-side failure means it is unsatisfiable by correct output. Both are grader defects, not skill findings.
 

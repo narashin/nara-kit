@@ -1,8 +1,8 @@
-id: lyris-be-classify-001
+id: proj-be-classify-001
 name: "PROJ [BE] ticket → be sub-repo (api-server) + api-server session group"
 description: |
   A PROJ backend ticket routes to api-server repo + session group, English PR.
-tags: [classify, routing, lyris-be]
+tags: [classify, routing, proj-be]
 inputs:
   prompt: |
     아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
@@ -14,5 +14,10 @@ inputs:
   files: []
 expected:
   output_contains: ["api-server"]
-  regex_match: ["(?i)(session.?group|api-server)"]
   output_not_contains: ["web-ui"]
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(session.?group|api-server)"

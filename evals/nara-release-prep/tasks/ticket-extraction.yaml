@@ -23,8 +23,12 @@ expected:
     - "PROJ-101"
     - "PROJ-102"
     - "PROJ-103"
-  regex_match:
-    - 'unique keys:\s*3'
-    - '(?i)(#?104)'
   output_not_contains:
     - "PROJ-104"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "unique keys:\\s*3"
+        - "(?i)(#?104)"

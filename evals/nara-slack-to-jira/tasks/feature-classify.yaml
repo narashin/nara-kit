@@ -16,9 +16,13 @@ inputs:
 expected:
   output_contains:
     - "Feature"
-  regex_match:
-    - "(?i)(acceptance criteria)"
-    - "(?i)(proposed — needs confirmation|tbd — needs po|\\[proposed\\])"
-    - "(?i)(draft|승인|approve)"
   output_not_contains:
     - "jira_create_issue("
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(acceptance criteria)"
+        - "(?i)(proposed — needs confirmation|tbd — needs po|\\[proposed\\])"
+        - "(?i)(draft|승인|approve)"

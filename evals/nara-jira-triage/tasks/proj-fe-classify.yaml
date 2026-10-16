@@ -1,9 +1,9 @@
-id: lyris-fe-classify-001
+id: proj-fe-classify-001
 name: "PROJ [FE] ticket → fe sub-repo (web-ui) + web-ui session group + en PR"
 description: |
   A PROJ [FE] ticket routes to web-ui repo, web-ui session group, English PR,
   and the queue issue body includes a per-type approach.
-tags: [classify, routing, lyris-fe]
+tags: [classify, routing, proj-fe]
 inputs:
   prompt: |
     아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
@@ -15,8 +15,12 @@ inputs:
   files: []
 expected:
   output_contains: ["web-ui", "버그픽스"]
-  regex_match:
-    - "(?i)(session.?group|web-ui)"
-    - "(?i)(접근법|approach)"
-    - "(?i)(en\\b|영어|English)"
   output_not_contains: ["api-server"]
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(session.?group|web-ui)"
+        - "(?i)(접근법|approach)"
+        - "(?i)(en\\b|영어|English)"

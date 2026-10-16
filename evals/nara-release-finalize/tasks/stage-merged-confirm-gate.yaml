@@ -27,12 +27,16 @@ inputs:
 expected:
   output_contains:
     - "release@v1.5.0"
-  regex_match:
-    - "(?i)(production-deploy|production deploy|배포)"
-    - "(?i)(confirm|진행|확인)"
   output_not_contains:
     - "gh pr merge"
     - "--approve"
     - "release created"
     - "tag pushed"
     - "run URL:"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(production-deploy|production deploy|배포)"
+        - "(?i)(confirm|진행|확인)"

@@ -17,8 +17,12 @@ inputs:
     description: 빈 Approve 코멘트일 때 명확한 필드 메시지 노출.
   files: []
 expected:
-  regex_match:
-    - "(?i)(컨테이너|container|제외|excluded)"
   output_not_contains:
     - "[PROJ-477] 버그픽스"
     - "[PROJ-477] 구현"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(컨테이너|container|제외|excluded)"

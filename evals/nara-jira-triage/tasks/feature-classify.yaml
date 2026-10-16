@@ -20,5 +20,9 @@ expected:
   output_contains:
     - "구현"
     - "sandbox-dns"
-  regex_match:
-    - "(?i)(Dev agent|assign)"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(Dev agent|assign)"

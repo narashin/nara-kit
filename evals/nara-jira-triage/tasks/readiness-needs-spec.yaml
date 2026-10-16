@@ -28,6 +28,10 @@ expected:
     - "[PROJ-611]"
     - "[PROJ-612]"
     - "triage_block"
-  regex_match:
-    - "(?s)PROJ-611.*(blocked|needs-spec)"
-    - "\\?"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?s)PROJ-611.*(blocked|needs-spec)"
+        - "\\?"

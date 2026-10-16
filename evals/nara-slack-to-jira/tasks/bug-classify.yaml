@@ -20,6 +20,10 @@ expected:
     - "Bug"
   output_not_contains:
     - "jira_create_issue("
-  regex_match:
-    - "(?i)(steps to reproduce|expected|actual)"
-    - "(?i)(draft|승인|approve)"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(steps to reproduce|expected|actual)"
+        - "(?i)(draft|승인|approve)"

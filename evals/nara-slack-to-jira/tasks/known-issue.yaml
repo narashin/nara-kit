@@ -15,8 +15,12 @@ inputs:
     @dev: 이거 이미 ABC-321로 등록돼 있어요. 거기서 보고 있습니다.
   files: []
 expected:
-  regex_match:
-    - "(?i)(comment|known|ABC-321)"
   output_not_contains:
     - "CREATE Bug"
     - "jira_create_issue("
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(comment|known|ABC-321)"

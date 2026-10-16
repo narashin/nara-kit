@@ -16,7 +16,11 @@ inputs:
     issue title: "[PROJ-430] 구현: Add export endpoint"
   files: []
 expected:
-  regex_match:
-    - "(?i)(local_path|미설정|중단|실패)"
   output_not_contains:
     - "aoe add"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(local_path|미설정|중단|실패)"

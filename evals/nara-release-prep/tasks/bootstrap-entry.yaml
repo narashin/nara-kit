@@ -19,10 +19,14 @@ expected:
   output_contains:
     - "release-prep.local.md"
     - "deploy-qa.yml"
-  regex_match:
-    - "(?i)bootstrap"
   output_not_contains:
     - "--delete"
     - "gh workflow run"
     - "git push"
     - "jira_update_issue"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)bootstrap"

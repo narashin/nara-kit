@@ -21,9 +21,13 @@ expected:
   output_contains:
     - "버그픽스"
     - "web-ui"
-  regex_match:
-    - "(?i)(Dev agent|assign)"
   output_not_contains:
     - "구현 완료"
     - "수정 완료"
     - "implemented"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(Dev agent|assign)"

@@ -16,10 +16,14 @@ inputs:
   files:
     - path: config-sample.md
 expected:
-  regex_match:
-    - 'PROJ-101 final:[^\n]*1\.1\.0'
-    - 'PROJ-101 final:[^\n]*1\.2\.3'
-    - '(?i)PROJ-102 final:[^\n]*skip'
-    - 'PROJ-103 final:[^\n]*1\.2\.3'
   output_not_contains:
     - "jira_create_version"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "PROJ-101 final:[^\\n]*1\\.1\\.0"
+        - "PROJ-101 final:[^\\n]*1\\.2\\.3"
+        - "(?i)PROJ-102 final:[^\\n]*skip"
+        - "PROJ-103 final:[^\\n]*1\\.2\\.3"

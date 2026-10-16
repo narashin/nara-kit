@@ -20,8 +20,12 @@ inputs:
 expected:
   output_contains:
     - "UNVERIFIED"
-  regex_match:
-    - "(?i)(매핑 없음|repo 매핑)"
   output_not_contains:
     - "git.example.com/acme-sre/sandbox-dns"
     - "git.example.com/acme-sre/web-ui"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(매핑 없음|repo 매핑)"

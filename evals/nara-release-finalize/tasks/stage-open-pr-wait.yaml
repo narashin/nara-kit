@@ -19,8 +19,6 @@ inputs:
 expected:
   output_contains:
     - "#82"
-  regex_match:
-    - "(?i)(open|대기|approv)"
   output_not_contains:
     - "gh pr create"
     - "gh pr merge"
@@ -29,3 +27,9 @@ expected:
     - "git push"
     - "gh release create"
     - "gh workflow run"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(open|대기|approv)"

@@ -18,7 +18,11 @@ inputs:
 expected:
   output_contains:
     - "기획"
-  regex_match:
-    - "(?i)(Planner|assign)"
   output_not_contains:
     - "Dev agent"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(Planner|assign)"
