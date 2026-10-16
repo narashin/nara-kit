@@ -39,6 +39,7 @@
 - `references/vault-conventions.md` — vault의 폴더 두 계열·frontmatter 스키마·톤·노트 골격 (설치자 vault 실측 스냅샷 — 자기 vault에 맞게 갱신해서 씀)
 - `references/diagram-patterns.md` — HTML/SVG 그림 패턴 8종 + 매체 선택 규칙 + 스타일 베이스 CSS + 의미 고정 색 팔레트
 - `references/audience.md` — 대상 4계열 표 + 대상이 바꾸는 것(그림 비중·절 개수·수치 다루는 법) + eli5를 쓰지 말아야 할 대상. `dreambigou/eli5`(MIT) audience 표를 노트 매체에 맞게 고친 것
+- `references/formats.md`: 내용 유형(과정, 수치, 메커니즘, 정책, 비교)별로 그림 문서 전체의 진행 형식을 고르는 표. 만져 보기, 동시 재생, 터미널 재현 등 형식별로 지킬 것과 쓰지 않는 형식, 근거가 된 사용자 평가 기록. tiger-kit 작성자의 설명 형식 실험실을 평가 결과로 걸러 다시 쓴 것
 
 ## 그림 매체
 
