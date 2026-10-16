@@ -11,7 +11,7 @@ config:
   trials_per_task: 1
   timeout_seconds: 300
   parallel: false
-  executor: copilot-sdk
+  executor: mock
   model: claude-sonnet-4.6
 metrics:
   - name: task_completion
