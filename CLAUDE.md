@@ -161,11 +161,11 @@ tools/check-docs.py
 **Eval identifier scan (blocks any commit touching `evals/`).** Suites are tracked so skill performance is measurable, but this repo is public. Tasks and fixtures must use placeholders (`PROJ-123`, `OPS-88`, `web-ui`, `api-server`, `git.example.com`, `acme-sre`, `C0123456789`), never real ticket keys, hosts, repo names, Slack channel IDs, or names:
 
 ```bash
-grep -rInE 'LYRIS|SANDY|linecorp|LINE-SRE|iris-ui|iris-api|C0[0-9A-Z]{8,}|/p1[0-9]{15}' evals --exclude-dir=results \
-  | grep -vE 'C0123456789|/p170000000000000'
+grep -rIniE 'LYRIS|SANDY|linecorp|LINE-SRE|iris-ui|iris-api|C0[0-9A-Z]{8,}|/p1[0-9]{15}' evals --exclude-dir=results \
+  | grep -viE 'C0123456789|/p170000000000000'
 ```
 
-No output = safe to commit. Any hit blocks it. The second `grep -v` whitelists the placeholders themselves, which match the same shapes — extend it when you add a placeholder, never widen the first pattern.
+No output = safe to commit. Any hit blocks it. The match ignores case: a case-sensitive scan missed `lyris-be` in a task id and `sandy-core` in a shipped skill reference until 2026-10-16. The second `grep -v` whitelists the placeholders themselves, which match the same shapes — extend it when you add a placeholder, never widen the first pattern.
 
 Two traps, both hit in practice:
 - **Preserve the distinctions a task asserts.** The jira-triage suites grade FE→BE repo routing, so the two placeholder repo names must stay opposed in `output_contains` / `output_not_contains`.

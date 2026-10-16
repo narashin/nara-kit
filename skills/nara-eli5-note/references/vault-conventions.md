@@ -21,7 +21,7 @@ study/
 ├── cs-core/     00-cs-index.md · 01-dns-… · B1-… · B6-…
 ├── git-core/    00-git-index.md · G1-… · _inbox.md
 ├── web-core/    00-web-index.md · W1-… · _inbox.md
-└── sandy-core/  00-index.md · 02-… · _inbox.md
+└── infra-core/  00-index.md · 02-… · _inbox.md
 ```
 
 frontmatter에 학습 진행용 필드가 있다.
