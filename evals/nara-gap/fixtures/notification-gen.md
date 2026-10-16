@@ -34,7 +34,7 @@ $ git grep -Fn "Ticket {id} moved to {state}" .
 ```
 
 ```
-$ git grep -Fn "moved to" src/notify/slack.ts
+$ git grep -Fn "Ticket" src/notify/slack.ts
 src/notify/slack.ts:22:  const text = `Ticket ${id} is now ${state}`
 ```
 
