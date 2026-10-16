@@ -17,11 +17,15 @@ inputs:
   files:
     - path: project-decision.md
 expected:
-  output_contains:
-    - "(?i)acme"
-    - "(?i)(t2|t3|tier)"
-    - "(?i)(interview|candidate|studio)"
-  output_not_contains:
-    - "(?i)(starter pack|which design system should)"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)acme"
+        - "(?i)(t2|t3|tier)"
+        - "(?i)(interview|candidate|studio)"
+      regex_not_match:
+        - "(?i)(starter pack|which design system should)"

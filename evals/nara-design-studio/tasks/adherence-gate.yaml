@@ -18,11 +18,15 @@ inputs:
     <div data-studio-label="Summary card" style="background: #fafafa; padding: 24px; border: 1px solid var(--ds-hairline)">…</div>
   files: []
 expected:
-  output_contains:
-    - "(?i)check_adherence"
-    - "(?i)var\\(--ds-"
-    - "(?i)(#fafafa|24px)"
-  output_not_contains:
-    - "(?i)(looks fine as is|already token-driven|no changes needed)"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)check_adherence"
+        - "(?i)var\\(--ds-"
+        - "(?i)(#fafafa|24px)"
+      regex_not_match:
+        - "(?i)(looks fine as is|already token-driven|no changes needed)"

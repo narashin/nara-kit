@@ -21,12 +21,16 @@ inputs:
   files:
     - path: pack-manifest-greenfield.json
 expected:
-  output_contains:
-    - "(?i)greenfield"
-    - "(?i)startingpoints"
-    - "(?i)(nav|navigation|sidebar|tab)"
-    - "(?i)(status|sort|row click)"
-  output_not_contains:
-    - "(?i)(are you greenfield|is this greenfield|greenfield\\?)"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)greenfield"
+        - "(?i)startingpoints"
+        - "(?i)(nav|navigation|sidebar|tab)"
+        - "(?i)(status|sort|row click)"
+      regex_not_match:
+        - "(?i)(are you greenfield|is this greenfield|greenfield\\?)"

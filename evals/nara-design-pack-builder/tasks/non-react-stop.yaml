@@ -14,12 +14,17 @@ inputs:
   prompt: "build a design studio pack from our design system at ~/repos/acme-ds — it's built with Vue 3 single-file components"
   files: []
 expected:
-  output_contains:
-    - "(?i)(react-only|react only)"
-    - "(?i)(build a pack by hand|by hand)"
-    - "(?i)(starter pack)"
   output_not_contains:
-    - "(?i)(successfully extracted|extraction complete|adapted all components|pack is ready)"
     - "components extracted"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(react-only|react only)"
+        - "(?i)(build a pack by hand|by hand)"
+        - "(?i)(starter pack)"
+      regex_not_match:
+        - "(?i)(successfully extracted|extraction complete|adapted all components|pack is ready)"

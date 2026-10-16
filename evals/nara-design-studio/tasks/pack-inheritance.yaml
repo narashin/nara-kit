@@ -21,11 +21,16 @@ inputs:
   files:
     - path: settings-default-pack.md
 expected:
-  output_contains:
-    - "(?i)(which design system|pick|choose|confirm|ask|어떤|선택)"
-    - "(?i)(default|recommend|usual|pre-selected|기본)"
   output_not_contains:
-    - "(?i)building against Acme"
     - "serve.py --pack"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(which design system|pick|choose|confirm|ask|어떤|선택)"
+        - "(?i)(default|recommend|usual|pre-selected|기본)"
+      regex_not_match:
+        - "(?i)building against Acme"

@@ -16,13 +16,17 @@ inputs:
   prompt: "design a screen for our order-history page"
   files: []
 expected:
-  output_contains:
-    - "(?i)(build a pack|design system you already have|pack-builder)"
-    - "(?i)(design\\.md|designmd_to_pack)"
-    - "(?i)(existing pack|point at)"
-    - "(?i)(starter pack|new design system)"
   output_not_contains:
     - "serve.py --pack"
     - "8917"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(build a pack|design system you already have|pack-builder)"
+        - "(?i)(design\\.md|designmd_to_pack)"
+        - "(?i)(existing pack|point at)"
+        - "(?i)(starter pack|new design system)"

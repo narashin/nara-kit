@@ -13,11 +13,15 @@ inputs:
   prompt: "design a screen with studio candidates for a support-ticket list, show me a few options"
   files: []
 expected:
-  output_contains:
-    - "(?i)(pack|bootstrap)"
-    - "(?i)(interview|candidate|studio)"
   output_not_contains:
     - "RFC"
     - "Confluence"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(pack|bootstrap)"
+        - "(?i)(interview|candidate|studio)"
