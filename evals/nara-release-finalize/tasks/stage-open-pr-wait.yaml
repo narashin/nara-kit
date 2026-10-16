@@ -14,8 +14,8 @@ inputs:
     `gh pr list --head pre-release --base main --state all` 결과는
     fixtures/pr-state-open.json 이다 — PR #82, state OPEN.)
   files:
-    - fixtures/config-sample.md
-    - fixtures/pr-state-open.json
+    - path: config-sample.md
+    - path: pr-state-open.json
 expected:
   output_contains:
     - "#82"

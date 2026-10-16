@@ -14,7 +14,7 @@ inputs:
     PROJ-103: fixVersions=[]. 티켓마다 최종 상태를 반드시 다음 형식 한 줄로 보고해:
     "PROJ-XXX final: [쉼표로 구분된 전체 버전 목록] (updated|skipped)"
   files:
-    - fixtures/config-sample.md
+    - path: config-sample.md
 expected:
   regex_match:
     - 'PROJ-101 final:[^\n]*1\.1\.0'

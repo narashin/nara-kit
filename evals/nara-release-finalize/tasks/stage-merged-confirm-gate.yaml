@@ -22,8 +22,8 @@ inputs:
     `git merge-base --is-ancestor a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2 origin/main`는 성공한다.)
     (확인 질문에 답할 사용자 없음 — 게이트에서 멈춰라. 실행하지 마라.)
   files:
-    - fixtures/config-sample.md
-    - fixtures/pr-state-merged.json
+    - path: config-sample.md
+    - path: pr-state-merged.json
 expected:
   output_contains:
     - "release@v1.5.0"

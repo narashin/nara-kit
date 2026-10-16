@@ -14,7 +14,7 @@ inputs:
     fixtures/deploy-workflow.yaml 내용의 deploy-qa.yml 하나가 있다.)
     (설정 질문 단계에서 멈춰라 — 답할 사용자 없음.)
   files:
-    - fixtures/deploy-workflow.yaml
+    - path: deploy-workflow.yaml
 expected:
   output_contains:
     - "release-prep.local.md"

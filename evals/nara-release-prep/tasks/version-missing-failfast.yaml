@@ -13,7 +13,7 @@ inputs:
     (config는 fixtures/config-sample.md 내용 그대로 존재. jira_get_project_versions
     결과가 ["1.2.2", "1.2.3"] 이라고 가정 — 9.9.9 없음.)
   files:
-    - fixtures/config-sample.md
+    - path: config-sample.md
 expected:
   output_contains:
     - "ESCALATE"

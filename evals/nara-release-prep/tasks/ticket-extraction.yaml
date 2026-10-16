@@ -16,8 +16,8 @@ inputs:
     - 고유 키 목록
     - 키 없는 PR 번호 목록
   files:
-    - fixtures/merged-prs.json
-    - fixtures/config-sample.md
+    - path: merged-prs.json
+    - path: config-sample.md
 expected:
   output_contains:
     - "PROJ-101"

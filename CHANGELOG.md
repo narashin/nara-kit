@@ -13,7 +13,8 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Changed
 - **평가 세트 40개의 `executor`를 `copilot-sdk`에서 `mock`으로 바꿨다.** 이제 51개 전부 mock이다. copilot은 좌석이 없어 한 번도 돌지 않았고, probe가 그 오류로 멈춰 채점기 검증을 할 수 없었다. 바꾼 40개 중 34개는 probe가 통과한다
-  - 남은 6개는 실행기와 무관하게 waza가 task YAML을 못 읽는다. merge-conflict·release-prep·release-finalize는 `files:`를 `- path: <name>` 대신 문자열(`"fixtures/x"`)로 적었고(10개 task, 14항목), jira-drain·jira-triage·slack-to-jira는 waza에 없는 task 필드 `expected.regex_match`를 쓴다. 따로 고칠 일로 남겼다
+  - 남은 6개는 실행기와 무관하게 waza가 task YAML을 못 읽었다. 그중 merge-conflict는 `files:`를 `- path: <name>` 대신 문자열(`"fixtures/x"`)로 적은 것이 전부라 고쳐서 probe가 통과한다(release-prep·release-finalize까지 task 10개, 14항목 수정)
+  - jira-drain·jira-triage·slack-to-jira·release-prep·release-finalize 다섯 세트(task 22개)는 waza에 없는 task 필드 `expected.regex_match`를 써서 여전히 못 읽는다. 글자 그대로 비교하는 조건으로 바꾸려면 task마다 맞는 답에 반드시 들어갈 문자열을 다시 골라야 해서 따로 남겼다
 
 ## [0.27.0] - 2026-10-16
 

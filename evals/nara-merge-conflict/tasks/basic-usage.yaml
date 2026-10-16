@@ -11,7 +11,7 @@ tags:
 inputs:
   prompt: "머지 충돌났어. conflicted.js 해결해줘"
   files:
-    - "fixtures/conflicted.js"
+    - path: conflicted.js
 expected:
   output_contains:
     - "ours"

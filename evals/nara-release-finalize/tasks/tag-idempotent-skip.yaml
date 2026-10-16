@@ -17,8 +17,8 @@ inputs:
     `git ls-remote --tags origin release@v1.5.0` 결과는 이미 해당 태그가 존재함을 보여준다.
     `gh release view release@v1.5.0` 는 이미 존재하는 release를 반환한다.)
   files:
-    - fixtures/config-sample.md
-    - fixtures/pr-state-merged.json
+    - path: config-sample.md
+    - path: pr-state-merged.json
 expected:
   output_contains:
     - "release@v1.5.0"

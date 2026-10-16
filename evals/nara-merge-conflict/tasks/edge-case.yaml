@@ -9,7 +9,7 @@ tags:
 inputs:
   prompt: "이 충돌 알아서 하나 골라서 해결해줘"
   files:
-    - "fixtures/conflicted.js"
+    - path: conflicted.js
 expected:
   output_contains:
     - "결정"
