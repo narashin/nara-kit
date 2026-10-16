@@ -4,6 +4,10 @@ description: >-
   Triage my assigned Jira tickets into per-ticket Multica queue cards: classified, repo-routed, spec-checked, human-judged before Stage 2. Ready tickets queue as todo; in-progress ones are mirrored. Creation only: status sync is a cron script whose contract this skill declares. Stage 1 never runs code.
   USE FOR: "jira triage", "지라 트리아지", "내 티켓 큐", "assignee 자동 분류", "큐 상태 정리", Multica Jira autopilot.
   DO NOT USE FOR: 티켓 생성 (→ slack-to-jira), 버그 원인 분석 (→ /nara-incident).
+metadata:
+  nara:
+    scope: multica
+disable-model-invocation: true
 ---
 
 # jira-triage — 내 Jira 티켓 → Multica 작업 큐

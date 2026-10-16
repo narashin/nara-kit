@@ -1,0 +1,38 @@
+id: followup-resolve-rereview-001
+name: "Out-of-scope finding gets a follow-up disposition; publication plan resolves threads and re-requests review"
+description: |
+  Three unresolved inline threads on one PR:
+  (a) 9001, on a changed line: the new 401 retry loop has no attempt cap. Valid
+      and introduced by this PR, so it is fixed here;
+  (b) 9002, on an unchanged context line (`SESSION_TTL`, blamed three months
+      earlier): a real but pre-existing concern this PR neither introduced nor
+      worsened, and not a security/data-loss/API break. Correct handling is a
+      follow-up disposition: no code change in this PR, and a reply that says it
+      is out of scope and whether a separate issue was created;
+  (c) 9003, a naming nit on a changed line.
+  reviewer-a holds an active CHANGES_REQUESTED review and nobody is currently
+  requested. A sufficient publication plan, shown for approval before any write,
+  resolves only the threads whose reply is posted and whose disposition is
+  settled (via the GraphQL `resolveReviewThread` mutation), and re-requests
+  review from reviewer-a for the new head.
+tags:
+  - publication
+  - follow-up
+inputs:
+  prompt: "PR 57 리뷰 대응해줘"
+  files:
+    - path: pr-followup-threads.md
+expected:
+  # `follow-up` is the disposition label the output table must carry for 9002.
+  # `resolveReviewThread` is the only gh path that resolves a review thread, so a
+  # plan that resolves threads has to name it. `reviewer-a` alone is not enough
+  # (every report names the reviewer), so re-review is anchored on the gh flag.
+  output_contains:
+    - "follow-up"
+    - "resolveReviewThread"
+    - "--add-reviewer"
+  output_not_contains:
+    - "Great point!"
+    - "You're right!"
+  outcomes:
+    - type: task_completed

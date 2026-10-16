@@ -2,7 +2,7 @@
 name: nara-explain
 description: >-
   Generate shareable explanations of code, features, projects, or PRs tailored to a specific audience.
-  USE FOR: "explain", "설명해줘", "explain to PM", "발표 자료", "온보딩 문서".
+  USE FOR: "explain", "설명해줘", "explain to PM", "발표 자료", "온보딩 문서", "이 PR 뭐 바꿨는지 설명해줘", "이 커밋 설명", "diff 설명".
   DO NOT USE FOR: learning-focused explanations (use explain-like-senior), code review, documentation generation.
 ---
 
@@ -26,7 +26,7 @@ Infer from user message. If not stated, ask.
 | Project | CLAUDE.md/README -> directory structure -> key files |
 | Feature | Components/services/routes + data flow |
 | Method | Function body + call context + I/O |
-| PR | Changed files + key diff + rationale |
+| Change (PR, branch, commit, range, working tree) | Pin base and head SHAs first, then follow the Change template in output-formats |
 
 ## Step 2: Explore code
 
@@ -37,11 +37,12 @@ Read code before explaining — no guessing. If nothing found, report "no result
 Use audience-matched format. Default to Tech peer if audience not specified.
 
 - **Brief mode**: when user says "짧게", "슬랙에 올릴", or "한 문단" — max 5 bullet points.
-- **Default**: Markdown document. Save to `docs/explain-{scope}.md` if long.
+- **Default**: Markdown document. Save to `docs/explain-<target>.md` when it runs past about 40 lines or the user asks for a file. `<target>` is the short SHA, `pr-<N>`, or the feature name in kebab-case.
 
 ## Rules
 
-- Only state facts verified from code. Mark uncertain content `[UNVERIFIED]`.
+- Only state facts verified from code. Mark uncertain content `[UNVERIFIED]`. Facts taken from docs (CHANGELOG, ADR, README) are allowed when cited as such.
 - Non-tech audience: no code snippets.
+- Change scope: cite each substantive claim as `path:line` (head lines; deleted code as `base:path:line`).
 
-**Load** [references/output-formats.md](references/output-formats.md) for audience-specific templates (Tech Peer / New Member / Non-tech / External / Brief).
+**Load** [references/output-formats.md](references/output-formats.md) for audience-specific templates (Tech Peer / New Member / Non-tech / External / Brief / Change).

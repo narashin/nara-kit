@@ -29,6 +29,8 @@ description: >-
 ```
 
 - `description` drives Claude's skill routing — be precise on USE FOR / DO NOT USE FOR
+- **User-only skills.** A skill that writes to a remote system on the user's behalf (Confluence, Jira, a release tag) is invocation-gated on both hosts: `disable-model-invocation: true` in the SKILL.md frontmatter (Claude Code) **and** `skills/<name>/agents/openai.yaml` with `policy.allow_implicit_invocation: false` (Codex ignores the SKILL.md flag). Cost: the description leaves the context, so USE FOR routing stops for that skill and the user types the slash command. Current set: `publish-spec`, `spec-revision`, `slack-to-jira`, `worklog`, `jira-triage`, `release-finalize`. `tools/check-docs.py` fails when only one surface is set. `waza check` reports these six as 8/9 spec compliance (`spec-allowed-fields: disable-model-invocation`) because the field is a Claude Code host extension outside the agentskills.io core list; that one line is expected, not a regression. `npx skills add . --list` still finds all of them
+- **Catalog tag.** `metadata: { nara: { scope: multica } }` marks a skill that cannot run without the `multica` CLI. Claude Code ignores `metadata`; only `tools/check-docs.py` reads it
 - Body: steps, modes, rules. Reference files via relative links: `[label](references/file.md)`
 - Keep body actionable — Claude executes this, not humans
 
@@ -115,7 +117,7 @@ See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagram
 1. Create `skills/nara-<name>/SKILL.md` with proper frontmatter — `nara-` prefix mandatory, `name:` field must equal the directory name
 2. Create `skills/nara-<name>/README.md` — thin human guide (Claude does NOT read it at runtime): purpose + invocation (`/nara-<name>`, `$nara-<name>`) + USE FOR / DO NOT USE FOR + backlinks to `../README.md` and `SKILL.md`. Derive from SKILL.md frontmatter to avoid drift. Every skill folder has one — `skills/*/README.md` is tracked (not gitignored). Setup-heavy skills (config/MCP) may add a rich hand-written guide instead (see `nara-slack-to-jira/README.md`)
 3. Create `evals/<name>/eval.yaml` + `tasks/` + `fixtures/` — the eval-level `real_run` provenance gate is mandatory (see Eval Structure). Add `validation.yaml` and run `tools/eval-fixture.py validate <name>` once the skill has produced real output to copy from
-4. Update `skills/README.md` catalog table — keep skill count accurate (root `README.md` has no per-skill table; the catalog + mermaids live in `skills/README.md`)
+4. Add one row to the `skills/README.md` catalog under the **intent** group it serves (groups are by what the user wants to do, not by lifecycle stage), add the short name to the matching row of the root `README.md` "Skills by intent" index, and bump the counts. A skill that cannot run without the `multica` CLI goes under **Multica 연동** and carries `metadata: { nara: { scope: multica } }` in its frontmatter. Then run `tools/check-docs.py` — it fails on a missing/duplicate row, a stale count, or a tag/group mismatch
 5. If the skill sits in a flow, update `skills/README.md`'s recommended order and the relevant handoff lines
 6. New skill inherits output contract automatically — do not add per-skill output-contract reference (CLAUDE.md handles it)
 
@@ -138,13 +140,15 @@ nara-kit ships as plain Agent Skills — no version manifest, no marketplace, no
    (`origin` = LINE internal; `github` = github.com/narashin/nara-kit — consumers install from github).
 4. Consumer side: `npx skills update` (or re-run `npx skills add narashin/nara-kit --global --agent claude-code --agent codex --skill '*'`).
 
-**Sibling-skill links:** a skill may reference another skill's file with a relative path (`../nara-<other>/references/<file>.md`) instead of duplicating it — the owner skill keeps the knowledge (see `docs/adr/0002-link-sibling-skill-references.md`). This assumes the default `--skill '*'` bulk install, so every such reference MUST state what happens when the file is absent (skip and proceed, or return `Unverifiable`). `waza check` reports these as `link escapes skill directory` **whether or not the target exists** — it is not a breakage detector. Before a release, run:
+**Sibling-skill links:** a skill may reference another skill's file with a relative path (`../nara-<other>/references/<file>.md`) instead of duplicating it — the owner skill keeps the knowledge (see `docs/adr/0002-link-sibling-skill-references.md`). This assumes the default `--skill '*'` bulk install, so every such reference MUST state what happens when the file is absent (skip and proceed, or return `Unverifiable`). `waza check` reports these as `link escapes skill directory` **whether or not the target exists** — it is not a breakage detector.
+
+**Catalog check (blocks every release and any commit that adds, removes or regroups a skill):**
 
 ```bash
-grep -rn "](\.\./nara-[^)]*)" --include="*.md" skills/ | while IFS=: read -r f _ line; do d=$(dirname "$f"); echo "$line" | grep -oE "\]\(\.\./nara-[^)]+\)" | tr -d "]()" | while read -r rel; do [ -e "$d/$rel" ] || echo "BROKEN $f -> $rel"; done; done
+tools/check-docs.py
 ```
 
-No output = all sibling links resolve. Any `BROKEN` line blocks the release.
+`Pass: ...` = safe. Any other line blocks it. It checks, stdlib only: every skill directory has exactly one `skills/README.md` catalog row and no row lacks a directory; every skill count written in `README.md`, `skills/README.md` and `CLAUDE.md` equals the directory count; `metadata.nara.scope: multica` tags and the **Multica 연동** group agree; every `](../nara-<other>/...)` sibling link resolves (this replaced the old grep one-liner); every skill has `name` == directory, a `description`, and a `README.md`. Count drift is its reason to exist: the catalog sat at 51 against 55 directories, and the root README said 55 next to 56, and neither was caught by `waza` or by eye.
 
 **What ships:** only `skills/<name>/` directories. `README.md`, `skills/README.md`, `CLAUDE.md`, `CHANGELOG.md`, `references/`, and `evals/` never reach consumers — pushes touching only those need no consumer action.
 

@@ -10,6 +10,7 @@
 - Codex: `$nara-worklog`
 - 직접 실행: `python3 skills/nara-worklog/assets/worklog.py spans PROJ-431`
 - 미기록 시간 훑기: `python3 skills/nara-worklog/assets/worklog.py list`
+- 자연어 트리거 없음. Jira에 쓰는 스킬이라 명시 호출만 받는다(Claude Code `disable-model-invocation`, Codex `agents/openai.yaml`). `nara-pr`이 미기록 시간을 알릴 때도 명령만 안내한다
 
 **hook을 먼저 설치해야 한다** — [references/hook-setup.md](references/hook-setup.md). 스킬은 ledger를 읽기만 하고, 쌓는 쪽은 hook이다.
 

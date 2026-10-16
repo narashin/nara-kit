@@ -9,9 +9,9 @@
 ```
 PR #<N> 리뷰 대응 완료.
 - comments processed: <N>
-- accepted: <n> (implemented) · rebutted: <n> · on hold: <n>
+- accepted: <n> (implemented) · rebutted: <n> · follow-up: <n> · on hold: <n>
 - side effects:
-  - github: <n> replies posted, <n> code changes pushed
+  - github: <n> replies posted, <n> code changes pushed, <n> threads resolved, re-review requested: <logins | none>
 - artifact: PR thread (#<N>)
 - next: hold 항목 사용자 결정 또는 reviewer 응답 대기
 ```
@@ -58,7 +58,22 @@ Receipt header 출력 후 아래 표 이어서:
 | # | File:Line | Reviewer | Category | Our Recommendation | Evidence |
 |---|-----------|----------|----------|--------------------|----------|
 | 1 | src/x.ts:10 | @reviewer | source-conflict | keep current -- matches spec §3 | requirements.md:42, src/x.ts:10 |
+
+### Follow-up (out of scope for this PR)
+| # | File:Line | Reviewer | Summary | Why out of scope | Issue |
+|---|-----------|----------|---------|------------------|-------|
+| 1 | src/api.ts:34 | @reviewer | env var unvalidated | unchanged line, blame 1a2b3c4 (3 months before PR) | not created |
+
+### Publication plan (CHECKPOINT: nothing runs until approved)
+| # | Step | Target | Command |
+|---|------|--------|---------|
+| a | push | feature/x | `git push origin feature/x` |
+| b | reply | 9001 | `gh api .../comments/9001/replies -f body=...` |
+| c | resolve | PRRT_kwA1 | `gh api graphql ... resolveReviewThread ...` |
+| d | re-review | @reviewer | `gh pr edit 57 --add-reviewer reviewer` |
 ```
+
+Before approval the receipt header reads `PR #<N> 리뷰 대응: 승인 대기`, `implemented` reads `planned`, and every github count is 0.
 
 ## --status Mode Output
 

@@ -1,0 +1,38 @@
+id: string-identity-conflation-001
+name: "Identity derived from a string's shape must be attacked with a conflating pair"
+description: |
+  A new automation decides which PR belongs to a ticket, which repo is the user's
+  own fork, and whether a reminder card was already posted, each from the shape of
+  a string:
+  (a) `ticket_key in pr.head_ref` is a substring test, so PROJ-12 matches
+      `feature/PROJ-123-...` and the merged PR of PROJ-123 transitions PROJ-12 to
+      Done;
+  (b) `full_name.startswith(login)` lets login `dev` own `devops/web-ui`, so
+      the follow-up push lands on someone else's fork;
+  (c) `dedup_key` concatenates repo and number with no separator, so
+      `web-ui1` + `23` and `web-ui12` + `3` collide on `web-ui123` and the second
+      PR's reminder card is never posted.
+  Both tests use only the happy entity, so they pass and prove nothing about the
+  conflation. A sufficient review constructs the two distinct valid entities each
+  predicate conflates and traces the wrong decision, rather than a generic
+  "string matching is fragile".
+tags:
+  - behavior
+  - identity
+inputs:
+  prompt: "변경사항 리뷰해줘"
+  files:
+    - path: string-identity.diff
+expected:
+  # Each string anchors one planted mechanism to the symbol a finding on it must
+  # cite: (a) the substring site, (b) the prefix predicate, (c) the key builder.
+  # A conflating counterexample is required only for (a) because its shape is
+  # forced by the fixture's own ticket format; (b) and (c) admit many valid pairs,
+  # so requiring one literal pair would grade phrasing, not detection.
+  output_contains:
+    - "head_ref"
+    - "startswith"
+    - "dedup_key"
+    - "PROJ-12"
+  outcomes:
+    - type: task_completed

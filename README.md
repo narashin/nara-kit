@@ -4,7 +4,7 @@
 >
 > 개인 워크플로우 스킬 모음. 개인 취향이 반영되어 있으므로 참고용 또는 포크해서 커스터마이즈.
 
-Personal workflow toolkit in the [Agent Skills](https://github.com/vercel-labs/skills) format — **55 skills** for structured software development and documentation work. Skills are invoked directly; `nara-now` reads the session state and names the next command. Works with Claude Code and Codex.
+Personal workflow toolkit in the [Agent Skills](https://github.com/vercel-labs/skills) format — **56 skills** for structured software development and documentation work. Skills are invoked directly; `nara-now` reads the session state and names the next command. Works with Claude Code and Codex.
 
 Agent Skills 포맷 워크플로우 툴킷 — 개발·문서화 작업을 위한 **56개 스킬**. 스킬을 직접 호출하고, 다음에 뭘 할지는 `nara-now`가 알려준다. Claude Code + Codex 지원.
 
@@ -53,6 +53,24 @@ v0.16까지는 Claude Code 플러그인으로 배포. 스킬 포맷 전환에 �
 | `docs/`, `evals/` | per-project 작업물·평가 (gitignore — 설치 대상 아님) |
 
 스킬 한눈에 보기 + 워크플로우 다이어그램 → **[skills/README.md](skills/README.md)**.
+
+### Skills by intent / 묶음별 스킬
+
+하고 싶은 일로 찾는다. 각 묶음의 설명은 [skills/README.md](skills/README.md#catalog--카탈로그)에 있다.
+
+| 묶음 | 스킬 (`nara-` 생략) |
+|------|---------------------|
+| 준비·기획 | prep · ac-draft · grill · research · plan · rfc · adr · claim-audit · publish-spec · spec-revision |
+| 구현 | implement · commit · wt · merge-conflict · incident · incident-fix |
+| 검증 | gap · browser-verify · qa-sheet · test-discover · test-verify · test-implement · golden-path-discover · ui-diff · local-shot |
+| 리뷰·PR·릴리즈 | code-review · adversarial-review · pr · pr-review · pr-respond · release-prep · release-finalize |
+| 디자인 | design-studio · design-pack-builder · design-md |
+| 글쓰기·설명 | explain · eli5-note · humanizer · `naranizer` · ko-prose |
+| 세션·툴킷 | now · reflect · memory-audit · skill-forge · empirical-prompt-tuning · meta-feedback |
+| 연동·자동화 | slack-to-jira · wip-sweep · worklog · trending-digest · release-watch |
+| **Multica 연동** (일반 소비자 제외) | jira-triage · jira-drain · review-reminder · review-queue · pr-activity-reminder |
+
+마지막 묶음은 [Multica](https://github.com/multica-ai/multica) CLI와 데몬이 있어야 동작한다. 없으면 설치 후 그 다섯 디렉터리를 지우거나 `--skill`로 골라 설치한다.
 
 ## My Setup / 내 설정
 

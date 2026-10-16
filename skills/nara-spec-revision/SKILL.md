@@ -5,6 +5,7 @@ description: >
   "apply review feedback to spec", "log a spec change", "spec revision", "spec 수정", "피드백 반영",
   "개정 이력", "changelog 추가", or has review comments/feedback on an existing Confluence
   specification page that should be recorded as a dated revision. Requires Confluence MCP tools.
+disable-model-invocation: true
 ---
 
 # Spec Revision — Dated Changelog + Inline Edits for Confluence Specs

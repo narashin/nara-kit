@@ -4,6 +4,9 @@ description: >-
   Find open PRs where you are a requested reviewer but have not yet reviewed, and create Multica reminder issues.
   USE FOR: "리뷰 안 한 PR", "review reminder", "PR 리뷰 미완료", "review-requested but not reviewed".
   DO NOT USE FOR: actually reviewing PRs (→ nara-code-review), creating PRs (→ nara-pr).
+metadata:
+  nara:
+    scope: multica
 ---
 
 # review-reminder — 미리뷰 PR 리마인더

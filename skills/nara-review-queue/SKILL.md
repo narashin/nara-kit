@@ -4,6 +4,9 @@ description: >-
   Drain Multica "리뷰 필요" reminder issues: trigger /review per linked PR, write each verdict back as an issue comment.
   USE FOR: "쌓인 리뷰 처리", "멀티카 리뷰 큐", "review-queue", a nara-review-reminder issue URL/ID.
   DO NOT USE FOR: creating reminders (→ nara-review-reminder), local commit review (→ nara-code-review), comments on my own PR (→ nara-pr-respond).
+metadata:
+  nara:
+    scope: multica
 ---
 
 # review-queue — 멀티카 리뷰 큐 드레인

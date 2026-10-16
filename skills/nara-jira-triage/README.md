@@ -8,7 +8,7 @@ Triage my assigned Jira tickets into per-ticket Multica queue cards: classified,
 
 - Claude Code: `/nara-jira-triage`
 - Codex: `$nara-jira-triage`
-- 또는 자연어 트리거 (아래 USE FOR 키워드)
+- 자연어 트리거 없음. 원격에 쓰는 스킬이라 명시 호출만 받는다(Claude Code `disable-model-invocation`, Codex `agents/openai.yaml`). 아래 USE FOR는 언제 부를지에 대한 안내다
 
 ## 언제 쓰나
 

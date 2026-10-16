@@ -4,6 +4,9 @@ description: >-
   Launch a chosen jira-triage queue ticket into a herdr worktree (space = repo@branch) running claude, and drive the implementation or spec flow to a PR — interactive ($0), human-triggered.
   USE FOR: "jira-drain", "큐 티켓 착수", "이 티켓 돌려", "/nara-jira-drain KEY".
   DO NOT USE FOR: 큐 생성·분류 (→ jira-triage), PR 리뷰 (→ review-queue), 큐 없이 직접 (→ /nara-wt + /nara-plan).
+metadata:
+  nara:
+    scope: multica
 ---
 
 # jira-drain — 큐 티켓 → herdr space 착수

@@ -11,11 +11,34 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Changed (breaking: invocation)
+- **원격에 쓰는 여섯 스킬이 명시 호출 전용이 됐다**: `publish-spec`, `spec-revision`, `slack-to-jira`, `worklog`, `jira-triage`, `release-finalize`. 모델이 "준비돼 보인다"는 판단으로 게시·티켓 생성·태그 push를 시작하지 못하게 한다. Claude Code는 프론트매터 `disable-model-invocation: true`, Codex는 새 `agents/openai.yaml`의 `policy.allow_implicit_invocation: false`(Codex는 SKILL.md 플래그를 읽지 않는다)
+  - 대가: 이 여섯의 description이 컨텍스트에 실리지 않아 "위키에 올려", "시간 기록해줘" 같은 자연어로는 안 불린다. `/nara-<name>` 또는 `$nara-<name>`으로 부른다. 각 스킬 README의 호출 절을 그렇게 고쳤다
+  - Multica autopilot은 등록된 SKILL.md 사본을 쓰므로 이 변경을 재등록 전까지 받지 않는다. 사본을 다시 동기화할 때 autopilot 프롬프트가 스킬을 명시 호출하는지 확인할 것
+  - `waza check`가 이 여섯을 spec compliance 8/9(`spec-allowed-fields: disable-model-invocation`)로 표시한다. Claude Code 호스트 확장이라 agentskills.io 핵심 목록에 없을 뿐이고 `npx skills add . --list`는 56개를 모두 찾는다
+  - 출발점은 tiger-kit의 `user` / `hybrid` 구분이다. 그쪽은 description 접두어와 README 열까지 세 표면을 스크립트로 맞추고, 여기는 두 표면만 둔다
+
 ### Added
 - `tools/eval-fixture.py generate <skill> [--task id]`: Copilot 좌석 없이 실제 모델 출력을 얻는 경로. `claude -p`를 설정·MCP·도구 없이 돌리고 SKILL.md와 references를 시스템 프롬프트에, 태스크 프롬프트와 fixture를 stdin에 넣는다. `validate --right-from gen`이 그 출력을 right 쪽에 쓴다. 도구가 꺼져 있어 스킬 벤치마크가 아니라 그레이더 검증용이고, 생성마다 헤드리스 과금이 든다(nara-gap 1회 약 0.26달러)
 
+- `tools/check-docs.py`: 카탈로그 정합성 검사(표준 라이브러리만). 스킬 디렉터리 ↔ `skills/README.md` 행 1:1, 세 문서(`README.md`·`skills/README.md`·`CLAUDE.md`)의 스킬 수, `metadata.nara.scope: multica` 태그 ↔ Multica 연동 묶음 일치, 형제 스킬 링크 해석, 프론트매터 `name`과 README.md 존재, 명시 호출 전용 플래그의 Claude Code·Codex 두 표면 일치. CLAUDE.md 릴리즈 절의 형제 링크 grep 한 줄을 대체한다.
+- `evals/nara-code-review` task `string-identity-conflation`: 부분 문자열·접두어·구분자 없는 합성 키로 정체성을 가르는 결함 셋을 심은 fixture. tiger-kit 리뷰 프로토콜의 "두 엔티티를 만들어 공격하라" 규칙을 들일지 재려고 만들었고, 규칙 없는 현재 스킬이 두 번 다 셋을 잡고 충돌 쌍까지 만들어서 규칙은 넣지 않았다. task는 회귀 감시로 남긴다. `validation.yaml`은 실제로 관찰된 실패 출력이 아직 없어 만들지 않았다 tiger-kit의 같은 역할 스크립트는 행과 디렉터리만 비교해 숫자 드리프트(2026-10-09의 51 대 55, 루트 README의 55 대 56)를 못 잡는다
+
 ### Changed
+- `skills/README.md` 카탈로그를 라이프사이클 단계(Workflow / Requirements / Code Lifecycle / Documentation / Testing / Automation / Meta)에서 **하고 싶은 일** 기준 9묶음(준비·기획 / 구현 / 검증 / 리뷰·PR·릴리즈 / 디자인 / 글쓰기·설명 / 세션·툴킷 / 연동·자동화 / Multica 연동)으로 재편. tiger-kit `5e35b6a` 증류 결과이고 리포트는 gitignore 대상인 `docs/research/`에 로컬 보관한다. 단계 기준으로도 어긋나 있던 5행(`design-*` 셋이 Workflow, `incident`·`slack-to-jira`가 Requirements)이 제자리로 갔다. 디렉터리는 안 옮겼으므로 consumer에게 breaking 아님
+- **Multica 연동** 묶음 신설: `multica` CLI 없이는 동작하지 않는 다섯 스킬(`jira-triage`, `jira-drain`, `review-reminder`, `review-queue`, `pr-activity-reminder`)을 일반 스킬과 분리. 루트 README에 묶음별 색인과 제외 안내 추가. Multica를 스케줄 호스트 선택지로만 쓰는 `trending-digest`·`release-watch`·`worklog`는 일반 묶음에 남김. 다섯 스킬 프론트매터에 `metadata.nara.scope: multica`를 달아 묶음 소속을 `check-docs.py`가 검사한다(Claude Code는 `metadata`를 무시한다)
 - 출력 계약 9절에 ESCALATE 자리 규칙 추가: 답을 받아야 진행하는 항목은 receipt의 마지막 산문 블록, 꼬리 산문은 앞으로. 근거는 2026-10-12 로컬 transcript 68개 측정(턴 종료 메시지의 10~14%가 질문 뒤 꼬리 산문)
+
+- **`nara-pr-respond`가 답글에서 끝나지 않고 스레드 정리까지 간다.** 승인 목록에 push, 답글, 스레드 resolve(`resolveReviewThread`), 재리뷰 요청(`gh pr edit --add-reviewer`)을 명령과 함께 올리고, 승인되면 그 순서로 실행한다. "Fixed." 답글은 수정이 원격 브랜치에 올라간 뒤에만 단다
+  - 새 처분 **FOLLOW-UP**: 맞는 지적이지만 이 PR이 만들지도 키우지도 않은 기존 결함이면 여기서 고치지 않고, 범위 밖이라는 것과 별도 이슈 여부를 답한다. 코멘트가 달린 줄이 PR에서 안 바뀌었고 blame이 PR보다 앞서는지를 먼저 본다. 런타임 장애·보안·데이터 손실·권한·공개 API는 이 PR에 남긴다. 리뷰어가 수정을 요청한 것이면 사용자가 뒤집을 수 있게 표시한다
+  - resolve는 답글이 실제로 달렸고 처분이 끝난 스레드만(ACCEPT·FOLLOW-UP·답변한 질문). HOLD·ASK·답을 기다리는 REBUT은 열어 둔다. 재리뷰는 리뷰어별 마지막 상태가 `CHANGES_REQUESTED`인 사람과 지적이 고쳐진 사람에게. 중간에 끊겼다 다시 들어오면 원격 상태부터 읽는다
+  - 측정: 같은 fixture(바뀐 줄 지적·안 바뀐 줄의 기존 결함 지적·nit, 변경 요청 리뷰어 1명)로 수정 전 2회는 0/2 통과(둘 다 기존 결함을 HOLD로 넣었고 resolve·재리뷰는 "스킬에 없음"으로 빠지거나 선택 사항으로만 나옴), 수정 후 2회는 2/2 통과. 출처는 tiger-kit `tk-pr-respond`(`5e35b6a`)
+- **`nara-explain`이 PR·커밋·브랜치·작업 트리 설명을 따로 다룬다(tiger-kit `tk-explain-diff` 증류).** 비교 기준 SHA를 먼저 고정하고(PR은 merge base, 커밋은 부모), 주장마다 `path:line`을 달고(삭제된 코드는 `base:`), 배경 → 직관 → 흐름 → 꼭 볼 곳/훑어도 되는 곳 → 이해 확인 순서로 쓴다. 보안·스키마·마이그레이션·호환·공개 API 변경은 작아도 "꼭 볼 곳"에 둔다. USE FOR에 "이 PR 뭐 바꿨는지 설명해줘", "이 커밋 설명", "diff 설명" 추가. 저장 기준을 "길면"에서 "약 40줄 초과 또는 요청 시, `docs/explain-<short SHA | pr-N | 기능명>.md`"로 구체화
+  - 측정: 이 repo 커밋 하나를 팀원에게 설명하는 task로 수정 전 2회는 0/2 통과(부모 SHA 없음, 줄 인용 없음, 두 run 모두 "커밋은 scope 표 어느 행에도 없다"고 표시), 수정 후 2회는 2/2 통과. 수정 후 출력은 경고만 하고 막지 않는 stale 검사 같은 "꼭 볼 곳"까지 짚었다
+- 두 스킬 SKILL.md 토큰이 늘었다(pr-respond 782 → 972, explain 461 → 595). 절차와 템플릿은 references로 내리고 본문에는 결정 규칙만 남겼다
+
+### Fixed
+- 루트 `README.md` 영문 소개가 55 skills, 바로 아래 한글이 56개로 어긋나 있던 것을 56으로 통일
 
 ## [0.23.0] - 2026-10-12
 

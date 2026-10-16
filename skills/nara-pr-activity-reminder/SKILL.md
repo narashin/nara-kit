@@ -4,6 +4,9 @@ description: >-
   Record PR activity — replies to your review comments, commits pushed, comments left on your own PR — onto the Multica card that already owns that PR. Creates no cards.
   USE FOR: "내 리뷰에 대댓글", "리뷰 중인 PR에 새 커밋", "내 PR에 누가 코멘트 달았나", "PR 활동 알림", "review activity reminder".
   DO NOT USE FOR: 미리뷰 PR 탐지 (→ nara-review-reminder), 실제 리뷰 작성 (→ nara-code-review / nara-pr-review), 리뷰 큐 드레인 (→ nara-review-queue).
+metadata:
+  nara:
+    scope: multica
 ---
 
 # nara-pr-activity-reminder — PR 활동 기록

@@ -10,11 +10,7 @@ Slack 스레드 permalink를 던지면 내용을 읽고 Bug/Feature로 분류, �
 /nara-slack-to-jira <slack-permalink> [<slack-permalink> ...]
 ```
 
-자연어도 됨:
-
-```
-"이 슬랙 스레드 티켓 만들어줘 https://....slack.com/archives/C.../p..."
-```
+자연어 트리거는 없다. Jira에 티켓을 만드는 스킬이라 명시 호출만 받는다(Claude Code `disable-model-invocation`, Codex `agents/openai.yaml`). "이 스레드 티켓 만들어줘"라고 말하면 Claude가 `/nara-slack-to-jira`를 쳐 달라고 안내한다.
 
 링크 여러 개를 한 번에 던져도 된다 (배치).
 

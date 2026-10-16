@@ -9,6 +9,7 @@ description: >-
   "머지 PR 열어", "release 태그", "release note 작성", "release@v 태그",
   "/nara-release-finalize 1.5.0". DO NOT USE FOR: QA 배포 준비 (→ release-prep), PR
   approve/merge 실행 자체 (사람이 GitHub에서 수행), 일반 feature PR 생성 (→ pr), 커밋 메시지 (→ commit).
+disable-model-invocation: true
 ---
 
 # release-finalize — Merge-PR + Tag + Release Note, Gated at Prod Trigger

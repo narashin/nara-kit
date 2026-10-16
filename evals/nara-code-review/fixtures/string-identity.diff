@@ -1,0 +1,56 @@
+# Change under review — PR follow-up automation (ops/pr_followup.py, new file).
+# Context: runs every 10 minutes. For each open ticket assigned to the user it finds
+# the linked PR, posts a reminder card once per PR, and closes the ticket when the
+# PR is merged. Tickets look like `PROJ-<n>`; branches look like
+# `feature/PROJ-<n>-<slug>`. Repos live under one org, e.g. `acme-sre/web-ui`.
+
++from dataclasses import dataclass
++
++@dataclass
++class PullRequest:
++    repo: str          # e.g. "web-ui"
++    number: int        # e.g. 42
++    head_ref: str      # e.g. "feature/PROJ-12-login-timeout"
++    full_name: str     # head repo, e.g. "dev/web-ui" (fork) or "acme-sre/web-ui"
++    merged: bool
++
++
++def find_ticket_pr(ticket_key: str, prs: list[PullRequest]) -> PullRequest | None:
++    """Return the PR whose branch carries this ticket key."""
++    for pr in prs:
++        if ticket_key in pr.head_ref:
++            return pr
++    return None
++
++
++def is_own_fork(pr: PullRequest, login: str) -> bool:
++    """Pushes a follow-up commit only to the user's own fork."""
++    return pr.full_name.startswith(login)
++
++
++def dedup_key(pr: PullRequest) -> str:
++    return f"{pr.repo}{pr.number}"
++
++
++def run(tickets, prs, login, cards, jira, git):
++    seen = cards.existing_keys()            # keys of reminder cards already posted
++    for key in tickets:
++        pr = find_ticket_pr(key, prs)
++        if pr is None:
++            continue
++        if dedup_key(pr) not in seen:
++            cards.post(dedup_key(pr), f"{key}: {pr.repo}#{pr.number}")
++        if pr.merged:
++            jira.transition(key, "Done")
++        elif is_own_fork(pr, login):
++            git.push_followup(pr)
++
++
++# tests/test_pr_followup.py
++def test_finds_pr_by_ticket():
++    prs = [PullRequest("web-ui", 42, "feature/PROJ-12-login", "acme-sre/web-ui", False)]
++    assert find_ticket_pr("PROJ-12", prs).number == 42
++
++def test_own_fork():
++    pr = PullRequest("web-ui", 42, "feature/PROJ-12-login", "dev/web-ui", False)
++    assert is_own_fork(pr, "dev")

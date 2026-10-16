@@ -1,0 +1,4 @@
+# Codex counterpart of `disable-model-invocation: true` in SKILL.md.
+# Hidden from implicit invocation; still runs when called as $nara-slack-to-jira.
+policy:
+  allow_implicit_invocation: false

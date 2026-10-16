@@ -4,6 +4,7 @@ description: >-
   Read the hook-collected session-timestamp ledger, propose per-day Jira worklog entries, then write them only after the user confirms.
   USE FOR: "worklog", "시간 기록해줘", "지라에 시간 올려", "작업 시간 올려줘", "안 올린 시간 있나", "/nara-worklog TICKET-ID".
   DO NOT USE FOR: 티켓 생성 (→ nara-slack-to-jira), 티켓 상태 전환 (→ jira MCP 직접), 큐 분류 (→ nara-jira-triage), 세션 회고 (→ nara-reflect).
+disable-model-invocation: true
 ---
 
 # worklog — Jira Worklog from Session Timestamps
