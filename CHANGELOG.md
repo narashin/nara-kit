@@ -18,6 +18,8 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - 출처: tiger-kit 작성자의 explainer-lab(git 아님, 파일 크기로 고정, 라이선스 파일 없음). 문장은 옮기지 않고 규칙만 다시 썼다
   - 형식은 사용자가 고른다. 쓰기 전에 👍를 받은 형식 10개를 이 주제에서의 모습 한 줄과 함께 표로 띄우고 맨 위에 ★ 추천을 붙인다. 주제에 안 맞는 형식도 이유를 적어 보여 주고, 나머지는 이름 줄로 나열하며, 확정 제외 두 개만 숨긴다. 답이 없으면 ★로 가고, 인자에 형식이 있으면 표를 건너뛴다. 노트 도입부에 `직접 고름` 또는 `추천 수락`을 남긴다
 - **`nara-eli5-note`와 `nara-explain`의 경계를 "누가 읽나"로 나눴다.** eli5-note는 사용자가 자기 공부용으로 남기는 노트, explain은 PR이나 diff처럼 남에게 건넬 설명이다. eli5-note의 USE FOR에서 "매니저한테 설명하듯 정리해"를 빼고 "공부하게 정리해"를 넣었으며, 남에게 건넬 설명은 `/nara-explain`으로 보낸다. 대상(나이, 직군 등)은 그대로 노트의 눈높이로 남는다. explain은 학습용 요청을 nara-kit 밖의 `explain-like-senior` 대신 `nara-eli5-note`로 보낸다
+- **`tools/check-docs.py`가 릴리스된 CHANGELOG 절이 태그 때보다 늘었는지 본다.** 릴리스 직후 main에 rebase하면 `[Unreleased]` 줄이 충돌 없이 방금 릴리스된 버전 절로 들어간다. 이 일이 같은 날 두 번 있었다. 절마다 `- `와 `### ` 줄 수를 `git show vX.Y.Z:CHANGELOG.md`와 비교하므로, 공개 repo 식별자를 지우는 수정처럼 줄 수가 같은 편집은 통과한다. 태그가 없는 버전은 건너뛰고 요약에 적는다
+- **`tools/eval-fixture.py probe`가 오류로 끝난 실행에서 멈춘다.** `executor: copilot-sdk`인 suite는 Copilot 좌석이 없어 모든 실행이 오류로 끝나고, validate는 맞는 출력까지 전부 실패로 보고했다. 이제 원인과 `executor: mock`이 필요하다는 안내를 낸다
 
 ### Fixed
 - **`nara-gap` 평가 fixture의 `git grep` 명령이 아래 보여 준 출력과 맞지 않던 문제.** `"moved to"`로 찾는다고 적어 놓고 `is now`가 든 줄을 결과로 보여 줬다. 명령을 `"Ticket"`으로 바꿔 그 줄이 실제로 나오게 했다

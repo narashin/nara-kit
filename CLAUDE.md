@@ -98,6 +98,10 @@ tools/eval-fixture.py validate <skill>      # probe → fill both sides → grad
 
 The table lives in `evals/<skill>/validation.yaml` (`right:` / `wrong:` keyed by task id). Populate `wrong:` from **behaviour the skill actually produced** — invented failures are trivially discriminated and prove nothing. Expected result: every task passes on `right` and fails on `wrong`. A `wrong`-side pass means the assertion is satisfiable by incorrect output; a `right`-side failure means it is unsatisfiable by correct output. Both are grader defects, not skill findings.
 
+A suite with a `validation.yaml` sets `executor: mock`. With `copilot-sdk` every probe run errors (no Copilot seat) and validate reports every correct output as failing; `probe` now stops on errored runs and names this cause.
+
+Keep examples inside a SKILL.md and its `references/` in a different domain from the suite's fixtures. When the skill's own example matches the fixture case, a passing task shows the example was copied, not that the rule works.
+
 Reference suite: `evals/nara-gap/validation.yaml` — 8/8 discriminate. Run artifacts land in `results/` (gitignored).
 
 ## Workflow Architecture
@@ -148,7 +152,7 @@ nara-kit ships as plain Agent Skills — no version manifest, no marketplace, no
 tools/check-docs.py
 ```
 
-`Pass: ...` = safe. Any other line blocks it. It checks, stdlib only: every skill directory has exactly one `skills/README.md` catalog row and no row lacks a directory; every skill count written in `README.md`, `skills/README.md` and `CLAUDE.md` equals the directory count; `metadata.nara.scope: multica` tags and the **Multica 연동** group agree; every sibling link resolves, both `](../nara-<other>/...)` from a SKILL.md and `](../../nara-<other>/...)` from a `references/` file (this replaced the old grep one-liner, which missed the second form); every skill has `name` == directory, a `description`, and a `README.md`; `disable-model-invocation: true` and `agents/openai.yaml` `allow_implicit_invocation: false` appear together or not at all; every SKILL.md carries the output-contract pointer before its first `##` section and the contract file exists. Its own docstring lists the checks in order. Count drift is its reason to exist: the catalog sat at 51 against 55 directories, and the root README said 55 next to 56, and neither was caught by `waza` or by eye.
+`Pass: ...` = safe. Any other line blocks it. It checks, stdlib only: every skill directory has exactly one `skills/README.md` catalog row and no row lacks a directory; every skill count written in `README.md`, `skills/README.md` and `CLAUDE.md` equals the directory count; `metadata.nara.scope: multica` tags and the **Multica 연동** group agree; every sibling link resolves, both `](../nara-<other>/...)` from a SKILL.md and `](../../nara-<other>/...)` from a `references/` file (this replaced the old grep one-liner, which missed the second form); every skill has `name` == directory, a `description`, and a `README.md`; `disable-model-invocation: true` and `agents/openai.yaml` `allow_implicit_invocation: false` appear together or not at all; every SKILL.md carries the output-contract pointer before its first `##` section and the contract file exists; no released `CHANGELOG.md` section holds more entries than it did at its tag (a rebase over a release moves `[Unreleased]` lines into the just-released section without a conflict). Its own docstring lists the checks in order. Count drift is its reason to exist: the catalog sat at 51 against 55 directories, and the root README said 55 next to 56, and neither was caught by `waza` or by eye.
 
 **What ships:** only `skills/<name>/` directories. `README.md`, `skills/README.md`, `CLAUDE.md`, `CHANGELOG.md`, `references/`, and `evals/` never reach consumers — pushes touching only those need no consumer action.
 

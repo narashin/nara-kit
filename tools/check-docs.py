@@ -23,12 +23,18 @@ Checks:
                     (skills/nara-now/references/output-contract.md) before its first `##`
                     section. Only skills/<name>/ ships, so this pointer is the only way an
                     installed skill sees the contract.
+  9. changelog      a released `## [x.y.z]` section of CHANGELOG.md holds no more entries
+                    (`- ` and `### ` lines) than it did at tag `vx.y.z`. A rebase over a
+                    release lands `[Unreleased]` lines in the just-released section without
+                    a conflict; redaction edits keep the count and pass. Untagged versions
+                    and a checkout without git are skipped and named in the summary.
 
 Exit 1 with one line per error, exit 0 with a one-line summary. Prose still needs review.
 """
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -54,6 +60,9 @@ COUNT_PATTERNS = [
     re.compile(r"(\d+) opinionated workflow skills"),
 ]
 VERIFY_LINE = re.compile(r"grep -c '\^nara-'`?\s*(?:→|->)\s*(\d+)")
+CHANGELOG = ROOT / "CHANGELOG.md"
+VERSION_HEADING = re.compile(r"^## \[(\d+\.\d+\.\d+)\][^\n]*$", re.MULTILINE)
+ENTRY_LINE = re.compile(r"^(?:- |### )", re.MULTILINE)
 
 
 def frontmatter(path: Path) -> tuple[dict, str]:
@@ -137,6 +146,45 @@ def catalog_rows(text: str) -> dict[str, list[tuple[int, str]]]:
         if row:
             rows.setdefault(row.group(1), []).append((number, category))
     return rows
+
+
+def changelog_sections(text: str) -> dict[str, str]:
+    """Map each released version to its section text, up to the next version heading."""
+    marks = list(VERSION_HEADING.finditer(text))
+    sections: dict[str, str] = {}
+    for index, mark in enumerate(marks):
+        end = marks[index + 1].start() if index + 1 < len(marks) else len(text)
+        sections[mark.group(1)] = text[mark.start():end]
+    return sections
+
+
+def check_changelog(errors: list[str]) -> tuple[int, list[str]]:
+    """Compare entry counts of released sections with the tagged CHANGELOG. Returns (checked, skipped)."""
+    if not CHANGELOG.is_file():
+        return 0, []
+    current = changelog_sections(CHANGELOG.read_text(encoding="utf-8"))
+    checked, skipped = 0, []
+    for version, body in current.items():
+        try:
+            tagged = subprocess.run(
+                ["git", "-C", str(ROOT), "show", f"v{version}:CHANGELOG.md"],
+                capture_output=True, text=True, check=False,
+            )
+        except FileNotFoundError:
+            return checked, ["git not found"]
+        if tagged.returncode != 0:
+            skipped.append(version)
+            continue
+        before = changelog_sections(tagged.stdout).get(version)
+        if before is None:
+            skipped.append(version)
+            continue
+        checked += 1
+        had, has = len(ENTRY_LINE.findall(before)), len(ENTRY_LINE.findall(body))
+        if has > had:
+            errors.append(f"CHANGELOG.md: released section [{version}] has {has} entries, tag v{version} had {had}. "
+                          f"New lines belong under [Unreleased] (a rebase over a release puts them here silently)")
+    return checked, skipped
 
 
 def main() -> int:
@@ -227,12 +275,16 @@ def main() -> int:
             if not target.exists():
                 errors.append(f"{md.relative_to(ROOT).as_posix()}: sibling link {match.group(1)} does not resolve")
 
+    released, untagged = check_changelog(errors)
+
     if errors:
         print("\n".join(errors))
         return 1
     multica = sum(1 for s in scopes.values() if s == "multica")
     print(f"Pass: {total} skills, catalog parity ok, counts ok, {multica} multica-scoped, "
-          f"{len(user_only)} user-only (Claude+Codex agree), {link_count} sibling links resolve")
+          f"{len(user_only)} user-only (Claude+Codex agree), {link_count} sibling links resolve, "
+          f"{released} released changelog sections match their tags"
+          + (f" (unchecked: {', '.join(untagged)})" if untagged else ""))
     return 0
 
 

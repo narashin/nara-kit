@@ -240,6 +240,24 @@ def cmd_probe(args: argparse.Namespace) -> int:
         )
         return 1
     tasks = json.loads(p["probe"].read_text())["tasks"]
+    # A run that errored (rather than merely failing its graders) carries no
+    # gradable output shape: `executor: copilot-sdk` without a Copilot seat ends
+    # every run with "Failed to list models", and validate then reports every
+    # correct output as failing. Stop here with the cause instead.
+    errored = [
+        (t["test_id"], run.get("error_msg", ""))
+        for t in tasks
+        for run in t.get("runs", [])
+        if run.get("status") == "error"
+    ]
+    if errored:
+        tid, msg = errored[0]
+        sys.stderr.write(
+            f"probe runs errored ({len(errored)}), first: {tid}: {msg or 'no message'}\n"
+            f"grader validation needs `executor: mock` in evals/{args.skill}/eval.yaml "
+            f"(copilot-sdk needs a Copilot seat, see CLAUDE.md)\n"
+        )
+        return 1
     print(f"probe written: {p['probe'].relative_to(ROOT)} ({len(tasks)} tasks)")
     print("task ids:", ", ".join(t["test_id"] for t in tasks))
     return 0
