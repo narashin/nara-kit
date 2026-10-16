@@ -21,6 +21,10 @@ skills/*/settings.local.md
 AGENTS.md
 outputs/
 
+# Agent session state (oh-my-claudecode) and a separately cloned upstream repo
+/.omc/
+/ELI5/
+
 # macOS
 .DS_Store
 
