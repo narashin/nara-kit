@@ -28,11 +28,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: worklog_contract
-    config:
-      regex_match:
-        - "(?i)(worklog\\.py|spans)"
-        - "(?i)(승인|confirm|확인)"
 tasks:
   - "tasks/*.yaml"

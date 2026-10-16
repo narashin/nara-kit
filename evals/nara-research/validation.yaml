@@ -1,0 +1,183 @@
+# Grader-validation table for nara-research.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-research
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    조사 완료 (recorded only, chat-only). 이번 실행에서는 `docs/research/`에 파일을 쓰지 않아 아래에 리포트 전문을 그대로 냅니다.
+
+    - 결정: `ext-release-checklist`의 체크리스트 절차를 nara-kit 스킬로 둘지
+    - 권고: 독립 스킬로 두지 않음 (no-op) · 확신도 medium · 뒤집을 증거: nara-kit 릴리즈 스킬이 다루지 않는 패키지 배포·공지 흐름을 실제로 반복해서 돌린 기록
+    - 출처 5 (revision 고정 4 / unpinned 1) · 주장 10 (인용 9 / unverified 1) · keep 0 / adapt 0 / omit 6
+    - Next: 권고 수용 여부를 정해 주세요. 수용이면 할 일 없음, 패키지 배포 흐름이 실제로 있으면 그 기록을 붙여 `--update`로 재조사
+
+    ```markdown
+    # 외부 릴리즈 체크리스트 절차를 nara-kit 스킬로 둘지
+
+    조사일 2026-10-16 · 모드: 증류 · 출처 5 (revision 고정 4)
+
+    ## 결정과 범위
+    결정: `ext-release-checklist`(사용자가 붙여 준 `sample-skill.md`)의 절차를 nara-kit에
+    독립 스킬로 들일지, 기존 스킬에 녹일지, 아무것도 안 할지.
+    제약: nara-kit은 이미 릴리즈 스킬 셋(준비, 마무리, 외부 릴리즈 감시)을 갖고 있다.
+    성공 기준: 가져올 요소마다 nara-kit에 대응이 있는지, 없으면 들일 근거가 있는지 판정.
+    제외: 스킬 작성·수정 자체(그건 `/nara-skill-forge`), 외부 검색(출처가 붙여 넣은 본문 하나라 불필요).
+    baseline: 현재 nara-kit 그대로. 릴리즈는 `nara-release-prep` → 사람 QA → `nara-release-finalize`.
+
+    ## 권고
+    독립 스킬로 두지 않는다 (no-op). 출처의 뼈대 다섯 단계 중 가장 값진 두 가지,
+    비가역 부작용 앞의 명시적 확인과 부분 실패 상태의 보고는 nara-kit이 이미 갖고 있다.
+    나머지(체크리스트 파일 게이트, smoke 실패 시 중단, 로그 파일 append)는 출처 쪽 정책
+    변수에 묶여 있고, nara-kit에서 필요하다는 사용 기록이 없다. 출처 자체도 실사용
+    증거가 없다.
+    확신도 medium: nara-kit 쪽은 SKILL.md 본문만 읽었고 호출 기록은 보지 않았다. 카탈로그
+    전체(`skills/README.md`)도 이번에 열지 않았다.
+    뒤집을 증거: (1) nara-kit 릴리즈 스킬이 다루지 않는 흐름, 즉 패키지 레지스트리 배포나
+    공지 채널 게시를 사람이 손으로 반복하고 있다는 기록. (2) 부작용 뒤 실패에서 자동
+    롤백을 시도해 피해가 난 사례. (2)가 나오면 형태는 독립 스킬이 아니라 `nara-release-finalize`
+    Error Handling에 "자동 롤백 금지" 한 줄을 넣는 기존 스킬 개선이다.
+
+    ## baseline과 대안
+    baseline (현재 그대로): prep은 중간 게이트 없이 돌고 부작용을 최종 영수증에 모아
+    선언한다. finalize는 프로덕션 배포를 일으키는 태그 push 한 지점만 확인을 받는다.
+    깨지는 곳은 GitHub 태그·Jira 버전 중심이 아닌 릴리즈(레지스트리 배포 등)다.
+    대안 A (독립 스킬로 들임): 모든 외부 부작용마다 typed `go`를 받는 별도 스킬. 게이트
+    수가 늘고 호출 시점이 prep/finalize와 겹친다. 워크플로를 스킬로 포장하면 부르지 않는다는
+    nara-kit 측정(아래 증거 C9)과 정면으로 부딪친다.
+    대안 B (기존 스킬 개선): 출처의 "부작용 뒤 실패 시 자동 롤백 금지 + 부분 상태 기록"을
+    finalize에 명문화. 지금은 근거가 "그쪽에 있으니까"뿐이라 보류.
+
+    ## 증거
+    - C1 출처의 실사용 증거 없음. 본문 주석이 실제 스킬이 아닌 자리표시용이라고 밝힌다.
+      출처: `sample-skill.md` (unpinned, 접근 2026-10-16) · Evidence
+    - C2 finalize는 프로덕션 트리거 한 지점만 막는다: "hard-gates the one step that fires
+      production deploy". 출처: `skills/nara-release-finalize/SKILL.md` @ `ee283be` · Evidence
+    - C3 그 확인은 설정으로 우회할 수 없다: "no config flag bypasses it". 같은 출처 · Evidence
+    - C4 prep은 중간 게이트가 없고 부작용은 최종 영수증에 선언: "zero mid-run gates".
+      출처: `skills/nara-release-prep/SKILL.md` @ `ee283be` · Evidence
+    - C5 태그 push 뒤 배포 dispatch가 실패하면 영수증에 `pending escalation`으로 남긴다.
+      출처: finalize Error Handling 표 @ `ee283be` · Evidence
+    - C6 출력 계약은 실패 시 부분 적용을 반드시 적게 한다: "부분 적용된 변경 사항 반드시 명시".
+      출처: `skills/nara-now/references/output-contract.md` @ `ee283be` · Evidence
+    - C7 finalize는 QA 통과를 전제로 시작한다: "QA already passed on the release branch".
+      기계적 체크리스트 검사는 없다. 출처: finalize 본문 @ `ee283be` · Evidence
+    - C8 prep·finalize 본문에 rollback/롤백 언급이 없다 (두 파일 검색 결과 0건). 자동
+      롤백을 하지 않는 것은 재실행 멱등 설계에서 나온 결과이지 명문 규칙이 아니다.
+      출처: 두 SKILL.md @ `ee283be` · Interpretation
+    - C9 워크플로를 스킬로 포장하면 부르지 않는다: 메타 스킬 4개가 60일 합계 1회 호출.
+      출처: `skills/nara-research/references/distillation.md` @ `ee283be` · Evidence (nara-kit 자체 측정, 재현 안 함)
+    - C10 패키지 배포·공지 게시를 다루는 nara-kit 스킬은 없다.
+      [UNVERIFIED: requires `skills/README.md` 카탈로그 전체]
+
+    ## 비교
+    | 축 | baseline (현재) | 대안 A (독립 스킬) | 대안 B (finalize 개선) |
+    |---|---|---|---|
+    | 비가역 부작용 앞 확인 | 프로덕션 트리거 1곳 (C2, C3) | 부작용마다 | baseline과 같음 |
+    | 부작용 뒤 실패 처리 | 영수증에 부분 상태 (C5, C6) | `INCIDENT.md` 파일 | 영수증 + 롤백 금지 명문 |
+    | 호출 겹침 | 없음 | prep/finalize와 겹침 | 없음 |
+    | 실사용 근거 | 운영 중 | 없음 (C1) | 없음 |
+    | 구현 노력 | 0 | 새 스킬 + eval | 한 줄 |
+
+    ## 반례와 남은 불일치
+    유력안(no-op)의 반례는 GitHub 태그 외 경로의 릴리즈다. 레지스트리 배포와 공지는
+    되돌릴 수 없는 부작용인데 nara-kit에서 이를 확인 게이트로 감싸는 스킬을 찾지 못했다
+    (C10, 미검증). 그런 흐름이 사용자에게 없으면 반례는 해소되고, 있으면 남는다.
+    남은 불일치로 그대로 둔다.
+
+    ## keep / adapt / omit
+    | 요소 | 판정 | 사유 | nara-kit 대응 |
+    |---|---|---|---|
+    | 1. 체크리스트 미완이면 시작 거부 | omit | 체크리스트 파일은 출처 쪽 정책 변수. nara-kit은 QA 통과를 사람이 판단하고 finalize가 그걸 전제로 한다 (C7). 필요 근거 없음 | `nara-release-finalize` 전제 |
+    | 2. smoke 실패 시 중단, 재시도 금지 | omit | nara-kit 흐름에는 QA 배포 뒤 사람 확인 단계가 있다. smoke 명령은 정책 변수 | `nara-release-prep` → 사람 QA |
+    | 3. 외부 부작용마다 명령 출력 + typed `go` | omit | 비가역 지점만 막는 설계가 이미 있고 의도적으로 게이트 수를 줄였다 (C2, C3, C4) | `nara-release-finalize` Stage B 확인 |
+    | 4. 배포 후 `release/LOG.md` append | omit | 기록 위치는 정책 변수. nara-kit은 태그와 GitHub release가 기록이다 | `nara-release-finalize` |
+    | 5. 부작용 뒤 실패 시 자동 롤백 금지 + 부분 상태 기록 후 정지 | omit (보류 후보) | 부분 상태 보고는 이미 있다 (C5, C6). 롤백 금지 명문화는 사고 근거가 생기면 대안 B로 | 출력 계약 실패 블록, finalize Error Handling |
+    | 정책 손잡이 (경로, smoke 명령, 공지 채널, 로그 경로) | omit | 출처 고유 값. 가져오지 않는다 | 해당 없음 |
+
+    형태 판정: no-op. 가져올 근거가 "출처에 있다"는 것뿐이고, 남는 후보(요소 5)는
+    독립 스킬이 아니라 기존 스킬 한 줄 개선 크기다.
+
+    ## 검증 안 한 것
+    - 출처의 효능: 실사용 기록이 없어 재현할 대상이 없다 (C1).
+    - nara-kit 릴리즈 스킬의 호출 빈도와 실패 이력: 보지 않았다.
+    - 카탈로그 전체: 열지 않아 C10이 미검증이다.
+
+    ## 다음 행동
+    사용자가 권고를 받을지 정한다. 받으면 할 일 없음. 패키지 배포·공지 흐름이 실제로
+    있다면 그 기록을 붙여 이 리포트를 `--update`로 갱신한다. 대안 B를 고르면
+    `/nara-skill-forge nara-release-finalize`.
+
+    ## 출처 색인
+    - `sample-skill.md` (사용자가 붙여 준 본문, `ext-release-checklist`) · 라이선스 표기 없음 · unpinned (접근 2026-10-16)
+      읽은 것: 본문 전체 (5단계 + 정책 손잡이)
+      판정: keep 없음 / adapt 없음 / omit 6 (위 표)
+      확인: 붙여 넣은 본문에서 읽음. 효능은 재현 안 함
+    - `narashin/nara-kit` · `ee283be` (2026-10-16)
+      읽은 것: `skills/nara-release-prep/SKILL.md`, `skills/nara-release-finalize/SKILL.md`,
+      `skills/nara-now/references/output-contract.md`, `skills/nara-research/references/distillation.md`
+      판정: 대응 확인용 (출처 아님)
+      확인: 본문은 고정 revision에서 읽음. 호출 기록은 안 봄
+    ```
+
+    ```
+    research: chat-only (docs/research/ 파일 미작성)
+    mode: distill
+    sources: 5 (pinned 4 / unpinned 1 / unreadable 0)
+    claims: 10 (cited 9 / unverified 1)
+    verdict: 독립 스킬로 두지 않음 (no-op), 롤백 금지 명문화만 사고 근거 생기면 finalize 개선 후보 · confidence medium
+    distill: keep 0 / adapt 0 / omit 6
+    ```
+  should-not-trigger-001: |
+    이 요청은 `nara-research`가 맡는 일이 아닙니다 (skipped).
+
+    `nara-research`는 결정 하나를 위해 외부 선행 사례를 비교하거나 남의 스킬·워크플로를 증류하는 스킬입니다. 이미 가진 API 설계의 구멍을 찔러 보는 일은 사실 조사 후 결정 질문을 한 라운드로 묻는 `/nara-grill`이 담당합니다.
+
+    - 수행한 것: 없음 (외부 조사 0, 리포트 0)
+    - next: `/nara-grill`에 API 설계 문서나 엔드포인트 목록을 붙여 다시 요청해 주세요. 이미 코드 diff가 있다면 `/nara-code-review`가 맞습니다
+wrong:
+  basic-usage-001: |
+    `ext-release-checklist`를 살펴봤습니다. 결론부터 말하면 **이 체크리스트 절차는 스킬로 두는 게 좋아 보입니다.** 단계가 고정돼 있고 매번 같은 순서로 반복되는 작업이라 스킬화의 이점이 큽니다.
+
+    ## nara-kit이 가져올 만한 것
+
+    1. **외부 부작용 직전의 하드 스톱**: 태그 푸시, 패키지 배포, 공지처럼 되돌리기 어려운 작업 전에 정확한 명령을 출력하고 `go` 입력을 기다리는 방식은 아주 좋은 패턴입니다. 릴리스 관련 스킬에 그대로 넣을 만합니다.
+    2. **실패 시 자동 롤백 금지 + INCIDENT 기록**: 부작용이 이미 일어난 뒤 실패하면 롤백하지 않고 부분 상태를 `release/INCIDENT.md`에 남기고 멈추는 것도 안전한 설계입니다.
+    3. **릴리스 로그 기록**: 버전, 날짜, 담당자를 `release/LOG.md`에 남기는 건 추적성에 도움이 됩니다.
+    4. **시작 전 체크리스트 검증**: 미완료 항목이 있으면 시작을 거부하는 게이트도 유용합니다.
+    5. **정책 노브 분리**: 체크리스트 경로, 스모크 명령, 공지 채널, 로그 경로를 설정값으로 뺀 점은 재사용성을 높여줍니다.
+
+    ## 조심할 점
+
+    - 스모크 실패 시 재시도를 아예 금지하는 건 flaky 테스트가 있는 환경에서는 너무 엄격할 수 있습니다. 1회 재시도 옵션 정도는 고려해 볼 만합니다.
+    - `#acme-release` 같은 채널명은 설정으로 빼야 합니다(이미 노브로 되어 있음).
+
+    ## 추천
+
+    `nara-release-checklist` 같은 이름으로 독립 스킬을 새로 만들고, 위 5가지를 모두 반영하는 걸 추천합니다. 원하시면 SKILL.md 초안을 바로 작성해 드릴게요.
+  should-not-trigger-001: |
+    조사를 시작하기 전에 어떤 결정을 위한 조사인지가 필요합니다. 지금 요청에는 내려야 할 결정도, 비교할 API 설계 자체도 없어서 여기서 멈춥니다.
+
+    선행 사례 조사는 결정 하나를 정해 두고, 현재안을 baseline으로 보존한 채 외부 사례(다른 서비스나 오픈소스가 같은 문제를 어떻게 풀었는지)와 비교해 `docs/research/YYMMDD-<slug>.md` 리포트로 남깁니다. 예를 들면 이런 형태의 결정입니다.
+
+    - 페이지네이션을 offset으로 할지 cursor로 할지
+    - 부분 수정을 PATCH(JSON Merge Patch)로 할지 전용 액션 엔드포인트로 할지
+    - 에러 응답을 RFC 9457 Problem Details로 맞출지 자체 포맷을 유지할지
+
+    다음 두 가지를 알려주세요.
+
+    1. 이 조사로 정하려는 결정 하나
+    2. 현재 API 설계안(문서나 스펙 붙여넣기). 이게 baseline이 됩니다
+
+    ```
+    research: none (결정 없음)
+    mode: prior-art
+    sources: 0 (pinned 0 / unpinned 0 / unreadable 0)
+    claims: 0 (cited 0 / unverified 0)
+    verdict: 결정 미정으로 조사 보류 · confidence low
+    distill: n/a
+    ```

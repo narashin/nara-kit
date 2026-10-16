@@ -16,6 +16,7 @@ inputs:
     - path: authz-inconsistency.diff
 expected:
   output_contains:
+    - "fix-ledger:"
     - "권한"
   output_not_contains:
     - "gap 분석"

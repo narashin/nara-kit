@@ -21,6 +21,7 @@ inputs:
     - path: scope-expansion-approved.md
 expected:
   output_contains:
+    - "fix-ledger: match ("
     - "scope-integrity: expanded"
     - "HistoryTable.tsx"
     - "validation: pass"

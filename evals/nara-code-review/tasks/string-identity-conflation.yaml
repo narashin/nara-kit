@@ -30,6 +30,7 @@ expected:
   # forced by the fixture's own ticket format; (b) and (c) admit many valid pairs,
   # so requiring one literal pair would grade phrasing, not detection.
   output_contains:
+    - "fix-ledger:"
     - "head_ref"
     - "startswith"
     - "dedup_key"

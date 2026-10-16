@@ -9,6 +9,8 @@ inputs:
   prompt: "코드 리뷰해줘"
   files: []
 expected:
+  output_contains:
+    - "skipped"
   output_not_contains:
     - "[High]"
     - "[Medium]"

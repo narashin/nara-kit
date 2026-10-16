@@ -1,0 +1,100 @@
+# Grader-validation table for nara-worklog.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-worklog
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    PROJ-431 미기록 작업시간 1h 27m (1일): 승인 대기 (pending escalation, Jira에는 아직 아무것도 쓰지 않음).
+
+    티켓은 ledger의 브랜치 `feature/PROJ-431-edit-planned-date-fe`에서 PROJ-431로 잡았습니다. 시간은 `python3 assets/worklog.py spans PROJ-431` 결과만 근거로 씁니다. 이 ledger에는 watermark(이전 기록)가 없어서 전체 이벤트가 미기록 대상입니다.
+
+    | 날짜 | 티켓 | span | 버킷 합계 |
+    |---|---|---|---|
+    | 2026-09-02 | PROJ-431 | 09:12–10:05 / 12:56–13:30 | **1h 27m** |
+    | | | 일 합계 | **1h 27m** |
+
+    09:20 turn_end부터 09:48 prompt까지 28분은 idle 임계(90분)보다 짧아 출력 읽는 시간으로 보고 작업에 넣었습니다. 10:05부터 12:56까지 2h 51m은 임계를 넘어 자리 비움으로 잘랐고 청구하지 않습니다. 첫 span은 53m, 둘째는 34m입니다. agent가 무인 실행한 시간은 0이고, 1분 미만이라 못 올리는 버킷도 없으며, 일 합계가 8시간보다 한참 적어 이상치도 없습니다.
+
+    쓰기 전에 Jira에서 두 가지를 먼저 읽습니다. `jira_get_issue(PROJ-431)`로 subtask가 있는지 보고, 있다면 이 1h 27m은 `mark` 없이 부모로 잡힌 시간이라 알려 드립니다. `jira_get_worklog(PROJ-431)`로 2026-09-02에 다른 경로로 이미 올라간 기록이 있는지 대조합니다. 겹치면 쓰기 전에 다시 여쭙니다.
+
+    승인하시면 실행할 작업은 이것뿐입니다.
+    1. `jira_add_worklog(issue_key="PROJ-431", time_spent="1h 27m", started="2026-09-02T09:12:00.000+0900")` 1건
+    2. 성공하면 `python3 assets/worklog.py record PROJ-431 --through 2026-09-02T13:30:00+09:00 --seconds 5220 --worklog-id <받은 ID>`
+
+    - artifact: `~/.claude/worklog/PROJ-431.jsonl` (승인 후 watermark 한 줄 append)
+    - side effects: jira 0 (쓰기 전)
+
+    → ESCALATE: 위 표대로 PROJ-431에 2026-09-02 1h 27m을 올릴까요? 시간을 고치시려면 수정값을 알려 주세요. 그 값이 `time_spent`로 쓰이고 span 시각은 근거로 남습니다.
+
+    답 형식: `승인` 또는 `수정 <시간>`
+  edge-case-already-logged-001: |
+    이미 전부 기록됨 (skipped: 올릴 미기록 시간 0).
+    - ticket: PROJ-999 (ledger 브랜치 `fix/PROJ-999-tooltip`) · 미기록 span: 0건
+    - 기존 기록: 2026-09-01 25m (14:00–14:25), worklog id `10021`, 2026-09-01 14:26에 기록
+    - artifact: `~/.claude/worklog/PROJ-999.jsonl` (변경 없음)
+    - side effects: jira 0 (조회·쓰기 모두 호출 안 함)
+    - next: 없음
+
+    티켓을 인자로 받지 않았고 브랜치에서도 뽑을 수 없어서 `python3 assets/worklog.py list`로 미기록 시간이 있는 ledger를 찾았는데, 대상이 없었습니다. 확인 가능한 ledger는 PROJ-999 하나이고, 그 watermark가 `2026-09-01T14:25:00+09:00`으로 마지막 이벤트인 14:25 turn_end와 같습니다. 그래서 `spans PROJ-999`가 내놓는 미기록 span이 없습니다. 올릴 것이 없으니 Jira 호출도, watermark 기록도 하지 않았습니다.
+  should-not-trigger-001: |
+    티켓 상태 전환은 이 스킬(`/nara-worklog`)이 다루는 일이 아닙니다 (skipped).
+
+    `/nara-worklog`는 hook이 쌓은 세션 타임스탬프로 작업시간을 계산해, 승인을 받은 뒤 Jira worklog로 올리는 일만 합니다. 상태를 In Progress로 바꾸지 않았고 Jira에도 아무것도 쓰지 않았습니다.
+
+    - side effects: jira 0
+    - next: 상태 전환은 Jira MCP로 직접 하시면 됩니다. `jira_get_transitions`로 해당 티켓에서 가능한 전환 ID를 확인한 뒤 `jira_transition_issue`로 In Progress 전환을 실행합니다. 어떤 티켓인지(티켓 키)도 함께 알려 주세요.
+wrong:
+  basic-usage-001: |
+    PROJ-431 로그에서 작업시간을 계산했습니다. 질문(prompt)부터 응답 완료(turn_end)까지를 작업 구간으로 보고 합산했습니다.
+
+    | 시작 | 종료 | 시간 |
+    |---|---|---|
+    | 09:12 | 09:20 | 8m |
+    | 09:48 | 10:05 | 17m |
+    | 12:56 | 13:30 | 34m |
+    | **합계** | | **59m** |
+
+    2026-09-02 하루치 59분을 PROJ-431에 기록합니다.
+
+    ```
+    jira_add_worklog(
+      issue_key="PROJ-431",
+      time_spent="59m",
+      started="2026-09-02T09:12:00.000+0900",
+      comment="feature/PROJ-431-edit-planned-date-fe 작업"
+    )
+    ```
+
+    위 내용으로 Jira에 작업시간 59분을 올렸습니다. 구간 사이 대기 시간(09:20~09:48 등)은 작업시간에서 제외했습니다. 포함하고 싶으시면 말씀해 주세요. 수정해서 다시 올리겠습니다.
+  edge-case-already-logged-001: |
+    PROJ-999 로그를 확인했습니다.
+
+    | 시각 | 이벤트 |
+    |---|---|
+    | 2026-09-01 14:00 | 작업 시작 (prompt) |
+    | 2026-09-01 14:25 | 응답 완료 (turn_end) |
+    | 2026-09-01 14:26 | 기록 완료 (logged, 25m, worklog id 10021) |
+
+    14:00~14:25 구간 25분은 이미 worklog `10021`로 올라가 있고, 그 이후에는 새 작업 기록이 없습니다. 그래서 안 올린 시간은 없습니다.
+
+    혹시 이 로그에 잡히지 않은 다른 작업(다른 브랜치나 회의 등)이 있었다면 날짜와 시간을 알려주세요. 따로 추가해 드리겠습니다.
+  should-not-trigger-001: |
+    작업시간을 기록할 티켓부터 정해야 하는데, 인자로 받은 티켓이 없고 브랜치에서도 추출하지 못했습니다.
+
+    ```bash
+    git branch --show-current        # 실패: git 저장소 아님
+    python3 assets/worklog.py list   # 미기록 시간이 있는 티켓 목록
+    ```
+
+    Outcome: 티켓 미결정으로 중단 (skipped, Jira 호출 없음)
+    Evidence: 인자 없음, 현재 디렉터리가 git 저장소가 아니라 브랜치명에서 티켓 키를 뽑을 수 없음
+    Artifact: `~/.claude/worklog/` (ledger, 읽기만 함)
+
+    Next Action:
+    1. 작업시간을 올릴 티켓 키를 알려주세요 (`/nara-worklog PROJ-123`). 위 `list` 결과에서 골라도 됩니다
+    2. 참고로 이 흐름은 worklog 기록만 다룹니다. 티켓 상태를 In Progress로 바꾸는 것은 여기서 하지 않습니다

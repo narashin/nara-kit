@@ -1,0 +1,269 @@
+# Grader-validation table for nara-pr.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-pr
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    ❌ 실패: 비교할 커밋을 찾지 못해 PR 제목과 본문을 만들 수 없습니다.
+    - recovered: yes (아무것도 만들거나 바꾸지 않았습니다)
+    - artifact 영향: none
+    - side effects: github 0 (`gh pr create` 실행 안 함)
+    - next action: PR을 올릴 브랜치가 체크아웃된 저장소에서 다시 요청해 주시거나, base 브랜치를 직접 알려 주세요 (예: `main`).
+
+    base 브랜치 자동 감지가 실패했습니다. 현재 작업 디렉터리에서 `git rev-parse --abbrev-ref @{upstream}`이 아무것도 돌려주지 않았고, 부모 feature 브랜치나 `origin/master`, `origin/main`도 확인되지 않아 `git merge-base`가 기준점을 잡지 못했습니다. 그래서 `git log $BASE..HEAD --oneline` 결과가 0건입니다.
+
+    이 상태에서는 커밋을 분석할 수 없어서 티켓 ID나 변경 유형을 정할 근거가 없고, 확인 방법(QA 표)도 지어낼 수밖에 없습니다. 그래서 초안을 만들지 않고 멈췄습니다. 브랜치가 아직 push되지 않았다면 `git push -u origin <branch>`를 먼저 해 두시면 다음 실행에서 바로 이어갈 수 있습니다.
+  edge-case-001: |
+    ❌ 실패: base 브랜치 이후 커밋이 0건이라 PR을 만들 수 없습니다.
+    - recovered: yes (아무것도 만들거나 바꾸지 않았습니다)
+    - artifact 영향: none
+    - side effects: github 0 (`gh pr create` 실행 안 함)
+    - next action: 변경을 먼저 커밋해 주세요. 커밋 메시지가 필요하면 `/nara-commit`을 쓰시면 됩니다.
+
+    PR 제목과 본문은 `git log $BASE..HEAD`의 커밋에서 뽑습니다. 커밋이 없으면 제목의 티켓 ID와 변경 유형, 본문의 주요 변경과 확인 방법(QA 표)을 채울 근거가 없습니다. 비어 있는 PR을 만들면 리뷰어가 볼 diff도 없습니다.
+
+    커밋을 이미 했는데 0건으로 보이는 거라면 base 브랜치 감지가 엉뚱한 곳을 잡았을 수 있습니다. 감지 순서는 추적 중인 upstream, 부모 feature 브랜치, `origin/master`, `origin/main`입니다. 그 경우 base 브랜치를 직접 알려 주시면 그 기준으로 다시 분석하겠습니다.
+
+    커밋한 뒤에는 순서대로 진행하면 됩니다.
+    1. 커밋 (사용자가 직접 실행)
+    2. `git push -u origin <branch>`
+    3. 다시 `PR 만들어줘` 요청. 그때 repo PR 템플릿과 최근 머지 PR 제목 관례를 먼저 확인하고 초안을 보여 드립니다.
+  existing-pr-edit-001: |
+    기존 PR 본문 갱신: 대기 (PR 정보를 아직 받지 못함, 아무것도 수정하지 않음).
+
+    PR URL이 들어왔으니 새 PR 생성이 아니라 기존 PR 본문을 다시 만들어 `gh pr edit`로 덮어쓰는 모드입니다. 대상 repo가 여기 체크아웃돼 있지 않아도 되지만, 본문을 다시 쓰려면 PR의 현재 상태를 먼저 읽어야 합니다. 호스트는 URL에서 도출해 `git.example.com`으로 지정합니다 (`gh` 기본값인 github.com이 아닙니다).
+
+    ```
+    GH_HOST=git.example.com gh pr view 123 --repo git.example.com/OWNER/REPO \
+      --json number,title,state,baseRefName,headRefName,body,commits,url
+    ```
+
+    이 조회 결과가 없으면 진행할 수 없습니다. 재구조화의 사실 근거는 작성자가 쓴 기존 본문과 커밋 헤드라인뿐이고, 코드가 체크아웃돼 있지 않으니 그 밖의 내용을 확인하거나 보탤 수 없습니다. 지금 본문을 쓰면 지어낸 내용이 됩니다.
+
+    조회가 되면 이렇게 진행합니다.
+    1. base 브랜치는 응답의 `baseRefName`을 그대로 씁니다 (감지 스크립트는 쓰지 않습니다).
+    2. 본문을 요약 / 주요 변경 / 확인 방법 (QA 가이드) / 배포 시 주의사항 / Linked Issues 5섹션으로 다시 씁니다. 기존 본문에 손으로 쓴 메타(브랜치 이름 변경 메모, 대체 PR 참조 등)는 Linked Issues 아래 인용 블록으로 보존합니다. 커밋이 기존 본문 서술과 어긋나면 QA 표에 드러냅니다.
+    3. 요청이 본문 갱신이므로 제목은 유지합니다. 제목이 `<TICKET> <type>: ...` 형식이 아니면 바꾸자고 제안만 하고, 티켓 ID는 기존 PR 것을 유지합니다.
+    4. 새 본문을 보여 드리고 승인을 받은 뒤에만 `GH_HOST=git.example.com gh pr edit 123 --repo git.example.com/OWNER/REPO --body-file <tmp>`를 실행합니다. 원격 PR을 고치는 일이라 확인 없이 실행하지 않습니다.
+
+    - side effects: github 0
+    - next: `git.example.com`에 `gh auth login --hostname git.example.com`이 돼 있는지 확인해 주시거나, 위 `gh pr view` 출력을 붙여 주세요.
+  repo-template-precedence-001: |
+    PR 본문 생성 완료 (recorded only, gh pr create 대기).
+    - base: `origin/main` (upstream) · commits: 2 (`fd70d56` feat, `4a927c8` test)
+    - title: `feat(report): add CSV export for order report (PROJ-77)`
+    - 규칙: template `.github/pull_request_template.md` · title `CONTRIBUTING.md` (최근 머지 PR 5건도 같은 형식)
+    - naranizer skipped: 스타일 프로필 없음 · nara-ko-prose skipped: 규칙 원문 미설치
+    - side effects: github 0 (아직 생성 안 함)
+
+    제목은 CONTRIBUTING.md의 `type(scope): imperative subject (PROJ-123)` 규칙을 따랐습니다. 커밋에서 뽑은 티켓(PROJ-77)과 타입(feat)은 그대로 두고 모양만 바꿨고, scope는 같은 파일을 다룬 #69·#62가 쓴 `report`를 썼습니다. 저장소 관례가 영어 제목이라 subject도 영어로 썼습니다.
+
+    본문은 템플릿 헤딩 4개와 HTML 주석을 그대로 두고 채웠습니다. 내장 섹션(요약·배포 시 주의사항 등)은 붙이지 않았고, 템플릿에 티켓을 받을 헤딩이 없어 `Closes PROJ-77`을 맨 끝에 뒀습니다. 체크리스트는 diff로 확인된 "Tests added or updated"만 체크했습니다. 문서 변경 필요 여부와 시크릿 점검은 작성자가 직접 판단할 항목이라 비워 뒀습니다.
+
+    ```markdown
+    # Title
+    feat(report): add CSV export for order report (PROJ-77)
+
+    # Body
+    <!-- Keep every heading. Delete nothing. Reviewers grep for these. -->
+    ## What
+    <!-- One paragraph: what changes for the user. -->
+    주문 리포트를 CSV 문자열로 내보내는 `to_csv(orders)` 함수를 추가했습니다. 첫 줄은 `id,total` 헤더이고, 그 아래로 주문마다 `id,total` 한 줄씩 들어갑니다. 행 데이터는 기존 `rows(orders)`를 그대로 재사용하므로 리포트 화면과 CSV의 값이 어긋나지 않습니다. 이번 PR에는 이 함수를 호출하는 엔드포인트나 화면이 없어서, 사용자에게 바로 보이는 변화는 아직 없습니다.
+
+    ## Why
+    주문 리포트를 CSV로 내보내는 기능(PROJ-77)의 첫 단계입니다. 내보내기 형식을 리포트 행 생성 로직과 같은 곳에 둬서 이후 다운로드 경로가 붙을 때 그대로 쓰게 했습니다.
+
+    ## Test plan
+    <!-- How a reviewer can verify this without reading the code. -->
+    | 어디서 | 무엇을 하면 | 기존 동작 | 변경 후 동작 |
+    |--------|------------|----------|--------------|
+    | `src/report.py` `to_csv(orders)` (code-only, 호출 경로 없음) | 빈 주문 목록으로 호출 | (기능 없음) | `id,total` 헤더 한 줄만 반환 |
+    | `src/report.py` `to_csv(orders)` (code-only) | 주문 2건으로 호출 | (기능 없음) | 헤더 다음에 주문마다 `id,total` 한 줄, 줄바꿈은 `\n` |
+    | 기존 리포트 행 생성 `rows(orders)` | 기존과 같은 입력으로 호출 | `(id, total)` 튜플 목록 | 동작 변화 없음 (회귀 확인 포인트) |
+
+    참고: 헤더 검증은 `tests/test_report.py`의 `test_to_csv_header`가 다룹니다. 예: `pytest tests/test_report.py` (직접 실행해 검증하지 않았고, 환경에 따라 명령이 다를 수 있습니다). 주문이 있는 경우의 행 출력은 아직 테스트가 없어서 위 표 두 번째 줄은 수동 확인이 필요합니다.
+
+    ## Checklist
+    - [x] Tests added or updated
+    - [ ] Docs updated (or not needed)
+    - [ ] No secrets in the diff
+
+    Closes PROJ-77
+    ```
+
+    실행할 명령 (승인 후):
+
+    ```bash
+    gh pr create --repo acme-sre/order-service --base main --head feature/PROJ-77-export-csv \
+      --title "feat(report): add CSV export for order report (PROJ-77)" \
+      --body-file <위 Body를 저장한 파일>
+    ```
+
+    브랜치는 이미 push돼 있고 같은 head로 열린 PR은 없어서 신규 생성으로 진행합니다. 미기록 작업시간은 `python3 ../nara-worklog/assets/worklog.py list`로 확인할 예정이며, PROJ-77에 미기록 시간이 있으면 한 줄로만 알려 드립니다.
+
+    next: 제목·본문 확인 후 `gh pr create` 실행 여부를 알려 주세요 (진행 / 수정할 부분).
+  should-not-trigger-001: |
+    커밋 메시지 생성은 이 스킬(`/nara-pr`)이 다루는 일이 아닙니다 (skipped).
+
+    `/nara-pr`은 이미 있는 커밋들을 base 브랜치와 비교해 Pull Request 제목과 본문을 만드는 스킬이라, staged 변경으로 커밋 메시지를 짓지는 않습니다.
+
+    - next: `/nara-commit`을 실행해 주세요. staged 변경을 분석해 티켓 ID가 붙은 conventional commit 메시지를 만들어 줍니다. 커밋과 push가 끝난 뒤 PR이 필요하면 그때 `/nara-pr`을 쓰시면 됩니다.
+wrong:
+  basic-usage-001: |
+    PR을 만들려면 먼저 현재 브랜치와 변경 내용을 확인해야 합니다.
+
+    ```bash
+    git status
+    git branch --show-current
+    git log --oneline -10
+    ```
+
+    그런데 지금 작업 디렉터리는 git 저장소가 아닙니다 (`fatal: not a git repository`). 그래서 커밋이나 브랜치 정보를 읽을 수 없었습니다.
+
+    PR을 올리려는 저장소 디렉터리에서 다시 요청해 주시거나, 아래 정보를 알려주시면 바로 제목과 본문을 작성해 드리겠습니다.
+
+    1. 저장소 경로 또는 브랜치 이름
+    2. 어떤 변경인지 간단한 설명 (또는 `git log` 결과)
+    3. 머지할 대상 브랜치 (보통 `main`)
+
+    참고로 일반적으로 쓰는 PR 본문 틀은 이렇습니다.
+
+    ```markdown
+    ## 개요
+    이 PR에서 무엇을 왜 바꾸는지 한두 문장.
+
+    ## 변경 사항
+    - 변경 1
+    - 변경 2
+
+    ## 테스트
+    - [ ] 로컬에서 동작 확인
+    - [ ] 단위 테스트 통과
+
+    ## 관련 이슈
+    - closes #
+    ```
+
+    정보가 준비되면 다음 명령으로 PR을 만들 수 있습니다.
+
+    ```bash
+    git push -u origin <브랜치>
+    gh pr create --base main --title "<제목>" --body-file pr-body.md
+    ```
+  edge-case-001: |
+    커밋이 없으면 PR을 만들 수 없습니다. PR은 대상 브랜치(예: `main`)와 현재 브랜치 사이의 커밋 차이를 보여주는 것이라, 비교할 커밋이 하나도 없으면 GitHub이 `No commits between main and <branch>` 오류로 거부합니다.
+
+    순서는 이렇게 하시면 됩니다.
+
+    ```bash
+    # 1. 작업 브랜치 만들기 (아직 없다면)
+    git checkout -b feature/<작업명>
+
+    # 2. 변경 사항 커밋
+    git add .
+    git commit -m "feat: <변경 내용>"
+
+    # 3. 원격에 푸시
+    git push -u origin feature/<작업명>
+
+    # 4. PR 생성
+    gh pr create --base main --title "feat: <변경 내용>" --body "<설명>"
+    ```
+
+    아직 코드 변경 전이라 PR을 먼저 열어두고 싶으신 거라면 빈 커밋으로 Draft PR을 여는 방법도 있습니다.
+
+    ```bash
+    git commit --allow-empty -m "chore: start <작업명>"
+    git push -u origin feature/<작업명>
+    gh pr create --draft --title "WIP: <작업명>" --body "작업 진행 중"
+    ```
+
+    커밋을 만드신 뒤 말씀해 주시면 커밋 내용을 보고 PR 제목과 본문을 작성해 드리겠습니다.
+  existing-pr-edit-001: |
+    PR #123의 현재 본문과 커밋을 먼저 가져와서 새 포맷으로 다시 쓰겠습니다.
+
+    ```bash
+    gh pr view https://git.example.com/OWNER/REPO/pull/123 --json title,body,commits,files
+    ```
+
+    이 호출 결과를 받지 못해서 현재 본문 내용은 확인하지 못했습니다. 그리고 "현재 포맷"이 정확히 어떤 형식을 말씀하시는 건지도 알려주시면 좋겠습니다. 팀에서 정한 템플릿이 있다면 붙여 주세요. 따로 없다면 아래 일반적인 형식으로 정리하겠습니다.
+
+    ```markdown
+    ## 개요
+    <변경 목적 한두 문장>
+
+    ## 변경 사항
+    - <변경 1>
+    - <변경 2>
+
+    ## 테스트 방법
+    1. <확인 절차>
+
+    ## 체크리스트
+    - [ ] 테스트 추가/수정
+    - [ ] 문서 업데이트
+    ```
+
+    본문을 작성한 뒤에는 다음 명령으로 갱신합니다.
+
+    ```bash
+    gh pr edit https://git.example.com/OWNER/REPO/pull/123 --body-file pr-body.md
+    ```
+
+    현재 본문(또는 PR의 변경 내용)과 원하시는 포맷을 알려주시면 바로 작성해 드리겠습니다.
+  repo-template-precedence-001: |
+    `feature/PROJ-77-export-csv` 브랜치에 아직 열린 PR이 없어서 새로 만드는 기준으로 초안을 작성했습니다. 커밋은 2개(CSV 내보내기 추가, 헤더 테스트)이고 변경 파일은 `src/report.py`, `tests/test_report.py` 두 개입니다.
+
+    **제목**
+
+    ```
+    feat: 주문 리포트 CSV 내보내기 기능 추가 (PROJ-77)
+    ```
+
+    **본문**
+
+    ```markdown
+    ## 개요
+    주문 리포트를 CSV 형식으로 내보낼 수 있도록 `to_csv()` 함수를 추가했습니다.
+
+    ## 변경 사항
+    - `src/report.py`: 기존 `rows()` 결과를 이용해 `id,total` 헤더와 주문별 행을 CSV 문자열로 만드는 `to_csv(orders)` 추가
+    - `tests/test_report.py`: 빈 주문 목록에서도 첫 줄이 `id,total` 헤더인지 확인하는 테스트 추가
+
+    ## 테스트
+    - `pytest tests/test_report.py` 통과
+
+    ## 관련 이슈
+    - PROJ-77
+    ```
+
+    PR 생성 명령은 아래와 같습니다.
+
+    ```bash
+    gh pr create --base main --head feature/PROJ-77-export-csv \
+      --title "feat: 주문 리포트 CSV 내보내기 기능 추가 (PROJ-77)" \
+      --body-file pr-body.md
+    ```
+
+    참고로 현재 `to_csv()`는 값을 그대로 이어 붙이기 때문에, 나중에 문자열 컬럼(쉼표나 줄바꿈이 들어갈 수 있는 값)이 추가되면 표준 `csv` 모듈로 이스케이프 처리하는 편이 안전합니다. 지금 컬럼은 숫자뿐이라 이번 PR에서는 문제되지 않습니다.
+  should-not-trigger-001: |
+    PR 제목·본문 생성을 위해 base branch부터 감지했습니다.
+
+    ```bash
+    git rev-parse --abbrev-ref --symbolic-full-name @{u}
+    git log $BASE..HEAD --oneline
+    ```
+
+    ❌ 실패: base branch 감지 불가
+    - 원인: 현재 디렉터리가 git 저장소가 아님 (`fatal: not a git repository`). 커밋 목록을 수집할 수 없음
+    - 상태: skipped (제목·본문 생성 안 함, `gh pr create` 제안 안 함)
+    - 미기록 작업시간 알림: skipped (티켓 판별 불가)
+
+    Next Action:
+    1. PR을 만들 저장소 디렉터리에서 다시 `/nara-pr` 실행
+    2. base branch를 직접 지정하려면 `main` 등 대상 브랜치를 알려주세요

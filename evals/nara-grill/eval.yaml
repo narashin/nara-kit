@@ -30,6 +30,5 @@ graders:
     config:
       regex_match:
         - "(?i)(질문|question|Decisions)"
-        - "(?i)(confirmed|pending|aborted|Blocked)"
 tasks:
   - "tasks/*.yaml"

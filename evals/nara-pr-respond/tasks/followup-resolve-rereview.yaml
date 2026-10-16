@@ -36,3 +36,9 @@ expected:
     - "You're right!"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(accept|rebut|hold|blocking|suggestion|review)"

@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: pr_structure
-    config:
-      regex_match:
-        - "(?i)(gh pr create|gh pr edit|pull request|PR)"
-        - "(?i)(요약|주요 변경|확인 방법|기존 동작|git log)"
 tasks:
   - "tasks/*.yaml"

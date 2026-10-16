@@ -15,3 +15,9 @@ expected:
     - "commit-composition"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "nara-pr-respond"

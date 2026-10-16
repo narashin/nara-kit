@@ -1,0 +1,103 @@
+# Grader-validation table for nara-pr-review.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-pr-review
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    PR #123 리뷰를 수집 단계에서 중단했습니다 (skipped: 리뷰 미수행).
+
+    override 확인: `.claude/overrides/code-review.md` 없음 → 기본 기준으로 진행하려 했습니다.
+
+    수집은 PR URL의 호스트를 `GH_HOST`로 고정하고 체크아웃 없이 `--repo` 기준으로 아래 순서로 실행합니다.
+
+    ```bash
+    export GH_HOST=github.example.com
+    gh pr view 123 --repo org/repo --json title,body,state,baseRefName,headRefName,commits,files,additions,deletions,labels,reviewRequests
+    gh pr diff 123 --repo org/repo
+    gh pr checks 123 --repo org/repo
+    gh api repos/org/repo/pulls/123/reviews
+    gh api repos/org/repo/pulls/123/comments
+    gh pr view 123 --repo org/repo --json comments
+    # 변경 파일마다: gh api repos/org/repo/contents/<path>?ref=<headRef>
+    ```
+
+    이 명령들의 결과(본문, diff, checks, 리뷰 스레드)를 받지 못했습니다. 부분 데이터로 리뷰를 진행하면 description 정합, CI 신호, 미해결 스레드 판정을 지어내게 되므로 여기서 멈춥니다.
+
+    ❌ 실패: PR #123 수집 결과 없음 (gh pr view/diff/checks 응답 미확보)
+    - recovered: no
+    - artifact 영향: none (`docs/review/` 리포트 미작성)
+    - side effects: none (코멘트 게시 0, approve/request-changes 0)
+    - next action: `gh auth status --hostname github.example.com`으로 해당 호스트 로그인을 확인한 뒤 같은 URL로 `/nara-pr-review`를 다시 호출해 주세요
+
+    ```
+    report: none (수집 단계 중단)
+    dispatch: 미실행 (수집 실패로 code-plane·pr-plane lane 미기동)
+    comments-posted: none
+    ci: 미확인 (gh pr checks 결과 없음)
+    unresolved-threads: 미확인
+    ```
+  should-not-trigger-001: |
+    이 요청은 `nara-pr-review`가 맡는 일이 아닙니다 (skipped).
+
+    `nara-pr-review`는 다른 사람의 PR을 리뷰해 리포트를 만드는 스킬입니다. 내 PR에 달린 리뷰 코멘트를 하나씩 기술적으로 검증해 수용, 반박, 보류로 대응하는 일은 `/nara-pr-respond`가 담당합니다.
+
+    - 수행한 것: 없음 (PR 조회, 코멘트 게시 0)
+    - next: `/nara-pr-respond <PR URL 또는 번호>`로 다시 요청해 주세요
+wrong:
+  basic-usage-001: |
+    PR #123 리뷰를 시작하려고 했는데, 지금 환경에서는 해당 PR 내용을 직접 가져올 수 없습니다.
+
+    제가 실행하려던 명령은 아래와 같습니다.
+
+    ```bash
+    gh pr view 123 --repo org/repo
+    gh pr diff 123 --repo org/repo
+    ```
+
+    `github.example.com` 호스트에 대한 접근 권한이 없어서 diff와 설명을 읽지 못했습니다. 다음 중 하나를 주시면 바로 리뷰하겠습니다.
+
+    1. `gh pr diff 123 --repo org/repo` 출력이나 변경된 파일 내용을 붙여넣기
+    2. PR 설명과 주요 변경 파일 목록
+
+    받으면 아래 관점으로 봐드릴게요.
+
+    - 버그나 로직 오류, 엣지 케이스 누락
+    - 에러 처리와 예외 경로
+    - 보안 문제 (입력 검증, 권한 체크, 비밀값 노출)
+    - 테스트가 변경을 실제로 커버하는지
+    - 가독성, 네이밍, 중복 코드
+    - 성능상 우려되는 부분
+
+    리뷰 결과는 파일별로 정리해서 심각도(필수 수정 / 권장 / 사소함)와 함께 드리겠습니다.
+  should-not-trigger-001: |
+    PR 리뷰를 진행하려면 대상 PR이 필요합니다. 요청에 PR URL이나 번호가 없어서 수집 단계에서 멈췄습니다.
+
+    리뷰는 원격 PR을 코드 평면과 PR 평면(설명과 diff 정합, 커밋 구성, CI 신호, 미해결 논의) 양쪽에서 보고, 결과를 리포트로 남깁니다. 코멘트 게시는 승인하신 finding만 합니다.
+
+    PR URL을 주시면 아래 순서로 수집부터 시작합니다.
+
+    ```bash
+    export GH_HOST=<PR URL의 hostname>
+    gh pr view <번호> --repo <owner/repo> --json title,body,author,commits,reviews,reviewThreads
+    gh pr diff <번호> --repo <owner/repo>
+    gh pr checks <번호> --repo <owner/repo>
+    ```
+
+    현재 작업 디렉터리는 git 저장소가 아니어서 현재 브랜치의 PR을 자동으로 찾을 수도 없었습니다.
+
+    리포트는 `./docs/review/YYMMDD-pr<번호>.md`에 저장되며, 이미 달린 리뷰 스레드는 discussion 커버리지 lane에서 미해결 여부를 함께 요약합니다.
+
+    ```
+    report: none (PR URL/번호 없음)
+    dispatch: inline (수집 전 중단)
+    comments-posted: none
+    ci: pending
+    unresolved-threads: 0
+    ```
+
+    리뷰할 PR의 URL 또는 `owner/repo#번호`를 알려주세요.

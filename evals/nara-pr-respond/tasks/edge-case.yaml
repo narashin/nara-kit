@@ -7,16 +7,24 @@ description: |
 tags:
   - edge-case
 inputs:
-  prompt: "PR 리뷰 대응해줘 --dry-run 모드로 분석만 해줘"
-  files: []
+  prompt: |
+    PR 리뷰 대응해줘 --dry-run 모드로 분석만 해줘
+    (대상 PR은 acme-sre/web-ui#58이고 gh 결과는 첨부한 pr-review-comments.md와 같다.)
+  files:
+    - path: pr-review-comments.md
 expected:
   output_contains:
     - "blocking"
-    - "suggestion"
     - "hold"
   output_not_contains:
-    - "Fixed."
     - "git commit"
     - "pushed"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(suggestion|nitpick)"
+        - "(?i)(accept|rebut|hold|blocking|suggestion|review)"

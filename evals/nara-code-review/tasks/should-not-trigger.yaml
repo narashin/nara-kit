@@ -16,3 +16,9 @@ expected:
     - "[Low]"
     - "Architecture"
     - "5-Agent"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "nara-incident"

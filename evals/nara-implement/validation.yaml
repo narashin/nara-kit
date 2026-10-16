@@ -1,0 +1,109 @@
+# Grader-validation table for nara-implement.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-implement
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    T-1 구현을 시작하지 못했습니다. 상태는 `Blocked`입니다: 구현 근거가 될 `docs/plan.md`가 작업 디렉터리에 없습니다.
+
+    ## Strategy
+
+    수정 전 비파괴 조사만 했습니다. `docs/plan.md`를 읽어 T-1의 목표, 범위, 수용 기준, 검증 방법을 확인하려 했으나 파일이 없고 `docs/` 디렉터리 자체도 없습니다. 연결된 `docs/requirements.md`도 없습니다. T-1이 무엇인지 모르는 상태라 실행 모드(direct/delegated)와 TDD 여부를 제안할 근거가 없어 전략 제안 단계에 들어가지 않았습니다. T-1 내용을 추측해 구현하지 않습니다.
+
+    ## Changed
+
+    없음. 파일 생성·수정·삭제 0건, staged 변경 0건. `docs/plan.md`가 없으므로 유닛 헤딩의 done 표식도 붙이지 않았습니다.
+
+    ## Verification
+
+    실행한 검증 없음 (구현 전 중단). 확인한 사실은 `docs/plan.md` 부재와 `docs/` 부재 두 가지입니다.
+
+    ## Remaining risks
+
+    - plan이 다른 경로(예: `docs/plan/` 아래 별도 파일)에 있다면 그 경로를 알려 주셔야 같은 T-1을 가리키는지 확인할 수 있습니다.
+
+    ## Receipt
+
+    - 상태: `Blocked` (입력 없음: `docs/plan.md` 부재)
+    - Evidence: 작업 디렉터리 조사 결과 `docs/plan.md`, `docs/requirements.md` 모두 없음
+    - applied: no · side effects: none
+    - next: plan이 아직 없으면 `/nara-plan`으로 `docs/plan.md`를 만든 뒤 `/nara-implement docs/plan.md T-1`을 다시 호출해 주세요. 다른 경로에 있으면 그 경로로 다시 호출해 주세요
+  edge-case-001: |
+    구현 전 확인이 필요합니다. 어떤 환경변수를 어떤 값으로 바꿀지가 요청에 없고, 작업 디렉터리에서도 찾을 수 없어 지금은 `Blocked`입니다.
+
+    ## Strategy
+
+    수정 전 비파괴 조사를 했습니다. 작업 디렉터리에 소스, 설정 파일(`.env.example`, config 모듈 등), `docs/plan.md`가 없어 변경 대상인 기본값 정의 위치를 특정하지 못했습니다. 변수 이름과 새 값을 추측해 바꾸지 않습니다.
+
+    대상이 확인되면 아래 전략으로 진행하려 합니다.
+
+    - 실행: direct. 이유: 파일 1~2개의 기계적 변경이고 구현과 검증을 바로 이어 돌리는 편이 분리 비용보다 쌉니다
+    - TDD: 미사용. 이유: 설정 기본값 변경이라 의미 있는 red를 만들 공개 동작 경계가 없습니다. 기본값을 단언하는 기존 테스트가 있으면 그 테스트를 새 값으로 맞추고 실행해 확인합니다
+    - scope: small → implementation notes는 skip (verify에 "small scope, notes skipped" 1줄만 남김)
+    - 완료: 관련 테스트와 타입체크·린트를 실행한 뒤 staged 상태로 정지 (커밋은 `/nara-commit`)
+
+    "작은 변경이야"는 구현 지시이지 위 전략의 승인이 아니어서, 답을 받은 뒤 진행합니다.
+
+    ## Changed
+
+    없음. 파일 수정 0건, staged 변경 0건.
+
+    ## Verification
+
+    실행한 검증 없음 (대상 미확정으로 구현 전 중단).
+
+    ## Remaining risks
+
+    - 기본값은 override가 없는 모든 환경에 적용됩니다. `local`/`dev`/`test`/`prod` 중 어느 환경이 그 기본값에 기대고 있는지는 정의 위치를 본 뒤 함께 보고하겠습니다.
+
+    ## Receipt
+
+    - 상태: `Blocked` (입력 없음: 변수 이름, 새 값, 정의 위치)
+    - Evidence: 작업 디렉터리 조사 결과 설정 파일·소스 없음
+    - applied: no · side effects: none
+    - next: 아래 질문에 답해 주세요
+
+    확인 질문입니다.
+    1. 바꿀 환경변수 이름과 기본값이 정의된 파일 경로는 무엇인가요?
+    2. 새 기본값은 무엇인가요? 특정 환경에만 적용하려는 것이라면 그 환경도 알려 주세요.
+    3. 위 전략(direct, TDD 미사용, staged에서 정지)으로 진행해도 될까요?
+
+    1·2는 값으로, 3은 "진행" 또는 바꿀 부분으로 답해 주세요.
+wrong:
+  basic-usage-001: |
+    `docs/plan.md`를 열어 T-1 작업 단위를 확인하려고 했는데, 현재 프로젝트에 해당 파일이 없습니다.
+
+    ```bash
+    cat docs/plan.md
+    # cat: docs/plan.md: No such file or directory
+    ```
+
+    작업 디렉터리도 비어 있어서 구현할 대상 코드도 확인되지 않습니다. 다음 중 하나를 알려주시면 바로 진행하겠습니다.
+
+    1. `docs/plan.md`의 위치가 다르다면 정확한 경로
+    2. T-1의 내용(목표, 변경 범위, 완료 조건)을 직접 붙여넣기
+    3. 아직 계획 파일이 없다면, 구현하려는 기능을 설명해 주시면 그걸 기준으로 작업하겠습니다
+
+    T-1 내용을 받으면 관련 코드를 찾아 구현하고, 테스트와 타입체크까지 돌려서 결과를 알려드릴게요.
+  edge-case-001: |
+    작은 변경이니 바로 처리할게요. 다만 어떤 환경변수를 어떤 값으로 바꿀지가 요청에 없어서 확인이 필요합니다.
+
+    알려주실 것:
+
+    1. 환경변수 이름 (예: `API_TIMEOUT_MS`)
+    2. 바꿀 기본값 (예: `5000` → `10000`)
+    3. 기본값이 정의된 위치를 아신다면 파일 경로 (예: `.env.example`, `src/config.ts`)
+
+    현재 작업 디렉터리에는 파일이 없어서 제가 직접 찾을 수도 없었습니다.
+
+    참고로 기본값은 보통 여러 곳에 흩어져 있으니, 정보를 주시면 아래를 함께 확인해서 한 번에 맞춰드리겠습니다.
+
+    - 코드 안의 fallback 값 (`process.env.X ?? 'default'` 같은 부분)
+    - `.env.example` 같은 샘플 파일
+    - README나 설정 문서에 적힌 기본값
+    - 해당 값을 검증하는 테스트

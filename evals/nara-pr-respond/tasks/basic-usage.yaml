@@ -8,8 +8,11 @@ tags:
   - basic
   - happy-path
 inputs:
-  prompt: "PR 리뷰 대응해줘"
-  files: []
+  prompt: |
+    PR 리뷰 대응해줘
+    (대상 PR은 acme-sre/web-ui#58이고 gh 결과는 첨부한 pr-review-comments.md와 같다.)
+  files:
+    - path: pr-review-comments.md
 expected:
   output_contains:
     - "accept"
@@ -20,3 +23,9 @@ expected:
     - "You're right!"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(accept|rebut|hold|blocking|suggestion|review)"

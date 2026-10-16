@@ -17,3 +17,11 @@ expected:
     - "blocking"
     - "classify"
     - "review comment"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "/nara-pr([^-a-z]|$)"
+      regex_not_match:
+        - "(?m)^\\s*(\\$\\s*)?gh (pr|api)\\b"

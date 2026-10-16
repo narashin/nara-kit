@@ -13,9 +13,17 @@ inputs:
   files: []
 expected:
   output_contains:
+    - "❌ 실패"
     - "git log"
     - "gh pr create"
   output_not_contains:
     - "git commit"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(gh pr create|gh pr edit|pull request|PR)"
+        - "(?i)(요약|주요 변경|확인 방법|기존 동작|git log)"

@@ -14,9 +14,14 @@ tags:
   - template
   - title
 inputs:
-  prompt: "PR 만들어줘"
+  prompt: |
+    PR 만들어줘
+    (저장소 상태는 첨부한 template-repo-state.md와 같다. gh 결과는 template-repo-gh.md다.)
   files:
+    - path: template-repo-state.md
     - path: template-repo-gh.md
+  # template-repo-state.md is the captured state of the repo that
+  # fixtures/template-repo.sh builds, so a run without tools can take this task.
   # The repo itself is built by fixtures/template-repo.sh (a git repo cannot be
   # an inline fixture). Runs that cannot execute it cannot take this task.
 expected:
@@ -32,3 +37,10 @@ expected:
     - "## 배포 시 주의사항"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(gh pr create|gh pr edit|pull request|PR)"
+        - "(?i)(요약|주요 변경|확인 방법|기존 동작|git log)"
