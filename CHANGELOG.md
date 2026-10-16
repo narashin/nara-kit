@@ -11,6 +11,13 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-10-16
+
+> **업그레이드 시 확인.** 원격에 쓰는 여섯 스킬은 이제 `/nara-<name>`으로만 불린다. `nara-explain` 변경 설명 산출물이 `docs/explain/<target>.html`로 옮겨졌다. 신규 스킬 셋은 `npx skills update`로 들어온다.
+
+### Known issue
+- `nara-explain` 검사기가 인라인 요소(`<em>` 등) 뒤에서 줄이 바뀌고 다음 줄이 `pie`·`flowchart` 같은 도표 키워드로 시작하는 산문을 mermaid로 잘못 실패시킨다. 해당 줄을 이어 쓰면 피할 수 있다
+
 ### Changed (breaking: artifact)
 - **`nara-explain`의 변경 설명(PR·커밋·브랜치·범위·작업 트리)이 HTML 한 장이 됐다.** 산출물이 `docs/explain-<target>.md`에서 `docs/explain/<target>.html`로 바뀐다. 다른 범위(프로젝트·기능·메서드)와 Brief는 그대로 Markdown이고, 변경 설명도 "md로"라고 하면 Markdown이다
   - tiger-kit `tk-explain-diff`의 핵심 산출물이 오프라인 단일 HTML인데, 앞서 이 스킬에 증류할 때 규율만 가져오고 형식을 빠뜨렸다. 이번에 형식과 함께 빠졌던 내용 규칙도 넣었다: 바뀌지 않아야 할 계약·불변식과 그 근거, 같은 입력의 이전/이후 예시, 변경 노드에서 출발해 영향만 보여 주는 의존 그래프, 의도(문서)와 검증된 동작(코드)의 구분
@@ -36,7 +43,7 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 - **원격에 쓰는 여섯 스킬이 명시 호출 전용이 됐다**: `publish-spec`, `spec-revision`, `slack-to-jira`, `worklog`, `jira-triage`, `release-finalize`. 모델이 "준비돼 보인다"는 판단으로 게시·티켓 생성·태그 push를 시작하지 못하게 한다. Claude Code는 프론트매터 `disable-model-invocation: true`, Codex는 새 `agents/openai.yaml`의 `policy.allow_implicit_invocation: false`(Codex는 SKILL.md 플래그를 읽지 않는다)
   - 대가: 이 여섯의 description이 컨텍스트에 실리지 않아 "위키에 올려", "시간 기록해줘" 같은 자연어로는 안 불린다. `/nara-<name>` 또는 `$nara-<name>`으로 부른다. 각 스킬 README의 호출 절을 그렇게 고쳤다
   - Multica autopilot은 등록된 SKILL.md 사본을 쓰므로 이 변경을 재등록 전까지 받지 않는다. 사본을 다시 동기화할 때 autopilot 프롬프트가 스킬을 명시 호출하는지 확인할 것
-  - `waza check`가 이 여섯을 spec compliance 8/9(`spec-allowed-fields: disable-model-invocation`)로 표시한다. Claude Code 호스트 확장이라 agentskills.io 핵심 목록에 없을 뿐이고 `npx skills add . --list`는 56개를 모두 찾는다
+  - `waza check`가 이 여섯을 spec compliance 8/9(`spec-allowed-fields: disable-model-invocation`)로 표시한다. Claude Code 호스트 확장이라 agentskills.io 핵심 목록에 없을 뿐이고 `npx skills add . --list`는 이 여섯도 찾는다
   - 출발점은 tiger-kit의 `user` / `hybrid` 구분이다. 그쪽은 description 접두어와 README 열까지 세 표면을 스크립트로 맞추고, 여기는 두 표면만 둔다
 
 ### Added
