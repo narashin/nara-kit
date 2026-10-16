@@ -11,6 +11,16 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+## [0.27.6] - 2026-10-16
+
+### Fixed
+- **남은 32개 평가 세트에 `validation.yaml`을 만들고, 맞는 답과 틀린 답을 못 가르던 조건을 고쳤다.** 이제 51개 세트 전부에 검증표가 있고 188개 task 중 186개가 가른다. 이번 32개 세트는 처음 101개 중 57개였다. 못 가르는 둘(ui-diff 비교, prototype harness)은 실제 브라우저나 harness 실행 결과가 있어야 맞는 답이 나오는 task라 텍스트 생성으로는 잴 수 없다
+  - **eval 수준 grader 25개 세트를 일반 task로 옮겼다.** 비발동 task의 맞는 답(다른 스킬 안내)을 떨어뜨리던 결함이 16개 task에서 났다
+  - **입력 없이 작업을 요구하던 task 13개에 fixture를 붙였다.** 빈 프로젝트에서 "커밋 메시지 만들어줘", "이 커밋 설명해줘" 같은 요청은 맞는 답이 멈출 수밖에 없었다. staged diff, PR diff, 이 저장소의 커밋 `5773196` `git show`, 앱 라우트와 E2E 분해, memory 디렉터리와 `audit.sh` 결과, 티켓 본문, 대상 소스, 시나리오 파일을 placeholder로 넣었다. incident-fix task가 가리키던 없는 fixture `docs/incident-report.md`도 만들었다
+  - **조건이 스킬 계약과 어긋나던 곳.** rfc는 인터뷰를 먼저 하는데(`skills/nara-rfc/SKILL.md:18`) 한 턴에 전 섹션을 요구했다. golden-path·explain은 산출물 파일과 receipt가 계약인데 파일 안 문구를 응답에서 찾았다. 금지어가 "하지 않는다"는 설명(`reset --hard`, `코드 수정`, `인계 기록`, `ADR`)이나 경로의 일부(`/incident` ⊂ `docs/incident-report.md`)에 걸렸다. 영어 용어만 받던 조건(`score`, `domain`, `golden sample`, `snapshot`)은 맞는 답의 한국어 표현도 받게 했다
+  - **틀린 답이 통과하던 task 8개**는 계약 표지로 가른다: 다른 스킬 안내(`/nara-ui-diff`, `nara-code-review`), 잘못 불린 스킬의 절차 표지(`G0`, `handoff: 없음`), 미리보기, 상태 라벨 `skipped`, 검사기 쪽을 의심하는 판단
+- **식별자 스캔에서 Slack 채널 ID 패턴만 대소문자를 구분하게 했다.** 지난 변경으로 전체를 대소문자 무시로 바꾸자 `C0[0-9A-Z]{8,}`가 소문자 git SHA에 걸렸다. 채널 ID는 대문자라 그 줄만 따로 둔다
+
 ## [0.27.5] - 2026-10-16
 
 ### Fixed
