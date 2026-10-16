@@ -11,11 +11,18 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+## [0.27.1] - 2026-10-16
+
 ### Changed
 - **평가 세트 40개의 `executor`를 `copilot-sdk`에서 `mock`으로 바꿨다.** 이제 51개 전부 mock이다. copilot은 좌석이 없어 한 번도 돌지 않았고, probe가 그 오류로 멈춰 채점기 검증을 할 수 없었다. 바꾼 40개 중 34개는 probe가 통과한다
   - 남은 6개는 실행기와 무관하게 waza가 task YAML을 못 읽었다. 그중 merge-conflict는 `files:`를 `- path: <name>` 대신 문자열(`"fixtures/x"`)로 적은 것이 전부라 고쳐서 probe가 통과한다(release-prep·release-finalize까지 task 10개, 14항목 수정)
   - jira-drain·jira-triage·slack-to-jira·release-prep·release-finalize 다섯 세트(task 22개)는 waza에 없는 task 필드 `expected.regex_match`를 써서 세트 전체가 로드되지 않았다. 패턴을 한 글자도 바꾸지 않고 task 수준 `graders:`(`type: text`, `regex_match`)로 옮겼다. waza가 task 수준 grader를 그 task에만 돌리고, 패턴이 안 맞으면 실패시키는 것을 scratch 세트로 먼저 확인했다. 이제 51개 세트 전부 probe가 통과한다
   - 같은 파일 둘의 task id와 tag에 사내 프로젝트 키가 소문자로 남아 있어(`lyris-be` 등) placeholder(`proj-be`)로 바꿨다. CLAUDE.md의 식별자 스캔이 대소문자를 구분해서 이걸 못 잡았다. 스캔을 대소문자 무시(`-i`)로 바꿨고, 같은 방식으로 찾은 `nara-eli5-note` vault 예시의 `sandy-core/`도 `infra-core/`로 바꿨다
+
+### Fixed
+- **design-studio·design-pack-builder 평가 task의 정규식 조건 26개가 늘 실패하던 문제.** `output_contains`(20개)와 `output_not_contains`(6개)에 `(?i)(...)` 정규식을 적었지만 waza는 이 둘을 글자 그대로 비교해서, 필수 조건은 맞는 답도 떨어뜨리고 금지 조건은 아무것도 막지 못했다. 패턴은 그대로 두고 task 수준 grader의 `regex_match`·`regex_not_match`로 옮겼다. `regex_not_match`가 금지 패턴에서 task를 실패시키는 것은 scratch 세트로 먼저 확인했다
+  - 같은 기준으로 걸린 나머지 3개(retro 1, rewrite 2)는 표 머리줄(`위치 | 문제 | 제안` 등)을 글자 그대로 찾는 조건이라 그대로 뒀다
+  - 이 두 세트에는 `validation.yaml`이 없어, 옮긴 패턴이 맞는 답과 틀린 답을 가르는지는 재지 않았다
 
 ## [0.27.0] - 2026-10-16
 
