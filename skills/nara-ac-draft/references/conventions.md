@@ -42,7 +42,7 @@
 - **Outcome**: `docs/requirements.md` 생성/갱신 (recorded only)
 - **Evidence**: US 수, AC 수 (Happy/Sad/Edge 분포), Unknown 수, `[UNVERIFIED]` 마크 수
 - **Artifact Paths**: `docs/requirements.md`
-- **Next Action**: `nara-gap` 또는 `nara-grill`
+- **Next Action**: `nara-plan` (설계가 흔들리면 `nara-grill` 먼저). `nara-gap`은 구현 뒤 verify 단계에서 부른다 (ADR-0001)
 
 외부 원본 모드에서 만든 AC가 있으면 Evidence에 `[draft]` 수를 적는다.
 
@@ -61,4 +61,4 @@
 ## 외부 의존 정책
 
 - nara-kit standalone 동작 — 외부 plugin 의존 없음
-- Optional 후속: `nara-gap`, `nara-grill`
+- 후속: `nara-plan`, 설계가 흔들리면 `nara-grill`. 구현 뒤 verify에서 `nara-gap`

@@ -13,7 +13,7 @@ Own one feature's planning bundle (a folder under docs/product/: PRD, evidence l
 
 ## 언제 쓰나
 
-- **USE FOR:** "기획 시작", "기능 기획", "PRD 써줘", "기획 이어서", "인터뷰 정리", "근거 정리", "정책 정리", "권한·상태 전이 정리", "IA 정리", "KPI 정의", "planning".
+- **USE FOR:** "기획 시작", "기능 기획", "기획서 써줘", "요구사항 정의서", "스토리보드", "PRD 써줘", "기획 이어서", "인터뷰 정리", "근거 정리", "정책 정리", "권한·상태 전이 정리", "IA 정리", "KPI 정의", "planning".
 - **DO NOT USE FOR:** 방향·마일스톤이 아직 없음 (→ nara-roadmap), 결정 하나만 찔러보기 (→ nara-grill), AC만 필요 (→ nara-ac-draft), 코드 작업 분할 (→ nara-plan), 기술 결정 문서 (→ nara-rfc, nara-adr), Confluence 게시 (→ nara-publish-spec).
 
 ## 왜 있나

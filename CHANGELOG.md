@@ -11,6 +11,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Fixed
+- **`nara-ac-draft`의 다음 단계 안내가 파일마다 다르던 문제.** `SKILL.md`는 `nara-plan`, references는 `nara-gap`·`nara-grill`이었다. gap은 구현 뒤 verify에서 부르므로(ADR-0001) 모두 `nara-plan`(설계가 흔들리면 `nara-grill` 먼저)으로 맞췄다
+
 ## [0.26.0] - 2026-10-16
 
 > **업그레이드 시 수동 조치 필요.** `nara-prep`이 없어졌다. `rm -rf ~/.agents/skills/nara-prep ~/.claude/skills/nara-prep` 후(`~/.claude/skills/`의 항목은 `~/.agents/skills/`를 가리키는 심링크라 링크만 지우면 사본이 남는다) 전역 `add` 명령을 다시 실행한다(`npx skills update`는 전역 설치를 갱신하지 않는다). `/nara-prep`을 부르는 Multica autopilot 지침이나 개인 규칙 파일은 `/nara-ac-draft`로 바꿔야 한다. 스킬 파일만 바꿔서는 이미 등록된 autopilot 사본이 바뀌지 않는다.
@@ -35,6 +38,7 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 - **`nara-grill`에 제품 기획용 압박 축 reference(`references/product-probes.md`)를 더했다.** 대상이 기획 묶음이나 PRD이면 사용자와 근거, 범위, 정책과 권한, 상태와 예외, 데이터, 운영, 측정, 가정 붕괴, 문서 사이 일치 축에서 위험한 결정만 묻는다. 체크리스트로 쓰지 않고, 빠짐없음은 `nara-planning`의 커버리지 표가 맡는다. grill이 문서를 쓰지 않는 계약은 그대로다
 - **`nara-ac-draft`가 기획 묶음을 입력으로 읽는다.** 목표·범위·결정·정책·흐름을 근거로 쓰고, 묶음에 확정된 값은 `[UNVERIFIED]` 대신 그 결정·규칙 이름을 단다. 미결이나 가정 값은 확정으로 옮기지 않고, 묶음끼리 다른 사실은 blocking Open Question으로 올린다. frontmatter에 `product:` 경로를 남긴다
 - **`nara-now`가 기획 묶음의 `status:`를 읽어 추천한다.** 현재 브랜치의 묶음이 `drafting`이면 `/nara-planning <slug>`를 먼저 추천한다. 폴더 존재나 수정 시각으로 추측하지 않으므로, 기획이 끝난 묶음(`handed-off`, `closed`) 때문에 기획으로 되돌아가지 않는다. `measuring` 묶음은 부차 언급 한 줄로만 알린다
+
 
 ## [0.25.0] - 2026-10-16
 
