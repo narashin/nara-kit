@@ -16,7 +16,7 @@ npx skills add narashin/nara-kit --global --agent claude-code --agent codex --sk
 
 - `--global`: 모든 프로젝트에서 사용. 특정 스킬만: `--skill nara-gap --skill nara-code-review`
 - 호출: `/nara-<skill>` (예: `/nara-ac-draft PROJ-1234`), Codex는 `$nara-<skill>`, 또는 자연어 트리거
-- **Update**: `npx skills update` — 단 **이미 설치된 스킬만 갱신한다.** 새로 추가된 스킬을 받으려면 위 `add` 명령을 다시 실행해야 하고, **제거된 스킬은 자동으로 지워지지 않아** 직접 삭제해야 한다
+- **Update**: 위 `add` 명령에 `-y`를 붙여 다시 실행한다. `npx skills update`는 `--global` 설치를 갱신하지 않는다("No project skills to update"). **제거된 스킬은 어느 명령으로도 지워지지 않아** 직접 삭제해야 한다
 - 검증: `ls ~/.claude/skills | grep -c '^nara-'` → 59 (+ `naranizer` = 60)
 
 ### v0.21.0 업그레이드 (breaking)

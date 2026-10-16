@@ -11,7 +11,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
-> **업그레이드 시 수동 조치 필요.** `nara-prep`이 없어졌다. `rm -rf ~/.claude/skills/nara-prep` (Codex는 `~/.codex/skills/nara-prep`) 후 다시 설치한다. `/nara-prep`을 부르는 Multica autopilot 지침이나 개인 규칙 파일은 `/nara-ac-draft`로 바꿔야 한다. 스킬 파일만 바꿔서는 이미 등록된 autopilot 사본이 바뀌지 않는다.
+## [0.26.0] - 2026-10-16
+
+> **업그레이드 시 수동 조치 필요.** `nara-prep`이 없어졌다. `rm -rf ~/.agents/skills/nara-prep ~/.claude/skills/nara-prep` 후(`~/.claude/skills/`의 항목은 `~/.agents/skills/`를 가리키는 심링크라 링크만 지우면 사본이 남는다) 전역 `add` 명령을 다시 실행한다(`npx skills update`는 전역 설치를 갱신하지 않는다). `/nara-prep`을 부르는 Multica autopilot 지침이나 개인 규칙 파일은 `/nara-ac-draft`로 바꿔야 한다. 스킬 파일만 바꿔서는 이미 등록된 autopilot 사본이 바뀌지 않는다.
 
 ### Changed (breaking: skill removal)
 - **`nara-prep`을 `nara-ac-draft`에 합쳤다.** 이제 `docs/requirements.md`를 쓰는 입구는 ac-draft 하나다. 티켓 ID나 URL, 붙여 넣은 본문을 받으면 원문을 가져와 AC를 그대로 옮기고, 한 줄 의도를 받으면 지금처럼 US와 Gherkin AC를 만든다. 원본에 AC가 없을 때만 초안을 쓰고 `[draft]`를 붙여 원문 AC와 구분한다. 예전에는 prep이 AC 없음으로 막히면 ac-draft로 넘어가야 했다

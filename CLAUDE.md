@@ -138,7 +138,7 @@ nara-kit ships as plain Agent Skills — no version manifest, no marketplace, no
 2. Record notable changes under `CHANGELOG.md` `[Unreleased]` (Added/Changed/Removed/Fixed). On release, move `[Unreleased]` under the new `vX.Y.Z` heading and tag the commit. Version bump: skill rename/removal or invocation/artifact-path change = **major**; new skill or additive behavior = **minor**; fix/doc = **patch**.
 3. Push to BOTH remotes: `git push origin main && git push github main && git push --tags` (both).
    (`origin` = LINE internal; `github` = github.com/narashin/nara-kit — consumers install from github).
-4. Consumer side: `npx skills update` (or re-run `npx skills add narashin/nara-kit --global --agent claude-code --agent codex --skill '*'`).
+4. Consumer side: re-run `npx skills add narashin/nara-kit --global --agent claude-code --agent codex --skill '*' -y`. `npx skills update` does not reach a `--global` install (it prints "No project skills to update"), and neither command deletes a removed skill: move the old directory out of `~/.agents/skills/` and drop its `~/.claude/skills/` symlink first. Where the RTK hook is active it rewrites `npx skills` into an npm call that fails; prefix `rtk proxy`.
 
 **Sibling-skill links:** a skill may reference another skill's file with a relative path (`../nara-<other>/references/<file>.md`) instead of duplicating it — the owner skill keeps the knowledge (see `docs/adr/0002-link-sibling-skill-references.md`). This assumes the default `--skill '*'` bulk install, so every such reference MUST state what happens when the file is absent (skip and proceed, or return `Unverifiable`). `waza check` reports these as `link escapes skill directory` **whether or not the target exists** — it is not a breakage detector.
 
