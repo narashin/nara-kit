@@ -11,6 +11,11 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Fixed
+- **`nara-release-finalize`가 릴리스 PR 머지 뒤 재실행에서 태그 단계 전에 멈추던 문제.** 단계 판정의 첫 검사가 `git rev-list origin/<base>..origin/<release>`가 비면 "릴리스할 것 없음"으로 멈추는 것이었다. 릴리스 PR이 GitHub 기본값인 머지 커밋으로 합쳐지면 release 브랜치 커밋이 전부 base의 조상이 되어 이 범위가 빈다. 그래서 "머지 뒤 같은 커맨드를 다시 실행하면 태그를 찍는다"는 흐름이 막혔다. scratch 저장소에서 머지 커밋은 0개, squash는 2개로 재현했고, 고치기 전 스킬도 회귀 task에서 "릴리스할 내용이 없어 중단"하고 태그·PR 확인을 건너뛰었다
+  - 판정 순서를 태그 존재 → 이번 버전 제목의 PR(머지됨이면 Stage B, 열림이면 대기) → PR이 없을 때만 범위 검사로 바꿨다. 지난 사이클 PR을 이번 릴리스로 착각하는 것은 원래대로 버전 제목 대조가 막고, 옛 커밋에 태그를 찍는 것은 Stage B의 `merge-base --is-ancestor` 확인이 막는다
+  - 회귀 task `stage-merged-empty-delta-001`을 더했다(고친 스킬 통과, 고치기 전 스킬 실패, 5/5 판별). fixture PR에 `title: Release v1.5.0`을 넣었고 release-finalize·release-prep task의 옛 호출 `/nara-kit:` 6곳을 고쳤다
+
 ## [0.27.2] - 2026-10-16
 
 ### Fixed

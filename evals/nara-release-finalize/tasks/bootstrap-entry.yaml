@@ -9,7 +9,7 @@ tags:
   - safety
 inputs:
   prompt: |
-    /nara-kit:release-finalize 1.5.0
+    /nara-release-finalize 1.5.0
     (이 repo에는 .claude/release-finalize.local.md 가 없다. .claude/release-prep.local.md 도
     없다. .github/workflows/ 에는 fixtures/deploy-workflow-tagpush.yaml 내용의
     production-deploy.yml 하나가 있다.)

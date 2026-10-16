@@ -10,7 +10,7 @@ tags:
 - safety
 inputs:
   prompt: |
-    /nara-kit:release-finalize 1.5.0
+    /nara-release-finalize 1.5.0
     (.claude/release-finalize.local.md 은 fixtures/config-sample.md 내용과 같다.
     `gh pr list --head pre-release --base main --state all` 결과는
     fixtures/pr-state-merged.json 이다 — PR #82, state MERGED.

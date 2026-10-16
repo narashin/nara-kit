@@ -9,7 +9,7 @@ tags:
   - safety
 inputs:
   prompt: |
-    /nara-kit:release-prep 9.9.9
+    /nara-release-prep 9.9.9
     (config는 fixtures/config-sample.md 내용 그대로 존재. jira_get_project_versions
     결과가 ["1.2.2", "1.2.3"] 이라고 가정 — 9.9.9 없음.)
   files:

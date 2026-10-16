@@ -58,13 +58,16 @@ Entered only when the config file does not exist.
 2. **Detect stage** — decide by *release content*, not PR recency. The release branch is often
    **recreated each cycle**, so prior-cycle PRs share the same `<release_branch>`→`<base_branch>`
    pair and the newest merged one would masquerade as the current release (→ tagging the new
-   version at an old release's commit). Gate on commit delta + tag existence first:
-   - `git rev-list origin/<base_branch>..origin/<release_branch>` empty → nothing to release, stop.
+   version at an old release's commit). The version-title match below is what blocks that, so
+   check in this order:
    - Tag `<tag_prefix><version>` already exists remotely → Stage B (idempotent path).
-   - Else `gh pr list --head <release_branch> --base <base_branch> --state all --json number,state,mergeCommit,url,body,title --limit 5`. A most-recent PR whose title does **not** carry `<version>` is a prior-cycle PR → treat as no matching PR. Trust only a PR matching the current `<version>`:
-     - **No matching PR** → Stage A.
-     - **Matching PR open** → report URL + state, zero side effects, stop. Next: 승인/머지 대기.
+   - `gh pr list --head <release_branch> --base <base_branch> --state all --json number,state,mergeCommit,url,body,title --limit 5`. A most-recent PR whose title does **not** carry `<version>` is a prior-cycle PR → treat as no matching PR. Trust only a PR matching the current `<version>`:
      - **Matching PR merged** → Stage B.
+     - **Matching PR open** → report URL + state, zero side effects, stop. Next: 승인/머지 대기.
+     - **No matching PR** → `git rev-list origin/<base_branch>..origin/<release_branch>` empty → nothing to release, stop. Otherwise Stage A.
+   - Never apply the empty-delta stop before the PR lookup: once the merge PR lands as a merge
+     commit (GitHub's default), every release commit is an ancestor of `<base_branch>`, the
+     range is empty, and the post-merge rerun would stop before tagging.
 3. **Stage A — open merge PR**:
    - Draft the release note: if `develop_branch` is known, reuse `release-prep`'s matching
      algorithm (`git rev-list origin/<base_branch>..origin/<release_branch>`, then
@@ -107,7 +110,8 @@ Entered only when the config file does not exist.
 | Situation | Action |
 |-----------|--------|
 | Config missing | Bootstrap mode (not an error) |
-| No merge PR yet | Stage A: create it |
+| No merge PR yet | Stage A: create it (stop instead if `<base_branch>..<release_branch>` is empty) |
+| Merge PR merged, release commits now in `base_branch` (empty delta) | Stage B: the delta is checked only when no matching PR exists |
 | Most-recent PR is a prior-cycle release (title ≠ `<version>`) | Treat as no matching PR → Stage A |
 | Merge PR still open | Report + stop, zero side effects |
 | Tag already exists remotely | Stop, report existing release, zero side effects |
