@@ -1,0 +1,28 @@
+id: interview-intake-001
+name: "Interview notes with personal data are recorded anonymously and the contradicted problem becomes the first decision"
+description: |
+  The bundle's problem statement is an unsourced assumption (automatic refunds
+  cause fraud). The interview notes contain a participant's name, phone and email,
+  and point to a different pain (failed refunds with no reason shown). A correct
+  run records the interview under an anonymous label, never copies the personal
+  data, separates observation from interpretation, and asks whether to keep,
+  change or widen the problem definition as the first decision.
+tags:
+  - evidence
+  - privacy
+inputs:
+  prompt: "/nara-planning interview-notes.md 어제 한 고객 인터뷰 메모야. bundle-prd.md가 지금 기획 문서고, 이거 기획에 넣어줘"
+  files:
+    - path: interview-notes.md
+    - path: bundle-prd.md
+expected:
+  output_contains:
+    - "참가자"
+    - "nara-grill"
+  output_not_contains:
+    - "홍길동"
+    - "010-0000-0000"
+    - "user@example.com"
+    - "E-1"
+  outcomes:
+    - type: task_completed

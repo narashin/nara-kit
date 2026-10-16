@@ -6,6 +6,8 @@
 
 | 우선순위 | 상황 | 추천 |
 |----------|------|------|
+| 0 | 기획 묶음 중 현재 작업(브랜치 이름에 slug 포함)이 `status: drafting` | "기획 작성 중. `/nara-planning <slug>`로 이어서" |
+| 0-bis | main/master 브랜치이고 `drafting` 묶음이 있음 | 묶음이 하나면 `/nara-planning <slug>`, 여럿이면 slug 목록만 보여 주고 고르지 않는다 |
 | 1 | main/master 브랜치 | "메인 브랜치. 새 작업이면 브랜치 생성 후 `/nara-prep`" |
 | 2 | 비-main 브랜치, requirements.md 없음 | "요구사항 미정리. `/nara-prep`으로 요구사항 정리부터" |
 | 3 | requirements.md 있음, plan.md 없음 | "요구사항 정리됨. `/nara-plan`으로 작업 단위 분할" |
@@ -17,6 +19,8 @@
 | 6-bis | 6의 조건이고, gap.md에 `Needs Confirm` 항목이 있거나 browser-verify 영수증에 `Unverifiable` 축이 있음 | 6의 문구 뒤에 "사람이 볼 항목 {N}건: `/nara-qa-sheet`로 체크리스트 인계" 를 덧붙인다. 판정은 바꾸지 않는다 |
 
 **`gap.md` 부재는 결함이 아니다.** gap은 spine 맨 앞이 아니라 **verify 단계**에서 1회 생성된다 (ADR-0001). 구현 전에 없는 것이 정상이므로 3행에서 `/nara-gap`을 권고하지 않는다 — 구현 변경이 관측될 때(3-ter)부터 verify 대상이다. brownfield 인수인계처럼 "이 코드 얼마나 됐나"를 먼저 알아야 하는 경우에만 사용자가 `gap`을 직접 호출한다.
+
+**기획 묶음은 상태로만 판단한다.** `handed-off`, `closed` 묶음은 추천에 쓰지 않는다. 폴더가 남아 있어도 기획으로 돌아가지 않는다. `measuring` 묶음이 있으면 주 추천은 그대로 두고 부차 언급으로 "`{slug}` 출시 후 측정 기록: `/nara-planning {slug}`" 한 줄만 붙인다. 현재 작업이 아닌 `drafting` 묶음도 부차 언급으로만 다룬다.
 
 **P0 hard gate 우선**: 점수 ≥ 80이어도 P0 Missing 있으면 우선순위 4. 점수만 보고 판단 금지.
 
@@ -41,6 +45,7 @@ gap.md Next Actions의 **상위 1~2개 항목**을 보고 판단:
 - 브랜치: {branch}
 - 변경사항: {modified/untracked 요약}
 - 작업 문서: requirements.md {있음/없음} | plan.md {있음/없음} | gap.md {있음/없음} {있으면 (점수: N/100, P0 Missing: {N}, Gate: ✅/❌/⚠️)}
+- 기획 묶음: {docs/product/*/ 있으면 `slug (status)` 나열. 없으면 생략}
 - 진행: {plan.md 있으면 `T-{done}/{total} 완료 · 다음 T-{N} {제목}`. 없으면 생략}
 - 최근 작업: {마지막 커밋 메시지}
 - 메모: {memory 도구(engram 등) 최근 관련 observation 요약. 도구 없거나 결과 없으면 생략}

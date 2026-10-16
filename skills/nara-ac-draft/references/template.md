@@ -10,6 +10,7 @@ sources: [internal-draft]
 generated_by: nara-ac-draft
 intent: "<verbatim 한 줄 의도>"
 fetched_at: <ISO date>
+product: <docs/product/<slug>/, 기획 묶음을 읽었을 때만>
 confirmed_at: <ISO date when user confirms — initial run에는 omit>
 ---
 ```

@@ -11,6 +11,20 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Added
+- **`nara-planning`: 기능 하나의 기획 묶음(`docs/product/<slug>/`)을 소유하고 흐름까지 이끄는 스킬.** PRD, 근거 원장, 결정 로그, 해당할 때만 정책·흐름·IA, 요청 시 화면 설계서·운영 개발 요청서를 쓴다. PRD 머리의 커버리지 표가 다음 할 일을 고르고, 남의 몫(결정 질문, 인수 기준, 수치 대조)은 동의를 받아 같은 세션에서 `nara-grill`·`nara-ac-draft`·`nara-claim-audit`를 실행한다. 별도 워크플로 스킬이 아니라 산출물을 소유한 스킬이 흐름을 이끄는 형태다
+  - 지어내지 않기: 근거 없는 수치·정책·일정은 본문에 쓰지 않고 미결로 둔다. 사용자가 채우라고 하면 `[가정]` 라벨, 측정해야 아는 기준선은 가정으로도 채우지 않는다
+  - 문서끼리 대조: PRD·정책·흐름·IA·인수 기준·코드에서 같은 사실이 다르게 적혔는지 맞춰 보고, 어긋나면 어느 쪽도 고르지 않고 결정으로 올린다
+  - 번호 참조(`E-3`, `P-1`, `PROJ-123 참고`) 대신 뜻을 쓰고 추적 키는 HTML 주석으로 숨긴다. 인터뷰 원문과 개인정보는 저장소 밖에 둔다. 응답은 존댓말과 결론·먼저 정할 것·이번에 한 일·진행 상황 형식
+  - 상태값(`drafting | handed-off | measuring | closed`)은 이 스킬만 바꾸고, 개발 중인 기능의 인수 기준만 `docs/requirements.md`에 두며 나머지는 묶음 안으로 옮긴다(복사 아님)
+  - 측정: skill-creator 반복 5회, 시나리오 5개(새 기능 시작, 인터뷰 정리, 숫자를 채워 달라는 압박, 화면 설계서, 운영 개발 요청서)를 스킬 사용·미사용으로 1회씩 돌렸다. 마지막 회차 통과율 100% 대 77%, 시간은 약 2.4배, 토큰은 약 42% 더 든다. 각 1회 실행이라 경향이고 증명이 아니다
+  - 출처: phuryn/pm-skills `01f0c62`(MIT)에서 인터뷰 원칙, 가정 분류, KPI 정의표, 6요소 가치 제안, 핵심·조건부 문서 구조 등을 규칙만 골라 다시 썼다
+
+### Changed
+- **`nara-grill`에 제품 기획용 압박 축 reference(`references/product-probes.md`)를 더했다.** 대상이 기획 묶음이나 PRD이면 사용자와 근거, 범위, 정책과 권한, 상태와 예외, 데이터, 운영, 측정, 가정 붕괴, 문서 사이 일치 축에서 위험한 결정만 묻는다. 체크리스트로 쓰지 않고, 빠짐없음은 `nara-planning`의 커버리지 표가 맡는다. grill이 문서를 쓰지 않는 계약은 그대로다
+- **`nara-ac-draft`가 기획 묶음을 입력으로 읽는다.** 목표·범위·결정·정책·흐름을 근거로 쓰고, 묶음에 확정된 값은 `[UNVERIFIED]` 대신 그 결정·규칙 이름을 단다. 미결이나 가정 값은 확정으로 옮기지 않고, 묶음끼리 다른 사실은 blocking Open Question으로 올린다. frontmatter에 `product:` 경로를 남긴다
+- **`nara-now`가 기획 묶음의 `status:`를 읽어 추천한다.** 현재 브랜치의 묶음이 `drafting`이면 `/nara-planning <slug>`를 먼저 추천한다. 폴더 존재나 수정 시각으로 추측하지 않으므로, 기획이 끝난 묶음(`handed-off`, `closed`) 때문에 기획으로 되돌아가지 않는다. `measuring` 묶음은 부차 언급 한 줄로만 알린다
+
 ## [0.25.0] - 2026-10-16
 
 > **업그레이드 시 수동 조치 필요.** `nara-reflect`, `nara-meta-feedback`, `nara-memory-audit`가 없어졌다. `npx skills update`는 지워진 스킬을 지우지 않으므로 설치본에 옛 사본이 남는다. `rm -rf ~/.claude/skills/nara-reflect ~/.claude/skills/nara-meta-feedback ~/.claude/skills/nara-memory-audit` (Codex는 `~/.codex/skills/` 같은 이름) 후 update. 옛 이름을 부르는 Multica autopilot이나 개인 규칙 파일도 새 이름으로 바꿔야 한다.

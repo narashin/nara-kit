@@ -17,7 +17,7 @@ description: >-
 ## 실행
 
 0. **덮어쓰기 가드** — `docs/requirements.md` 이미 존재하면 write 전 사용자 확인 필수. 특히 `sources:`가 `[internal-draft]`가 **아닌** 경우(= prep이 외부 SoT로 로컬화한 산출물) 무단 덮어쓰기 금지 — clobber 시 데이터 손실. 확인 없이 진행 금지. 자기 `[internal-draft]` 산출물 재생성이 승인되면 기존 파일의 AC-ID를 로드해 재사용한다 (규칙 "AC-ID 안정" 준수).
-1. **Context** — intent verbatim. 코드 scan으로 actor/domain. 못 찾으면 `[NOT FOUND]`
+1. **Context** — intent verbatim. 코드 scan으로 actor/domain. 못 찾으면 `[NOT FOUND]`. 기획 묶음(`docs/product/<slug>/`)이 있으면 함께 읽는다 ([Pipeline](references/pipeline.md) Stage 1)
 2. **Decomposition** — Who/What/Why 3축. 불확실 `[NEEDS_CONFIRMATION]`. Why 없으면 US 거부
 3. **S2 Discovery** — US 1.5~2.5x 과생성. Tag Happy/Sad/Edge. Gherkin AC 1~3. 근거 없는 구체값 `[UNVERIFIED]`
 4. **S3 Selection** — ratio 0.4~0.6. AC-ID 확정. `Unknown` never empty. AC마다 `browser-visible` 태그 부여 (아래 규칙)
@@ -28,6 +28,7 @@ description: >-
 - US "so that" 절 의무
 - `[UNVERIFIED]` — intent/코드 근거 없는 모든 구체값
 - AC-ID 안정 (재실행 시 ID 유지)
+- 기획 묶음을 읽었으면 frontmatter `product: docs/product/<slug>/`를 남긴다. 묶음의 결정 로그나 정책에 확정된 값은 `[UNVERIFIED]` 대신 그 결정·규칙 이름을 근거로 단다. 묶음과 다르게 쓰지 않는다
 - 구현 디테일 금지 — observable behavior만
 - FR↔AC 1:1 — US verbatim 재기술
 - **`browser-visible: yes|no|unknown`** — AC마다 필수. 판단은 그 AC가 **화면에서 관측되는 동작**(UI 요소 표시·화면 전이·표시 문구·입력 반응)을 말하는지로만. 서버 계산·데이터 정합·배치는 `no`. 근거 부족하면 `unknown` (추측 금지). 태그는 메타데이터 — AC 본문·ID·순서를 바꾸지 않는다. `yes` 항목의 런타임 검증은 `nara-browser-verify`가, 검증 경로 확정은 `nara-plan`이 소유한다

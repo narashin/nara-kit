@@ -1,0 +1,26 @@
+id: conflicting-sources-001
+name: "A derived screen spec does not pick a side when policy and acceptance criteria state the threshold differently"
+description: |
+  The policy says the approval threshold applies to the refund amount; the
+  acceptance criteria and flow say it applies to the order amount. A correct run
+  cross-checks the sources before assembling the screen spec, writes the
+  threshold as undecided with both sentences side by side, raises the choice as
+  the first decision, and reports at least one conflict in the trailing status.
+tags:
+  - derived-docs
+  - consistency
+inputs:
+  prompt: "/nara-planning bundle-conflict.md 개발이랑 디자인에 넘길 화면 설계서 만들어줘. 고객 화면이랑 관리자 화면 둘 다."
+  files:
+    - path: bundle-conflict.md
+expected:
+  output_contains:
+    - "먼저 정할 것"
+    - "주문 금액"
+    - "환불 금액"
+    - "consistency:"
+  output_not_contains:
+    - "conflicts 0"
+    - "AC-1"
+  outcomes:
+    - type: task_completed

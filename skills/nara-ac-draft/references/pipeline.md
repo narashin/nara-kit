@@ -11,6 +11,12 @@
   - 기존 actor 정의 (auth roles, user model, permission enum)
   - 도메인 어휘 (intent 키워드와 코드 식별자 매칭)
 - 못 찾는 항목은 `[NOT FOUND]` 마크
+- 기획 묶음 수집: 사용자가 묶음 경로를 주었거나 `docs/product/*/prd.md` 중 상태가 `drafting`이고 현재 브랜치 slug와 맞는 것이 있으면 읽는다. 맞는 묶음이 여럿이면 고르지 않고 사용자에게 묻는다
+  - `prd.md`: 목표(US의 Why 근거), 범위·비범위(Out of Scope 근거), 결정 로그(확정 값)
+  - `policy.md`: 역할(actor 후보), 권한, 상태 전이, 기준값
+  - `flows.md`: 단계(When 후보)
+  - 묶음에서 가져온 값은 그 결정·규칙 이름을 근거로 단다. 묶음에 `미결`이나 `[가정]`으로 적힌 값은 확정으로 옮기지 않고 `[UNVERIFIED]` 또는 Open Questions로 둔다
+  - 묶음끼리 다르게 적힌 사실(예: 정책과 흐름의 기준값이 다름)을 발견하면 한쪽을 고르지 않고 blocking Open Question으로 올린다
 - 사용자에게 묻지 않음 — 수집 우선
 
 **Output**: 내부 컨텍스트 노트 (다음 단계 입력).

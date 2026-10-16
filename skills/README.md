@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**60 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**61 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -19,6 +19,7 @@
 | `nara-grill` | Pressure-test an idea/design/plan — fact-first, every answerable decision per round (설계 탐색 단계) / 사실 조사 후 답할 수 있는 결정을 한 라운드에 묻고 의존 질문만 미룸 |
 | `nara-research` | Compare external prior art for one pending decision, or distill a source skill/repo into keep/adapt/omit (every source pinned to a revision) → `docs/research/*.md` / 결정 하나를 위한 외부 선행 사례 비교 또는 남의 스킬·repo 증류. 제안만, 적용은 skill-forge·adr |
 | `nara-ask-repo` | Answer one concrete question about a repo's behavior — this repo, another checkout, or a remote GitHub repo pinned to a commit — read-only, `path:line` beside every claim / 저장소 동작 질문 하나에 근거로 답한다 (값 출처·존재 여부·영향 범위·책임 위치, 다른 저장소도) |
+| `nara-planning` | Own one feature's planning bundle (`docs/product/<slug>/`: PRD, evidence ledger, decision log, conditional policy/flow/IA) and drive it by a coverage table; offers grill/ac-draft/claim-audit in-session on consent / 기능 기획 묶음 소유 + 커버리지 표로 다음 단계 안내·이어 가기 |
 | `nara-roadmap` | Turn an unclear situation into a constraint-aware roadmap: frontier-round interview, fixed/negotiable/unknown constraints, milestones with completion evidence, recurring ops apart, no-go is a valid end; chat by default, saved on request / 불분명한 상황 → 제약 기반 로드맵 (repo 없는 기획도). 대화 기본, 요청 시 `docs/plan/roadmap-*.md` |
 | `nara-plan` | Split a spec into independently verifiable vertical work units → `docs/plan.md` / 스펙을 독립 검증 가능한 수직 작업 단위로 분할 |
 | `nara-rfc` | Write RFC document in Korean Markdown / RFC 문서 작성 |

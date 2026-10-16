@@ -26,7 +26,7 @@ description: >-
 7. **공유 이해 확인**: 결정·이유·의도적으로 열어 둔 가정을 짧게 요약해 보여 주고, 사용자가 그 요약이 맞다고 확인한 결정만 `confirmed`로 둔다.
 8. 합의 전에 구현하거나 문서를 수정하지 않는다.
 
-대상이 설계(구현 전 설계, 대규모 리팩터링 계획, API 설계, 모듈 경계)면 사실 조사와 질문 선정에 [design-probes](references/design-probes.md)의 압박 축을 사용한다. 이미 코드 diff가 존재하면 이 스킬이 아니라 `nara-code-review`로 리다이렉트한다.
+대상이 설계(구현 전 설계, 대규모 리팩터링 계획, API 설계, 모듈 경계)면 사실 조사와 질문 선정에 [design-probes](references/design-probes.md)의 압박 축을 사용한다. 대상이 제품 기획(기능 PRD, `docs/product/<slug>/` 기획 묶음, 정책·흐름·화면 구조)이면 [product-probes](references/product-probes.md)의 압박 축을 같은 방식으로 쓴다. 이미 코드 diff가 존재하면 이 스킬이 아니라 `nara-code-review`로 리다이렉트한다.
 
 같은 domain 용어가 다른 의미로 쓰이거나 인접 개념 구분이 결정에 필요하면 그 의미를 질문한다. 확정된 용어는 이후 `nara-prep`/`nara-ac-draft` 산출물에 담을 수 있지만, 이 스킬은 glossary·domain 문서·ADR을 자동 생성·수정하지 않는다.
 
@@ -38,6 +38,6 @@ description: >-
 
 내용이 있는 섹션만 사용한다: `## Decisions` / `## Assumptions` / `## Remaining risks` / `## Receipt`. Receipt에는 각 결정과 `confirmed | pending | aborted | Blocked`, 사용자 답변 또는 근거 위치(`파일:라인`), 적용 여부를 기록한다. 미룬 질문이 있으면 무엇에 걸려 있는지 함께 적는다.
 
-**다음**: 결정이 확정되면 `/nara-plan`. 구조 결정이 있었으면 `/nara-adr`.
+**다음**: 결정이 확정되면 `/nara-plan`. 구조 결정이 있었으면 `/nara-adr`. 대상이 기획 묶음이면 `/nara-planning`이 확정 결정을 결정 로그에 기록한다.
 
 Provenance: frontier 라운드, 의존 갈래 보류, 완료 점검, 공유 이해 확인은 tiger-kit `tk-grill`(MTGVim/tiger-kit `5e35b6a`, MIT)에서 가져왔다. 판정 4종과 "침묵은 동의가 아니다"는 nara-kit 쪽 계약이다.
