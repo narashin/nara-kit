@@ -106,4 +106,4 @@ Contract enforcement gate — without trailing status, the review is incomplete.
 has a bare-word form; every verdict carries its evidence. Any MISMATCH → `→ ESCALATE:`
 under the block, never reported as applied; `expanded` (disclosed + approved) is neither.
 
-**다음**: 리포트 확인 후 `/nara-reflect` → `/nara-pr`.
+**다음**: 리포트 확인 후 `/nara-retro`(배운 것이 있으면) → `/nara-pr`.

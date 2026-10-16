@@ -55,7 +55,7 @@ Next Action 규칙:
 
 ## 3-bis. 주장 provenance 라벨 (4-tier)
 
-§3 상태 라벨이 **행위 상태**(기록/적용/격상/스킵)라면, provenance 라벨은 **주장의 근거 수준**이다 — 관찰인가 추론인가 결정인가 제안인가. gap·reflect·incident·code-review·prep이 각자 "evidence" 의미를 재발명하지 않도록 **단일 어휘** 사용. 주장의 근거가 자명하지 않을 때 붙인다.
+§3 상태 라벨이 **행위 상태**(기록/적용/격상/스킵)라면, provenance 라벨은 **주장의 근거 수준**이다 — 관찰인가 추론인가 결정인가 제안인가. gap·retro·incident·code-review·prep이 각자 "evidence" 의미를 재발명하지 않도록 **단일 어휘** 사용. 주장의 근거가 자명하지 않을 때 붙인다.
 
 | 라벨 | 의미 | 규칙 |
 |------|------|------|
@@ -214,13 +214,22 @@ vs 단순 추천:
 - next: <80 → 구현 계속 | 80+ → /nara-code-review
 ```
 
-### /nara-reflect
+### /nara-retro
 ```
-세션 학습 캡처 완료.
-- memory: recorded <n>개 항목
-- handoff: `docs/handoff.md` 작성 or 없음
+회고 완료 (recorded only | applied).
+- 학습 <n>: memory <a> · 추천 <b> · no change <c> · discard <d>
+- memory: <파일 경로> / 도구 레코드 <id> | 없음
 - → ESCALATE: <CLAUDE.md/ADR 후보 있으면> 또는 생략
-- next: <세션 종료 | 사용자 확인>
+- next: <남은 사람 할 일 | 없음>
+```
+
+### /nara-handoff
+```
+인계 기록 (applied).
+- artifact: `docs/handoff.md` (baseline: <sha>)
+- in progress: <n> (carry-forward <k>, 신규 <m>, 해소 제거 <r>)
+- open questions: <n>
+- next: 다음 세션 `/nara-now`
 ```
 
 ### /handoff-read (또는 /nara-now가 handoff.md 감지 시)
@@ -346,7 +355,7 @@ EPT 완료 (applied).
 
 ## 13. 점진 적용
 
-- ✅ 1차 (워크플로우 골격): `/nara-now`, `/nara-prep`, `/nara-gap`, `/nara-reflect`, `/handoff`
+- ✅ 1차 (워크플로우 골격): `/nara-now`, `/nara-prep`, `/nara-gap`, `/nara-retro`, `/nara-handoff`
 - ✅ 2차 (코드 라이프사이클): `/nara-commit`, `/nara-pr`, `/nara-code-review`, `/nara-pr-respond`, `/nara-publish-spec`
 - ✅ 3차 선별 (문서·메타): `/nara-rfc`, `/nara-adr`, `/nara-skill-forge`, `/nara-empirical-prompt-tuning`
 - 일반 원칙 흡수 (명시 receipt 없이 CLAUDE.md 4요소 자동 적용): `/nara-explain`, `/nara-incident`, `/nara-incident-fix`, `/nara-test-discover`, `/nara-test-verify`, `/nara-test-implement`, `/nara-design-md`, `/nara-spec-revision`

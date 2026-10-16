@@ -299,12 +299,12 @@ N          = Implemented + Needs Confirm     # §3 계열 확정 후의 카운�
 
 #### Resolution 값
 
-| 값 | 의미 | reflect 동작 |
+| 값 | 의미 | retro·handoff 동작 |
 |---|---|---|
-| `Agreed Exception` | Deviation/Open Q [confirm]이 Agreed Exceptions로 이동 | Warnings 승격 skip |
-| `Spec Revise Candidate` | Open Q [revise]가 gap.md `Spec Revise Candidates`로 surface | handoff Open Questions skip |
-| `Evidence (Implemented)` | Design decision이 Implemented evidence로 매핑 | 평소대로 처리 (메모리 승격 평가) |
-| `Reviewer Context` | Tradeoff/매칭 실패 entry가 Needs Confirm으로만 추가 | 평소대로 처리 (ADR 후보 평가) |
+| `Agreed Exception` | Deviation/Open Q [confirm]이 Agreed Exceptions로 이동 | retro: Warnings 승격 skip |
+| `Spec Revise Candidate` | Open Q [revise]가 gap.md `Spec Revise Candidates`로 surface | handoff: Open Questions skip |
+| `Evidence (Implemented)` | Design decision이 Implemented evidence로 매핑 | retro: 평소대로 처리 (메모리 승격 평가) |
+| `Reviewer Context` | Tradeoff/매칭 실패 entry가 Needs Confirm으로만 추가 | retro: 평소대로 처리 (ADR 후보 평가) |
 
 #### 멱등성 규칙
 

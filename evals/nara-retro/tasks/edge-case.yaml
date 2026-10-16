@@ -1,0 +1,18 @@
+id: edge-case-001
+name: "Nothing actionable ends in one line"
+description: |
+  A read-only session produced no decision, convention or incident. The skill
+  must end with the single no-op line instead of inventing findings.
+tags:
+  - edge-case
+inputs:
+  prompt: "회고해줘. 이번 세션에서는 코드 읽기만 했고 아무것도 안 바꿨어"
+  files: []
+expected:
+  output_contains:
+    - "특이사항 없음"
+  output_not_contains:
+    - "learnings.md"
+    - "MEMORY.md"
+  outcomes:
+    - type: task_completed

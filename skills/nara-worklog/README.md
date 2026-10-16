@@ -17,7 +17,7 @@
 ## 언제 쓰나
 
 - **USE FOR:** "worklog", "시간 기록해줘", "지라에 시간 올려", "작업 시간 올려줘", "안 올린 시간 있나".
-- **DO NOT USE FOR:** 티켓 생성 (→ nara-slack-to-jira), 티켓 상태 전환 (→ jira MCP 직접), 큐 분류 (→ nara-jira-triage), 세션 회고 (→ nara-reflect).
+- **DO NOT USE FOR:** 티켓 생성 (→ nara-slack-to-jira), 티켓 상태 전환 (→ jira MCP 직접), 큐 분류 (→ nara-jira-triage), 세션 회고 (→ nara-retro).
 
 ## 왜 이렇게 쪼갰나
 

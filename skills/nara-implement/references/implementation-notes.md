@@ -2,7 +2,7 @@
 
 구현 중 **spec ↔ 코드 drift**를 추적하는 running log. `medium`/`large` scope에서 execute 진입 시 `docs/implementation-notes.md`를 자동 생성한다.
 
-> 이 계약은 원래 `nara-workflow-dev-mode`가 들고 있었으나, 실사용 측정 결과 그 스킬이 60일간 1회 호출된 반면 `nara-implement`는 실제로 실행되므로 이리로 옮겼다. 파일 경로·섹션명·카테고리 정의는 **바뀌지 않았다** — `nara-gap --verify`와 `nara-reflect`가 같은 구조를 계속 읽는다.
+> 이 계약은 원래 `nara-workflow-dev-mode`가 들고 있었으나, 실사용 측정 결과 그 스킬이 60일간 1회 호출된 반면 `nara-implement`는 실제로 실행되므로 이리로 옮겼다. 파일 경로·섹션명·카테고리 정의는 **바뀌지 않았다** — `nara-gap --verify`, `nara-retro`, `nara-handoff`가 같은 구조를 계속 읽는다.
 
 ## 파일 구조
 
@@ -27,7 +27,7 @@
 ## Reconciliation Log
 
 > Written by `nara-gap --verify`. Do not edit manually.
-> Tracks which notes entries above have been resolved to gap.md outcomes. Prevents `/nara-reflect` from re-processing already-resolved entries.
+> Tracks which notes entries above have been resolved to gap.md outcomes. Prevents `/nara-retro` and `/nara-handoff` from re-processing already-resolved entries.
 
 | Note ID | Mapped Gap Item | Resolution | Date | Source |
 |---|---|---|---|---|
@@ -84,7 +84,7 @@
 
 - `Deviations` → ADR 후보 (구조적 변경 시 `/nara-adr` 호출)
 - `Open questions` → 다음 세션 `/nara-now`가 surface
-- `Design decisions` → `/nara-reflect`가 메모리 승격 평가
+- `Design decisions` → `/nara-retro`가 메모리 승격 평가
 - `Tradeoffs` → code-review 시점에 리뷰어가 확인
 
 ## 형식

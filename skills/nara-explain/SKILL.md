@@ -3,7 +3,7 @@ name: nara-explain
 description: >-
   Generate shareable explanations of code, features, projects, or PRs tailored to a specific audience.
   USE FOR: "explain", "설명해줘", "explain to PM", "발표 자료", "온보딩 문서", "이 PR 뭐 바꿨는지 설명해줘", "이 커밋 설명", "diff 설명".
-  DO NOT USE FOR: learning-focused explanations (use explain-like-senior), code review, documentation generation.
+  DO NOT USE FOR: learning-focused explanations (use explain-like-senior), code review, documentation generation, a single repo question answered with path:line evidence (use nara-ask-repo).
 ---
 
 # Explain

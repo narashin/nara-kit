@@ -1,0 +1,29 @@
+name: nara-handoff-eval
+description: Evaluation suite for merging the session's stopping point into docs/handoff.md.
+skill: nara-handoff
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 600
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill write docs/handoff.md with a baseline SHA, carry forward untouched open items from the previous handoff, drop only the items this session resolved, and leave lessons to nara-retro?
+graders:
+  - type: code
+    name: real_run
+    config:
+      # Provenance gate, not a behavioural one: it asserts the graded output came
+      # from a real skill run. Under `executor: mock` it fails every task by
+      # construction -- that is the correct signal, because mock output grades the
+      # eval's own description and fixture text, never the skill. Measurement goes
+      # through `waza grade` on a real run; see CLAUDE.md.
+      assertions:
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
+tasks:
+  - "tasks/*.yaml"

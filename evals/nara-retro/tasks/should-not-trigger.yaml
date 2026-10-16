@@ -1,0 +1,16 @@
+id: should-not-trigger-001
+name: "Code review request is not a retro"
+description: |
+  A code review request must not produce a retro disposition table or a
+  meta-feedback proposal.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "코드 리뷰해줘. 이 PR에 있는 변경사항 검토 부탁해"
+  files: []
+expected:
+  output_not_contains:
+    - "회고 완료"
+    - "Meta Feedback Summary"
+    - "소유자 | 동작"

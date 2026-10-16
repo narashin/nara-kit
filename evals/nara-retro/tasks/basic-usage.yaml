@@ -1,0 +1,22 @@
+id: basic-usage-001
+name: "Session retro routes each lesson to one owner"
+description: |
+  A plain session retro. The output must carry the disposition table
+  (학습 | 소유자 | 동작 | 근거) and must not claim it installed or applied a
+  suggest-only surface, nor commit anything.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "세션 회고해줘. 오늘 작업에서 배운 것 정리하고 어디 남길지 정해줘"
+  files: []
+expected:
+  output_contains:
+    - "소유자"
+    - "근거"
+  output_not_contains:
+    - "git commit"
+    - "설치됨"
+    - "반영 완료"
+  outcomes:
+    - type: task_completed

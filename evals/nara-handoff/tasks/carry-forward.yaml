@@ -1,0 +1,27 @@
+id: carry-forward-001
+name: "Untouched items survive, resolved ones go"
+description: |
+  The previous handoff has two in-progress items and one open question. This
+  session finished only the streaming item. A correct run keeps the locale item
+  and the currency question, removes the streaming item, records a new baseline,
+  and does not overwrite the file wholesale.
+tags:
+  - basic
+  - merge
+inputs:
+  prompt: |
+    docs/handoff.md (첨부한 handoff-previous.md 내용) 이어서 인계 남겨줘.
+    이번 세션에서 대용량 스트리밍은 스트림 API로 바꿔서 끝냈고 테스트도 통과했어(pnpm test export).
+    헤더 로캘이랑 통화 기호는 아직 아무도 답 안 줬어. 지금 HEAD는 5773196이야.
+  files:
+    - path: handoff-previous.md
+expected:
+  output_contains:
+    - "docs/handoff.md"
+    - "5773196"
+    - "로캘"
+    - "통화"
+  output_not_contains:
+    - "10만 행 이상에서 메모리 급증"
+  outcomes:
+    - type: task_completed

@@ -5,7 +5,7 @@ description: >-
   graders + EPT subagent execution with a working-tree regression ratchet.
   USE FOR: "skill 개선해줘", "스킬 개선해줘", "스킬 강화", "improve skill", "harden skill",
   "benchmark skill", "forge skill". DO NOT USE FOR: toolkit friction reports
-  (use nara-meta-feedback), tuning non-skill prompts (use
+  (use nara-retro), tuning non-skill prompts (use
   nara-empirical-prompt-tuning), authoring a brand-new skill from scratch.
 ---
 

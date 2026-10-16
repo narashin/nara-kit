@@ -37,6 +37,12 @@ MERMAID = re.compile(
 TEMPLATE_SENTINEL = re.compile(r"TODO-(?:예시|path|line|sha|base|head)")
 CITATION = re.compile(r"(?<![\w./-])(?!path/to/)[\w./-]+\.\w+:\d+")
 CONTROL = "".join(chr(c) for c in range(0x21))
+# Elements that start a new block of reader-visible text; inline elements (em, code, a) do not.
+BLOCK_TAGS = frozenset((
+    "html", "body", "section", "article", "header", "footer", "main", "nav", "aside", "div",
+    "p", "li", "ol", "ul", "dl", "dt", "dd", "td", "th", "tr", "table", "caption", "blockquote",
+    "figure", "figcaption", "details", "summary", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "br", "hr",
+))
 
 
 def normalize_url(value: str) -> str:
@@ -67,6 +73,8 @@ class Doc(HTMLParser):
         self.code: list[str] = []      # text inside <pre>/<code>
         self.text: list[str] = []      # all reader-visible text, quoted code included
         self.prose: list[str] = []     # reader-visible text outside <pre>/<code>
+        self.blocks: list[str] = []    # prose joined per block element, inline elements merged
+        self._block: list[str] = []
         self.script: list[str] = []
         self.css: list[str] = []
         self._raw: str | None = None   # "script" | "style" while inside one
@@ -77,7 +85,14 @@ class Doc(HTMLParser):
             self.details_without_summary += 1
             self._expect_summary = False
 
+    def _flush_block(self) -> None:
+        if self._block:
+            self.blocks.append("".join(self._block))
+            self._block = []
+
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in BLOCK_TAGS:
+            self._flush_block()
         a = {k: (v or "") for k, v in attrs}
         self.attr_values.extend(v for k, v in a.items() if k not in ("href", "src", "srcset", "xlink:href"))
         if tag != "summary":
@@ -113,6 +128,8 @@ class Doc(HTMLParser):
             self._expect_summary = True
 
     def handle_endtag(self, tag: str) -> None:
+        if tag in BLOCK_TAGS:
+            self._flush_block()
         if tag == "title":
             self._in_title = False
         if tag in ("script", "style"):
@@ -137,9 +154,11 @@ class Doc(HTMLParser):
             self.code.append(data)
         else:
             self.prose.append(data)
+            self._block.append(data)
 
     def close(self) -> None:
         super().close()
+        self._flush_block()
         self._close_expected_summary()
 
 
@@ -191,9 +210,10 @@ def check(html: str) -> list[str]:
         problems.append("no pinned base..head SHA pair in the text")
     if not CITATION.search(text):
         problems.append("no path:line citation in the text (template placeholders do not count)")
-    # Mermaid source is multi-line; a one-line mention of "flowchart" or "pie" in prose is not.
-    # Only the node's first line can be a diagram declaration; a wrapped prose line is not.
-    multiline_mermaid = any("\n" in node.strip() and MERMAID.match(node.strip()) for node in doc.prose)
+    # Mermaid source is multi-line and opens its block; a one-line mention of "flowchart" or "pie"
+    # in prose is not, nor is a wrapped prose line. Inline elements are merged into their block,
+    # so <p>... <em>x</em>\npie ...</p> is judged by the paragraph's first line.
+    multiline_mermaid = any("\n" in b.strip() and MERMAID.match(b.strip()) for b in doc.blocks)
     if "```" in prose or doc.mermaid_class or multiline_mermaid:
         problems.append("markdown fence or mermaid source outside quoted code (draw inline SVG instead)")
     return problems

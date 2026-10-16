@@ -1,0 +1,19 @@
+id: remote-pinned-001
+name: "A remote repo is pinned to a commit before reading"
+description: |
+  The question points at a remote GitHub repo. A correct run resolves a commit
+  SHA through gh api with the URL's host before reading files, and cites
+  evidence against that SHA.
+tags:
+  - remote
+inputs:
+  prompt: "https://github.com/acme-sre/web-ui 에서 로그인 세션 만료 시간이 어디서 정해지는지 봐줘."
+  files: []
+expected:
+  output_contains:
+    - "commits/"
+    - "--hostname github.com"
+  output_not_contains:
+    - "git push"
+  outcomes:
+    - type: task_completed

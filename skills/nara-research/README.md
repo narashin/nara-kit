@@ -12,7 +12,7 @@ Compare external prior art for one pending decision, or distill a source skill/w
 ## 언제 쓰나
 
 - **USE FOR:** "선행 사례 조사", "다른 데선 어떻게 하나", "이 repo에서 뭘 가져올까", "스킬 증류", "research", "prior art", 외부 도구·접근법 비교, 남의 스킬·워크플로에서 흡수할 것 찾기.
-- **DO NOT USE FOR:** 이미 가진 설계를 찔러보기 (→ nara-grill), 기획서 수치 검증 (→ nara-claim-audit), 결정 기록 (→ nara-adr), 스킬 생성·수정 (→ nara-skill-forge), 이 코드베이스 동작 질문 (코드를 직접 읽는다).
+- **DO NOT USE FOR:** 이미 가진 설계를 찔러보기 (→ nara-grill), 기획서 수치 검증 (→ nara-claim-audit), 결정 기록 (→ nara-adr), 스킬 생성·수정 (→ nara-skill-forge), 특정 저장소 동작 질문에 근거로 답하기 (→ nara-ask-repo).
 
 ## 왜 있나
 

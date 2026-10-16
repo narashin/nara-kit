@@ -1,0 +1,15 @@
+id: should-not-trigger-001
+name: "An audience explanation document is nara-explain"
+description: |
+  A request for a PM-facing explanation document belongs to nara-explain, not
+  to an evidence-first repository answer.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "인증 플로우를 PM에게 설명할 발표 자료 만들어줘"
+  files: []
+expected:
+  output_not_contains:
+    - "Status: Unverifiable"
+    - "공유용 요약"

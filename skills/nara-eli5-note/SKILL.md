@@ -9,7 +9,7 @@ description: >-
   "15살 수준으로 노트 만들어", "매니저한테 설명하듯 정리해", "그림으로 정리해줘", "eli5로 노트 써줘",
   "이거 나중에 볼 수 있게 정리해".
   DO NOT USE FOR: explanation with no saving (use /eli5), session learnings into memory or
-  handoff (use /nara-reflect), Confluence publishing (use /nara-publish-spec),
+  handoff (use /nara-retro or /nara-handoff), Confluence publishing (use /nara-publish-spec),
   architecture decisions (use /nara-adr), repo-facing docs.
 ---
 
@@ -19,7 +19,7 @@ description: >-
 
 실무에서 막힌 것을 **5살에게 가르치듯 풀고, 그릴 수 있는 건 그려서**, vault의 기존 관례에 맞춰 노트로 남긴다.
 
-기존 `/eli5`는 설명하고 끝난다. `/nara-reflect`는 저장하지만 대상이 memory·handoff고 톤이 다르다. 이 스킬은 그 사이 — **설명의 질과 저장을 한 번에** 가져간다.
+기존 `/eli5`는 설명하고 끝난다. `/nara-retro`·`/nara-handoff`는 저장하지만 대상이 memory·handoff고 톤이 다르다. 이 스킬은 그 사이 — **설명의 질과 저장을 한 번에** 가져간다.
 
 ## 참조 자원
 

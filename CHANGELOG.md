@@ -11,6 +11,26 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-10-16
+
+> **업그레이드 시 수동 조치 필요.** `nara-reflect`, `nara-meta-feedback`, `nara-memory-audit`가 없어졌다. `npx skills update`는 지워진 스킬을 지우지 않으므로 설치본에 옛 사본이 남는다. `rm -rf ~/.claude/skills/nara-reflect ~/.claude/skills/nara-meta-feedback ~/.claude/skills/nara-memory-audit` (Codex는 `~/.codex/skills/` 같은 이름) 후 update. 옛 이름을 부르는 Multica autopilot이나 개인 규칙 파일도 새 이름으로 바꿔야 한다.
+
+### Changed (breaking: skill split, rename, removal)
+- **`nara-reflect`를 `nara-handoff`와 `nara-retro`로 나눴다.** reflect는 "어디서 멈췄나"와 "무엇을 배웠나"를 한 스킬에서 했다. 60일 세션 기록에서 reflect는 7회, meta-feedback과 memory-audit은 0회 불렸다(이름으로 찾은 값, 표기 변형은 못 셌을 수 있다)
+  - `nara-handoff`: `docs/handoff.md` 9절 스키마, 이전 handoff와의 carry-forward merge, 비면 삭제. 다음 세션 `nara-now`가 이 파일을 먼저 읽는 연결은 그대로다. 배운 것은 쓰지 않고 `/nara-retro`를 권한다
+  - `nara-retro`: reflect의 학습 라우팅(auto-memory 직접 write + dual-store, 나머지 suggest-only)에 tiger-kit `tk-retro`(`5e633e3`)의 규율을 더했다. 학습마다 관찰, 영향, 원인 확신도, 최소 예방, 소유 층, 판정 검사를 적고, 기계로 잡을 수 있는 실수는 규칙보다 테스트·린트·스크립트를 먼저 제안하고, 규칙이 이미 있었는데 어겼으면 규칙을 더 쓰지 않고 이유를 찾고, `no change`를 정상 결론으로 둔다
+  - 측정: 스킬 개수 갱신을 세 번 놓친 세션(규칙은 이미 있음) + 처음 들은 placeholder 규범으로 옛 reflect와 새 retro를 2회씩 돌렸다. 둘 다 기계 검사 추천과 placeholder의 CLAUDE.md 라우팅은 4회 모두 맞췄다. 옛 reflect 한 번은 이미 있는 규칙을 다시 적는 feedback 메모리("커밋 전에 직접 grep으로 대조")를 만들었고, 새 retro는 2회 모두 그 후보를 메모리로 보내지 않았다. 새 retro는 2회 모두 소유자를 hook 대신 `tools/` 스크립트로 잡고 판정 검사(지금 상태에서 실패, 고친 뒤 Pass)를 적었다. 갈린 곳도 있다. 새 retro 한 번은 placeholder 규범의 이유("공개 repo")를 규칙 문장과 별도로 메모리에도 남겼고 다른 한 번은 남기지 않았다. 두 곳에 남기는 예외 조건이 판단에 맡겨져 있다는 뜻이다. 모두 2회 관찰이라 경향이고 증명이 아니다
+- **`nara-meta-feedback`을 `nara-retro`의 skill-incident 모드로 합쳤다.** redaction 규약, pre-flight 스캔, `cannot_generalize_safely` 중단, 4절 출력 템플릿은 그대로다. tk-retro의 실패 평면(선택·로딩·지시 해석·계획·실행·형식·평가·호스트 호환·로컬 override·효율)과 사건·대조군 재현을 더했다. 로컬 denylist는 `.claude/overrides/retro.md`, 없으면 예전 `meta-feedback.md`를 읽는다
+- **`nara-memory-audit`을 `nara-grooming`으로 바꾸고 범위를 넓혔다.** 메모리 2단 감사(`scripts/audit.sh`, 회귀 42건 통과)는 그대로이고, tiger-kit `tk-grooming`(`5e633e3`)에서 규칙(CLAUDE.md·AGENTS.md·rules)과 스킬의 중복·충돌·stale override 감사를 가져왔다. 사용자가 동작을 바로잡았을 때 그 동작을 요구한 낡은 지침을 증거 사슬로 찾는다. 수정은 위치 등급(저장소 밖 / 추적 안 됨 / 추적됨)별로 하나씩 승인받고, git 밖 파일은 영속 백업 뒤에만 고친다. 설치본은 소스에서 고친다
+- tk-compound(완료 PR 묶음 진단)는 새 스킬로 만들지 않았다. 리뷰 지적을 확정·기각·미해결로 가르고 독립 사건 수로 세는 규칙만 retro에 넣었다
+
+### Added
+- **`nara-ask-repo`**: 저장소 질문 하나에 읽기 전용으로, 주장마다 `path:line`을 붙여 답한다. tiger-kit `tk-ask-repo`(`5e633e3`)에서 검색 출발점 고정, 선언은 모양만 증명, 못 찾음과 없음의 구분(`없음 | 아직 반영 안 됨 | 자리만 있음 | 실제 사용 중`), 영향 범위 셋 분류, 소비자 쪽부터 보는 책임 판정, 답 먼저 쓰는 형식을 가져왔다. 다른 로컬 checkout과 원격 GitHub 저장소를 커밋 SHA로 고정해 읽는 부분은 새로 붙였다(URL 호스트로 `gh api --hostname`, 넓으면 scratch에 partial clone, 받은 코드는 실행 안 함). 원본은 명시 호출 전용이지만 읽기만 해서 자연어 호출을 열었다
+  - 측정: 동적 조회(`exporters[\`export${format}\`]`)로만 불리는 함수를 "지워도 돼?"로 물었다. 스킬 없이도 2회 모두 "쓰이고 있다"고 맞혔다. 차이는 근거였다. 스킬 없이는 `path:line`이 0/2, 스킬로는 2/2. 존재 라벨을 그대로 쓴 것은 1/2이라, 라벨을 답 첫 문단에 그대로 쓰라고 본문을 고쳤다(재측정 안 함)
+
+### Fixed
+- `nara-explain` 검사기가 인라인 요소(`<em>`·`<code>`·`<a>`) 뒤에서 줄이 바뀌고 다음 줄이 `pie`·`flowchart` 같은 도표 키워드로 시작하는 산문을 mermaid로 잘못 실패시키던 것(0.24.0 Known issue). 텍스트를 블록 요소 단위로 이어 붙여 블록의 첫 줄만 도표 선언으로 본다. 회귀 테스트 세 건은 수정 전 검사기에서 실패하고 수정 후 통과한다
+
 ## [0.24.0] - 2026-10-16
 
 > **업그레이드 시 확인.** 원격에 쓰는 여섯 스킬은 이제 `/nara-<name>`으로만 불린다. `nara-explain` 변경 설명 산출물이 `docs/explain/<target>.html`로 옮겨졌다. 신규 스킬 셋은 `npx skills update`로 들어온다.

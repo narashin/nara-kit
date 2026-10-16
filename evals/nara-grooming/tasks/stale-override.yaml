@@ -1,0 +1,27 @@
+id: stale-override-001
+name: "A corrected behavior traced to an old memory"
+description: |
+  The user corrected a commit with a body. The current rule forbids a body; an
+  older memory requires one. A correct run builds the chain (behavior, memory
+  statement, current rule, conflict), classifies the memory as stale override,
+  proposes archiving it, and changes nothing before approval.
+tags:
+  - rules
+  - correction
+inputs:
+  prompt: |
+    방금 커밋에 본문 3줄을 붙였길래 내가 지우라고 했어. 왜 옛날 방식대로 했는지 지침 정리해줘.
+    현재 규칙은 rules-user.md, 메모리는 memory-commit-style.md 야.
+  files:
+    - path: rules-user.md
+    - path: memory-commit-style.md
+expected:
+  output_contains:
+    - "stale override"
+    - "memory-commit-style.md"
+    - "archive"
+  output_not_contains:
+    - "applied: 1"
+    - "삭제했습니다"
+  outcomes:
+    - type: task_completed

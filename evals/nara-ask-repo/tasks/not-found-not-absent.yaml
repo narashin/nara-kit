@@ -1,0 +1,21 @@
+id: not-found-not-absent-001
+name: "No direct call is not the same as unused"
+description: |
+  exportCsv has no literal call site; it is reached through a template-string
+  lookup. A correct answer classifies it as in use and cites the dynamic lookup.
+tags:
+  - existence
+  - dynamic
+inputs:
+  prompt: "exportCsv 이제 안 쓰는 함수야? 지워도 돼? 첨부한 src 기준으로 봐줘."
+  files:
+    - path: src/report/export.ts
+    - path: src/report/index.ts
+expected:
+  output_contains:
+    - "실제 사용 중"
+    - "src/report/index.ts:"
+  output_not_contains:
+    - "지워도 됩니다"
+  outcomes:
+    - type: task_completed

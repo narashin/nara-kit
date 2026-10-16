@@ -135,6 +135,7 @@ class MermaidFails(unittest.TestCase):
             with self.subTest(body=body.split()[0]):
                 self.assertNotEqual(ce.check(doc(f'<pre class="mermaid">{body}</pre>')), [])
                 self.assertNotEqual(ce.check(doc(f"<div>{body}</div>")), [])
+                self.assertNotEqual(ce.check(doc(f"<p>설명</p><div>{body}</div>")), [])
 
 
 class PlaceholdersFailEverywhere(unittest.TestCase):
@@ -170,6 +171,9 @@ class ProseNamingDiagramsPasses(unittest.TestCase):
             "<p>이전에는 원형 도표였는데 그것을\npie 대신 막대로 바꾼다.</p>",
             "<p>The old page drew a\nflowchart with mermaid; this one uses SVG.</p>",
             "<p>This shortens the checkout\njourney by one step.</p>",
+            "<p>이전 문서는 <em>mermaid</em>\nflowchart 블록을 썼고\n이번엔 SVG다.</p>",
+            "<li>원형 도표를 <code>chart.js</code>\npie 대신 막대로\n바꾼다.</li>",
+            "<p>The old page linked <a href=\"#background\">docs</a>\ngantt view is\ngone.</p>",
         ):
             with self.subTest(slot=slot):
                 self.assertEqual(ce.check(doc(slot)), [])

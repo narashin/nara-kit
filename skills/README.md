@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**59 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**60 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -18,6 +18,7 @@
 | `nara-ac-draft` | Generate User Stories + Gherkin AC from one-line intent (no external SoT). Sister of `prep` / 한 줄 의도 → US + Gherkin AC 생성 (외부 SoT 없을 때) |
 | `nara-grill` | Pressure-test an idea/design/plan — fact-first, every answerable decision per round (설계 탐색 단계) / 사실 조사 후 답할 수 있는 결정을 한 라운드에 묻고 의존 질문만 미룸 |
 | `nara-research` | Compare external prior art for one pending decision, or distill a source skill/repo into keep/adapt/omit (every source pinned to a revision) → `docs/research/*.md` / 결정 하나를 위한 외부 선행 사례 비교 또는 남의 스킬·repo 증류. 제안만, 적용은 skill-forge·adr |
+| `nara-ask-repo` | Answer one concrete question about a repo's behavior — this repo, another checkout, or a remote GitHub repo pinned to a commit — read-only, `path:line` beside every claim / 저장소 동작 질문 하나에 근거로 답한다 (값 출처·존재 여부·영향 범위·책임 위치, 다른 저장소도) |
 | `nara-roadmap` | Turn an unclear situation into a constraint-aware roadmap: frontier-round interview, fixed/negotiable/unknown constraints, milestones with completion evidence, recurring ops apart, no-go is a valid end; chat by default, saved on request / 불분명한 상황 → 제약 기반 로드맵 (repo 없는 기획도). 대화 기본, 요청 시 `docs/plan/roadmap-*.md` |
 | `nara-plan` | Split a spec into independently verifiable vertical work units → `docs/plan.md` / 스펙을 독립 검증 가능한 수직 작업 단위로 분할 |
 | `nara-rfc` | Write RFC document in Korean Markdown / RFC 문서 작성 |
@@ -100,11 +101,11 @@
 | Skill | Description / 설명 |
 |-------|---------------------|
 | `nara-now` | Session state assessment + next action / 세션 상황 판단 + 다음 행동 추천 |
-| `nara-reflect` | Capture session learnings (decisions, conventions, warnings) / 세션 학습 캡처 |
-| `nara-memory-audit` | Two-tier staleness audit of durable memory files — bash prefilter → subagent verify → human-approved fix/archive / 메모리 파일 stale 감사 (기계 prefilter → 의미검증 → 승인 후 수정·archive) |
+| `nara-handoff` | Record where the session stopped into `docs/handoff.md` (merge with the previous one; deleted when nothing is left) — read first by the next `nara-now` / 하다 만 일·열린 질문·검증 상태 인계 |
+| `nara-retro` | Session retrospective and skill-incident diagnosis: evidence chain per lesson, smallest prevention routed to its owner (memory write; checks/rules/skills/ADR suggest-only), redacted proposals for nara-kit itself / 세션 회고 + 스킬 장애 진단 → 재발 방지 처분 |
+| `nara-grooming` | Audit persistent instructions — memory, CLAUDE.md/rules, skills — for duplicates, conflicts and stale overrides; per-tier approval, backup before touching files outside git / 메모리·규칙·스킬의 중복·충돌·낡은 지침 감사 |
 | `nara-skill-forge` | Improve and harden skills via Waza static analysis + EPT subagent execution / Waza+EPT 통합 스킬 개선 |
 | `nara-empirical-prompt-tuning` | Iteratively improve prompts via bias-free executor testing — via [@mizchi](https://github.com/mizchi/skills/blob/main/empirical-prompt-tuning/SKILL.md) / 프롬프트 경험적 튜닝 |
-| `nara-meta-feedback` | Capture friction with nara-kit's own skills → generalized, privacy-redacted improvement proposal (feeds `skill-forge`) / nara-kit 스킬 friction → 개선안 |
 
 ### 연동·자동화 / Trackers & Scheduled
 
@@ -152,17 +153,18 @@ Jira·Slack과 주고받거나 주기적으로 돈다. 스케줄 호스트(cron,
 
 ### 개발 흐름 (권장 순서)
 
-**핵심 5단계 (각 단계가 인간 검증 재료를 산출):** `plan → execute → verify → code-review → reflect`
+**핵심 5단계 (각 단계가 인간 검증 재료를 산출):** `plan → execute → verify → code-review → retro`
 
 ```mermaid
 flowchart LR
-    E["prep / ac-draft<br>(entry · AC 확정)"] --> P["plan<br>(nara-plan)"] --> X["execute<br>(nara-implement)"] --> V["verify<br>2-track"] --> R[code-review] --> RF[reflect] --> F([finish])
+    E["prep / ac-draft<br>(entry · AC 확정)"] --> P["plan<br>(nara-plan)"] --> X["execute<br>(nara-implement)"] --> V["verify<br>2-track"] --> R[code-review] --> RF[retro] --> F([finish])
     B["grill<br>large/greenfield"] -. 조건부 .-> P
     G["gap<br>brownfield 인수인계"] -. 조건부 .-> P
     V --- V1["코드 AC → gap"]
     V --- V2["browser-visible AC → browser-verify"]
     V -. Needs Confirm / Unverifiable .-> Q["qa-sheet<br>(사람에게 인계)"]
     RF -. 구조 결정 .-> A[adr] -.-> F
+    X -. 세션을 끊을 때 .-> H["handoff<br>(다음 nara-now가 읽음)"]
 
     style P fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
     style X fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
@@ -187,7 +189,7 @@ flowchart LR
     C -->|vague| AC[ac-draft]
     PR --> AG{AC Gate}
     AC --> AG
-    AG --> S[spec] --> PUB[publish-spec] --> RF[reflect] --> E([END])
+    AG --> S[spec] --> PUB[publish-spec] --> RF[retro] --> E([END])
     PUB -. days/weeks later .-> REV[spec-revision v2,v3]
 
     style AG fill:#fff9c4
@@ -229,7 +231,7 @@ flowchart LR
 | `docs/gap-history.md` | `gap` | append-only score-trend 로그 (gen/verify). gap.md 덮어써져도 점수 추이 보존 |
 | `docs/plan.md` | `plan` (nara-plan) | 구현 계획 — 독립 검증 가능한 수직 작업 단위 (T-N + AC + 요구사항 추적). `nara-implement`의 입력. (기획 산출물 `docs/plan/*.md` 디렉터리와 구분) |
 | `docs/implementation-notes.md` | `implement` (medium/large) | 구현 중 drift log. 4 카테고리: Design / Deviations / Tradeoffs / Open Q. `small`은 skip |
-| `docs/handoff.md` | `reflect` | 다음 세션 인계 9-섹션 (검증 상태 + 재현 명령 포함). In Progress + Open Questions surface |
+| `docs/handoff.md` | `handoff` | 다음 세션 인계 9-섹션 (검증 상태 + 재현 명령 포함). In Progress + Open Questions surface |
 | `docs/test-scenarios/*.md` | `test-discover` / `golden-path-discover` | AC↔시나리오 1:1 매핑, Playwright-ready E2E export |
 | `docs/incident-report.md` | `incident` | root cause 가설 + 증거 + 제안 수정 |
 | `docs/plan/*.md` | 기획 흐름 | spec / RFC / design artifact (AC 박힌 채) |

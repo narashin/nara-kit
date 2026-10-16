@@ -27,7 +27,7 @@ understand → inspect → strategy approval → implement → verify → stop a
 
 execute 진입 시 scope를 먼저 판정한다. `small`(1-2 files, 단일 관심사)은 **전체 skip**하고 verify에 "small scope — notes skipped" 1줄만 남긴다. `medium`/`large`는 `docs/implementation-notes.md`를 생성(pre-flight)하고, 코드 변경 응답마다 trailing `📝 notes:`를 붙이며, verify 진입 시 파일 미존재·4섹션 전부 공백이면 **reject**한다. 계약 전문·파일 구조·카테고리 정의는 [implementation-notes](references/implementation-notes.md).
 
-`nara-gap --verify`가 이 파일의 `## Reconciliation Log`를 쓰고 `nara-reflect`가 그걸 읽으므로, **경로와 섹션명을 바꾸지 않는다.**
+`nara-gap --verify`가 이 파일의 `## Reconciliation Log`를 쓰고 `nara-retro`와 `nara-handoff`가 그걸 읽으므로, **경로와 섹션명을 바꾸지 않는다.**
 
 ## 3. 구현과 검증
 

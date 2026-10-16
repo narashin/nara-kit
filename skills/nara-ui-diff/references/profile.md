@@ -35,6 +35,6 @@ run artifact: 양쪽 full computed dump, diff 표, driver/session log, 선택 �
   - 루트 `.gitignore`의 `*.local.md`가 `login.local.md`는 매치(ignored), `login.local.md.example`은 non-match(tracked) — 템플릿은 커밋 가능, 실크레덴셜 파일은 불가.
 - 크레덴셜은 **어디에도 출력 안 함** — auth는 파일명으로만 참조.
 
-## 피드백 루프 (reflect 라우팅 미러)
+## 피드백 루프 (retro 라우팅 미러)
 
 run 중 학습한 friction을 알맞은 durable surface로: 화면별 지식 → `screens/<name>.md` Known-pitfalls/Regression-notes · 로그인/context 변화 → `login.md`/`login.local.md`/`env.md` · 제품-무관 엔진 교훈 → 이 스킬 SKILL.md/references. 한 번 맞은 friction이 재발하지 않게.

@@ -23,14 +23,14 @@
 ## 언제 쓰나
 
 - **USE FOR:** "obsidian에 정리해", "옵시디언에 담아", "이거 노트로 남겨", "5살에게 설명하듯 정리해줘", "15살 수준으로 노트 만들어", "매니저한테 설명하듯 정리해", "그림으로 정리해줘", "eli5로 노트 써줘".
-- **DO NOT USE FOR:** 설명만 필요 (use /eli5), 세션 학습을 memory·handoff로 (use /nara-reflect), Confluence 게시 (use /nara-publish-spec), 아키텍처 결정 (use /nara-adr).
+- **DO NOT USE FOR:** 설명만 필요 (use /eli5), 세션 학습을 memory로 (use /nara-retro), 하다 만 일 인계 (use /nara-handoff), Confluence 게시 (use /nara-publish-spec), 아키텍처 결정 (use /nara-adr).
 
 ## 기존 스킬과의 자리
 
 | | 설명 | 저장 | 그림 |
 | --- | --- | --- | --- |
 | `/eli5` | ● 청중별 톤 | ✕ | ✕ |
-| `/nara-reflect` | ✕ | ● memory·handoff | ✕ |
+| `/nara-retro` · `/nara-handoff` | ✕ | ● memory · handoff | ✕ |
 | **`/nara-eli5-note`** | ● eli5(청중별) 또는 실무 노트체 | ● Obsidian | ● 필수 (HTML/SVG) |
 
 ## 구성

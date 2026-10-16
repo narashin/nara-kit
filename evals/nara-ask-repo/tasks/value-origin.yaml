@@ -1,0 +1,23 @@
+id: value-origin-001
+name: "Value origin traced past the declaration"
+description: |
+  The receipt shows discountRate. The interface only declares it; the real
+  assignment multiplies an API rate by 100 and rounds it. A correct answer
+  names that transformation with its path:line, not just the type file.
+tags:
+  - basic
+  - value-origin
+inputs:
+  prompt: "영수증에 나오는 discountRate 값은 어디서 와? 첨부한 src 기준으로."
+  files:
+    - path: src/types.ts
+    - path: src/api/order.ts
+expected:
+  output_contains:
+    - "src/api/order.ts:"
+    - "100"
+  output_not_contains:
+    - "## Answer"
+    - "## Evidence"
+  outcomes:
+    - type: task_completed

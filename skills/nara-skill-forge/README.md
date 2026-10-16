@@ -13,7 +13,7 @@
 ## 언제 쓰나
 
 - **USE FOR:** "skill 개선해줘", "스킬 개선해줘", "스킬 강화", "improve skill", "harden skill", "benchmark skill", "forge skill"
-- **DO NOT USE FOR:** 툴킷 friction 리포트 (→ nara-meta-feedback), 스킬 아닌 프롬프트 튜닝 (→ nara-empirical-prompt-tuning), 신규 스킬 작성
+- **DO NOT USE FOR:** 툴킷 friction 리포트 (→ nara-retro), 스킬 아닌 프롬프트 튜닝 (→ nara-empirical-prompt-tuning), 신규 스킬 작성
 
 ## 더 보기
 
