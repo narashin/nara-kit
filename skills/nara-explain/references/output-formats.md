@@ -107,13 +107,9 @@
 
 ---
 
-## Change (PR / 커밋 / 브랜치 / 범위 / 작업 트리)
+## Change, Markdown으로 요청받았을 때만
 
-Scope가 변경일 때 audience 템플릿 대신 이것을 쓴다(Non-tech면 코드 인용만 빼고 같은 순서). 순서는 배경부터 흐름까지 읽는 사람이 쌓아 가는 순서다. 핵심 변경 파일 목록이 아니라 실행이 지나가는 길을 따라 설명한다.
-
-**먼저 비교 기준을 고정한다.** 읽는 사람이 나중에 같은 화면을 다시 볼 수 있어야 한다. PR·브랜치는 merge base(`git merge-base <base> <head>`), 커밋 하나는 부모(`<sha>^..<sha>`), 명시 범위는 받은 끝점, 작업 트리는 `HEAD`와 staged·unstaged·untracked 포함 여부. 두 short SHA를 제목에 쓴다.
-
-**보안·스키마·마이그레이션·호환·공개 API 변경은 작아도 "꼭 볼 곳"에 둔다.** "훑어도 되는 곳"에 넣지 않는다.
+기본은 HTML이다([change-html](change-html.md)). 사용자가 Markdown을 요청했거나 채팅에 붙일 글일 때만 이 배치를 쓴다. 증거 규칙(비교 기준 고정, 불변식, `path:line`, 꼭 볼 곳 분류)은 change-html.md의 "Evidence before writing"과 같다. 그림은 빼고 이전/이후 예시는 코드 블록 두 개로 둔다.
 
 ```markdown
 ## [변경 이름] (`<base-short>..<head-short>`)

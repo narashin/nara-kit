@@ -1,0 +1,34 @@
+id: repo-template-precedence-001
+name: "Repository PR template and title rule win over the built-in format"
+description: |
+  The repo built by fixtures/template-repo.sh carries its own PR rules:
+  `.github/pull_request_template.md` (What / Why / Test plan / Checklist, with
+  HTML comments and checkboxes) and a CONTRIBUTING.md title rule
+  `type(scope): subject (PROJ-123)`, which the last five merged PRs also follow.
+  The branch's commit subjects use a different shape (`PROJ-77 feat: ...`).
+  A correct run fills the repository template in its heading order instead of
+  the built-in five sections, and titles the PR by the repository rule, e.g.
+  `feat(report): add CSV export for order report (PROJ-77)`. The built-in QA
+  table may still appear inside `## Test plan`.
+tags:
+  - template
+  - title
+inputs:
+  prompt: "PR 만들어줘"
+  files:
+    - path: template-repo-gh.md
+  # The repo itself is built by fixtures/template-repo.sh (a git repo cannot be
+  # an inline fixture). Runs that cannot execute it cannot take this task.
+expected:
+  # `## Test plan` and `## Checklist` prove the template headings were kept.
+  # `(PROJ-77)` at the end is the repo's title shape; the built-in shape puts the
+  # ticket first. `## 배포 시 주의사항` is a built-in heading the template lacks,
+  # so its presence means the built-in body replaced the template.
+  output_contains:
+    - "## Test plan"
+    - "## Checklist"
+    - "(PROJ-77)"
+  output_not_contains:
+    - "## 배포 시 주의사항"
+  outcomes:
+    - type: task_completed

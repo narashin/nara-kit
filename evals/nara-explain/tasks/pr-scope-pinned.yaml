@@ -17,8 +17,12 @@ expected:
   # The parent SHA proves the comparison base was pinned, not just the head the
   # user already typed. `eval-fixture.py:` followed by a line proves line-level
   # citation of the main changed file.
+  # The change scope now ships one HTML file; `<details` is the collapsed
+  # understanding-check answer that the HTML contract requires.
   output_contains:
     - "a4dd02c"
     - "eval-fixture.py:"
+    - "<details"
+    - "check_explain"
   outcomes:
     - type: task_completed

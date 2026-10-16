@@ -11,6 +11,14 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Changed (breaking: artifact)
+- **`nara-explain`의 변경 설명(PR·커밋·브랜치·범위·작업 트리)이 HTML 한 장이 됐다.** 산출물이 `docs/explain-<target>.md`에서 `docs/explain/<target>.html`로 바뀐다. 다른 범위(프로젝트·기능·메서드)와 Brief는 그대로 Markdown이고, 변경 설명도 "md로"라고 하면 Markdown이다
+  - tiger-kit `tk-explain-diff`의 핵심 산출물이 오프라인 단일 HTML인데, 앞서 이 스킬에 증류할 때 규율만 가져오고 형식을 빠뜨렸다. 이번에 형식과 함께 빠졌던 내용 규칙도 넣었다: 바뀌지 않아야 할 계약·불변식과 그 근거, 같은 입력의 이전/이후 예시, 변경 노드에서 출발해 영향만 보여 주는 의존 그래프, 의도(문서)와 검증된 동작(코드)의 구분
+  - 지키게 하는 장치: `assets/change-template.html`(시작 템플릿, 라이트·다크 토큰, 목차, 접힌 답, 근거 역링크)과 `assets/check_explain.py`(표준 라이브러리 정적 검사: 템플릿 표지·TODO 잔존, 제목, id 중복·깨진 앵커, 외부 리소스 로드, 필수 절, `<details>`, `base..head` SHA 쌍, `path:line`, mermaid·코드 펜스). 렌더는 검사하지 않으므로 receipt에 "render not checked"를 적는다
+  - 그림은 직선 흐름이면 세로로 쌓는 상자(바뀜·그대로·사라짐을 테두리와 글자로 구분), 갈래·그래프면 인라인 SVG. 패턴은 `nara-eli5-note`의 그림 카탈로그를 형제 링크로 쓴다
+  - 측정: 같은 커밋 설명 task로 2회 모두 파일을 만들고 검사기를 통과했고 grader 4개(부모 SHA, `path:line`, `<details`, 검사기 실행) 통과. 그중 한 파일을 브라우저로 390px·1280px에서 열어 가로 넘침 없음(scrollWidth = innerWidth), 최소 글자 12px, 답 접힘을 확인했다
+  - 안 가져온 것: tiger-kit 공용 테마 자산과 설정 파일, 실험 중인 `standard | dialogue | dialogue-eli5 | all` 탭
+
 ### Changed (breaking: invocation)
 - **원격에 쓰는 여섯 스킬이 명시 호출 전용이 됐다**: `publish-spec`, `spec-revision`, `slack-to-jira`, `worklog`, `jira-triage`, `release-finalize`. 모델이 "준비돼 보인다"는 판단으로 게시·티켓 생성·태그 push를 시작하지 못하게 한다. Claude Code는 프론트매터 `disable-model-invocation: true`, Codex는 새 `agents/openai.yaml`의 `policy.allow_implicit_invocation: false`(Codex는 SKILL.md 플래그를 읽지 않는다)
   - 대가: 이 여섯의 description이 컨텍스트에 실리지 않아 "위키에 올려", "시간 기록해줘" 같은 자연어로는 안 불린다. `/nara-<name>` 또는 `$nara-<name>`으로 부른다. 각 스킬 README의 호출 절을 그렇게 고쳤다
@@ -21,8 +29,8 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 ### Added
 - `tools/eval-fixture.py generate <skill> [--task id]`: Copilot 좌석 없이 실제 모델 출력을 얻는 경로. `claude -p`를 설정·MCP·도구 없이 돌리고 SKILL.md와 references를 시스템 프롬프트에, 태스크 프롬프트와 fixture를 stdin에 넣는다. `validate --right-from gen`이 그 출력을 right 쪽에 쓴다. 도구가 꺼져 있어 스킬 벤치마크가 아니라 그레이더 검증용이고, 생성마다 헤드리스 과금이 든다(nara-gap 1회 약 0.26달러)
 
-- `tools/check-docs.py`: 카탈로그 정합성 검사(표준 라이브러리만). 스킬 디렉터리 ↔ `skills/README.md` 행 1:1, 세 문서(`README.md`·`skills/README.md`·`CLAUDE.md`)의 스킬 수, `metadata.nara.scope: multica` 태그 ↔ Multica 연동 묶음 일치, 형제 스킬 링크 해석, 프론트매터 `name`과 README.md 존재, 명시 호출 전용 플래그의 Claude Code·Codex 두 표면 일치. CLAUDE.md 릴리즈 절의 형제 링크 grep 한 줄을 대체한다.
-- `evals/nara-code-review` task `string-identity-conflation`: 부분 문자열·접두어·구분자 없는 합성 키로 정체성을 가르는 결함 셋을 심은 fixture. tiger-kit 리뷰 프로토콜의 "두 엔티티를 만들어 공격하라" 규칙을 들일지 재려고 만들었고, 규칙 없는 현재 스킬이 두 번 다 셋을 잡고 충돌 쌍까지 만들어서 규칙은 넣지 않았다. task는 회귀 감시로 남긴다. `validation.yaml`은 실제로 관찰된 실패 출력이 아직 없어 만들지 않았다 tiger-kit의 같은 역할 스크립트는 행과 디렉터리만 비교해 숫자 드리프트(2026-10-09의 51 대 55, 루트 README의 55 대 56)를 못 잡는다
+- `tools/check-docs.py`: 카탈로그 정합성 검사(표준 라이브러리만). 스킬 디렉터리 ↔ `skills/README.md` 행 1:1, 세 문서(`README.md`·`skills/README.md`·`CLAUDE.md`)의 스킬 수, `metadata.nara.scope: multica` 태그 ↔ Multica 연동 묶음 일치, 형제 스킬 링크 해석, 프론트매터 `name`과 README.md 존재, 명시 호출 전용 플래그의 Claude Code·Codex 두 표면 일치. CLAUDE.md 릴리즈 절의 형제 링크 grep 한 줄을 대체한다. tiger-kit의 같은 역할 스크립트는 행과 디렉터리만 비교해 숫자 드리프트(2026-10-09의 51 대 55, 루트 README의 55 대 56)를 못 잡는다
+- `evals/nara-code-review` task `string-identity-conflation`: 부분 문자열·접두어·구분자 없는 합성 키로 정체성을 가르는 결함 셋을 심은 fixture. tiger-kit 리뷰 프로토콜의 "두 엔티티를 만들어 공격하라" 규칙을 들일지 재려고 만들었고, 규칙 없는 현재 스킬이 두 번 다 셋을 잡고 충돌 쌍까지 만들어서 규칙은 넣지 않았다. task는 회귀 감시로 남긴다. `validation.yaml`은 실제로 관찰된 실패 출력이 아직 없어 만들지 않았다
 
 ### Changed
 - `skills/README.md` 카탈로그를 라이프사이클 단계(Workflow / Requirements / Code Lifecycle / Documentation / Testing / Automation / Meta)에서 **하고 싶은 일** 기준 9묶음(준비·기획 / 구현 / 검증 / 리뷰·PR·릴리즈 / 디자인 / 글쓰기·설명 / 세션·툴킷 / 연동·자동화 / Multica 연동)으로 재편. tiger-kit `5e35b6a` 증류 결과이고 리포트는 gitignore 대상인 `docs/research/`에 로컬 보관한다. 단계 기준으로도 어긋나 있던 5행(`design-*` 셋이 Workflow, `incident`·`slack-to-jira`가 Requirements)이 제자리로 갔다. 디렉터리는 안 옮겼으므로 consumer에게 breaking 아님
@@ -36,8 +44,13 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 - **`nara-explain`이 PR·커밋·브랜치·작업 트리 설명을 따로 다룬다(tiger-kit `tk-explain-diff` 증류).** 비교 기준 SHA를 먼저 고정하고(PR은 merge base, 커밋은 부모), 주장마다 `path:line`을 달고(삭제된 코드는 `base:`), 배경 → 직관 → 흐름 → 꼭 볼 곳/훑어도 되는 곳 → 이해 확인 순서로 쓴다. 보안·스키마·마이그레이션·호환·공개 API 변경은 작아도 "꼭 볼 곳"에 둔다. USE FOR에 "이 PR 뭐 바꿨는지 설명해줘", "이 커밋 설명", "diff 설명" 추가. 저장 기준을 "길면"에서 "약 40줄 초과 또는 요청 시, `docs/explain-<short SHA | pr-N | 기능명>.md`"로 구체화
   - 측정: 이 repo 커밋 하나를 팀원에게 설명하는 task로 수정 전 2회는 0/2 통과(부모 SHA 없음, 줄 인용 없음, 두 run 모두 "커밋은 scope 표 어느 행에도 없다"고 표시), 수정 후 2회는 2/2 통과. 수정 후 출력은 경고만 하고 막지 않는 stale 검사 같은 "꼭 볼 곳"까지 짚었다
 - 두 스킬 SKILL.md 토큰이 늘었다(pr-respond 782 → 972, explain 461 → 595). 절차와 템플릿은 references로 내리고 본문에는 결정 규칙만 남겼다
+- **`nara-pr`이 repo의 PR 규칙을 먼저 읽는다(tiger-kit `tk-pr-open` 증류).** 기본 브랜치의 PR 템플릿, CONTRIBUTING·AGENTS·CLAUDE.md의 PR 지침, 최근 머지된 PR 제목을 본다. 제목은 repo 지침 > 템플릿·관리자 문서 > 최근 머지 관례 > 내장 형식 순서. 템플릿이 있으면 헤딩·HTML 주석·체크리스트를 그대로 두고 채우며, QA 표는 템플릿의 검증 헤딩 아래로 간다. 체크박스는 이 브랜치에서 확인한 것만 체크한다. 확인 화면에 어떤 규칙이 정했는지 한 줄(`규칙: template ... · title ...`). 내장 5섹션과 `<TICKET> <type>:` 제목은 규칙이 없을 때의 기본값이 됐다
+  - 측정: PR 템플릿과 CONTRIBUTING 제목 규칙이 있는 저장소를 만드는 fixture 스크립트(`evals/nara-pr/fixtures/template-repo.sh`)로 수정 전 2회는 0/2 통과(내장 5섹션으로 템플릿을 덮어쓰고 제목은 `PROJ-77 feat:`), 수정 후 2회는 2/2 통과(`feat(report): ... (PROJ-77)`, 템플릿 헤딩 유지)
+  - 함께 고침: body-guide가 "— (기능 없음)"을 요구해 ko-prose의 em dash 금지와 부딪히던 것을 "(기능 없음)"으로. Step 0의 "1~6"을 실제 단계 수인 "1~8"로
 
 ### Fixed
+- `tools/check-docs.py`의 형제 링크 검사가 `references/` 안에서 거는 `../../nara-*` 링크를 세지 못했다(예전 grep 한 줄도 같았다). 정규식을 넓혀 검사 대상이 8개에서 15개로 늘었다
+- 직전 커밋 CHANGELOG에서 `check-docs.py` 항목의 한 문장이 code-review eval 항목 끝에 잘못 붙어 있던 것을 제자리로
 - 루트 `README.md` 영문 소개가 55 skills, 바로 아래 한글이 56개로 어긋나 있던 것을 56으로 통일
 
 ## [0.23.0] - 2026-10-12

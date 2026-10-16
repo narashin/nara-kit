@@ -40,7 +40,7 @@ TRUE_VALUES = {"true", "yes", "on", "1"}
 
 ROW = re.compile(r"^\|\s*`([a-z0-9-]+)`\s*\|")
 HEADING = re.compile(r"^(#{2,3})\s+(.*)$")
-SIBLING_LINK = re.compile(r"\]\((\.\./nara-[^)]+)\)")
+SIBLING_LINK = re.compile(r"\]\(((?:\.\./)+nara-[^)]+)\)")  # ../ from SKILL.md, ../../ from references/
 COUNT_PATTERNS = [
     re.compile(r"\*\*(\d+) skills\*\*"),
     re.compile(r"\*\*(\d+)개 스킬\*\*"),

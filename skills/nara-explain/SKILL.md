@@ -26,7 +26,7 @@ Infer from user message. If not stated, ask.
 | Project | CLAUDE.md/README -> directory structure -> key files |
 | Feature | Components/services/routes + data flow |
 | Method | Function body + call context + I/O |
-| Change (PR, branch, commit, range, working tree) | Pin base and head SHAs first, then follow the Change template in output-formats |
+| Change (PR, branch, commit, range, working tree) | One self-contained HTML file: [change-html](references/change-html.md) |
 
 ## Step 2: Explore code
 
@@ -37,7 +37,9 @@ Read code before explaining — no guessing. If nothing found, report "no result
 Use audience-matched format. Default to Tech peer if audience not specified.
 
 - **Brief mode**: when user says "짧게", "슬랙에 올릴", or "한 문단" — max 5 bullet points.
-- **Default**: Markdown document. Save to `docs/explain-<target>.md` when it runs past about 40 lines or the user asks for a file. `<target>` is the short SHA, `pr-<N>`, or the feature name in kebab-case.
+- **Change scope**: HTML file at `docs/explain/<target>.html`, built from the template and passed through `assets/check_explain.py` before delivery. Markdown only when asked ("md로", "마크다운") or in Brief mode.
+- **Other scopes**: Markdown document. Save to `docs/explain-<target>.md` when it runs past about 40 lines or the user asks for a file. `<target>` is the short SHA, `pr-<N>`, or the feature name in kebab-case.
+- **Reply**: when a file was written, the reply is a receipt (path, pinned `base..head` for changes, checker result, what was not verified), not the document again.
 
 ## Rules
 
@@ -45,4 +47,4 @@ Use audience-matched format. Default to Tech peer if audience not specified.
 - Non-tech audience: no code snippets.
 - Change scope: cite each substantive claim as `path:line` (head lines; deleted code as `base:path:line`).
 
-**Load** [references/output-formats.md](references/output-formats.md) for audience-specific templates (Tech Peer / New Member / Non-tech / External / Brief / Change).
+**Load** [references/change-html.md](references/change-html.md) for change scope. **Load** [references/output-formats.md](references/output-formats.md) for the other audience templates (Tech Peer / New Member / Non-tech / External / Brief) and the Markdown change layout used only when Markdown is requested.
