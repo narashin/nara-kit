@@ -11,6 +11,11 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+## [0.26.1] - 2026-10-16
+
+### Changed
+- **`nara-planning`의 USE FOR에 "기획서 써줘", "요구사항 정의서", "스토리보드"를 더했다.** 기획서를 쓰자는 요청이 planning으로 가도록 트리거만 넓혔고 본문 동작은 그대로다
+
 ### Fixed
 - **`nara-ac-draft`의 다음 단계 안내가 파일마다 다르던 문제.** `SKILL.md`는 `nara-plan`, references는 `nara-gap`·`nara-grill`이었다. gap은 구현 뒤 verify에서 부르므로(ADR-0001) 모두 `nara-plan`(설계가 흔들리면 `nara-grill` 먼저)으로 맞췄다
 - **`nara-ac-draft` 평가 세트의 채점 조건이 이제 맞는 답과 틀린 답을 가른다(6/6).** `validation.yaml`을 처음 만들었다. 맞는 답은 현재 스킬을, 틀린 답은 실제로 나온 동작(옛 ac-draft, 옛 prep, 스킬 없는 응답, 비발동 요청에 스킬을 억지로 적용한 결과)을 서브에이전트로 돌려 얻었다
