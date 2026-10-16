@@ -242,7 +242,17 @@ flowchart LR
 
 ## Project Override Convention / 프로젝트 오버라이드
 
-nara-kit 스킬은 **제너럴 워크플로우 엔진**. 프로젝트 특화 룰은 소비 repo의 `.claude/overrides/` 아래에 둠. 스킬이 Step 0에서 로드하여 base에 병합 (존재 시). Override는 base check 비활성화 불가 — **추가 / 격상 / 범위 축소만**. Trailing status에 `overrides: applied (path)` 또는 `none` 명시. 지원: `nara-code-review` (파일명은 rename 전 그대로 `.claude/overrides/code-review.md` — 기존 소비 repo 무파손).
+nara-kit 스킬은 **제너럴 워크플로우 엔진**. 프로젝트 특화 룰은 소비 repo의 `.claude/overrides/` 아래에 둠. 스킬이 Step 0에서 로드하여 base에 병합 (존재 시). Override는 base check를 끌 수 없고 **추가 / 격상 / 범위 축소만** 한다. Trailing status에 `overrides: applied (path)` 또는 `none` 명시. 지원하는 스킬과 읽는 파일:
+
+| 스킬 | override 파일 |
+|---|---|
+| `nara-code-review`, `nara-pr-review` | `.claude/overrides/code-review.md` |
+| `nara-gap` | `.claude/overrides/gap.md` |
+| `nara-ui-diff` | `.claude/overrides/ui-diff.md` |
+| `nara-browser-verify` | `.claude/overrides/browser-verify.md` |
+| `nara-design-studio` | `.claude/overrides/nara-design-studio.md` |
+
+대부분 `nara-` 접두사 이전 이름을 그대로 쓴다. 이미 있는 소비 repo의 파일이 깨지지 않게 하려는 것이다. 목록은 `grep -l overrides/ skills/*/SKILL.md`로 다시 확인한다.
 
 ## External Plugin Dependencies / 외부 의존성
 
