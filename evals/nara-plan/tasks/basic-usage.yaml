@@ -18,3 +18,10 @@ expected:
     - "jira_create_issue"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(plan\\.md|작업 단위|T-1)"
+        - "(?i)(수직|vertical|traceability|추적)"

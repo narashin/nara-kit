@@ -19,3 +19,10 @@ expected:
     - "코드 수정"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(incident-report\\.md|가설|hypothesis|root cause)"
+        - "(?i)(evidence|증거|Proposed Fix|Side Effects)"

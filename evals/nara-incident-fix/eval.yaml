@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: tdd_phases
-    config:
-      regex_match:
-        - "(?i)(phase|RED|GREEN|테스트|test)"
-        - "(?i)(incident-report|리포트)"
 tasks:
   - "tasks/*.yaml"

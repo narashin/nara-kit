@@ -21,3 +21,9 @@ expected:
     - "it("
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(S2|S3|scenario|시나리오|Happy|Edge|Error)"

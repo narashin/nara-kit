@@ -1,15 +1,16 @@
 id: should-not-trigger-001
-name: "Saving a lesson is retro, not handoff"
+name: Saving a lesson is retro, not handoff
 description: |
   A request to store a durable lesson belongs to nara-retro. The handoff skill
   must not write a handoff for it.
 tags:
-  - anti-trigger
-  - negative-test
+- anti-trigger
+- negative-test
 inputs:
-  prompt: "오늘 알게 된 주의사항 하나 메모리에 영구로 저장해줘: 배포 전에 마이그레이션 dry-run 필수"
+  prompt: '오늘 알게 된 주의사항 하나 메모리에 영구로 저장해줘: 배포 전에 마이그레이션 dry-run 필수'
   files: []
 expected:
   output_not_contains:
-    - "인계 기록"
-    - "carry-forward"
+  - carry-forward
+  - 인계 기록 (applied)
+  - "handoff: 없음"

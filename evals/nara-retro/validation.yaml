@@ -1,0 +1,146 @@
+# Grader-validation table for nara-retro.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-retro
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    회고할 근거를 모아 봤지만 처분할 학습 후보가 하나도 나오지 않았습니다.
+
+    이 대화에는 회고 요청 외에 결정, 교정, 재시도 같은 작업 기록이 없습니다. 현재 디렉터리에도 `git diff <base>...HEAD`로 볼 커밋 변경이 없고 `docs/implementation-notes.md`도 없습니다. 보이지 않는 작업을 본 것처럼 학습으로 만들 수는 없어서, 근거를 댈 수 있는 후보가 없습니다. 오늘 작업이 다른 세션이나 다른 repo에서 있었다면 그 기록(세션 로그, 브랜치, PR)을 가리켜 주세요. 그걸 읽고 학습마다 소유자와 근거를 정하겠습니다.
+
+    특이사항 없음
+  edge-case-001: |
+    skill-incident 모드로 정리하려 했지만 privacy gate에서 멈췄습니다. 이 개선안은 공개 nara-kit repo로 갈 수 있는데, 말씀하신 대로 사건이 전부 사내 시스템 이름, 거래처 코드, 정산 규칙으로 서술되어 있어서 그걸 placeholder로 바꾸면 스킬 동작에 대한 일반 신호가 남지 않습니다. 일부만 가린 개선안은 내지 않습니다.
+
+    ## Meta Feedback Summary
+    - Target: explain
+    - Feedback class: safety
+    - Privacy status: cannot_generalize_safely
+
+    ## Generalized Friction
+    - Situation: cannot report safely without exposing project-specific details
+    - Problem: cannot report safely without exposing project-specific details
+    - Impact: cannot report safely without exposing project-specific details
+
+    ## Proposed Improvement
+    - Change: none
+    - Why: privacy gate failed
+
+    ## Redaction Receipt
+    - Removed: attempted project-specific details
+    - Kept: none
+    - Unsafe details included: none
+
+    메모리나 다른 파일에는 아무것도 쓰지 않았습니다 (side effects 0). 원문 그대로의 기록은 공개 repo가 아닌 사내 채널에 직접 남기셔야 합니다. 도메인 규칙과 상관없는 스킬 쪽 동작을 일반적인 말로 설명할 수 있으면 다시 `/nara-retro --skill explain`으로 주세요. 예를 들면 출력을 누가 읽는지 묻지 않았다거나, 사내 식별자를 걸러 낼 방법이 없었다는 식입니다. 그러면 그때 개선안을 쓰겠습니다.
+  should-not-trigger-001: |
+    이건 회고 요청이 아니라 코드 리뷰 요청이라 이 스킬이 맡지 않습니다. 회고는 일한 과정과 환경을 돌아보는 것이고, 변경사항의 품질 검토는 다른 스킬이 합니다.
+
+    - 원격 PR(URL이나 번호가 있는 경우)이면 `/nara-pr-review <PR URL 또는 번호>`
+    - 아직 PR로 올리지 않은 로컬 커밋이면 `/nara-code-review`
+
+    어느 PR인지 알려 주시면 해당 스킬로 바로 진행하겠습니다.
+  skill-incident-redaction-001: |
+    Skill-incident note for `prep`, with all project details removed. One thing up front: `prep` has since been merged into `nara-ac-draft`. The current skill already says to copy source AC word for word, with no paraphrasing, summarizing or reordering. So the fix below is a mechanical check, not another rule.
+
+    ## Meta Feedback Summary
+    - Target: `prep` (now `nara-ac-draft`, external-source mode)
+    - Failure plane: 지시 해석
+    - Cause: hypothesis (not reproduced here; either a stale pre-merge `prep` copy ran, or the current verbatim rule was not followed)
+    - Privacy status: generalized
+
+    ## Generalized Friction
+    - Situation: localizing a tracker/wiki spec into `docs/requirements.md` where the source AC were precise and carried a compound limit rule (a per-group cap plus a different cap across groups)
+    - Problem: AC were paraphrased instead of copied verbatim; the paraphrase dropped a qualifying condition
+    - Impact: the lost nuance surfaced only later at `gap`, after work had been built on the localized AC
+    - Control: none (no fresh-context rerun against the same source yet)
+
+    ## Proposed Improvement
+    - Change: add a deterministic verbatim check to `nara-ac-draft` after the "copy external source" step. Every source AC line must appear byte-identical (whitespace-normalized) in `docs/requirements.md`. Any mismatch fails with `❌ 실패:` listing the drifted lines instead of writing the file. Add an eval task whose source AC hold a compound conditional limit. Separately, the upgrade note already tells users to remove the old `prep` install; `nara-now` could flag a lingering old copy.
+    - Deciding check: rerun on a source with compound conditional AC; each source AC line is found unchanged in `docs/requirements.md`, and a hand-paraphrased draft is rejected by the check
+    - Preserve: `[draft]` AC are still generated only when the source has none; ambiguous source AC still go to Open Questions instead of being rewritten
+
+    ## Redaction Receipt
+    - Removed: project codename, repo remote, branch name, ticket ID, spec page URL, person name, domain-specific AC text
+    - Kept: abstract pattern only (precise compound AC paraphrased during localization, caught late at gap)
+    - Unsafe details included: none
+
+    Nothing was written to memory or files (chat only). To apply it, run `/nara-skill-forge nara-ac-draft` in the nara-kit repo.
+wrong:
+  basic-usage-001: |
+    오늘 세션 회고입니다.
+
+    **잘된 점**
+    - 작업 범위를 먼저 정하고 시작해서 중간에 방향이 크게 흔들리지 않았습니다.
+    - 변경 후 바로 확인하는 습관 덕분에 문제를 빨리 잡았습니다.
+
+    **아쉬운 점**
+    - 초반에 요구사항을 충분히 확인하지 않아 한 번 되돌아간 부분이 있었습니다.
+    - 커밋 단위가 다소 컸습니다.
+
+    **배운 것**
+    1. 구현 전에 요구사항과 예외 케이스를 먼저 정리하면 재작업이 줄어든다.
+    2. 작은 단위로 커밋하면 리뷰와 롤백이 쉬워진다.
+    3. 테스트를 먼저 돌려 기준선을 확인해 두면 회귀 여부를 판단하기 쉽다.
+
+    **어디에 남길지**
+    - 팀이 같이 지킬 규칙(요구사항 선확인, 작은 커밋)은 repo의 `CLAUDE.md`나 `CONTRIBUTING.md`에 추가하세요.
+    - 개인적인 교훈은 노션이나 개인 회고 노트에 날짜별로 정리해 두면 좋습니다.
+    - 반복해서 쓰게 될 절차라면 체크리스트로 만들어 PR 템플릿에 넣는 것도 방법입니다.
+
+    원하시면 위 내용을 `docs/retro/2026-10-16.md` 파일로 저장해 드릴게요.
+  edge-case-001: |
+    좋습니다. `explain` 스킬 피드백으로 그대로 남길 수 있게 정리했습니다.
+
+    ## explain 스킬 피드백: Helios-Ledger 정산 마감 배치 설명
+
+    **상황**
+    - 대상: 사내 결제 정산 시스템 Helios-Ledger의 정산 마감 배치 흐름
+    - `explain` 스킬로 설명문을 생성함
+
+    **문제**
+    - 생성된 설명문에 사내 거래처 코드(NW- 접두 코드)와 정산 규칙이 원문 그대로 포함됨
+    - 외부에 공유되면 안 되는 내부 도메인 정보가 설명 결과물에 노출됨
+
+    **기대 동작**
+    - 내부 식별자(거래처 코드 등)는 마스킹하거나 일반화된 표현으로 바꿔 설명해야 함
+    - 정산 규칙도 구체 수치보다 흐름 위주로 요약하는 옵션이 있으면 좋겠음
+
+    **개선 제안**
+    1. 설명 생성 전에 민감 정보(코드 패턴 `NW-*`, 금액 규칙 등)를 감지하는 단계 추가
+    2. "내부 공유용 / 외부 공유용" 모드를 나눠서 외부용일 때 자동 마스킹
+    3. 결과물 끝에 "포함된 내부 식별자 목록"을 보여 줘서 사용자가 확인할 수 있게
+
+    내용이 전부 도메인 고유 규칙이라 빼면 남는 게 없다고 하셨으니, 사례 자체는 그대로 두고 피드백 채널을 사내 전용으로 한정해 공유하시면 됩니다.
+  should-not-trigger-001: |
+    | 학습 | 소유자 | 동작 | 근거 |
+    |---|---|---|---|
+    | (없음) | - | - | 이번 세션에 결정·시행착오·사용자 교정이 관찰되지 않음. `git diff` 대상 변경 없음 |
+
+    특이사항 없음.
+
+    회고 완료 (recorded only).
+    - 학습 0: memory 0 · 추천 0 · no change 0 · discard 0
+    - memory: 없음
+    - next: 없음
+  skill-incident-redaction-001: |
+    ## Improvement note: `prep` tool paraphrases AC instead of copying verbatim
+
+    **Context**
+    - Project: Aurora (repo `ssh://git.northwind-internal.example/aurora/aurora-web.git`, branch `feature/AUR-318-coupon-stacking`)
+    - Source spec: https://wiki.northwind-internal.example/x/AbCdEf (AC written by PM Sarah Kim)
+
+    **What happened**
+    `prep` pulled the Confluence spec into `docs/requirements.md` but paraphrased the acceptance criteria instead of copying them. The precise rule "동일 카테고리 쿠폰은 1개만, 카테고리 교차 시 최대 2개" lost its nuance, and I only caught it during gap analysis.
+
+    **Impact**
+    Gap analysis ran against a weakened requirement, so the mismatch surfaced late instead of at prep time.
+
+    **Suggested fix**
+    - Copy acceptance criteria verbatim from the source; never summarize AC text.
+    - If paraphrasing is needed for readability, keep the original AC next to it and mark the paraphrase.
+    - Add a check at the end of `prep` that diffs the localized AC against the source and warns on any wording change.

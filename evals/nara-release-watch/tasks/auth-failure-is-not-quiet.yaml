@@ -15,3 +15,9 @@ expected:
     - "gh auth login"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(watch\\.py|poll)"

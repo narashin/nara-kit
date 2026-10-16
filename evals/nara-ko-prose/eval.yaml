@@ -27,11 +27,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: trailing_status
-    config:
-      regex_match:
-        - "ko-prose"
-        - "(?i)mode\\s*=\\s*(repair|full)"
 tasks:
   - "tasks/*.yaml"

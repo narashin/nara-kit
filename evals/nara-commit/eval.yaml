@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: commit_format
-    config:
-      regex_match:
-        - "(?i)(feat|fix|docs|style|refactor|perf|test|chore|ci|revert):"
-        - "(?i)(git diff --cached|staged|스테이징)"
 tasks:
   - "tasks/*.yaml"

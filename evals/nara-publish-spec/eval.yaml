@@ -25,10 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: relevant_content
-    config:
-      regex_match:
-        - "(?i)(Confluence|dry-run|storage|template|publish)"
 tasks:
   - "tasks/*.yaml"

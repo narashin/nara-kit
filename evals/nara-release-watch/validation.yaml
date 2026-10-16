@@ -1,0 +1,105 @@
+# Grader-validation table for nara-release-watch.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-release-watch
+# Expected: every task passes on right and fails on wrong.
+right:
+  auth-failure-001: |
+    stage: watch (판정 없음)
+    - Outcome: 새 릴리즈는 0건이지만 2개 repo 폴링이 실패해서 조용한 날로 넘기지 않고 보고합니다 (`quiet: true`여도 `needs_attention: true`라 조기 종료 안 함).
+    - Evidence: checked 11 · new 0 · suppressed 0 · queued 0 · failed 2 (`anthropics/claude-code`, `openai/codex`) · unwatchable 0
+    - Interpretation: poll 출력에는 실패 사유(인증·rate limit·404)가 없습니다. 가장 흔한 원인은 `gh` 미인증이지만 11개 중 2개만 실패했으니 rate limit이나 repo 접근 문제일 수도 있습니다 [UNVERIFIED: 사유 미출력].
+    - 배달 (dry run, 미실행): `mcp__slack__get_me` → `mcp__slack__post_message`(DM: "release-watch 폴링 실패 2건: anthropics/claude-code, openai/codex") + Obsidian `Inbox/release-watch-2026-10-16.md`
+    - side effects: slack 0 · obsidian 0 (dry run)
+    - next:
+      1. `gh auth status --hostname github.com`으로 인증 상태를 확인하고, 미인증이면 `gh auth login --hostname github.com`을 실행해 주세요.
+      2. 인증이 정상이면 두 repo를 `gh api repos/<owner>/<repo>/releases/latest`로 직접 조회해 rate limit인지 404인지 확인해 주세요.
+
+    인증 실패라면 state가 바뀌지 않았으므로, 복구 후 다음 poll에서 그사이 놓친 릴리즈가 그대로 잡힙니다.
+  default-to-depend-001: |
+    stage: digest (큐 3건 판정)
+    - Outcome: 큐 3건을 판정했습니다. 의존 1 · 무시 2 · 증류 후보 0 · 이미 있음 0 (recorded only, 배달은 dry run).
+    - Evidence: 입력은 `python3 assets/watch.py digest` 출력(count 3, 2026-09-02 ~ 09-04 적재분). 교차 repo 패턴은 없습니다. 같은 방향으로 움직인 repo가 하나뿐입니다.
+    - 배달 (dry run, 미실행): Slack DM(`mcp__slack__get_me` → `mcp__slack__post_message`) + Obsidian `Inbox/release-digest-2026-10-16.md`
+    - 드레인: 하지 않았습니다. 배달이 끝나야 `python3 assets/watch.py digest --drain`을 돌리므로 큐 3건은 그대로 남아 다음 digest가 다시 잡습니다.
+    - side effects: slack 0 · obsidian 0 · queue drain 0
+    - next: 배달 후 `python3 assets/watch.py digest --drain`
+
+    # Release Digest: 2026-10-16 (큐 3건, 2026-09-02 ~ 09-04)
+
+    ## acme/workbench v2.5.0 → [의존](https://github.com/acme/workbench/releases/tag/v2.5.0)
+
+    "막는 대신 라벨로 보여 주기"와 "적용된 필터를 바에 전부 표시"는 우리 방향과 닮았지만, 릴리즈 노트 두 줄만으로는 어느 스킬의 어느 스텝에 무엇을 가져올지, 직접 만드는 게 왜 더 싼지를 댈 수 없습니다. 증류 후보 세 조건을 못 채워서 기본값인 의존입니다. 다음 릴리즈에서 같은 방향이 구체적으로 나오면 그때 다시 봅니다.
+
+    ## some/tool v4.0.0 → [무시](https://github.com/some/tool/releases/tag/v4.0.0)
+
+    JSON 파서 성능과 Node 18 지원 종료는 런타임 문제입니다. nara-kit은 워크플로 계약이라 걸리는 표면이 없습니다.
+
+    ## acme/workbench v2.5.1 → [무시](https://github.com/acme/workbench/releases/tag/v2.5.1)
+
+    본문이 "Maintenance release." 한 줄이고 highlights도 비어 있어 판정할 변경이 없습니다.
+
+    증류 후보는 이번 주 0건입니다.
+  quiet-day-001: |
+    stage: watch (판정 없음)
+    - Outcome: 조용한 날이라 알림 없이 종료했습니다 (skipped, `quiet: true` · `needs_attention: false`).
+    - Evidence: checked 11 · new 0 · suppressed 2 · queued 0 · failed 0 · unwatchable 0
+    - Artifact: 없음 (DM·Obsidian 노트 둘 다 만들지 않음)
+    - side effects: slack 0 · obsidian 0
+    - next: 없음
+  watch-no-verdict-001: |
+    stage: watch (판정 없음)
+    - Outcome: 새 릴리즈 1건을 알림으로 정리하고 큐에 적재했습니다 (recorded only, 배달은 dry run).
+    - Evidence: checked 11 · new 1 · suppressed 1 · queued 1 · failed 0 · unwatchable 0
+
+    알림 본문 (highlights가 비어 있어 이름 + 링크로 폴백):
+    - some/tool v4.0.0: https://github.com/some/tool/releases/tag/v4.0.0
+
+    - 배달 (dry run, 미실행): `mcp__slack__get_me` → `mcp__slack__post_message`(DM, 위 알림 본문) + Obsidian `Inbox/release-watch-2026-10-16.md`
+    - Artifact: 큐 `~/.claude/release-watch-queue.json` (poll이 1건 적재, `state_written: true`)
+    - side effects: slack 0 · obsidian 0 (dry run)
+    - next: 큐가 쌓이면 주간 `/nara-release-watch digest`
+wrong:
+  auth-failure-001: |
+    릴리스 확인 결과입니다.
+
+    - 확인한 저장소: 11개
+    - 새 릴리스: 없음
+    - 실패: `anthropics/claude-code`, `openai/codex` 2개
+
+    오늘은 새 릴리스가 없어 조용한 날입니다. 두 저장소는 이번 폴링에서 조회가 실패했는데, GitHub API 일시 오류나 레이트 리밋일 가능성이 높으니 다음 주기에 다시 확인되면 문제없습니다. 계속 실패하면 그때 저장소 이름이나 네트워크를 점검해 보세요.
+  default-to-depend-001: |
+    대기열에 쌓인 릴리스 3건 요약입니다.
+
+    **some/tool v4.0.0** (2026-09-02)
+    더 빠른 JSON 파서가 추가됐고 Node 18 지원이 빠졌습니다. 메이저 버전이라 Node 18 환경을 쓰고 있다면 업그레이드 전에 런타임부터 올려야 합니다. 파서 성능 향상은 반가운 변화이니, Node 20 이상이라면 업그레이드를 추천합니다.
+
+    **acme/workbench v2.5.0** (2026-09-03)
+    - 차단 조건(blocker)이 작업을 거부하는 대신 라벨로 표시됩니다.
+    - 적용된 필터를 바(bar)에 모두 이름으로 보여 줍니다.
+
+    UX 개선 위주라 업그레이드 부담이 적습니다. 특히 "거부 대신 라벨" 방식은 우리 도구에도 참고할 만한 패턴이니, 비슷한 기능을 직접 만들어 넣는 것도 고려해 볼 만합니다.
+
+    **acme/workbench v2.5.1** (2026-09-04)
+    유지보수 릴리스입니다. 특별한 변경 사항은 없습니다.
+
+    정리하면 some/tool은 Node 버전 확인 후 업그레이드, acme/workbench는 2.5.1로 바로 올려도 됩니다.
+  quiet-day-001: |
+    릴리스 확인 결과입니다.
+
+    11개 저장소를 확인했고 새 릴리스는 없습니다. 2건은 필터 조건에 걸려 제외됐습니다. 실패한 저장소도 없어 따로 조치할 일은 없습니다.
+  watch-no-verdict-001: |
+    새 릴리스가 1건 있습니다.
+
+    **some/tool v4.0.0** (2026-09-02)
+    https://github.com/some/tool/releases/tag/v4.0.0
+
+    더 빠른 JSON 파서가 추가됐고 Node 18 지원이 중단됐습니다.
+
+    판단: 메이저 버전 업이면서 Node 18을 끊었기 때문에 **바로 업그레이드하지 말고 보류**하는 게 좋습니다. 현재 프로젝트가 Node 20 이상이면 업그레이드해도 괜찮고, 파서 성능 개선 효과가 있으니 여유가 될 때 올리는 걸 권합니다.
+
+    그 밖에 11개 저장소를 확인했고, 1건은 필터로 제외됐으며 실패는 없습니다. 이 릴리스는 대기열에도 추가됐습니다.

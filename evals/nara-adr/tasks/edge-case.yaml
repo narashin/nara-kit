@@ -17,3 +17,9 @@ expected:
     - "요구사항 정리"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(ADR|Decision|Context|Options|Consequences|아키텍처|결정)"

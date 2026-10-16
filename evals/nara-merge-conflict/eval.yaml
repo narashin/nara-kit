@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: intent_and_boundary
-    config:
-      regex_match:
-        - "(?i)(ours|theirs|intent|의도)"
-        - "(?i)(reset --hard|force.?push|no destructive|파괴적|diff-filter=U)"
 tasks:
   - "tasks/*.yaml"

@@ -1,0 +1,112 @@
+# Grader-validation table for nara-ask-repo.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-ask-repo
+# Expected: every task passes on right and fails on wrong.
+right:
+  not-found-not-absent-001: |
+    **실제 사용 중**이라 지우면 안 됩니다. `exportCsv`를 이름으로 직접 부르는 곳은 없지만, `runExport`가 함수 이름을 문자열로 조립해서 꺼내 쓰기 때문에 이름 검색에 걸리지 않을 뿐입니다.
+
+    연결은 이렇습니다. `src/report/index.ts:1`이 `./export` 모듈 전체를 `exporters`로 가져오고, `src/report/index.ts:6`에서 `` exporters[`export${format}`] ``로 함수를 고릅니다. `format`의 타입이 `src/report/index.ts:3`에서 `"Csv" | "Tsv"`로 정해져 있으니, `runExport("Csv", rows)`가 호출되면 `src/report/export.ts:1`의 `exportCsv`가 실행됩니다. `exportTsv`도 같은 경로로 쓰입니다.
+
+    지우면 생기는 일도 코드에서 바로 보입니다. `exportCsv`를 없애면 `format`이 `"Csv"`일 때 `fn`이 `undefined`가 되어 `src/report/index.ts:7`의 `fn(rows)`에서 런타임 에러가 납니다. 타입 체커가 이걸 잡아 줄지는 컴파일러 설정에 달려 있고, 설정 파일이 첨부되지 않아 확인하지 못했습니다(추론).
+
+    한계가 하나 있습니다. 첨부된 두 파일만 봤기 때문에 `runExport`를 누가 어떤 `format`으로 부르는지는 확인하지 못했습니다. 다만 그 답이 "아무도 `"Csv"`로 부르지 않는다"로 나오더라도, 그건 `exportCsv`만이 아니라 `Format` 타입의 `"Csv"`까지 함께 걷어 내는 별도 결정이 됩니다. 정말 정리하고 싶다면 `runExport` 호출부를 저장소 전체에서 찾아 `"Csv"` 사용 여부부터 확인하세요.
+  remote-pinned-001: |
+    아직 답을 드릴 수 없습니다. `acme-sre/web-ui`의 코드를 읽지 못했기 때문에, 세션 만료 시간이 어디서 정해지는지는 지금 어떤 주장도 근거를 댈 수 없습니다.
+
+    원격 저장소는 먼저 커밋을 고정해야 근거를 적을 수 있습니다. URL의 호스트가 `github.com`이므로 그 호스트로 다음 순서를 밟으려 했습니다.
+
+    ```bash
+    # 1. pin the commit
+    gh api --hostname github.com repos/acme-sre/web-ui/commits/HEAD --jq .sha
+
+    # 2. broad search, so clone into a scratch dir (never into the current repo, never run its code)
+    tmp=$(mktemp -d)
+    git clone --filter=blob:none --no-checkout https://github.com/acme-sre/web-ui "$tmp/web-ui"
+    git -C "$tmp/web-ui" checkout <sha>
+    grep -rnE 'maxAge|expiresIn|expires|ttl|SESSION_|session' "$tmp/web-ui" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.env*' --include='*.json'
+    ```
+
+    이 단계의 결과(커밋 SHA와 파일 내용)가 이 작업 공간에 없어서 1번부터 진행하지 못했습니다. 검색어는 쿠키 `maxAge`·`expires`, 토큰 `expiresIn`, 세션 TTL 설정, 환경 변수 순으로 잡을 계획이었습니다. 만료 시간이 프론트엔드가 아니라 인증 서버나 쿠키를 발급하는 백엔드에서 정해지는 경우도 흔한데, 그때는 `web-ui` 안에서 찾은 값이 실제 만료를 결정하는지 따로 확인해야 합니다.
+
+    진행하려면 둘 중 하나가 필요합니다. `github.com`에 대해 인증된 `gh`(이 저장소 읽기 권한 포함)로 위 명령을 실행할 수 있게 해 주시거나, 확인할 커밋 SHA와 세션·인증 관련 파일 내용을 붙여 주세요.
+
+    Status: Unverifiable. 원격 저장소 `acme-sre/web-ui`의 커밋과 코드를 읽을 수 없음
+  should-not-trigger-001: |
+    발표 자료 만들기는 이 스킬이 맡는 일이 아닙니다. 이 스킬은 저장소 동작에 대한 구체적인 질문 하나에 코드 근거로 답하는 용도이고, PM 같은 독자를 위한 설명 문서나 발표 자료는 `/nara-explain`이 맡습니다. `/nara-explain`에 "인증 플로우를 PM에게 설명할 발표 자료"라고 요청해 주세요. 그 전에 특정 지점(예: 토큰을 어디서 발급하는지)을 코드로 먼저 확인하고 싶으면 그 질문 하나를 이 스킬로 물어보시면 됩니다.
+  value-origin-001: |
+    `discountRate`는 주문 API 응답의 `promo.rate`에서 옵니다. `toOrder`가 그 값에 100을 곱하고 반올림해서 넣고, 프로모션이 없으면(`promo`가 `null`) 0을 넣습니다(`src/api/order.ts:9-10`).
+
+    따라가면 이렇습니다. `src/types.ts:4`의 `discountRate: number`는 필드 모양만 정할 뿐 값이 어디서 오는지는 말해 주지 않습니다. 실제 대입은 `src/api/order.ts:10`의 `discountRate: Math.round(rate)` 한 곳이고, `rate`는 바로 위 `src/api/order.ts:9`에서 `res.promo ? res.promo.rate * 100 : 0`으로 계산됩니다. `res`의 타입 `OrderResponse`는 `src/api/order.ts:3-6`에 있으며, 여기가 외부 경계입니다. `promo.rate` 자체를 만드는 쪽은 서버라서 이 코드로는 더 따라갈 수 없습니다.
+
+    단위에 주의할 점이 있습니다. 100을 곱하는 코드와 `src/types.ts:3`의 주석("Percent shown on the receipt, 0-100")을 보면 서버의 `rate`는 0.15 같은 비율 값이라고 가정하고 있습니다. 그런데 이 가정은 코드 안에서 검증되지 않습니다(추론). 서버가 이미 15 같은 퍼센트 값을 보내면 영수증에는 1500이 찍힙니다. 또 `Math.round`가 정수로 자르므로 0.125는 12.5가 아니라 13으로 표시됩니다.
+
+    영수증 화면이 `discountRate`를 그대로 출력하는지, 표시 전에 다시 가공하는지는 영수증 컴포넌트가 첨부되지 않아 확인하지 못했습니다. 그 파일이나 `discountRate`를 읽는 곳을 주시면 표시 단계까지 이어서 확인하겠습니다.
+wrong:
+  not-found-not-absent-001: |
+    지우면 안 됩니다. 직접 이름으로 호출하는 곳은 없지만 `runExport`에서 동적으로 쓰이고 있습니다.
+
+    `src/report/index.ts`를 보면 모듈 전체를 `exporters`로 import한 뒤, 함수 이름을 문자열로 조립해서 꺼냅니다.
+
+    ```ts
+    const fn = exporters[`export${format}`];
+    ```
+
+    `Format` 타입이 `"Csv" | "Tsv"`이므로 `runExport("Csv", rows)`가 호출되면 `exporters["exportCsv"]`, 즉 `exportCsv`가 실행됩니다. 그래서 `exportCsv`라는 이름으로 검색하면 정의 말고는 안 나오지만, 실제로는 CSV 내보내기 경로에서 사용되는 함수입니다.
+
+    `exportCsv`를 지우면 `runExport("Csv", ...)` 호출 시 `fn`이 `undefined`가 되어 런타임에 `fn is not a function` 에러가 납니다. TypeScript 설정에 따라 템플릿 리터럴 인덱싱 부분에서 컴파일 에러가 날 수도 있습니다.
+
+    정말 CSV 내보내기를 없애려는 거라면 `Format` 타입에서 `"Csv"`를 빼고, `runExport(...)`를 `"Csv"`로 호출하는 곳이 없는지 프로젝트 전체에서 확인한 뒤 함께 지우는 게 안전합니다. 첨부된 두 파일만으로는 `runExport`를 어디서 어떤 포맷으로 호출하는지까지는 알 수 없습니다.
+  remote-pinned-001: |
+    죄송하지만 지금은 외부 URL에 접속해서 저장소 내용을 직접 열어볼 수 없어서, `acme-sre/web-ui`에서 세션 만료 시간이 정확히 어디서 정해지는지는 확인해 드릴 수 없습니다.
+
+    대신 웹 프론트엔드 저장소에서 세션 만료 시간이 보통 정해지는 곳을 정리해 드리면, 아래 순서로 찾아보시면 빠릅니다.
+
+    1. **환경 변수 / 설정 파일**: `.env`, `.env.example`, `config/`, `next.config.js` 등에서 `SESSION`, `EXPIRE`, `TTL`, `MAX_AGE`, `TIMEOUT` 같은 키를 검색해 보세요.
+    2. **인증 라이브러리 설정**: NextAuth를 쓰면 `session.maxAge`, `jwt.maxAge` 옵션이 있고, 쿠키 기반이면 `cookie.maxAge` 또는 `expires` 설정이 있습니다.
+    3. **토큰 처리 코드**: `auth`, `session`, `token` 디렉터리에서 JWT의 `exp` 클레임을 읽거나 refresh 타이머를 거는 코드가 있는지 보세요.
+    4. **서버 측**: 프론트엔드는 서버가 내려주는 쿠키 만료나 토큰 `exp`를 따르기만 하는 경우가 많습니다. 이 경우 실제 만료 시간은 백엔드나 IdP(SSO) 설정에서 정해집니다.
+
+    로컬에 클론해 두셨다면 아래 명령으로 후보를 빠르게 좁힐 수 있습니다.
+
+    ```bash
+    grep -rniE "maxAge|expires|expire|ttl|session.?timeout" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.env*" .
+    ```
+
+    관련 파일 내용을 붙여 주시면 어디서 값이 정해지는지 같이 따라가 드리겠습니다.
+  should-not-trigger-001: |
+    인증 플로우가 이 저장소에서 어떻게 동작하는지부터 코드로 확인하려 했는데, 근거로 삼을 코드를 찾지 못했습니다.
+
+    현재 작업 디렉터리에서 `auth`, `login`, `session`, `token`, `oauth`, `sso` 같은 단서로 파일과 심볼을 검색했지만 일치하는 소스가 없었습니다. 디렉터리에 추적 중인 소스 파일 자체가 없어서, 인증 진입점, 토큰 발급과 저장 위치, 만료 처리 같은 흐름을 `path:line` 근거로 따라갈 수 없습니다. 이 상태에서는 "인증 플로우가 없다"고 판정할 수도 없습니다. 못 찾은 것이지 없다는 증거가 아니기 때문입니다.
+
+    답을 이어 가려면 둘 중 하나가 필요합니다.
+
+    - 인증 코드가 있는 저장소의 로컬 경로나 원격 URL(가능하면 브랜치나 커밋까지)
+    - 또는 인증 관련 파일(로그인 처리, 세션·토큰 처리, 라우트 가드) 내용
+
+    Status: Unverifiable — 현재 작업 디렉터리에 인증 플로우를 추적할 소스가 없음
+  value-origin-001: |
+    영수증의 `discountRate`는 주문 API 응답의 `promo.rate` 값에서 옵니다. `src/api/order.ts`의 `toOrder`에서 변환됩니다.
+
+    ```ts
+    const rate = res.promo ? res.promo.rate * 100 : 0;
+    return { id: res.id, discountRate: Math.round(rate) };
+    ```
+
+    흐름을 정리하면 이렇습니다.
+
+    1. 서버 응답(`OrderResponse`)에는 `promo: { rate: number } | null`이 들어옵니다. 이름과 `* 100` 처리로 보아 `rate`는 0~1 사이의 비율(예: `0.15`)로 내려오는 것으로 보입니다.
+    2. `toOrder`가 `promo`가 있으면 `rate * 100`으로 퍼센트로 바꾸고, 없으면(`null`) 0으로 둡니다.
+    3. 그 값을 `Math.round`로 정수 반올림해서 `Order.discountRate`에 넣습니다. `src/types.ts`의 주석대로 영수증에는 0~100 퍼센트로 표시됩니다.
+
+    참고로 확인해 볼 점이 두 가지 있습니다.
+
+    - 반올림 때문에 12.5%처럼 소수점이 있는 할인율은 13%로 표시됩니다. 영수증에 정확한 할인율이 나와야 한다면 문제가 될 수 있습니다.
+    - 서버가 `rate`를 이미 퍼센트(예: `15`)로 내려준다면 1500%가 되는 버그가 생깁니다. API 스펙에서 `promo.rate`의 단위를 한 번 확인해 보시는 걸 권합니다.
+
+    첨부된 코드에는 영수증 화면 쪽 코드가 없어서, 영수증이 `discountRate`를 그대로 출력하는지 추가 가공하는지는 확인하지 못했습니다.

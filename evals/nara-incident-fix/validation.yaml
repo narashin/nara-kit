@@ -1,0 +1,89 @@
+# Grader-validation table for nara-incident-fix.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-incident-fix
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    `docs/incident-report.md`를 읽었습니다. 수정이 한 줄을 넘고(검사 + 예외) 호출부 쪽 변경도 걸려 있어서, 테스트를 쓰기 전에 아래 계획부터 확인받겠습니다. 아직 테스트도 코드도 건드리지 않았습니다.
+
+    **Fix Plan**
+    - Proposed Fix: `hello(name)`이 `name.strip()`이 비면 `ValueError`를 던진다
+    - 영향 파일: `sample.py` (Similar Patterns 없음)
+    - Phase 1 실패 테스트: 새 `test_sample.py`(표준 `unittest`, 새 패키지 없음)에 `hello("")`과 `hello("   ")`가 `ValueError`를 던지는지, `hello("Ana")`는 `"Hello, Ana!"`를 그대로 돌려주는지 단언. 지금 코드에서는 앞의 두 케이스가 실패해야 정상
+    - Phase 2: `sample.py`의 `hello`에 빈 이름 검사 추가, `python -m unittest test_sample` 통과 확인
+    - Phase 3 Side Effects 검증 대상: `hello`를 빈 문자열로 부르는 호출부. 이 저장소에는 호출부가 없어 `grep -rn "hello(" .`로 0건을 확인하는 데서 그칩니다
+
+    → ESCALATE: 리포트의 "호출부는 `ValueError`를 400으로 바꾼다"는 이 저장소 밖 코드라 여기서 구현하지 못합니다. 이번 범위를 `sample.py`의 `hello` 수정과 테스트로 한정하고, 호출부의 400 변환은 호출부 저장소에서 따로 처리하는 방향으로 Red-Green-Refactor 진행할까요?
+
+    답 형식: 진행 / 수정 (바꿀 점)
+  edge-case-001: |
+    ❌ 실패: `docs/incident-report.md`가 없어 수정을 시작할 수 없습니다
+    - recovered: yes (아무것도 쓰지 않음)
+    - artifact 영향: none (테스트, 코드 모두 변경 없음)
+    - side effects: 없음
+    - next action: `/nara-incident <티켓 또는 장애 설명>`으로 장애 분석 리포트를 먼저 만든 뒤 다시 `/nara-incident-fix` 실행
+  should-not-trigger-001: |
+    `/nara-incident-fix`는 이미 끝난 장애 분석 리포트를 근거로 수정을 구현하는 스킬이라, 원인을 찾는 디버깅 요청에는 맞지 않습니다.
+
+    원인을 구조적으로 분석해 리포트로 남기려면 `/nara-incident`를 쓰면 됩니다. 그 전에 어느 함수인지와 에러 메시지(스택 트레이스)가 필요한데, 지금 메시지에는 둘 다 없습니다. 함수 코드나 파일 경로, 에러 출력을 붙여 주세요.
+
+    - status: skipped (코드와 파일 모두 변경 없음)
+    - next: 함수 코드와 에러 출력을 붙여 `/nara-incident` 실행
+wrong:
+  basic-usage-001: |
+    리포트의 Proposed Fix대로 `hello`에 입력 검증을 추가하고 테스트를 작성했습니다.
+
+    **sample.py**
+
+    ```python
+    def hello(name):
+        """Greet someone by name."""
+        if name is None or not name.strip():
+            raise ValueError("name must not be empty")
+        return f"Hello, {name}!"
+    ```
+
+    **test_sample.py**
+
+    ```python
+    import pytest
+
+    from sample import hello
+
+
+    def test_hello_returns_greeting():
+        assert hello("Alice") == "Hello, Alice!"
+
+
+    @pytest.mark.parametrize("name", ["", "   ", None])
+    def test_hello_rejects_empty_name(name):
+        with pytest.raises(ValueError):
+            hello(name)
+    ```
+
+    `pytest test_sample.py`로 실행하면 됩니다.
+
+    참고로 리포트대로 호출부에서는 이 `ValueError`를 잡아 400 응답으로 바꿔 줘야 합니다. 호출부 코드는 이 저장소에 없어서 그쪽 수정은 따로 진행해 주세요. 이름 앞뒤 공백을 제거해서 인사하고 싶다면 `name.strip()`을 반환값에도 적용할 수 있습니다.
+  edge-case-001: |
+    네, 장애 수정 도와드릴게요. 다만 지금은 어떤 장애인지에 대한 정보가 없어서 바로 구현을 시작할 수가 없어요.
+
+    아래 중 가지고 계신 것을 알려 주세요.
+
+    - 어떤 장애인지 (증상, 에러 메시지, 발생 조건)
+    - 관련 코드나 파일 경로
+    - 원인 분석이 이미 되어 있다면 그 내용 (예: 장애 리포트 문서)
+    - 재현 방법
+
+    정보를 주시면 원인을 확인하고, 재현 테스트를 먼저 작성한 뒤 수정하는 순서로 진행하겠습니다.
+  should-not-trigger-001: |
+    ❌ 실패: `docs/incident-report.md`가 없습니다.
+
+    - 이 단계는 장애 리포트를 SoT로 삼아 Red-Green-Refactor로 수정을 구현합니다. 리포트가 없어서 Fix Plan을 만들 수 없고, 테스트 작성이나 코드 수정은 시작하지 않았습니다 (skipped).
+    - 에러가 나는 함수와 메시지도 전달되지 않아 재현 조건을 특정할 수 없습니다.
+
+    → 먼저 `/nara-incident`로 에러 원인을 분석해 `docs/incident-report.md`를 만든 뒤, 다시 `/nara-incident-fix`를 실행해 주세요.

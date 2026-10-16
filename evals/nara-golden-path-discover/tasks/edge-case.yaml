@@ -19,3 +19,9 @@ expected:
     - "password"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(golden|Playwright-ready|coverage|커버리지|worker|SKIP_|UNVERIFIED)"

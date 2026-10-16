@@ -17,3 +17,9 @@ expected:
     - "ADR"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(설명|explain|audience|대상|Audience|목적)"

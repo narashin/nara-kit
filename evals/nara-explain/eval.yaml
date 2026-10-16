@@ -25,10 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: relevant_content
-    config:
-      regex_match:
-        - "(?i)(설명|explain|audience|대상|Audience|목적)"
 tasks:
   - "tasks/*.yaml"

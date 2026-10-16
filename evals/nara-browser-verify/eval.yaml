@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: verify_contract
-    config:
-      regex_match:
-        - "(?i)(Status:\\s*(Pass|Fail|Blocked|Unverifiable)|축 판정|axis)"
-        - "(?i)(unverifiable|evidence|증거|screenshot|network)"
 tasks:
   - "tasks/*.yaml"

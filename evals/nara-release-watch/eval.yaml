@@ -28,10 +28,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: watch_contract
-    config:
-      regex_match:
-        - "(?i)(watch\\.py|poll)"
 tasks:
   - "tasks/*.yaml"

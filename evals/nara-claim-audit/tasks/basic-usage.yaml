@@ -18,3 +18,10 @@ expected:
     - "EVAL-FAKE-DO-NOT-USE"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(match|mismatch|mapping_failure|syntax_error|판정)"
+        - "(?i)(csv|mtime|스냅샷|snapshot)"

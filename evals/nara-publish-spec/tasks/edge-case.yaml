@@ -18,3 +18,9 @@ expected:
     - "page created successfully"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(Confluence|dry-run|storage|template|publish)"

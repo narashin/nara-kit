@@ -1,0 +1,131 @@
+# Grader-validation table for nara-golden-path-discover.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-golden-path-discover
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    `/create-ticket` 골든패스 E2E export 작성 (recorded only).
+
+    - artifact: `docs/test-scenarios/golden-paths.E2E.md` (lang=en, persona 1명, auth는 storageState `e2e/.auth/user.json` 이름으로만 참조)
+    - scenarios: 3개. 정상 생성(`[E2E-CT-001]`), 제목 없이 제출 시 차단(`[E2E-CT-002]`), 같은 제목 재제출 시 중복 경고(`[E2E-CT-003]`, 한 시나리오 안에서 먼저 만들고 바로 다시 제출하는 직렬 체인)
+    - coverage: `1.000 (represented S1 3 / total S1 candidates 3)`, dropped 0, deferred 0. 우선순위 `낮음`/`높음`은 결과가 눈에 보이게 갈리지 않아 S1 경로 하나로 묶었다.
+    - crawl rung: c static (MCP: none). 소스에서 확인한 문자열은 `제목`, `우선순위`, `낮음`, `높음`, `생성` 다섯 개다. 토스트 "티켓이 생성되었습니다", 검증 문구 "제목을 입력하세요", 409 경고 문구, FAIL sentinel은 시나리오 분해 문서에만 있고 소스에 없어 `[UNVERIFIED: requires live crawl]`로 두었다. 미확인이 절반을 넘지 않아 경고 배너는 넣지 않았다.
+    - Interpretation: 제출 후 `/tickets/<id>` 이동은 `submit` 핸들러 본문이 없어 소스로 교차 확인하지 못했다 [UNVERIFIED]. `workers: 4`에서 티켓이 워커 간에 공유되므로 모든 제목에 `CT-{YYYYMMDD}-{HHmm}-{worker}` 토큰을 붙이고 정확한 제목으로 다시 찾게 했다.
+    - next: 이어서 `nara-test-verify`가 `docs/test-scenarios/golden-paths.E2E.md`를 검증한다. 구현 전에 `localhost:3000`에서 live crawl(rung a)로 미확인 문구 4개를 확인할 것.
+  edge-case-001: |
+    ❌ 실패: `/my-approvals`의 정적 소스도 없어 export를 만들지 않았습니다.
+
+    env 없음, storageState 없음, `crawl=off`이므로 크롤 단계는 rung (c) static(MCP: none)입니다. 이 단계에서는 `components/**/*.tsx`와 라우트 파일의 하드코딩 문자열만 셀렉터 근거가 되고, 거기서 못 찾은 문자열은 전부 `[UNVERIFIED: requires live crawl]`이 됩니다. 인증은 storageState 이름으로만 참조하는데 이름이 주어지지 않았으니 계정이나 비밀번호는 어디에도 쓰지 않습니다.
+
+    ```bash
+    ls docs/test-scenarios/scenarios-detailed.md
+    rg -l "my-approvals" app pages src components routes
+    ```
+
+    결과는 비어 있습니다. 라우트가 코드에서 확인되지 않고 읽을 컴포넌트도 없어 후보 여정과 S1 경로가 0개이고, 커버리지를 문서에서 다시 계산할 수 없습니다. 이 상태로 파일을 쓰면 과반 `[UNVERIFIED]` WARNING 배너를 단 빈 껍데기가 되는데, 그건 골든패스 export가 아니라서 쓰지 않았습니다.
+
+    - 상태: skipped. `docs/test-scenarios/golden-paths.E2E.md` 미작성, nara-test-verify 연결 안 함
+    - next: `/my-approvals` 화면 코드가 있는 저장소에서 다시 실행해 주세요. 셀렉터를 실물로 확인하려면 `env=<dev URL>`, `storageState=<이름>`과 `crawl=on`이 필요합니다.
+  should-not-trigger-001: |
+    단위 테스트 시나리오는 이 스킬이 다루지 않습니다. nara-golden-path-discover는 브라우저로 도는 골든패스 E2E 시나리오를 Playwright용으로 뽑는 스킬입니다.
+
+    `src/utils/format.ts` 같은 유틸 함수의 단위 테스트 시나리오는 `/nara-test-discover src/utils/format.ts`로 요청해 주세요. 시나리오를 테스트 코드로 옮길 때는 `/nara-test-implement`입니다.
+
+    상태: skipped (요청 범위 밖). next: `/nara-test-discover`로 다시 요청.
+wrong:
+  basic-usage-001: |
+    `/create-ticket` 기준 golden path E2E 시나리오와 Playwright 코드입니다.
+
+    **시나리오**
+
+    1. 정상 생성: 제목·우선순위 입력 후 생성 → `/tickets/<id>` 이동 + "티켓이 생성되었습니다" 토스트
+    2. 제목 누락: 제목 없이 생성 → "제목을 입력하세요" 표시, URL 유지
+    3. 중복 제목: 같은 제목으로 두 번 생성 → "이미 같은 제목의 티켓이 있습니다" 경고
+
+    ```ts
+    // e2e/create-ticket.spec.ts
+    import { test, expect } from "@playwright/test";
+
+    test.use({ storageState: "e2e/.auth/user.json" });
+
+    test.describe("create ticket", () => {
+      test("happy path", async ({ page }) => {
+        await page.goto("http://localhost:3000/create-ticket");
+        await page.getByLabel("제목").fill("테스트 티켓");
+        await page.getByLabel("우선순위").selectOption("high");
+        await page.getByRole("button", { name: "생성" }).click();
+        await expect(page).toHaveURL(/\/tickets\/\w+/);
+        await expect(page.getByText("티켓이 생성되었습니다")).toBeVisible();
+      });
+
+      test("title required", async ({ page }) => {
+        await page.goto("http://localhost:3000/create-ticket");
+        await page.getByRole("button", { name: "생성" }).click();
+        await expect(page.getByText("제목을 입력하세요")).toBeVisible();
+        await expect(page).toHaveURL(/\/create-ticket/);
+      });
+
+      test("duplicate title", async ({ page }) => {
+        for (let i = 0; i < 2; i++) {
+          await page.goto("http://localhost:3000/create-ticket");
+          await page.getByLabel("제목").fill("중복 티켓");
+          await page.getByRole("button", { name: "생성" }).click();
+        }
+        await expect(page.getByText("이미 같은 제목의 티켓이 있습니다")).toBeVisible();
+      });
+    });
+    ```
+
+    `npx playwright test e2e/create-ticket.spec.ts`로 바로 실행하시면 됩니다. 세 테스트 모두 workers 4로 병렬 실행돼도 문제없이 동작합니다.
+  edge-case-001: |
+    환경 URL, storageState가 없고 크롤링도 끈 상태라 실제 화면을 볼 수 없어서, 일반적인 "내 결재함(My Approvals)" 화면을 기준으로 라이브 E2E 시나리오 초안을 만들었습니다. 라벨과 경로는 추정이므로 실제 UI와 대조가 필요합니다.
+
+    ## 전제
+    - Base URL: `https://dev.example.com` (실제 dev 주소로 교체)
+    - 로그인: 결재 권한이 있는 테스트 계정 (예: `approver@test.com` / `Test1234!`)으로 로그인 후 진행
+    - 테스트 데이터: 결재 대기 문서가 최소 1건 있어야 함
+
+    ## 시나리오
+
+    ### 1. 결재 대기 목록 조회
+    1. `/my-approvals`에 접속한다.
+    2. "결재 대기" 탭이 기본 선택되어 있는지 확인한다.
+    3. 목록에 문서가 1건 이상 보이는지 확인한다.
+
+    ### 2. 문서 승인
+    1. "결재 대기" 목록에서 첫 번째 문서를 클릭한다.
+    2. 상세 화면에서 "승인" 버튼을 클릭한다.
+    3. 확인 다이얼로그에서 "확인"을 클릭한다.
+    4. "승인되었습니다" 토스트가 표시되는지 확인한다.
+    5. "결재 완료" 탭에서 해당 문서가 보이는지 확인한다.
+
+    ### 3. 문서 반려
+    1. "결재 대기" 목록에서 문서를 연다.
+    2. "반려" 버튼을 클릭하고 사유 입력란에 `E2E 반려 테스트`를 입력한다.
+    3. "확인"을 클릭한다.
+    4. 문서 상태가 "반려"로 바뀌는지 확인한다.
+
+    ### 4. 검색/필터
+    1. 검색창에 문서 제목 일부를 입력한다.
+    2. 결과 목록에 해당 문서만 보이는지 확인한다.
+
+    ## 주의
+    - 승인·반려는 실데이터를 바꾸므로, 시나리오 시작 시 결재 요청 문서를 먼저 생성하는 setup 단계를 두는 것이 좋습니다.
+    - 시나리오 2와 3은 같은 대기 문서를 쓰면 충돌하니 순서대로 실행하세요.
+
+    env와 storageState를 알려주시거나 크롤링을 켜 주시면 실제 라벨을 확인해 시나리오를 확정하겠습니다.
+  should-not-trigger-001: |
+    ❌ 실패: `src/utils/format.ts`에서 골든패스 E2E 후보를 만들 수 없습니다.
+
+    - G0: `nara-test-discover src/utils/format.ts`로 E2E 분해를 받으려 했고, `docs/test-scenarios/scenarios-detailed.md`도 찾았지만 둘 다 없습니다. 작업 디렉터리가 비어 있어 대상 파일 자체가 존재하지 않습니다.
+    - 대상이 유틸 함수 파일이라 화면 트리, 라우트, 사용자 여정이 없습니다. 골든패스 후보(Happy + 화면 간 `Scope=e2e` 여정)가 0건이므로 G1 이후 단계와 크롤(rung 판단 포함)은 진행하지 않았습니다.
+    - `docs/test-scenarios/golden-paths.E2E.md`는 쓰지 않았고 `nara-test-verify` 자동 연결도 실행하지 않았습니다. 빈 커버리지(0/0)를 내보내면 측정처럼 보이기 때문입니다.
+
+    이 스킬은 브라우저에서 증명 가능한 라이브 E2E 내보내기 전용입니다. 단위 테스트 시나리오는 범위 밖입니다.
+
+    → 다음 행동: 단위 테스트 시나리오는 `/nara-test-discover src/utils/format.ts`로 요청해 주세요. 파일이 있는 저장소에서 실행해야 합니다.

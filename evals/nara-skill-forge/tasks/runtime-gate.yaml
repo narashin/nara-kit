@@ -19,3 +19,9 @@ expected:
     - "no runtime issues"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(waza check|ratchet|grader|EPT|converge|restore|snapshot|runtime)"

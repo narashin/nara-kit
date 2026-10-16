@@ -1,0 +1,333 @@
+# Grader-validation table for nara-test-discover.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-test-discover
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    (1/4) 컨텍스트 수집 완료
+    - 실행한 스캔: `ls src/api/orders.ts`, `ls package.json pyproject.toml docs/requirements.md`, `find . -name "*.test.*" -o -name "*.spec.*"`
+    - `src/api/orders.ts` [NOT FOUND] · `docs/requirements.md` [NOT FOUND] · 프로젝트 설정 파일(package.json 등) [NOT FOUND] · 기존 테스트 [NOT FOUND]
+    - next: 대상 코드가 없어 도메인 분해 중단
+
+    ❌ 실패: 대상 `src/api/orders.ts`가 저장소에 없어 시나리오를 근거 있게 만들 수 없음
+    - recovered: no
+    - artifact 영향: none (`docs/test-scenarios/scenarios-detailed.md` 미작성, S2 후보·S3 상세 모두 미생성)
+    - side effects: none
+    - next action: 올바른 파일 경로를 알려주시거나 대상 코드를 저장소에 추가한 뒤 다시 요청해 주세요. 코드 없이 파일명만 보고 주문 API의 엔드포인트나 규칙을 지어내지 않습니다.
+  edge-case-001: |
+    테스트 시나리오 발굴 완료 (recorded only). `recommend()`의 관찰 가능한 동작 기준으로 후보 20개(S2)에서 11개(S3)를 골라 상세화했습니다.
+
+    - 대상: `src/services/recommendation-engine.ts` · 분류: non-E2E (UI·라우트 없는 순수 함수, 외부 의존 없음)
+    - 컨텍스트: 기존 테스트 [NOT FOUND] · `package.json`(언어·테스트 도구) [NOT FOUND] · `docs/requirements.md` [NOT FOUND]이라 AC 매핑 없음 · 기존 `docs/test-scenarios/` [NOT FOUND]. 테스트 패턴은 추정해 채우지 않았습니다.
+    - S2 20개 (Happy 2 / Sad 2 / Edge 15 / Error 1) → S3 11개, ratio 0.55 · 제외 7개 · NEEDS_DISCUSSION 2개 (구매 카테고리 동수 처리, 음수 점수 가중)
+    - artifact: `docs/test-scenarios/scenarios-detailed.md` (아래 내용으로 작성)
+    - next: 이어서 `nara-test-verify docs/test-scenarios/scenarios-detailed.md` 자동 실행. NEEDS_DISCUSSION 2건은 의도된 동작인지 사람이 정해야 합니다.
+
+    **S2 후보 (Candidate Discovery)**
+
+    ```
+    S2-001 [Happy] [backend] [Read] 본 적도 산 적도 없는 아이템만 점수 내림차순으로 반환
+    S2-002 [Happy] [backend] [Read] 가장 많이 산 카테고리의 아이템은 점수 1.5배로 순위가 올라감
+    S2-003 [Sad]   [backend] [Read] limit 0 → 빈 배열
+    S2-004 [Sad]   [backend] [Read] limit 음수 → 빈 배열
+    S2-005 [Edge]  [backend] [Read] 본 아이템·산 아이템은 결과에서 제외
+    S2-006 [Edge]  [backend] [Read] 본 기록만 있는 카테고리는 가중 대상이 아님
+    S2-007 [Edge]  [backend] [Read] 구매 이력이 없으면 가중 없이 원래 점수 순
+    S2-008 [Edge]  [backend] [Read] 같은 점수면 id 오름차순
+    S2-009 [Edge]  [backend] [Read] 후보가 limit보다 적으면 후보 전부 반환
+    S2-010 [Edge]  [backend] [Read] limit 생략 시 최대 10개
+    S2-011 [Edge]  [backend] [Read] items가 비어 있으면 빈 배열
+    S2-012 [Edge]  [backend] [Read] 구매 수가 같은 카테고리가 둘이면 어느 쪽이 가중되는가
+    S2-013 [Edge]  [backend] [Read] items에 없는 구매 id는 선호 카테고리 집계에서 무시되고 에러 없음
+    S2-014 [Edge]  [backend] [Read] 음수 점수 아이템이 선호 카테고리면 1.5배로 오히려 순위가 내려감
+    S2-015 [Edge]  [backend] [Read] 호출 후 입력 items의 score가 바뀌지 않음
+    S2-016 [Edge]  [backend] [Read] 모든 아이템을 이미 본 경우 빈 배열
+    S2-017 [Edge]  [backend] [Read] limit이 소수(2.5)면 2개 반환
+    S2-018 [Error] [backend] [Read] score가 NaN인 아이템이 섞이면 정렬 결과가 불안정
+    S2-019 [Edge]  [backend] [Read] 아이템 수만 개 × 구매 이력 수천 건에서 응답 시간
+    S2-020 [Edge]  [backend] [Read] 대소문자·로케일이 섞인 id의 동점 정렬 순서
+    ```
+
+    **S3 선정 (Selection)**
+
+    ```
+    S3-001 <- S2-001 [Happy]  S3-002 <- S2-002 [Happy]  S3-003 <- S2-003 [Sad]
+    S3-004 <- S2-005 [Edge]   S3-005 <- S2-006 [Edge]   S3-006 <- S2-007 [Edge]
+    S3-007 <- S2-008 [Edge]   S3-008 <- S2-009 [Edge]   S3-009 <- S2-010 [Edge]
+    S3-010 <- S2-013 [Edge]   S3-011 <- S2-015 [Edge]
+    ```
+
+    제외:
+
+    ```
+    S2-004 limit 음수            -> DUPLICATE (S2-003과 같은 limit <= 0 분기)
+    S2-011 빈 items              -> LOW_IMPACT (S2-016과 같은 빈 결과 경로)
+    S2-016 전부 본 아이템         -> DUPLICATE (S2-005 제외 규칙이 이미 검증)
+    S2-017 소수 limit            -> RARE_PATH (호출부가 소수를 넘길 근거 없음)
+    S2-018 NaN score             -> RARE_PATH (score 생산 쪽 검증 범위)
+    S2-019 대량 입력 성능         -> OUT_OF_SCOPE (동작 시나리오 범위 밖, 성능 측정 별도)
+    S2-020 로케일 섞인 id 정렬     -> RARE_PATH (id 형식 근거 없음)
+    ```
+
+    NEEDS_DISCUSSION:
+
+    ```
+    S2-012 구매 수 동수 카테고리 -> 현재 코드는 구매 이력에서 먼저 나온 카테고리가 이긴다(정렬 안정성). 의도된 규칙인지 확인 필요
+    S2-014 음수 점수 가중        -> 선호 카테고리인데 순위가 내려간다. 버그인지 허용 동작인지 비즈니스 판단 필요
+    ```
+
+    Write `docs/test-scenarios/scenarios-detailed.md`:
+
+    ```markdown
+    # Recommendation Engine 추천 결과 테스트 시나리오
+
+    - Project: [UNVERIFIED: package.json NOT FOUND]
+    - Feature: recommend() 추천 목록 생성
+    - Version: V1
+    - Scenario Coverage Ratio: 0.55 (S3 11 / S2 20)
+
+    ## 공통 사전조건
+
+    - 실행 URL: 해당 없음 (HTTP 진입점 없는 순수 함수)
+    - 계정: 해당 없음
+    - 기본 실행 persona: 해당 없음 (모듈 직접 호출)
+    - 실패 조건: 반환 목록의 id 순서·길이가 기대와 다름, 입력 `items`·`history`가 호출 후 바뀜, 예외 발생
+
+    ## 시나리오 의존 체인
+
+    ### Serial 블록
+    - 없음
+
+    ### 독립 실행 가능
+    - [SVC-REC-001] ~ [SVC-REC-011] 전부
+
+    ## 시나리오 제목 인덱스
+
+    - [SVC-REC-001] 본 적도 산 적도 없는 아이템만 점수 내림차순으로 추천된다
+    - [SVC-REC-002] 가장 많이 산 카테고리의 아이템은 점수 1.5배로 순위가 올라간다
+    - [SVC-REC-003] limit이 0이면 빈 목록을 반환한다
+    - [SVC-REC-004] 이미 본 아이템과 산 아이템은 추천에서 빠진다
+    - [SVC-REC-005] 보기만 한 카테고리는 가중 대상이 되지 않는다
+    - [SVC-REC-006] 구매 이력이 없으면 원래 점수 순으로 추천된다
+    - [SVC-REC-007] 점수가 같으면 id 오름차순으로 정렬된다
+    - [SVC-REC-008] 후보가 limit보다 적으면 후보 전부를 반환한다
+    - [SVC-REC-009] limit을 생략하면 최대 10개를 반환한다
+    - [SVC-REC-010] 아이템 목록에 없는 구매 id는 무시되고 오류가 나지 않는다
+    - [SVC-REC-011] 추천 후에도 입력 아이템의 점수는 바뀌지 않는다
+
+    ## 시나리오
+
+    ### Read
+
+    #### [SVC-REC-001] 본 적도 산 적도 없는 아이템만 점수 내림차순으로 추천된다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:4)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: 인메모리 픽스처, id 접두사 `REC-{YYYYMMDD-HHmm}`. items 3개(카테고리 모두 다름, 점수 5·9·7), history 비어 있음
+
+    0. history `{ viewed: [], purchased: [] }`, limit 10으로 호출
+    1. -> 확인: 반환 길이 3
+    2. -> 확인: 반환 순서가 점수 9 → 7 → 5
+    3. -> 확인: 각 반환 아이템의 score가 입력값과 같음 (가중 없음)
+
+    #### [SVC-REC-002] 가장 많이 산 카테고리의 아이템은 점수 1.5배로 순위가 올라간다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:4)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: items: 구매한 P1·P2(books), 미구매 X(books, 10), Y(toys, 14). history.purchased = [P1, P2]
+
+    0. 호출 전: 가중이 없다면 Y(14)가 X(10)보다 앞이어야 함을 기록
+    1. recommend(items, history) 호출
+    2. -> 확인: 반환 첫 번째가 X, 두 번째가 Y
+    3. -> 확인: X의 score가 15, Y의 score가 14
+    4. -> 확인: P1·P2는 반환에 없음
+
+    #### [SVC-REC-003] limit이 0이면 빈 목록을 반환한다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:5)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: 추천 가능한 items 3개, history 비어 있음
+
+    0. limit 0으로 호출
+    1. -> 확인: 반환값이 빈 배열
+
+    #### [SVC-REC-004] 이미 본 아이템과 산 아이템은 추천에서 빠진다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:4)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: items A·B·C·D (점수 모두 다름). history.viewed = [A], history.purchased = [B]
+
+    0. 호출 전: A·B가 점수 상위 1·2위가 되도록 픽스처 구성
+    1. recommend 호출
+    2. -> 확인: 반환 id 집합이 {C, D}
+    3. -> 확인: A·B가 반환에 없음
+
+    #### [SVC-REC-005] 보기만 한 카테고리는 가중 대상이 되지 않는다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:4)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: items: 본 V1·V2(toys), 미열람 T(toys, 10), B(books, 12). history.viewed = [V1, V2], purchased = []
+
+    0. recommend 호출
+    1. -> 확인: 반환 순서가 B → T
+    2. -> 확인: T의 score가 10 그대로
+
+    #### [SVC-REC-006] 구매 이력이 없으면 원래 점수 순으로 추천된다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:4)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: 같은 카테고리 2개 + 다른 카테고리 2개, history 비어 있음
+
+    0. recommend 호출
+    1. -> 확인: 반환 순서가 입력 점수 내림차순과 같음
+    2. -> 확인: 어떤 아이템의 score도 입력값과 다르지 않음
+
+    #### [SVC-REC-007] 점수가 같으면 id 오름차순으로 정렬된다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:11)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: 점수 7인 아이템 id `b`, `a`를 이 순서로 입력. history 비어 있음
+
+    0. recommend 호출
+    1. -> 확인: 반환 순서가 `a` → `b`
+
+    #### [SVC-REC-008] 후보가 limit보다 적으면 후보 전부를 반환한다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:12)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: 추천 가능한 items 3개, limit 10
+
+    0. recommend 호출
+    1. -> 확인: 반환 길이 3, 누락된 후보 없음
+
+    #### [SVC-REC-009] limit을 생략하면 최대 10개를 반환한다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:4)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: 추천 가능한 items 12개(점수 1~12), history 비어 있음
+
+    0. limit 인자 없이 호출
+    1. -> 확인: 반환 길이 10
+    2. -> 확인: 점수 1·2 아이템이 반환에 없음
+
+    #### [SVC-REC-010] 아이템 목록에 없는 구매 id는 무시되고 오류가 나지 않는다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:4)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: items에 없는 id `REC-{YYYYMMDD-HHmm}-ghost`만 purchased에 넣음. items 2개(점수 5·8)
+
+    0. recommend 호출
+    1. -> 확인: 예외 없이 반환
+    2. -> 확인: 반환 순서가 8 → 5이고 score가 입력값 그대로 (가중 없음)
+
+    #### [SVC-REC-011] 추천 후에도 입력 아이템의 점수는 바뀌지 않는다
+
+    **진입경로**: `recommend (src/services/recommendation-engine.ts:4)`
+    **실행역할**: Read
+    **실행독립**: 가능
+    **데이터 힌트**: [SVC-REC-002]와 같은 픽스처 (가중이 실제로 일어나는 조건)
+
+    0. 호출 전 items의 id별 score를 복사해 둠
+    1. recommend 호출
+    2. -> 확인: 반환된 X의 score는 15
+    3. -> 확인: 입력 items의 X score는 여전히 10, 다른 아이템 score도 복사본과 같음
+
+    ## NEEDS_DISCUSSION
+
+    - 구매 수가 같은 카테고리가 둘일 때: 현재는 구매 이력에서 먼저 나온 카테고리가 가중된다. 의도된 규칙인지 정해지면 시나리오로 추가한다.
+    - 음수 점수 아이템이 선호 카테고리일 때: 1.5배가 적용돼 순위가 오히려 내려간다. 허용 동작인지 버그인지 결정이 필요하다.
+    ```
+
+    → `nara-test-verify docs/test-scenarios/scenarios-detailed.md` 실행
+  should-not-trigger-001: |
+    이 요청은 테스트 코드 작성이라 시나리오 발굴 범위가 아닙니다.
+
+    next: `/nara-test-implement` 로 요청해 주세요. 시나리오 문서가 아직 없어서 먼저 정리가 필요하면 그때 시나리오 발굴부터 요청하시면 됩니다.
+wrong:
+  basic-usage-001: |
+    `src/api/orders.ts` 파일을 찾을 수 없어서, 일반적인 주문 API를 가정하고 테스트 시나리오를 정리했어요. 실제 코드와 다를 수 있으니 파일을 공유해 주시면 맞춰서 다듬을게요.
+
+    **주문 생성 (POST /orders)**
+    1. 유효한 상품 ID와 수량으로 주문하면 201과 주문 ID가 반환된다
+    2. 수량이 0 이하이면 400 에러가 반환된다
+    3. 존재하지 않는 상품 ID면 404가 반환된다
+    4. 재고보다 많은 수량을 주문하면 409(재고 부족)가 반환된다
+    5. 인증 토큰이 없으면 401이 반환된다
+
+    **주문 조회 (GET /orders/:id)**
+    6. 본인 주문을 조회하면 주문 상세가 반환된다
+    7. 다른 사용자의 주문을 조회하면 403이 반환된다
+    8. 없는 주문 ID면 404가 반환된다
+
+    **주문 목록 (GET /orders)**
+    9. 페이지네이션 파라미터(page, size)에 맞게 결과가 반환된다
+    10. 주문이 없는 사용자는 빈 배열을 받는다
+
+    **주문 취소 (DELETE /orders/:id 또는 PATCH status)**
+    11. 결제 전 주문은 취소된다
+    12. 이미 배송된 주문은 취소가 거부된다
+    13. 같은 주문을 두 번 취소하면 멱등하게 처리되거나 409가 반환된다
+
+    **기타**
+    14. 동시에 같은 상품을 주문할 때 재고가 음수가 되지 않는다
+    15. DB 오류 시 500과 함께 부분 저장 없이 롤백된다
+
+    원하시면 이걸 Jest/Vitest 테스트 코드로도 바로 만들어 드릴게요.
+  edge-case-001: |
+    `recommendation-engine.ts`에 대한 테스트 코드를 작성했습니다. 기존 테스트가 없으니 새 파일로 만들었습니다.
+
+    ```ts
+    // src/services/recommendation-engine.test.ts
+    import { recommend, Item } from "./recommendation-engine";
+
+    const items: Item[] = [
+      { id: "a", category: "book", score: 10 },
+      { id: "b", category: "music", score: 12 },
+      { id: "c", category: "book", score: 9 },
+    ];
+
+    describe("recommend", () => {
+      it("returns empty array when limit is 0", () => {
+        expect(recommend(items, { viewed: [], purchased: [] }, 0)).toEqual([]);
+      });
+
+      it("excludes viewed items", () => {
+        const res = recommend(items, { viewed: ["a"], purchased: [] });
+        expect(res.map((i) => i.id)).not.toContain("a");
+      });
+
+      it("sorts by score", () => {
+        const res = recommend(items, { viewed: [], purchased: [] });
+        expect(res[0].id).toBe("b");
+      });
+
+      it("respects limit", () => {
+        expect(recommend(items, { viewed: [], purchased: [] }, 2)).toHaveLength(2);
+      });
+    });
+    ```
+
+    `npx jest src/services/recommendation-engine.test.ts`로 실행해 보세요. 기본 동작은 모두 커버됩니다.
+  should-not-trigger-001: |
+    테스트 시나리오 발굴 완료 (recorded only).
+
+    - 대상: `src/api/orders.ts` → **[NOT FOUND]**. 프로젝트 스캔 결과 언어/프레임워크/테스트 도구 신호 없음(`package.json` [NOT FOUND], 기존 테스트 [NOT FOUND]), `docs/requirements.md` [NOT FOUND] → AC 골격 없음
+    - Domain Decomposition: non-E2E (API 모듈로 분류). 실제 엔드포인트는 코드에서 확인 불가라 모든 진입경로 `[UNVERIFIED: requires manual confirmation]`
+    - S2 후보 0건 / S3 0건. 코드가 없어 엔드포인트·비즈니스 규칙을 창작하지 않음. 비즈니스 영향 평가는 `NEEDS_DISCUSSION`
+    - artifact: `docs/test-scenarios/scenarios-detailed.md` (dry run: 쓰기 생략, 빈 골격만 작성 예정)
+    - next: 자동 체이닝으로 `nara-test-verify` 실행 → 입력 시나리오 0건이라 리뷰 대상 없음. `src/api/orders.ts` 경로를 확인해 주시면 파이프라인을 다시 돌리겠습니다.

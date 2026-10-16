@@ -16,3 +16,11 @@ expected:
     - "template"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(adopt|update|audit|DESIGN\\.md|template|token|drift)"
+      regex_not_match:
+        - "background:\\s*#[0-9a-fA-F]{6}"

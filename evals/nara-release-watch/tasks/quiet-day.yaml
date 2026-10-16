@@ -12,6 +12,8 @@ inputs:
   files:
     - path: quiet-poll.json
 expected:
+  output_contains:
+    - "skipped"
   output_not_contains:
     - "post_message"
     - "증류 후보"

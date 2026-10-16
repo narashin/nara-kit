@@ -1,0 +1,92 @@
+# Grader-validation table for nara-adversarial-review.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-adversarial-review
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    리뷰 리포트 공격 완료 (recorded only). 다만 코드와 git 이력이 이 작업 공간에 없어서, 격추 시도와 블라인드 재리뷰는 끝까지 수행하지 못했고 리포트 내부 무결성 감사만 온전히 돌았습니다.
+
+    - 대상: 첨부된 `sample-report.md` (`docs/review/`가 없어 인자로 받은 리포트를 그대로 사용). 원 본문은 건드리지 않고 말미에 `## Adversarial Review` 섹션만 추가
+    - 스코프 복원: 리포트 헤더의 `abc1234..def5678`은 있으나 이 저장소에 git이 없어 diff를 만들 수 없음. "변경 파일 2개"의 목록도 없어 finding 위치(`src/order/service.ts`, `src/order/parse.ts`)로 파일 목록을 복원했고, 두 파일 모두 작업 공간에 존재하지 않음
+    - 결과: 두 finding 모두 `upheld (refutation inconclusive)`. 격추할 근거도 지지할 근거도 코드에서 확인하지 못한 상태이며, 확정이 아니라 판단 보류입니다
+    - 무결성 위반 3건: CON-001이 E2 라벨에 필요한 결정적 경로(어떤 입력이 NaN을 만들고 왜 막히지 않는가)와 preconditions·수정안·검증 방법 필드를 갖추지 않았고, 두 finding 모두 diff hunk 인용이 없으며, `scope-integrity: match`는 변경 파일 목록이 리포트에 없어 대조할 수 없는 주장입니다
+    - side effects: 없음 (코드·리포트 본문 수정 없음, 외부 호출 없음)
+    - next: 코드가 있는 체크아웃에서 `/nara-adversarial-review <리포트 경로>`를 다시 실행해 격추·블라인드 lane을 완주하세요. 관점을 하나 더 보태려면 `/codex:adversarial-review`를 직접 입력해 함께 돌릴 수 있습니다
+
+    `sample-report.md` 말미에 추가한 섹션:
+
+    ```markdown
+    ## Adversarial Review
+
+    스코프 복원: manifest 범위(abc1234..def5678)는 리포트에 있으나 작업 공간에 git 저장소가 없어 diff 복원 불가. 변경 파일 목록이 리포트에 없으므로 finding location으로 대체 복원: `src/order/service.ts`, `src/order/parse.ts`. 두 파일 모두 작업 공간에 없음. 한계: 스코프 밖 파일(헤더상 2개 중 목록 미기재분 포함)의 누락 가능성을 배제하지 못함.
+
+    ### Finding verdicts (refuter)
+
+    | ID | verdict | 근거 |
+    |---|---|---|
+    | RES-001 | upheld (refutation inconclusive) | `completeOrder`의 코드를 읽을 수 없어 failure_path(capture 예외 → 상태가 COMPLETED로 남음)를 재추적하지 못함. try/catch, 트랜잭션 롤백, 상위 caller의 보상 처리 같은 counterevidence 수색도 불가. 리포트에 counterevidence_checked 기록이 없어 원 리뷰가 어디까지 확인했는지도 알 수 없음 |
+    | CON-001 | upheld (refutation inconclusive) | `parseAmount`와 caller를 읽을 수 없어 NaN이 실제로 하위 계산까지 전파되는지(입력 검증 계층, schema validation, caller의 `Number.isNaN` 방어 여부) 확인 불가 |
+
+    ### Missed findings (blind hunter)
+
+    수행 불가. 리뷰 스코프의 diff도 파일 본문도 복원할 수 없어 블라인드 리뷰 입력이 비어 있음. missed-found 0건은 "누락 없음"이 아니라 "측정하지 못함"이다. rejected/open-question 섹션이 리포트에 없으므로 그 대조도 생략.
+
+    ### Rigor audit
+
+    1. CON-001: evidence 라벨 불일치: E2를 달았지만 결정적 failure path가 적혀 있지 않다. 어떤 입력이 NaN을 만드는지, 왜 상위에서 걸러지지 않는지가 없고 preconditions·수정안·검증 방법 필드도 비어 있다. 같은 리포트의 RES-001은 이 필드를 갖추고 있어 스키마 적용이 일관되지 않다. 근거가 보강되지 않으면 E1 수준이며, 그 경우 게이트(evidence ≥ E2)에 걸려 finding 목록에 있으면 안 된다.
+    2. RES-001, CON-001: `confirmed` 판정의 proof 부재: 두 finding 모두 함수 단위 위치만 있고 diff hunk나 라인 인용이 없다. 리포트만으로는 지적한 코드가 이번 변경 범위에 실제로 들어 있는지 확인할 수 없다.
+    3. trailing status: `scope-integrity: match`를 뒷받침할 변경 파일 목록이 본문에 없다. 헤더는 "변경 파일: 2개"라고만 적어, 무엇과 무엇이 match인지 검증할 재료가 없다.
+
+    정상 값으로 판단한 항목: `fix-ledger: n/a`, `fix-verification: n/a`(수정 미실행 런의 규정 값), `validation: unavailable`(검증 미수행을 숨기지 않고 밝힌 값), 요약 건수(Critical 1, Major 1)와 본문 일치.
+
+    adversarial: 2 upheld, 0 refuted, 0 weakened, 0 missed-found
+    report: appended (sample-report.md)
+    ```
+
+    adversarial: 2 upheld, 0 refuted, 0 weakened, 0 missed-found
+    report: appended (sample-report.md)
+  should-not-trigger-001: |
+    이 요청은 이 스킬이 맡는 일이 아니라 건너뜁니다 (skipped).
+    - 이유: 이 스킬은 이미 나온 리뷰 리포트를 공격해 오탐과 누락을 찾는 일을 합니다. 커밋 전 변경사항을 처음 리뷰하는 것은 리뷰 생성이고, 공격할 리포트도 아직 없습니다
+    - 맞는 스킬: `/nara-code-review`로 로컬 변경사항을 리뷰하세요. 리포트가 `docs/review/`에 생기면 그때 `/nara-adversarial-review`로 그 리포트를 검증할 수 있습니다
+    - next: `/nara-code-review`
+wrong:
+  basic-usage-001: |
+    리포트를 비판적으로 검토해 봤습니다. 코드 자체는 첨부되지 않아서 리포트 내용만 기준으로 봤습니다.
+
+    **[RES-001] 결제 실패 시 주문 상태가 COMPLETED로 남는다**
+
+    지적 자체는 그럴듯하고 심각도도 Critical이 맞아 보입니다. 다만 몇 가지가 약합니다.
+
+    - 근거가 부족합니다. `completeOrder`에서 상태 변경이 `capture()` 호출보다 앞에 있다는 코드 인용이 없어서, 정말 E2(결정적 경로) 수준인지 리포트만으로는 확인할 수 없습니다.
+    - 트랜잭션 여부를 확인했는지 알 수 없습니다. 상태 변경과 결제가 같은 DB 트랜잭션 안에 있고 예외 시 롤백된다면 이 문제는 성립하지 않을 수 있습니다.
+    - 상위 호출자나 전역 에러 핸들러가 보상 처리를 하고 있을 가능성도 검토되지 않았습니다.
+
+    **[CON-001] parseAmount가 NaN을 그대로 반환**
+
+    - preconditions, 수정안, 검증 방법이 빠져 있습니다. Critical 항목과 비교하면 형식이 불완전합니다.
+    - 호출부에서 이미 입력을 검증하고 있다면 실제 영향은 없을 수 있습니다. Major로 둘 근거(어떤 하위 계산으로 전파되는지)가 필요합니다.
+
+    **리포트 전반**
+
+    - `validation: unavailable`인데 두 항목 모두 `confirmed`로 판정돼 있습니다. 실행 검증 없이 confirmed로 단정하는 건 과합니다.
+    - 변경 파일이 2개뿐인데 테스트 누락에 대한 언급이 없습니다. 결제 실패 경로나 잘못된 금액 입력에 대한 테스트가 있는지 같이 봐야 합니다.
+
+    정리하면 두 지적 모두 방향은 맞을 가능성이 높지만, 근거 수준이 판정(confirmed, E2)을 충분히 받쳐 주지 못합니다. `src/order/service.ts`와 `src/order/parse.ts` 코드를 공유해 주시면 실제로 성립하는지, 놓친 이슈가 있는지 더 구체적으로 확인해 드리겠습니다.
+  should-not-trigger-001: |
+    ❌ 실패: 공격할 리뷰 리포트가 없습니다
+
+    - 원인: 인자로 리포트 경로가 주어지지 않았고, 기본 위치 `./docs/review/`에 리포트 파일이 없습니다. 리뷰 스코프(baseline/head, 파일 목록)를 복원할 대상이 없어 refuter, blind hunter, rigor auditor 세 lane 모두 시작하지 못했습니다.
+    - 시도한 것: `ls ./docs/review/` → 디렉터리 없음
+    - 영향: 원 리포트가 없으므로 append할 `## Adversarial Review` 섹션도 만들지 않았습니다. 코드와 파일은 읽기만 했고 변경하지 않았습니다.
+    - 다음 행동: 리포트 경로를 인자로 주시거나, 리포트를 먼저 만든 뒤 다시 실행해 주세요.
+
+    ```
+    adversarial: 0 upheld, 0 refuted, 0 weakened, 0 missed-found
+    report: skipped (no report found)
+    ```

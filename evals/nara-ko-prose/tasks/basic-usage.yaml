@@ -28,3 +28,10 @@ expected:
     - "지출 비용 추론 시 음수 반환 — 캐시 히트 케이스 누락 원인."
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "ko-prose"
+        - "(?i)mode\\s*=\\s*(repair|full)"

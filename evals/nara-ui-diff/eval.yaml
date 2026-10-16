@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: env_diff_contract
-    config:
-      regex_match:
-        - "(?i)(drift|side effects|driver|recorded only|env-diff|env.md)"
-        - "(?i)(candidate|후보|regression vs intended|사람 판단|human|out of scope|bootstrap)"
 tasks:
   - "tasks/*.yaml"

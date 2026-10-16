@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: humanizer_sections
-    config:
-      regex_match:
-        - "(?i)(분석 결과|자연스러운 버전|감지된 패턴)"
-        - "(?i)(S1|S2|S3|자연도 등급)"
 tasks:
   - "tasks/*.yaml"

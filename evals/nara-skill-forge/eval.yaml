@@ -25,10 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: forge_vocab
-    config:
-      regex_match:
-        - "(?i)(waza check|ratchet|grader|EPT|converge|restore|snapshot|runtime)"
 tasks:
   - "tasks/*.yaml"

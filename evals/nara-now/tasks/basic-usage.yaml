@@ -18,3 +18,9 @@ expected:
     - "구현하겠습니다"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(현재 상황|추천|브랜치|gap|branch|status|recommend)"

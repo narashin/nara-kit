@@ -25,3 +25,10 @@ expected:
     - "찍먹"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(naranizer: register=|❌ 실패)"
+        - "(변환 결과|❌ 실패|recorded only)"

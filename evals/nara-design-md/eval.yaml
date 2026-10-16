@@ -25,15 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: mode_detection
-    config:
-      regex_match:
-        - "(?i)(adopt|update|audit|DESIGN\\.md|template|token|drift)"
-  - type: text
-    name: no_raw_hex_in_body
-    config:
-      regex_not_match:
-        - "background:\\s*#[0-9a-fA-F]{6}"
 tasks:
   - "tasks/*.yaml"

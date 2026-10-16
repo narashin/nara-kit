@@ -16,3 +16,10 @@ expected:
     - "drift candidates: 1"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(drift|side effects|driver|recorded only|env-diff|env.md)"
+        - "(?i)(candidate|후보|regression vs intended|사람 판단|human|out of scope|bootstrap)"

@@ -1,0 +1,150 @@
+# Grader-validation table for nara-adr.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-adr
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    ADR 0001 기록 완료 (recorded only).
+    - artifact: `docs/adr/0001-use-zustand-for-state-management.md` (`docs/adr/`가 없어 새로 만들고 0001부터 시작)
+    - status: accepted · supersedes: 없음
+    - 컨텍스트 소스: 대화 내용만 사용. `git log`, `docs/plan/`, CLAUDE.md는 프로젝트에 없어 건너뜀
+    - CLAUDE.md 참조 갱신: no (CLAUDE.md 없음)
+    - next: 팀 리뷰. 번들 크기 실측치처럼 대화에 없던 수치는 ADR에 넣지 않았으니, 근거로 남기고 싶으면 측정값을 알려 주세요
+
+    기록한 본문:
+
+    ```markdown
+    # ADR-0001: 상태 관리 라이브러리로 Zustand 채택
+
+    - Status: accepted
+    - Date: 2026-10-16
+
+    ## Context
+
+    클라이언트 전역 상태를 관리할 라이브러리를 정해야 했다. 후보는 Redux, Jotai, Zustand 세 가지였고, 선택 기준은 번들 사이즈와 개발자 경험(DX) 두 가지로 정했다.
+
+    ## Options Considered
+
+    1. **Redux**: 생태계와 DevTools가 가장 성숙하고 패턴이 표준화돼 있다. 반면 action/reducer/store 설정 등 boilerplate가 많아 DX 기준에서 불리하고, 함께 쓰는 패키지까지 포함하면 번들 부담이 세 후보 중 가장 크다.
+    2. **Jotai**: atom 단위의 가볍고 세밀한 상태 관리가 가능하다. 다만 atom이 흩어지면 상태 구조를 한눈에 파악하기 어렵고, store 중심 모델에 익숙한 팀에는 사고방식 전환 비용이 있다.
+    3. **Zustand**: hook 기반 store를 적은 코드로 만들 수 있고 Provider 없이 사용할 수 있다. 번들이 작고 API 표면이 좁아 학습 비용이 낮다. Redux만큼 강제된 구조가 없어 컨벤션을 팀이 직접 정해야 한다.
+
+    ## Decision
+
+    Zustand를 채택한다. 번들 사이즈와 DX 두 기준을 모두 가장 잘 만족했기 때문이다. Redux는 boilerplate와 번들 부담 때문에, Jotai는 atom 분산으로 인한 구조 파악 비용 때문에 기각했다.
+
+    ## Consequences
+
+    ### Positive
+    - store 정의와 사용 코드가 짧아져 기능 추가 속도가 빨라진다
+    - 전역 상태 관리에 드는 번들 부담이 작다
+
+    ### Negative
+    - Redux처럼 구조를 강제하지 않으므로 store 분할, 네이밍, selector 사용 규칙을 팀이 정하고 지켜야 한다
+    - 미들웨어와 DevTools 연동은 Redux 대비 생태계가 얇다
+
+    ### Follow-up
+    - store 분할 단위와 selector 사용 규칙을 정한 짧은 컨벤션 문서를 작성한다
+    ```
+  edge-case-001: |
+    ❌ 실패: 대체할 ADR-0003을 찾을 수 없어 새 ADR을 쓰지 않았습니다.
+    - 확인 결과: 이 프로젝트에는 `docs/adr/` 디렉터리가 없고, ADR-0003에 해당하는 파일도 없습니다
+    - recovered: yes (아무것도 쓰지 않음)
+    - artifact 영향: none. 새 ADR 파일 생성 없음, 기존 ADR status 변경 없음
+    - side effects: 없음
+    - 이유: supersede 대상이 없는 상태에서 번호를 지어내 "Supersedes: ADR-0003"을 적으면, 존재하지 않는 결정을 가리키는 기록이 append-only 로그에 남습니다
+
+    → ESCALATE: ADR-0003이 어디 있는지 확인이 필요합니다. 다음 중 하나로 답해 주세요.
+    1. 다른 경로(예: 다른 브랜치나 저장소의 `docs/adr/0003-*.md`)에 있다 → 경로를 알려 주시면 그 파일을 읽고 새 ADR(Supersedes: ADR-0003)을 쓰고, ADR-0003의 status를 `superseded by ADR-NNNN`으로 바꿉니다
+    2. 기존 REST 결정은 ADR로 남긴 적이 없다 → REST 결정을 원래 날짜로 backfill한 ADR-0001과, 이를 대체하는 gRPC ADR-0002를 함께 씁니다. 이때 REST 결정 날짜와, 바뀐 성능 요구사항이 구체적으로 무엇인지(지연 시간, 처리량 등)도 알려 주세요
+
+    답 형식: `1 <경로>` 또는 `2 <REST 결정 날짜> / <바뀐 성능 요구사항>`
+  should-not-trigger-001: |
+    이 요청은 ADR 대상이 아니라 건너뜁니다 (skipped).
+    - 이유: ADR은 아키텍처 결정을 기록하는 문서이고, NullPointerException 버그 수정은 기록할 결정이 아니라 코드 수정 작업입니다
+    - 원인이 아직 불분명하면: `/nara-incident`로 원인 가설과 근거를 먼저 정리하세요
+    - 원인을 이미 알고 고칠 곳이 정해졌으면: `/nara-implement`로 수정하세요 (incident 보고서가 있으면 `/nara-incident-fix`)
+    - next: 스택 트레이스나 재현 방법과 함께 위 스킬 중 하나로 다시 요청해 주세요
+wrong:
+  basic-usage-001: |
+    아래와 같이 ADR 초안을 작성했습니다. `docs/adr/` 같은 위치에 저장해서 쓰시면 됩니다.
+
+    ```markdown
+    # ADR-001: 상태 관리 라이브러리로 Zustand 채택
+
+    ## 상태
+    승인됨
+
+    ## 배경
+    프론트엔드 애플리케이션의 전역 상태가 늘어나면서 일관된 상태 관리 방식이 필요해졌다. 후보로 Redux, Jotai, Zustand를 검토했고, 평가 기준은 번들 사이즈와 개발자 경험(DX)이다.
+
+    ## 검토한 대안
+
+    | 기준 | Redux (Toolkit) | Jotai | Zustand |
+    |---|---|---|---|
+    | 번들 사이즈 | 상대적으로 큼 | 작음 | 매우 작음 |
+    | 보일러플레이트 | 많음 (slice, store, provider) | 적음 | 거의 없음 |
+    | 학습 곡선 | 높음 | 중간 (atom 개념) | 낮음 |
+    | Provider 필요 여부 | 필요 | 경우에 따라 필요 | 불필요 |
+    | DevTools | 강력함 | 제한적 | Redux DevTools 연동 가능 |
+
+    ## 결정
+    Zustand를 상태 관리 라이브러리로 채택한다. 번들 사이즈가 가장 작고, hook 기반의 단순한 API 덕분에 보일러플레이트 없이 store를 정의하고 사용할 수 있어 DX가 가장 좋다고 판단했다.
+
+    ## 결과
+    - 장점: 번들 크기 감소, 빠른 온보딩, Provider 없이 어디서든 store 접근 가능
+    - 단점: Redux에 비해 미들웨어·패턴에 대한 강제가 약해 store 구조가 팀마다 달라질 수 있음
+    - 후속 조치: store 분리 기준과 네이밍 컨벤션을 팀 가이드로 정리
+    ```
+
+    번호 체계나 템플릿 형식이 팀에서 쓰는 것과 다르면 알려주세요. 맞춰서 수정해 드리겠습니다.
+  edge-case-001: |
+    ADR-0003을 대체하는 새 ADR 초안입니다.
+
+    ```markdown
+    # ADR-0004: 서비스 간 통신을 REST에서 gRPC로 전환
+
+    - 상태: 승인됨
+    - 날짜: 2026-10-16
+    - 대체: ADR-0003 (REST API 채택)
+
+    ## 배경
+    ADR-0003에서는 서비스 간 통신 방식으로 REST API를 채택했다. 이후 성능 요구사항이 바뀌어 더 낮은 지연 시간과 높은 처리량이 필요해졌고, JSON 직렬화와 HTTP/1.1 기반 REST로는 이 요구를 맞추기 어려워졌다.
+
+    ## 검토한 대안
+    1. **REST 유지 + 최적화**: 캐싱, 압축, HTTP/2 적용. 변경 비용은 작지만 직렬화 오버헤드는 그대로 남는다.
+    2. **gRPC**: Protocol Buffers 바이너리 직렬화와 HTTP/2 멀티플렉싱, 스트리밍 지원. 스키마 기반 코드 생성으로 계약이 명확해진다. 브라우저 직접 호출이 어렵고 디버깅 도구가 REST보다 덜 익숙하다.
+    3. **GraphQL**: 클라이언트 쿼리 유연성은 높지만 성능 문제 해결에는 직접적인 도움이 적다.
+
+    ## 결정
+    서비스 간 통신을 gRPC로 전환한다. 변경된 성능 요구사항(지연 시간, 처리량)을 충족하는 데 가장 적합하다.
+
+    ## 결과
+    - 장점: 직렬화 비용 감소, 스트리밍 지원, .proto 기반의 명확한 계약
+    - 단점: 브라우저 클라이언트는 gRPC-Web 또는 게이트웨이가 필요하고, 팀의 학습 비용이 생긴다
+    - 후속 작업: .proto 정의 저장소 구성, 기존 REST 엔드포인트 단계적 마이그레이션 계획 수립
+    ```
+
+    그리고 ADR-0003 문서의 상태도 함께 바꿔 주세요.
+
+    ```markdown
+    - 상태: 대체됨 (ADR-0004 참고)
+    ```
+
+    바뀐 성능 요구사항의 구체적인 수치(목표 latency, TPS 등)를 알려주시면 배경 섹션에 반영해 더 구체적으로 다듬어 드리겠습니다.
+  should-not-trigger-001: |
+    ADR로 기록할 결정을 정리하기 전에 확인할 것이 있습니다.
+
+    `docs/adr/`를 확인했는데 디렉터리가 없어서, 이 결정을 기록하면 `docs/adr/0001-<slug>.md`가 첫 ADR이 됩니다. `git log`와 `docs/plan/`도 없어 참고할 컨텍스트가 대화 내용뿐입니다.
+
+    "NullPointerException 버그 수정"만으로는 기록할 아키텍처 결정이 드러나지 않습니다. 추측해서 작성하지 않으려고 두 가지만 여쭙니다.
+
+    1. 이 수정에서 내린 결정이 무엇인가요? 예를 들어 null 대신 `Optional` 반환으로 통일, 경계에서 입력 검증 도입, nullable 어노테이션 정책 도입 같은 방식 결정이 있었나요?
+    2. 검토했다가 버린 대안이 있었나요? (예: 호출부마다 null 체크 vs 생산자 쪽에서 non-null 보장)
+
+    결정과 대안을 알려주시면 Context / Options Considered / Decision / Consequences 섹션을 채워 ADR로 작성하겠습니다. 단순히 한 곳의 null 체크를 추가하는 수정이라면 ADR 대상이 아니므로 기록하지 않습니다.

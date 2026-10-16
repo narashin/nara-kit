@@ -1,0 +1,59 @@
+# Grader-validation table for naranizer.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate naranizer
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-transform-001: |
+    ## 변환 결과 (register: ① 요청/공지)
+
+    @김철수님 다음 주 월요일(7/14)까지 스테이징 환경 접근 권한 승인이 필요합니다. https://example.com/approval/12345 에서 승인 부탁드리겠습니다 :blob-bow:
+
+    ---
+    naranizer: register=①, humanizer-prepass ✓, emoji 1/2, 유머 0/1, 금지패턴 0건, 존댓말 ✓, 사실보존 ✓
+  fact-preservation-001: |
+    ## 변환 결과 (register: ③ 기술 의견/리뷰)
+
+    이 캐시 설정은 잘못된 것 같습니다.
+    - TTL 300초는 너무 긴 것 같아요
+    - 현재 구현은 stale 데이터를 반환할 수 있습니다
+
+    60초로 줄여야 해요. 관련 문서는 https://example.com/docs/cache 참고해 주세요.
+
+    ---
+    naranizer: register=③, humanizer-prepass ✓, emoji 0/2, 유머 0/1, 금지패턴 0건, 존댓말 ✓, 사실보존 ✓
+
+    - "줄여야 합니다"는 요구라서 제안형("줄이는 것이 어떨까요?")으로 바꾸지 않고 어미만 해요체로 바꿨습니다
+    - 결론 먼저, 근거는 불릿으로 정리했고 "참고하세요"는 명령형이라 "참고해 주세요"로 바꿨습니다
+  no-profile-guard-001: |
+    ❌ 실패: 스타일 프로필 없음 (/nonexistent/naranizer/style-profile.md)
+    → "naranizer 프로필 만들어줘 <채널명>" 으로 analyze 모드 먼저 실행
+wrong:
+  basic-transform-001: |
+    좀 더 편한 말투로 바꿔봤어요.
+
+    > 철수님 안녕하세요! 다음 주 월요일(7/14)까지 스테이징 환경 접근 권한 승인이 필요해서요 🙏 시간 되실 때 아래 링크에서 승인 부탁드려요~
+    > https://example.com/approval/12345
+    > 감사합니다!
+
+    더 짧게 원하시면:
+
+    > 철수님, 7/14(월)까지 스테이징 접근 권한 승인 부탁드려요! https://example.com/approval/12345 감사합니다 :)
+  fact-preservation-001: |
+    조금 더 부드럽게 다듬어 봤어요.
+
+    > 이 캐시 설정 한번 같이 봐주시면 좋을 것 같아요! TTL이 좀 길게 잡혀 있는 것 같아서, 조금 더 짧게 줄이는 게 어떨까 싶어요. 지금 구조면 오래된 데이터가 나갈 수도 있을 것 같거든요. 관련 내용은 캐시 문서 참고해 주세요 🙂
+
+    필요하면 숫자를 넣은 버전으로도 바꿔 드릴게요.
+  no-profile-guard-001: |
+    편한 말투로 바꿔봤어요.
+
+    > 배포 파이프라인 점검해봤는데 특별한 이슈는 없었어요! 공유드립니다 👍
+
+    조금 더 캐주얼하게 하면:
+
+    > 파이프라인 점검 끝! 특이사항 없었어요 :)

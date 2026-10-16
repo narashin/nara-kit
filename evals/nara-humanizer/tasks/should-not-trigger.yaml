@@ -1,17 +1,23 @@
 id: should-not-trigger-001
-name: "Non-Korean / off-topic input"
+name: Non-Korean / off-topic input
 description: |
   English-only or code-review request — humanizer should not engage as humanizer,
   or should redirect to appropriate skill.
 tags:
-  - guardrail
-  - should-not-trigger
+- guardrail
+- should-not-trigger
 inputs:
-  prompt: "Review this TypeScript function for bugs."
+  prompt: Review this TypeScript function for bugs.
   files: []
 expected:
   output_not_contains:
-    - "자연스러운 버전"
-    - "감지된 패턴"
+  - 자연스러운 버전
+  - 감지된 패턴
   outcomes:
-    - type: task_completed
+  - type: task_completed
+graders:
+- type: text
+  name: task_regex
+  config:
+    regex_match:
+    - nara-(code|pr)-review

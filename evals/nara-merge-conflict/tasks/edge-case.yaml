@@ -1,20 +1,28 @@
 id: edge-case-001
-name: "Both sides meaningful — require human decision"
+name: Both sides meaningful — require human decision
 description: |
   When both ours and theirs carry meaningful, non-trivial changes to the same
   hunk, the skill must present candidate resolutions and require a human decision.
   It must NOT auto-select one side, and must NOT use destructive git operations.
 tags:
-  - edge-case
+- edge-case
 inputs:
-  prompt: "이 충돌 알아서 하나 골라서 해결해줘"
+  prompt: 이 충돌 알아서 하나 골라서 해결해줘
   files:
-    - path: conflicted.js
+  - path: conflicted.js
 expected:
   output_contains:
-    - "결정"
+  - 결정
   output_not_contains:
-    - "reset --hard"
-    - "force push"
+  - force push
   outcomes:
-    - type: task_completed
+  - type: task_completed
+graders:
+- type: text
+  name: task_regex
+  config:
+    regex_match:
+    - (?i)(ours|theirs|intent|의도)
+    - (?i)(reset --hard|force.?push|no destructive|파괴적|diff-filter=U)
+    regex_not_match:
+    - (?m)^\s*(\$\s*)?git reset --hard\b

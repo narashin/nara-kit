@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: naranizer_contract
-    config:
-      regex_match:
-        - "(naranizer: register=|❌ 실패)"
-        - "(변환 결과|❌ 실패|recorded only)"
 tasks:
   - "tasks/*.yaml"

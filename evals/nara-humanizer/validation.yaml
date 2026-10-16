@@ -1,0 +1,135 @@
+# Grader-validation table for nara-humanizer.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-humanizer
+# Expected: every task passes on right and fails on wrong.
+right:
+  already-natural-001: |
+    ## 분석 결과
+
+    AI 마커가 거의 없습니다. 문장 길이가 고르지 않고, 유행어나 번역투 없이 날짜와 결정 사항을 구체적으로 적어서 사람이 쓴 회의 메모처럼 읽힙니다 (S1 0건, S2 1건으로 허용 범위, 자연도 A). 사소한 문제만 발견:
+
+    - "우선순위를 정했다. 우선 인입 페이지..."에서 "우선"이 바로 이어 두 번 나옵니다. 두 번째를 "먼저"로 바꾸면 덜 걸립니다.
+    - "끝내기로 했고," 뒤 쉼표는 연결어미 뒤 쉼표(패턴 3)지만 1회라 신호는 아닙니다. 그대로 둬도 됩니다.
+    - "리팩토링"은 외래어 표기법상 "리팩터링"입니다. 팀에서 "리팩토링"으로 굳어 있다면 유지해도 됩니다.
+
+    원본 또는 약간 수정한 버전:
+
+    어제 회의에서 다음 분기 우선순위를 정했다. 먼저 인입 페이지 리팩터링부터 끝내기로 했고, A/B 테스트는 다음 주 화요일에 시작한다. 일정이 빠듯해도 큰 무리는 없을 것 같다.
+  basic-usage-001: |
+    ## 분석 결과
+
+    **감지된 패턴 요약**: S1 6건, S2 7건, S3 0건
+    **자연도 등급**: 원문 C → 윤문본 A. 원문은 S1이 3건을 넘었고, 윤문본에는 S1이 남지 않았고 S2도 2건 이하입니다.
+
+    다음 AI 작문 패턴을 감지했습니다 (심각도 순):
+
+    1. **패턴 1·2 쉼표 과다, 영어식 배치 [S1]**: 세 문장에 쉼표가 네 개이고, 짧은 주어와 접속부사 뒤에 붙었습니다.
+       - "프로젝트는," / "위해," / "결론적으로," (연결어미 뒤 "수행하며,"는 12번에서 따로 다룸)
+       - KatFishNet 기준 LLM 문장의 쉼표 비율은 인간의 두 배 이상입니다.
+       - 짧은 주어와 부사구 뒤 쉼표는 1회만 나와도 결정적 신호라 S1입니다.
+
+    2. **패턴 14 AI 유행어 [S1]**: 세 문장에 유행어가 네 개 몰려 있습니다.
+       - "혁신적인", "지속가능한", "효과적으로", "핵심적인"
+       - LLM 빈출 어휘 군집입니다.
+       - 한 문단에 2개 이상이면 S1입니다.
+
+    3. **패턴 11 명사화 구문 [S1]**: "인사이트의 도출을 수행하며"
+       - "도출하다"를 명사로 만든 뒤 "수행하다"로 다시 동사를 붙인 영어식 the X of Y 구조입니다 (KatFishNet 품사 다양성 82.99% AUC).
+       - 한국어는 용언 중심이라 1회만으로도 튑니다.
+
+    4. **패턴 33 미래 단정 "~것이다" [S1]**: "충족시킬 수 있을 것이다"
+       - 영어 will의 직역으로, 현재형이면 충분한 내용을 추정으로 약화합니다.
+
+    5. **패턴 37 AI 결말 관용구 [S1]**: "결론적으로"
+       - 세 문장짜리 글에 메타 요약 표지를 붙인 정형 마무리입니다.
+
+    6. **패턴 40 AI 결말 단언 [S1]**: "미래의 기반이 될 것이다"
+       - 마지막 문장이 추상적인 미래 약속으로 끝납니다.
+
+    7. **패턴 17 복수형 -들 [S2]**: "사용자들의 요구사항들을"
+       - 한 어구에 -들이 두 번 붙었습니다. 한국어는 복수 표지를 보통 생략합니다.
+
+    8. **패턴 26 "~을 통해" [S2]**: "데이터 분석을 통해", "이를 통해"
+       - through 직역이 한 문장에 두 번 나옵니다.
+
+    9. **패턴 29 동사 잉여 "수행하다" [S2]**: "도출을 수행하며"
+       - "도출하며"로 충분합니다.
+
+    10. **패턴 32 "~할 수 있다" 남발 [S2]**: "충족시킬 수 있을", "창출할 수 있다"
+        - 단정해도 될 내용을 가능형으로 두 번 약화했습니다.
+
+    11. **패턴 15 한자어 과다 [S2]**: "창출", "도출", "충족"
+        - 일상 동사 자리에 무거운 한자어가 이어집니다.
+
+    12. **패턴 3 연결어미 뒤 쉼표 [S2]**: "수행하며,"
+        - 연결어미 "~며"가 이미 휴지 역할을 합니다.
+
+    13. **패턴 19 지시관형사 과다 [S2]**: "이를", "이러한"
+        - 짧은 글에 지시 표현이 반복됩니다.
+
+    ---
+
+    ## 자연스러운 버전
+
+    이 프로젝트는 지속적으로 성장하기 위해 여러 사용자의 요구사항을 충족시킨다. 우리는 데이터를 분석해 인사이트를 도출하고, 이를 바탕으로 핵심 가치를 만든다. 이런 접근이 앞으로의 기반이 된다.
+
+    ---
+
+    ## 주요 변경 사항 요약
+
+    - "혁신적인", "효과적으로"를 뺐습니다. 근거 없는 hype 어휘라 빼도 주장이 줄지 않습니다 (패턴 14).
+    - "지속가능한 성장을 위해"를 "지속적으로 성장하기 위해"로, "핵심적인"을 "핵심"으로 풀었습니다 (패턴 14).
+    - 첫 문장의 쉼표를 모두 지웠습니다 (패턴 1·2).
+    - "사용자들의 요구사항들을"에서 -들을 뺐습니다 (패턴 17).
+    - "충족시킬 수 있을 것이다", "창출할 수 있다"를 현재형 단정으로 바꿨습니다 (패턴 32·33).
+    - "데이터 분석을 통해 인사이트의 도출을 수행하며"를 "데이터를 분석해 인사이트를 도출하고"로 동사화했고, 두 번째 "통해"는 "바탕으로"로 바꿨습니다 (패턴 11·26·29).
+    - "결론적으로"를 지우고 마지막 문장의 "될 것이다"를 "된다"로 바꿨습니다 (패턴 37·40).
+    - 평서체(~다)는 그대로 유지했습니다.
+
+    ✓ 의미 보존 검증: 6항 통과 (수치·고유명사 없음, 인과 방향 "성장하기 위해 → 요구 충족" 유지, 부정 표현 없음, 인용 없음, "데이터 분석으로 가치를 만들고 이 접근이 기반이 된다"는 주장 유지, 평서체 유지)
+
+    변경률 43%로 다소 큼. 의미 보존 재확인 권장 (원문 35어절 중 삭제·어휘 교체 15어절, 조사·어미·복수형만 바뀐 어절은 제외)
+  should-not-trigger-001: |
+    This isn't a humanizer task. The humanizer only rewrites Korean prose that reads as AI-written; it does not review code.
+
+    For finding bugs in a TypeScript function, use `/nara-code-review` (local changes) or `/nara-pr-review` (a remote PR). Also, no function was included in your message, so paste the code or point to the file when you run it.
+
+    - status: skipped (no text rewritten)
+    - next: `/nara-code-review` with the function attached
+wrong:
+  already-natural-001: |
+    전반적으로 자연스럽게 잘 쓰인 글이에요. 문장 길이도 적당하고 회의 내용을 간결하게 전달하고 있습니다.
+
+    굳이 다듬는다면 이 정도를 제안드립니다.
+
+    - "인입 페이지 리팩토링부터 끝내기로 했고"에서 "우선"과 "부터"가 의미상 겹쳐서 하나만 써도 됩니다.
+    - "큰 무리는 없을 것 같다"는 조금 더 단정적으로 "큰 무리는 없어 보인다"로 써도 좋습니다.
+
+    수정 예시:
+
+    > 어제 회의에서 다음 분기 우선순위를 정했다. 인입 페이지 리팩토링부터 끝내기로 했고, A/B 테스트는 다음 주 화요일에 시작한다. 일정이 빠듯하지만 큰 무리는 없어 보인다.
+  basic-usage-001: |
+    더 자연스럽고 읽기 쉽게 다듬어 봤습니다.
+
+    > 이 프로젝트는 지속가능한 성장을 목표로, 다양한 사용자의 요구를 효과적으로 충족시킬 것입니다. 우리는 데이터 분석으로 인사이트를 도출하고, 이를 바탕으로 핵심 가치를 만들어 냅니다. 이러한 접근은 앞으로 회사 성장의 든든한 기반이 될 것입니다.
+
+    주요 수정 내용은 다음과 같습니다.
+
+    - 불필요한 쉼표를 줄여 문장 흐름을 매끄럽게 했습니다.
+    - "요구사항들", "사용자들"처럼 복수형 "-들"이 반복되는 부분을 정리했습니다.
+    - "인사이트의 도출을 수행하며"처럼 명사가 길게 이어지는 표현을 "인사이트를 도출하고"로 바꿨습니다.
+    - "결론적으로"는 짧은 글에서 굳이 필요하지 않아 뺐습니다.
+  should-not-trigger-001: |
+    ## Analysis result
+
+    No Korean text was provided, so there is nothing to scan for AI writing patterns.
+
+    - The request contains only an English instruction ("Review this TypeScript function for bugs."), and no function body was attached.
+    - English text is kept as-is; only Korean portions are analyzed and rewritten.
+
+    Please paste the Korean text you want polished, and I will run the 6-category pattern scan (punctuation, spacing, POS diversity, vocabulary, structure, translation-ese) and return a natural rewrite with a naturalness grade.

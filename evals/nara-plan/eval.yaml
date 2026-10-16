@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: plan_contract
-    config:
-      regex_match:
-        - "(?i)(plan\\.md|작업 단위|T-1)"
-        - "(?i)(수직|vertical|traceability|추적)"
 tasks:
   - "tasks/*.yaml"

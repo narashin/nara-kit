@@ -1,18 +1,25 @@
 id: edge-case-001
-name: "No staged files — commit should abort"
+name: No staged files — commit should abort
 description: |
   Test that the skill detects no staged files and guides the user to
   run git add first, instead of proceeding with an empty commit.
 tags:
-  - edge-case
+- edge-case
 inputs:
-  prompt: "커밋 메시지 만들어줘"
+  prompt: |
+    커밋 메시지 만들어줘
   files: []
 expected:
   output_contains:
-    - "git add"
+  - git add
   output_not_contains:
-    - "git commit"
-    - "--no-verify"
+  - git commit
+  - --no-verify
   outcomes:
-    - type: task_completed
+  - type: task_completed
+graders:
+- type: text
+  name: task_regex
+  config:
+    regex_match:
+    - (?i)(git diff --cached|staged|스테이징)

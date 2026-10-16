@@ -20,3 +20,10 @@ expected:
     - "검증 4항 통과"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "ko-prose"
+        - "(?i)mode\\s*=\\s*(repair|full)"

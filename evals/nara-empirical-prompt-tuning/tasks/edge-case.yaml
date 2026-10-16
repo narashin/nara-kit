@@ -19,3 +19,9 @@ expected:
     - "iteration 3"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(iteration|accuracy|unclear|subagent|converge)"

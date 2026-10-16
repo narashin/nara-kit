@@ -17,3 +17,10 @@ expected:
     - "Status: Pass"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(Status:\\s*(Pass|Fail|Blocked|Unverifiable)|축 판정|axis)"
+        - "(?i)(unverifiable|evidence|증거|screenshot|network)"

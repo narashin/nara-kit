@@ -1,0 +1,87 @@
+# Grader-validation table for nara-publish-spec.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-publish-spec
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    ❌ 실패: `docs/plan/spec-notification.md`가 이 프로젝트에 없어서 dry-run을 시작하지 못했습니다.
+    - recovered: no
+    - artifact 영향: none (`confluence-draft.md` 생성 안 함, 7-section template 변환 전 단계에서 멈춤)
+    - side effects: confluence 0 (조회·생성 모두 없음)
+    - next action: 스펙 파일 경로를 확인해 주세요. 다른 위치에 있다면 그 경로를 알려 주시면 됩니다.
+
+    확인한 것은 이렇습니다. 지정 경로를 읽으려 했지만 파일이 없고, `docs/plan/` 아래에도 대체로 쓸 만한 spec 파일이 보이지 않았습니다. Jira 티켓 `PROJ-1234`는 받아 두었습니다(제목은 `PROJ-1234 <한 줄 설명>` 형식). 파일이 생기면 그대로 이어서 진행합니다. 순서는 수치 마커가 있을 때 claim gate, 7-section template 변환, `confluence-draft.md` dry-run 미리보기, "게시할까?" 확인, storage format(XHTML)으로 Confluence 게시입니다.
+
+    게시 위치 설정(`~/.claude/confluence.local.md`)도 아직 확인하지 못했습니다. 설정이 없으면 dry-run 단계에서 게시할 space와 parent page를 한 번 여쭙겠습니다.
+  edge-case-001: |
+    ❌ 실패: `docs/plan/spec-auth.md`가 이 프로젝트에 없어서 변환과 publish 모두 진행하지 못했습니다.
+    - recovered: no
+    - artifact 영향: none (`confluence-draft.md` 생성 안 함)
+    - side effects: confluence 0 (MCP 미연결, REST 호출도 하지 않음)
+    - next action: 스펙 파일 경로와 Jira 티켓 ID를 알려 주세요. 티켓 ID는 제목(`<TICKET-ID> <한 줄 설명>`)에 필수라 없으면 진행하지 않습니다.
+
+    Confluence MCP가 연결되지 않은 상태라는 점은 반영해 두었습니다. 파일과 티켓이 확인되면 dry-run까지는 MCP 없이 똑같이 진행합니다. 7-section 템플릿으로 재구성한 `confluence-draft.md`를 스펙 옆에 저장하고 미리보기를 보여 드린 뒤 "게시할까?"를 여쭙습니다.
+
+    게시를 승인하시면 publish 단계는 MCP 대신 이렇게 처리합니다.
+    1. Confluence REST API로 storage format(XHTML) 본문을 올리는 방법을 먼저 시도합니다. 인증 정보가 없거나 호출이 실패하면 거기서 멈춥니다.
+    2. REST도 안 되면 storage format XHTML을 로컬 파일로 export하고, `confluence-draft.md`와 함께 그 경로를 안내합니다. 이 경우 페이지는 만들어지지 않으며 수동 업로드가 필요합니다.
+
+    어느 경우든 원격 페이지가 실제로 생기기 전에는 "게시 완료"로 보고하지 않습니다.
+  should-not-trigger-001: |
+    이 요청은 이 스킬이 맡는 일이 아닙니다. 이 스킬은 이미 써 둔 로컬 스펙 파일을 위키 페이지로 옮기는 용도라, 새 설계 문서를 처음부터 쓰지는 않습니다.
+
+    인증 모듈 설계 스펙을 새로 만드시려면 다음 중 하나로 시작하시면 됩니다.
+    - 기술 설계 문서(배경, 제안, 대안, 작업 목록)가 필요하면 `/nara-rfc`
+    - 무엇을 만들지부터 정리해야 하면(요구사항, AC 초안) `/nara-ac-draft`
+    - 이미 생각해 둔 설계안의 구멍을 먼저 찔러 보려면 `/nara-grill`
+
+    문서가 완성된 뒤 팀 위키에 올릴 때 다시 이 스킬을 부르시면 됩니다.
+wrong:
+  basic-usage-001: |
+    네, `docs/plan/spec-notification.md`를 Confluence에 올리겠습니다.
+
+    다만 지금 작업 디렉터리에서 `docs/plan/spec-notification.md` 파일을 찾을 수 없습니다. 프로젝트가 비어 있는 상태라 게시할 원문이 없습니다.
+
+    파일이 준비되면 아래 순서로 진행하겠습니다.
+
+    1. 마크다운 본문을 그대로 읽어 페이지 제목을 `PROJ-1234 Notification Spec`으로 정합니다.
+    2. Confluence 페이지를 생성합니다. 예시 호출:
+       ```
+       confluence_create_page(space_key="<SPACE>", title="PROJ-1234 Notification Spec", content=<spec-notification.md 내용>, content_format="markdown")
+       ```
+    3. 생성된 페이지 링크를 PROJ-1234 티켓에 코멘트로 남깁니다.
+
+    진행하려면 두 가지를 알려 주세요.
+    - 파일 경로가 맞는지, 혹은 파일 내용을 붙여 주실 수 있는지
+    - 게시할 Confluence 스페이스 키(와 상위 페이지가 있다면 그 이름)
+  edge-case-001: |
+    Confluence MCP가 연결되지 않았다면 제가 직접 페이지를 만들 수는 없습니다. 대신 이렇게 하시면 됩니다.
+
+    1. **MCP 재연결**: Claude Code에서 `/mcp`로 confluence 서버 상태를 확인하고 재연결하세요. 토큰 만료가 가장 흔한 원인이라 API 토큰을 새로 발급해 설정에 넣으면 대부분 해결됩니다.
+    2. **수동 게시**: 급하면 `docs/plan/spec-auth.md` 내용을 Confluence 편집기에 그대로 붙여 넣으세요. Confluence 편집기는 마크다운 붙여넣기를 어느 정도 변환해 줍니다. 혹은 `+` → "Markup" 삽입에서 Markdown을 선택해 붙여 넣으면 표와 코드블록이 더 잘 유지됩니다.
+
+    참고로 지금 작업 디렉터리에서는 `docs/plan/spec-auth.md` 파일이 보이지 않습니다. 경로를 확인해 주시면, MCP가 다시 연결된 뒤 바로 게시해 드리겠습니다.
+  should-not-trigger-001: |
+    스펙 게시를 시작합니다.
+
+    **Step 0. Claim gate**: 검증 대상 수치 마커 없음, 통과.
+
+    **Step 1. 정보 수집**
+    - spec 파일: 경로가 주어지지 않아 최근 생성된 spec을 찾았습니다. `docs/plan/` 아래 `spec-*.md` 파일이 없습니다.
+    - Jira 티켓 ID: 없음 (필수)
+    - 게시 위치: `~/.claude/confluence.local.md` 설정 없음
+
+    게시할 원본이 없어 dry-run(7섹션 템플릿 변환, `confluence-draft.md` 저장)을 진행할 수 없습니다.
+
+    ❌ 실패: 게시할 spec 파일 없음
+    - 원인: `docs/plan/spec-*.md`가 존재하지 않음
+    - 다음: 아래 세 가지를 알려 주시면 dry-run부터 다시 진행합니다.
+
+    1. 게시할 spec 파일 경로 (예: `docs/plan/spec-auth.md`)
+    2. Jira 티켓 ID (예: `APP-123`), 제목은 `APP-123 인증 모듈 설계` 형식으로 붙습니다
+    3. 게시 위치 (Confluence URL 또는 상위 페이지 이름)

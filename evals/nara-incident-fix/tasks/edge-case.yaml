@@ -18,3 +18,10 @@ expected:
     - "git commit"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(phase|RED|GREEN|테스트|test)"
+        - "(?i)(incident-report|리포트)"

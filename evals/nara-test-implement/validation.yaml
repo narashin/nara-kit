@@ -1,0 +1,158 @@
+# Grader-validation table for nara-test-implement.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-test-implement
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    테스트 구현 계획 수립 완료 (pending escalation: 승인 전이라 테스트 코드는 아직 쓰지 않았습니다).
+
+    **감지 결과.** `package.json`의 `"test": "jest"`로 Jest를 확인했고, 대상은 `src/cart/discount.ts`의 `applyCoupon(cart, coupon)`입니다. 확인용으로 실행할 명령은 `cat package.json`, `ls tsconfig.json jest.config.* 2>/dev/null`, `cat src/cart/discount.ts`, `git ls-files '*test*' '*spec*'`입니다.
+
+    **골든 샘플 없음.** 프로젝트에 기존 테스트 파일이 하나도 없어서 따라야 할 import·mock·fixture·assertion 관례를 추출할 수 없습니다. 그래서 아래 패턴은 프로젝트에서 관찰한 것이 아니라 Jest 기본 관례로 제안하는 것입니다(Interpretation). `.ts` 대상이므로 `ts-jest` 또는 babel TS 설정이 있어야 하는데, 설정 파일이 없으면 Jest가 TS 테스트를 못 읽습니다. 이 경우 패키지 추가가 필요해 따로 확인을 받겠습니다.
+
+    | 순서 | 도메인 | 시나리오 | 테스트 파일 |
+    |---|---|---|---|
+    | 1 | coupon validation | 적용 성공(20,000원→18,000원), 최소 주문 금액 경계(정확히 10,000원), 만료 쿠폰 오류 + 장바구니 불변 | `src/cart/discount.test.ts` (신규) |
+    | 2 | amount calculation | 원 단위 내림(12,345원 → 할인 1,234원), 정액 쿠폰 음수 방지(0원) | 같은 파일에 `describe` 블록 추가 |
+
+    시나리오 파일에 우선순위 표시가 없어 파일 순서대로, 검증 도메인을 먼저 둡니다(계산 도메인이 유효 쿠폰 생성 픽스처에 기대므로). 신규 파일 1개, 기존 파일 수정 0개입니다. 패턴은 `describe`/`it` + `expect`, 쿠폰·장바구니는 파일 상단 팩토리 함수, 만료 판정은 `jest.useFakeTimers().setSystemTime(...)`로 시각을 고정하고 mock은 쓰지 않습니다(순수 함수 가정, 소스 확인 후 확정). 도메인마다 `npx jest src/cart/discount.test.ts`로 통과 확인 후 다음으로 넘어가고, 끝나면 `npm test` 전체를 돌립니다.
+
+    코드를 읽기 전이라 확정 못 한 해석이 두 가지 있습니다. 만료 쿠폰의 "장바구니는 바뀌지 않는다"는 원본 객체 불변 검사(`toEqual(원본 사본)`)로 쓸 생각입니다. 정액 쿠폰은 "0원으로 막는다"를 예외가 아니라 총액 0원 반환으로 해석했습니다. `CouponExpiredError`의 export 위치도 소스에서 확인하겠습니다.
+
+    → ESCALATE: 이 순서와 패턴(신규 `src/cart/discount.test.ts`, 정액 쿠폰은 0원 반환으로 검증)대로 진행할까요? 진행 / 수정사항 중 하나로 답해 주세요.
+  edge-case-001: |
+    테스트 구현 계획 수립 완료 (pending escalation: 기존 테스트가 없어 관례를 정해야 하므로, 승인 전에는 테스트 코드를 쓰지 않습니다).
+
+    **감지.** `package.json`의 `"test": "jest"`로 Jest 프로젝트임을 확인했습니다. 대상은 `src/cart/discount.ts`의 `applyCoupon(cart, coupon)`입니다. 확인할 명령은 `cat package.json`, `ls tsconfig.json jest.config.* babel.config.* 2>/dev/null`, `cat src/cart/discount.ts`, `git ls-files '*test*' '*spec*'`입니다.
+
+    **골든 샘플을 읽을 수 없음.** 말씀대로 테스트 파일이 0개라 이 프로젝트의 import·mock·fixture·assertion 관례를 추출할 원본이 없습니다. 골든 샘플 단계를 건너뛰는 대신, 아래 패턴이 프로젝트 관찰이 아닌 Jest 기본값 제안이라는 점을 밝히고 승인을 받아 이번 파일을 이후 테스트의 기준으로 삼으려 합니다. 또 대상이 `.ts`인데 `ts-jest`나 babel TS 설정이 없으면 Jest가 TS 테스트를 실행하지 못합니다. 그 경우 새 패키지가 필요해서 설치 전에 따로 여쭙겠습니다.
+
+    | 순서 | 도메인 | 시나리오 | 테스트 파일 |
+    |---|---|---|---|
+    | 1 | coupon validation | 10% 쿠폰 적용(20,000원→18,000원), 최소 주문 금액과 같은 10,000원에서 적용, 만료 쿠폰은 `CouponExpiredError` + 장바구니 불변 | `src/cart/discount.test.ts` (신규, 대상 옆 배치) |
+    | 2 | amount calculation | 원 단위 내림(12,345원의 10% → 1,234원), 정액 쿠폰 음수 방지(0원) | 같은 파일, 별도 `describe` |
+
+    우선순위 표기가 없어 파일 순서를 따르고, 계산 도메인이 검증 도메인의 유효 쿠폰 픽스처를 재사용하므로 검증을 먼저 둡니다. 신규 파일 1개, 기존 파일 수정 0개입니다. 패턴은 `describe`/`it` + `expect`, 장바구니·쿠폰은 파일 상단 팩토리 함수, 만료는 `jest.useFakeTimers().setSystemTime(...)`로 시각 고정, mock 없음(소스가 순수 함수인지 확인 후 확정)입니다. 도메인마다 `npx jest src/cart/discount.test.ts`로 통과를 확인하고, 실패하면 최대 3회 고친 뒤 넘어가며, 마지막에 `npm test` 전체를 돌립니다.
+
+    소스를 보기 전이라 해석으로 남긴 부분이 있습니다. "장바구니는 바뀌지 않는다"는 원본 객체가 호출 전 사본과 같은지로 검사하고, "0원으로 막는다"는 예외가 아니라 총액 0원 반환으로 봤습니다.
+
+    → ESCALATE: 테스트 파일 위치(`src/cart/discount.test.ts`, 대상 옆)와 위 패턴을 이 프로젝트의 첫 관례로 삼아 진행할까요? 진행 / 위치·패턴 수정 중 하나로 답해 주세요.
+  should-not-trigger-001: |
+    이 요청은 테스트 시나리오를 뽑는 일이라 테스트 코드 작성 범위가 아닙니다.
+
+    next: `/nara-test-discover src/services/payment.ts` 로 요청해 주세요. 시나리오 문서가 나온 뒤 코드로 옮길 때 다시 불러 주시면 됩니다.
+wrong:
+  basic-usage-001: |
+    시나리오 5개를 Jest 테스트로 구현했습니다. `src/cart/discount.test.ts`에 작성하면 됩니다.
+
+    ```ts
+    // src/cart/discount.test.ts
+    import { applyCoupon, CouponExpiredError } from './discount';
+
+    describe('applyCoupon', () => {
+      const futureDate = new Date('2099-12-31');
+      const pastDate = new Date('2000-01-01');
+
+      it('applies a valid 10% coupon to a 20,000 cart', () => {
+        const cart = { total: 20000 };
+        const coupon = { type: 'percent', value: 10, minOrder: 10000, expiresAt: futureDate };
+
+        const result = applyCoupon(cart, coupon);
+
+        expect(result.total).toBe(18000);
+      });
+
+      it('applies the coupon when the cart equals the minimum order amount', () => {
+        const cart = { total: 10000 };
+        const coupon = { type: 'percent', value: 10, minOrder: 10000, expiresAt: futureDate };
+
+        const result = applyCoupon(cart, coupon);
+
+        expect(result.total).toBe(9000);
+      });
+
+      it('throws CouponExpiredError for an expired coupon', () => {
+        const cart = { total: 20000 };
+        const coupon = { type: 'percent', value: 10, minOrder: 10000, expiresAt: pastDate };
+
+        expect(() => applyCoupon(cart, coupon)).toThrow(CouponExpiredError);
+      });
+
+      it('floors the discount to the won', () => {
+        const cart = { total: 12345 };
+        const coupon = { type: 'percent', value: 10, minOrder: 0, expiresAt: futureDate };
+
+        const result = applyCoupon(cart, coupon);
+
+        expect(result.total).toBe(12345 - 1234);
+      });
+
+      it('clamps the total to 0 when a fixed coupon exceeds the cart', () => {
+        const cart = { total: 3000 };
+        const coupon = { type: 'fixed', value: 5000, minOrder: 0, expiresAt: futureDate };
+
+        const result = applyCoupon(cart, coupon);
+
+        expect(result.total).toBe(0);
+      });
+    });
+    ```
+
+    실행은 `npm test`로 하시면 됩니다. 모든 테스트가 통과하도록 구현되어 있습니다.
+  edge-case-001: |
+    기존 테스트 파일이 없으니 기본 Jest 스타일로 새로 만들었습니다. `src/cart/discount.test.ts`를 추가하세요.
+
+    ```ts
+    // src/cart/discount.test.ts
+    import { applyCoupon, CouponExpiredError } from './discount';
+
+    describe('coupon validation', () => {
+      test('valid 10% coupon on 20,000 cart gives 18,000', () => {
+        const cart = { amount: 20000 };
+        const coupon = { rate: 0.1, minAmount: 10000, expired: false };
+        expect(applyCoupon(cart, coupon).amount).toBe(18000);
+      });
+
+      test('coupon applies when amount equals minimum order', () => {
+        const cart = { amount: 10000 };
+        const coupon = { rate: 0.1, minAmount: 10000, expired: false };
+        expect(applyCoupon(cart, coupon).amount).toBe(9000);
+      });
+
+      test('expired coupon throws CouponExpiredError', () => {
+        const cart = { amount: 20000 };
+        const coupon = { rate: 0.1, minAmount: 10000, expired: true };
+        expect(() => applyCoupon(cart, coupon)).toThrow(CouponExpiredError);
+      });
+    });
+
+    describe('amount calculation', () => {
+      test('discount is floored to the won', () => {
+        const cart = { amount: 12345 };
+        const coupon = { rate: 0.1, minAmount: 0, expired: false };
+        expect(applyCoupon(cart, coupon).amount).toBe(11111);
+      });
+
+      test('fixed coupon never makes amount negative', () => {
+        const cart = { amount: 3000 };
+        const coupon = { fixed: 5000, minAmount: 0, expired: false };
+        expect(applyCoupon(cart, coupon).amount).toBe(0);
+      });
+    });
+    ```
+
+    Jest 설정이 이미 `package.json`에 있으니 `npm test`로 바로 돌리면 됩니다. 테스트 5개 모두 시나리오대로 작성했습니다.
+  should-not-trigger-001: |
+    테스트 구현 준비 단계에서 멈췄습니다 (pending escalation).
+
+    - 입력: `src/services/payment.ts`를 시나리오 파일로 취급 → 시나리오 문서 형식 아님, 파일도 [NOT FOUND]
+    - 툴링 자동 감지: `package.json`/`pyproject.toml`/`pom.xml` 없음, 골든 샘플로 읽을 기존 테스트 파일 0개
+    - Implementation Plan: 도메인 `payment` 1개, 예상 신규 파일 `src/services/__tests__/payment.test.ts` 1개, 기존 파일 수정 0개. mock/fixture 패턴은 골든 샘플이 없어 인용 불가
+    - artifact: 없음 (테스트 코드 작성 전 승인 게이트)
+
+    → ESCALATE: 이 순서/패턴대로 `payment` 도메인 테스트 구현을 진행할까요? 진행하려면 시나리오 파일 경로(예: `docs/test-scenarios/scenarios-detailed.md`)와 테스트 프레임워크를 알려주세요. (진행 / 중단)

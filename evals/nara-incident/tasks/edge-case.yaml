@@ -1,18 +1,29 @@
 id: edge-case-001
-name: "Incident from Jira ticket URL"
+name: Incident from Jira ticket URL
 description: |
   Test that the skill parses a Jira URL from arguments and fetches
   the issue details before proceeding with the analysis workflow.
 tags:
-  - edge-case
+- edge-case
 inputs:
-  prompt: "/incident https://jira.example.com/browse/OPS-123 이 티켓 장애 분석해줘"
-  files: []
+  prompt: |
+    /incident https://jira.example.com/browse/OPS-123 이 티켓 장애 분석해줘
+    (티켓 조회 결과는 첨부한 ops-123.md와 같다.)
+  files:
+  - path: ops-123.md
 expected:
   output_contains:
-    - "incident-report.md"
+  - incident-report.md
   output_not_contains:
-    - "코드 수정"
-    - "git commit"
+  - git commit
   outcomes:
-    - type: task_completed
+  - type: task_completed
+graders:
+- type: text
+  name: task_regex
+  config:
+    regex_match:
+    - (?i)(incident-report\.md|가설|hypothesis|root cause)
+    - (?i)(evidence|증거|Proposed Fix|Side Effects)
+    regex_not_match:
+    - (?m)^```diff

@@ -20,3 +20,10 @@ expected:
     - "결론적으로, 이러한 접근은 미래의 기반이 될 것이다"
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(분석 결과|자연스러운 버전|감지된 패턴)"
+        - "(?i)(S1|S2|S3|자연도 등급)"

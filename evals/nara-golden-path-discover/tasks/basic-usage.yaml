@@ -1,5 +1,5 @@
 id: basic-usage-001
-name: "Discover golden-path E2E scenarios for a route"
+name: Discover golden-path E2E scenarios for a route
 description: |
   Verifies the 6-stage pipeline runs end-to-end: consumes test-discover E2E
   decomposition, filters the golden-path spine with parallel-safety tagging,
@@ -7,19 +7,28 @@ description: |
   and emits a Playwright-ready export to docs/test-scenarios/golden-paths.E2E.md
   with the frontmatter + Crawl rung line + SKIP/WARNING taxonomy.
 tags:
-  - basic
-  - happy-path
+- basic
+- happy-path
 inputs:
-  prompt: "golden path E2E 발굴해줘 /create-ticket"
-  files: []
+  prompt: |
+    golden path E2E 발굴해줘 /create-ticket
+    (앱 코드와 test-discover 분해는 첨부한 create-ticket-app.md와 같다.)
+  files:
+  - path: create-ticket-app.md
 expected:
   output_contains:
-    - "Playwright-ready"
-    - "coverage"
-    - "Crawl rung"
+  - golden-paths.E2E.md
+  - coverage
+  - Crawl rung
   output_not_contains:
-    - "import "
-    - "describe("
-    - "it("
+  - 'import '
+  - describe(
+  - it(
   outcomes:
-    - type: task_completed
+  - type: task_completed
+graders:
+- type: text
+  name: task_regex
+  config:
+    regex_match:
+    - (?i)(golden|Playwright-ready|coverage|커버리지|worker|SKIP_|UNVERIFIED)

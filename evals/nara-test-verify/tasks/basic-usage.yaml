@@ -21,3 +21,9 @@ expected:
     - "import "
   outcomes:
     - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(QA Lead|Developer|Red Team|PASS|NEEDS_WORK|FAIL)"

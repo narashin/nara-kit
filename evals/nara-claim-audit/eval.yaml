@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: audit_contract
-    config:
-      regex_match:
-        - "(?i)(match|mismatch|mapping_failure|syntax_error|판정)"
-        - "(?i)(csv|mtime|스냅샷|snapshot)"
 tasks:
   - "tasks/*.yaml"

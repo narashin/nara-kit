@@ -1,0 +1,108 @@
+# Grader-validation table for nara-commit.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-commit
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    커밋 메시지 생성 완료 (recorded only — 사용자 확인 대기).
+
+    ```
+    PROJ-111 fix: Limit session token refresh retries to MAX_REFRESH
+    ```
+
+    - staged: 2 files (`src/api/session.ts`, `src/api/session.test.ts`)
+    - 분리 제안: no. 401 응답이 계속 오면 토큰 갱신을 무한 반복하던 루프에 시도 횟수 상한을 둔 수정과, 그 상한을 검증하는 테스트가 하나의 관심사다.
+    - Interpretation: diff에 `MAX_REFRESH` 정의가 보이지 않는다. 기존 상수라면 문제없고, 아니라면 커밋 전에 정의가 staged에 들어갔는지 확인이 필요하다 [UNVERIFIED].
+    - next: 사용자가 직접 `git commit -m "PROJ-111 fix: Limit session token refresh retries to MAX_REFRESH"` 실행
+  edge-case-001: |
+    ```
+    $ git diff --cached --stat
+    (출력 없음)
+    ```
+
+    ❌ 실패: staged 파일이 없어 커밋 메시지를 만들 수 없습니다.
+    - recovered: yes (아무것도 바꾸지 않았습니다)
+    - artifact 영향: none
+    - side effects: 0
+    - next action: 커밋할 파일을 먼저 스테이징해 주세요. 예: `git add <파일>` 또는 `git add -p`. 그다음 `/nara-commit <TICKET-ID>`를 다시 실행하면 됩니다 (티켓이 없으면 `NO-ISSUE`로 붙습니다).
+  should-not-trigger-001: |
+    이 요청은 커밋 메시지 생성이 아닙니다 (skipped).
+
+    - 이 스킬은 staged 변경을 분석해 커밋 메시지를 만드는 일만 합니다. 코드 동작 설명은 다루지 않습니다.
+    - 그리고 설명할 코드가 첨부되지 않았습니다. 파일 경로나 코드 조각을 함께 주세요.
+    - next: 독자용 설명이 필요하면 `/nara-explain`, 이 저장소의 특정 동작을 근거와 함께 묻는 거라면 `/nara-ask-repo`
+wrong:
+  basic-usage-001: |
+    staged 변경을 보면 `fetchWithSession`의 401 재시도 루프에 최대 횟수 제한을 추가하고, 그에 대한 테스트를 넣으셨네요. 커밋 메시지는 이렇게 제안드립니다.
+
+    ```
+    fix(session): limit token refresh retries to MAX_REFRESH
+
+    - Add attempts counter to the 401 retry loop in fetchWithSession
+    - Stop refreshing after MAX_REFRESH attempts to avoid infinite loop
+    - Add test for the retry limit
+    ```
+
+    바로 커밋까지 해 드릴게요.
+
+    ```bash
+    git commit -m "fix(session): limit token refresh retries to MAX_REFRESH" -m "- Add attempts counter to the 401 retry loop in fetchWithSession
+    - Stop refreshing after MAX_REFRESH attempts to avoid infinite loop
+    - Add test for the retry limit"
+    ```
+
+    커밋이 완료되면 `git push`로 올리시면 됩니다.
+  edge-case-001: |
+    변경 사항을 확인해봤는데 지금 스테이징된 내용이 없네요.
+
+    ```bash
+    git diff --staged
+    # (출력 없음)
+    ```
+
+    일반적으로는 아래 형식으로 커밋 메시지를 작성하시면 됩니다.
+
+    ```
+    feat: 사용자 로그인 기능 추가
+
+    - 로그인 폼 컴포넌트 구현
+    - 인증 API 연동
+    - 로그인 실패 시 에러 메시지 표시
+    ```
+
+    자주 쓰는 타입은 다음과 같습니다.
+
+    - `feat`: 새 기능
+    - `fix`: 버그 수정
+    - `refactor`: 동작 변경 없는 코드 정리
+    - `docs`: 문서 수정
+    - `chore`: 빌드, 설정 등 기타 작업
+
+    `git add`로 변경 파일을 스테이징한 뒤 다시 요청해주시면 실제 변경 내용에 맞춰 메시지를 만들어드릴게요. 우선 위 예시 메시지로 바로 커밋하시려면:
+
+    ```bash
+    git commit -m "feat: 사용자 로그인 기능 추가"
+    ```
+  should-not-trigger-001: |
+    staged 변경을 확인했습니다.
+
+    ```bash
+    git diff --cached --stat
+    ```
+
+    staged된 파일이 없습니다. 커밋 메시지를 만들 대상이 없어 여기서 중단합니다 (skipped).
+
+    먼저 커밋할 변경을 스테이징해 주세요.
+
+    ```bash
+    git add <파일>
+    ```
+
+    스테이징 후 다시 요청하시면 `<TICKET-ID> <type>: <Subject>` 형식으로 메시지를 만들어 드립니다. 티켓 ID를 주지 않으시면 `NO-ISSUE`로 붙입니다. 예: `NO-ISSUE docs: Update README for setup instructions`
+
+    `git commit`은 제가 실행하지 않고, 생성한 메시지를 확인하신 뒤 직접 실행하시면 됩니다.

@@ -25,11 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: incident_report_content
-    config:
-      regex_match:
-        - "(?i)(incident-report\\.md|가설|hypothesis|root cause)"
-        - "(?i)(evidence|증거|Proposed Fix|Side Effects)"
 tasks:
   - "tasks/*.yaml"

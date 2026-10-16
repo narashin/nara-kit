@@ -1,0 +1,84 @@
+# Grader-validation table for nara-browser-verify.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-browser-verify
+# Expected: every task passes on right and fails on wrong.
+right:
+  basic-usage-001: |
+    브라우저 AC 검증을 진행하지 못했습니다 (recorded only). 연결된 브라우저 드라이버가 없어 런타임 증거를 하나도 남길 수 없었습니다.
+
+    - criterion: `티켓 목록 상단에 상태 필터(전체/열림/닫힘)가 보이고, 닫힘을 고르면 닫힌 티켓만 남는다` · target: `http://localhost:3000/tickets` · head: [UNVERIFIED: 작업 트리 없음, `git rev-parse HEAD` 결과 없음] · driver: 없음 (chrome-devtools·playwright MCP 모두 미연결) · viewport: 미지정 · auth mode: 미확정
+    - 축 판정:
+      - geometry (필터가 목록 **상단**에 있음) ⚠️ Unverifiable: `getBoundingClientRect` 실측과 실제로 열어본 스크린샷이 필요한데 둘 다 없음
+      - content (필터 라벨 `전체`/`열림`/`닫힘`이 보임) ⚠️ Unverifiable: 렌더된 화면을 보지 못함
+      - behavior/state (`닫힘`을 trusted 입력으로 선택한 뒤 목록에 닫힌 티켓만 남음) ⚠️ Unverifiable: 선택 전후 목록 상태, 필터 요청이 서버로 간다면 그 request/response, 최종 상태 스크린샷이 전부 없음
+      - asset·typography·color·imagery: criterion 범위 밖이라 해당 없음
+    - 소스 코드를 읽어 판정하는 정적 분석으로 대신하지 않았습니다. 이 스킬은 런타임 증거 없이 Pass를 낼 수 없습니다. 가시 브라우저로 우회하지도 않았습니다.
+    - side effects: browser 0 (열지 않음), dev server 0 (드라이버가 없어 기동 전 단계에서 멈춤), app 쓰기 0
+    - artifact: 없음 (증거 디렉터리를 만들지 않음)
+    - next: chrome-devtools 또는 playwright MCP를 연결한 세션에서 같은 인자로 `/nara-browser-verify --url http://localhost:3000/tickets --ac "..."` 재실행. `/tickets`에 로그인이 필요하면 헤드리스로 쓸 수 있는 인증 방식(세션 쿠키·토큰 bootstrap 등)이 repo에 있는지도 함께 확인이 필요합니다.
+
+    Status: Unverifiable
+  edge-case-no-driver-001: |
+    브라우저 AC 검증을 시작하지 않았습니다 (pending escalation). 판정할 AC도, 열어 볼 대상도 정해지지 않아 브라우저를 열기 전에 멈췄습니다.
+    - 인자: 없음 (`--ac`, `--url` 모두 없음)
+    - 자동 감지: `docs/plan.md`(검증 필드)와 `docs/requirements.md`(`browser-visible: yes` AC) 모두 이 프로젝트에 없음. `.claude/overrides/browser-verify.md`, `.claude/ui-diff/env.md`도 없어 대상 URL과 dev 명령을 얻을 곳이 없음
+    - 드라이버: 범위가 정해지지 않아 확인 단계까지 가지 않았습니다. AC를 정해 다시 실행했을 때 헤드리스 브라우저 드라이버(chrome-devtools MCP 또는 playwright)가 하나도 없으면, 정적 코드 분석으로 대신 판정하지 않고 `Unverifiable: requires live runtime`으로 끝납니다
+    - side effects: 없음 (브라우저·dev 서버 기동 안 함, 앱 쓰기 0건)
+    - artifact: 없음
+
+    → ESCALATE: 검증할 AC와 대상 화면을 알려 주세요. `nara-browser-verify --ac <id 또는 파일> --url <대상 URL>` 형식으로 다시 호출하거나, AC 문장과 화면 주소를 붙여 주시면 됩니다.
+
+    Status: Blocked
+  should-not-trigger-001: |
+    이 요청은 이 스킬이 맡는 일이 아니라 건너뜁니다 (skipped).
+    - 이유: 이 스킬은 기준선 없이 AC 문장 하나를 기준으로 화면이 통과하는지 판정합니다. QA 환경과 로컬 화면을 나란히 놓고 스타일이 어긋난 곳을 찾는 일은 두 환경을 비교하는 작업이라 범위가 다릅니다
+    - 맞는 스킬: `/nara-ui-diff`가 QA(또는 prod)와 로컬의 화면 차이를 비교합니다
+    - next: `/nara-ui-diff`로 비교할 화면 경로와 함께 요청해 주세요
+wrong:
+  basic-usage-001: |
+    지금 이 환경에서는 브라우저를 띄울 수 없어서 `http://localhost:3000/tickets` 화면을 직접 확인하지는 못했습니다. 대신 직접 확인하실 때 쓸 수 있는 체크 순서를 정리해 드릴게요.
+
+    1. `http://localhost:3000/tickets`에 접속합니다.
+    2. 티켓 목록 상단에 상태 필터가 있고, 옵션이 "전체 / 열림 / 닫힘" 세 가지인지 봅니다.
+    3. "닫힘"을 선택합니다.
+    4. 목록에 남은 티켓이 모두 닫힘 상태인지 확인합니다. 열림 티켓이 하나라도 남아 있으면 실패입니다.
+    5. 다시 "전체"를 골라 목록이 원래대로 돌아오는지도 같이 보면 좋습니다.
+
+    Playwright로 자동화하고 싶으시면 아래처럼 짤 수 있습니다.
+
+    ```ts
+    test("상태 필터 닫힘", async ({ page }) => {
+      await page.goto("http://localhost:3000/tickets");
+      const filter = page.getByRole("combobox", { name: "상태" });
+      await expect(filter).toBeVisible();
+      await filter.selectOption("닫힘");
+      const rows = page.locator("[data-testid=ticket-row]");
+      for (const row of await rows.all()) {
+        await expect(row).toContainText("닫힘");
+      }
+    });
+    ```
+
+    코드상으로는 필터가 구현되어 있을 가능성이 높아 보이니, 위 순서대로 한 번 돌려 보시면 AC는 통과할 것으로 예상됩니다.
+  edge-case-no-driver-001: |
+    "browser-verify"만 주셔서 어떤 작업을 원하시는지 정확히 모르겠습니다. 몇 가지 가능성이 있는데, 어느 쪽인지 알려주시면 이어서 도와드리겠습니다.
+
+    1. **화면이 요구사항대로 동작하는지 확인**: 확인할 화면 URL과 기준(AC나 기대 동작)을 알려주세요. 제가 직접 브라우저를 띄울 수는 없어서, 대신 바로 실행할 수 있는 Playwright 또는 Cypress 검증 스크립트를 작성해 드릴 수 있습니다.
+    2. **브라우저 자동화 테스트 코드 작성**: 대상 페이지와 시나리오를 알려주시면 E2E 테스트를 만들어 드립니다.
+    3. **브라우저 지원 여부 확인**: 특정 브라우저에서 기능이나 API가 지원되는지 확인하려는 거라면 대상 브라우저와 기능을 알려주세요.
+
+    예를 들면 "http://localhost:3000/login 에서 잘못된 비밀번호를 넣으면 에러 문구가 보이는지 확인"처럼 주시면 됩니다.
+  should-not-trigger-001: |
+    브라우저 AC 검증을 시작하지 못했습니다 (skipped).
+    - criterion: 미확정. 인자로 `--ac`가 없고, `docs/plan.md`의 `검증` 필드와 `docs/requirements.md`의 `browser-visible: yes` AC를 찾았지만 두 파일 모두 없습니다. "스타일 틀어진 데"는 판정할 기준(criterion)이 아니라서 축에 매핑할 수 없습니다.
+    - 대상: 미확정. `--url`이 없고 `.claude/ui-diff/env.md`도 없어 QA 주소와 로컬 주소, dev 명령을 알 수 없습니다.
+    - side effects: 없음. 실행 전 단계에서 멈춰 브라우저와 dev 서버를 띄우지 않았고, 앱에 쓴 것도 없습니다.
+    - artifact: 없음
+    - 다음 행동: 검증할 AC(예: "목록 헤더 높이 48px, 제목 폰트 16px bold")와 대상 URL을 `--ac`, `--url`로 주시면 그 기준으로 축별 판정을 하겠습니다.
+
+    Status: Blocked

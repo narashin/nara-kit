@@ -1,20 +1,29 @@
 id: edge-case-001
-name: "Implement tests in project with no existing golden samples"
+name: Implement tests in project with no existing golden samples
 description: |
   Verifies that when there are no existing test files to use as golden samples,
   the skill auto-detects tooling from project config files (package.json, pyproject.toml)
   and establishes conventions from scratch rather than fabricating patterns.
 tags:
-  - edge-case
+- edge-case
 inputs:
-  prompt: "이 시나리오 파일 기반으로 테스트 구현해줘. 프로젝트에 기존 테스트 파일이 하나도 없어 -- docs/test-scenarios/scenarios-detailed.md"
-  files: []
+  prompt: |
+    이 시나리오 파일 기반으로 테스트 구현해줘. 프로젝트에 기존 테스트 파일이 하나도 없어 -- docs/test-scenarios/scenarios-detailed.md
+    (시나리오 파일은 첨부한 scenarios-detailed.md와 같다.)
+  files:
+  - path: scenarios-detailed.md
 expected:
-  output_contains:
-    - "golden sample"
-    - "domain"
+  output_contains: []
   output_not_contains:
-    - "S2"
-    - "scenarios-review.md"
+  - S2
+  - scenarios-review.md
   outcomes:
-    - type: task_completed
+  - type: task_completed
+graders:
+- type: text
+  name: task_regex
+  config:
+    regex_match:
+    - (?i)(domain|golden sample|pipeline|test|implement)
+    - (?i)(golden sample|골든 샘플)
+    - (?i)(domain|도메인)

@@ -1,5 +1,5 @@
 id: pr-scope-pinned-001
-name: "Explaining a commit pins base/head and cites version-qualified lines"
+name: Explaining a commit pins base/head and cites version-qualified lines
 description: |
   The user asks to explain one commit of this repository to a teammate. The
   commit (`5773196`) adds a `generate` mode to `tools/eval-fixture.py` plus one
@@ -8,21 +8,25 @@ description: |
   can reproduce the view later, and cites its substantive claims with
   `path:line` in the head version rather than describing the diff from memory.
 tags:
-  - pr-scope
-  - evidence
+- pr-scope
+- evidence
 inputs:
-  prompt: "5773196 커밋이 뭘 바꿨는지 팀원한테 설명해줘"
-  files: []
+  prompt: |
+    5773196 커밋이 뭘 바꿨는지 팀원한테 설명해줘
+    (이 저장소에서 git show 결과는 첨부한 commit-5773196.md와 같다.)
+  files:
+  - path: commit-5773196.md
 expected:
-  # The parent SHA proves the comparison base was pinned, not just the head the
-  # user already typed. `eval-fixture.py:` followed by a line proves line-level
-  # citation of the main changed file.
-  # The change scope now ships one HTML file; `<details` is the collapsed
-  # understanding-check answer that the HTML contract requires.
   output_contains:
-    - "a4dd02c"
-    - "eval-fixture.py:"
-    - "<details"
-    - "check_explain"
+  - a4dd02c
+  - 'eval-fixture.py:'
+  - docs/explain/5773196.html
+  - check_explain
   outcomes:
-    - type: task_completed
+  - type: task_completed
+graders:
+- type: text
+  name: task_regex
+  config:
+    regex_match:
+    - (?i)(설명|explain|audience|대상|Audience|목적)
