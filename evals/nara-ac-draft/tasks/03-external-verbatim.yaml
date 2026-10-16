@@ -1,0 +1,24 @@
+id: external-verbatim-001
+name: "Localize a Jira ticket and keep its AC verbatim"
+description: |
+  Given a Jira ticket that already has acceptance criteria, ac-draft writes
+  docs/requirements.md with the ticket as a source and copies the three AC
+  word for word. It must not draft extra AC or tag the source AC as drafts.
+tags:
+  - external-source
+  - happy-path
+inputs:
+  prompt: "PROJ-1234 요구사항 정리해줘. 티켓 본문은 첨부한 파일이야."
+  files:
+    - path: jira-with-ac.md
+expected:
+  output_contains:
+    - "proj-1234"
+    - "배송 예정일이 정해지지 않은 주문은 칼럼에 \"미정\"으로 표시한다."
+    - "배송이 완료된 주문은 배송 예정일 대신 배송 완료일을 표시한다."
+    - "browser-visible"
+  output_not_contains:
+    - "[draft]"
+    - "so that"
+  outcomes:
+    - type: task_completed

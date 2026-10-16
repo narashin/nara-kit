@@ -13,7 +13,7 @@ Analyze gap between docs/requirements.md and codebase, producing docs/gap.md wit
 ## 언제 쓰나
 
 - **USE FOR:** "gap", "gap 분석", "구현 얼마나 됐어", "요구사항 대비 진행률", "--verify".
-- **DO NOT USE FOR:** writing requirements (use /nara-prep), code implementation, code review.
+- **DO NOT USE FOR:** writing requirements (use /nara-ac-draft), code implementation, code review.
 
 ## 더 보기
 

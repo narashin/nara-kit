@@ -13,10 +13,10 @@
 
 **접근법:**
 - 버그픽스: 재현 → 실패 테스트(Red) → 수정 → 회귀 테스트 → verify
-- 구현: prep(AC) → plan → TDD → verify(gap + browser AC면 browser-verify)
+- 구현: ac-draft(AC) → plan → TDD → verify(gap + browser AC면 browser-verify)
 
 **착수:** 판단 후 Stage 2 트리거 (herdr가 space=repo@branch 워크트리에서 실행)
-(수동: `/nara-wt <KEY>` → `/nara-prep <KEY>` → `/nara-plan` → `/nara-implement`)
+(수동: `/nara-wt <KEY>` → `/nara-ac-draft <KEY>` → `/nara-plan` → `/nara-implement`)
 ```
 
 ## doc 큐 이슈 (기획)
@@ -28,7 +28,7 @@
 <summary 한 줄 + description 핵심 요약>
 
 **접근법:** 조사 → spec 초안 → 리뷰 (publish는 사람)
-**착수:** Stage 2 트리거 또는 `/nara-prep <KEY>` → `/nara-grill` → spec
+**착수:** Stage 2 트리거 또는 `/nara-ac-draft <KEY>` → `/nara-grill` → spec
 ```
 
 ## 기타 / repo 매핑 없음

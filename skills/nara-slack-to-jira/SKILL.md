@@ -3,7 +3,7 @@ name: nara-slack-to-jira
 description: >-
   Convert Slack thread permalinks into Jira tickets: classify Bug/Feature, dedup, draft → approve → create. English content.
   USE FOR: "slack to jira", "슬랙 티켓화", "스레드 티켓 만들어", Slack permalink + 티켓.
-  DO NOT USE FOR: 버그 원인 분석 (→ /nara-incident), 요구사항 로컬화 (→ /nara-prep), AC 작성 (→ /nara-ac-draft).
+  DO NOT USE FOR: 버그 원인 분석 (→ /nara-incident), 요구사항 정리·AC 작성 (→ /nara-ac-draft).
 disable-model-invocation: true
 ---
 

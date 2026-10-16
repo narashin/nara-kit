@@ -1,5 +1,5 @@
 name: nara-ac-draft-eval
-description: Evaluation suite for ac-draft.
+description: Evaluation suite for ac-draft — external source localization and one-line intent drafting into docs/requirements.md.
 skill: nara-ac-draft
 version: "1.0"
 config:
@@ -12,7 +12,7 @@ metrics:
   - name: task_completion
     weight: 1.0
     threshold: 0.8
-    description: Did the skill produce User Stories with Why, Gherkin AC with AC-IDs, and non-empty Unknown section?
+    description: Did the skill write requirements that keep source AC verbatim, mark drafted AC, and draft US + Gherkin AC with a non-empty Unknown section when there is no source?
 graders:
   - type: code
     name: real_run
@@ -25,17 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: required_sections
-    config:
-      regex_match:
-        - "(?i)(user stor|US-\\d|so that)"
-        - "(?i)(acceptance criteria|AC-\\d|Given|When|Then)"
-        - "(?i)(unknown|needs confirmation)"
-  - type: text
-    name: hallucination_guard
-    config:
-      regex_match:
-        - "(?i)(\\[UNVERIFIED\\]|\\[NEEDS_CONFIRMATION\\]|\\[NOT FOUND\\])"
 tasks:
   - "tasks/*.yaml"

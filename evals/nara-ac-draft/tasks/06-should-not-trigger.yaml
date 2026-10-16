@@ -1,0 +1,18 @@
+id: should-not-trigger-001
+name: "Gap analysis request should not trigger ac-draft"
+description: |
+  A request to measure code against existing requirements belongs to
+  nara-gap. ac-draft must not fetch sources or rewrite requirements.md.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "현재 코드와 요구사항 사이의 갭을 분석해줘"
+  files: []
+expected:
+  output_not_contains:
+    - "US-1"
+    - "docs/requirements.md에 저장"
+    - "requirements.md를 작성"
+  outcomes:
+    - type: task_completed

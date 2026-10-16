@@ -1,6 +1,6 @@
 # 출력 템플릿
 
-산출물: `docs/requirements.md`. 형식은 `prep` 산출물과 동일 구조 — downstream `gap` / `test-discover`가 동일하게 소비.
+산출물: `docs/requirements.md`. 초안 모드의 골격이다. 외부 원본 모드의 frontmatter와 절 채우는 법은 [external-source](external-source.md). 두 모드 모두 downstream `gap` / `test-discover`가 같은 방식으로 읽는다.
 
 ## Frontmatter
 
@@ -15,7 +15,7 @@ confirmed_at: <ISO date when user confirms — initial run에는 omit>
 ---
 ```
 
-`sources: [internal-draft]`로 외부 SoT 부재를 downstream에 명시.
+`sources: [internal-draft]`로 외부 원본이 없음을 downstream에 명시한다. 외부 원본 모드는 `sources:`가 `{id, url, fetched_at}` 목록이다.
 
 ## 본문 구조
 
@@ -72,7 +72,7 @@ Then ...
 |------|------|------|------|
 | Source | ✅ | ❌ | Intent verbatim |
 | User Stories | ✅ | ❌ (≥1) | "so that" 절 의무 |
-| Functional Requirements | ✅ | ❌ (US와 1:1) | prep 규약 — 의역 금지 |
+| Functional Requirements | ✅ | ❌ (US와 1:1) | 의역 금지 |
 | Acceptance Criteria | ✅ | ❌ (≥1) | Gherkin 단일 형식 |
 | Open Questions | ✅ | ✅ (헤더만 + "없음") | blocking만 |
 | Unknown / Needs Confirmation | ✅ | ❌ | never empty — intents zero-ambiguity 아님 |

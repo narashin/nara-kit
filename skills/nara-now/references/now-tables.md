@@ -8,8 +8,8 @@
 |----------|------|------|
 | 0 | 기획 묶음 중 현재 작업(브랜치 이름에 slug 포함)이 `status: drafting` | "기획 작성 중. `/nara-planning <slug>`로 이어서" |
 | 0-bis | main/master 브랜치이고 `drafting` 묶음이 있음 | 묶음이 하나면 `/nara-planning <slug>`, 여럿이면 slug 목록만 보여 주고 고르지 않는다 |
-| 1 | main/master 브랜치 | "메인 브랜치. 새 작업이면 브랜치 생성 후 `/nara-prep`" |
-| 2 | 비-main 브랜치, requirements.md 없음 | "요구사항 미정리. `/nara-prep`으로 요구사항 정리부터" |
+| 1 | main/master 브랜치 | "메인 브랜치. 새 작업이면 브랜치 생성 후 `/nara-ac-draft <티켓 또는 한 줄 의도>`" |
+| 2 | 비-main 브랜치, requirements.md 없음 | "요구사항 미정리. `/nara-ac-draft`로 요구사항 정리부터" |
 | 3 | requirements.md 있음, plan.md 없음 | "요구사항 정리됨. `/nara-plan`으로 작업 단위 분할" |
 | 3-bis | plan.md 있음, **미완료 유닛 존재** | "`{done}/{total}` 완료. 다음: `/nara-implement T-{다음번호}` — {유닛 제목}" |
 | 3-ter | 구현 변경 있음, gap.md 없음 | "구현분 있음. `/nara-gap`으로 verify (코드 AC) + `browser-visible: yes` AC 있으면 `/nara-browser-verify`" |

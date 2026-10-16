@@ -13,7 +13,7 @@ Discover live, parallel-safe, golden-path E2E scenarios and emit a Playwright-re
 ## 언제 쓰나
 
 - **USE FOR:** "골든패스 발굴", "golden path E2E", "Playwright 시나리오 export", "라이브 E2E 시나리오 뽑아", "playwright-ready export", "golden path 시나리오 만들어".
-- **DO NOT USE FOR:** generic/unit/backend scenario discovery (use nara-test-discover), implementing or running Playwright code (use nara-test-implement), reviewing existing scenarios (use nara-test-verify), writing requirements/AC (use nara-prep or nara-ac-draft).
+- **DO NOT USE FOR:** generic/unit/backend scenario discovery (use nara-test-discover), implementing or running Playwright code (use nara-test-implement), reviewing existing scenarios (use nara-test-verify), writing requirements/AC (use nara-ac-draft).
 
 ## 더 보기
 

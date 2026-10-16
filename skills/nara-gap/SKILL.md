@@ -3,7 +3,7 @@ name: nara-gap
 description: >-
   Analyze gap between docs/requirements.md and codebase, producing docs/gap.md with a score (0-100).
   USE FOR: "gap", "gap 분석", "구현 얼마나 됐어", "요구사항 대비 진행률", "--verify".
-  DO NOT USE FOR: writing requirements (use /nara-prep), code implementation, code review.
+  DO NOT USE FOR: writing requirements (use /nara-ac-draft), code implementation, code review.
 ---
 
 # gap — 요구사항 vs 구현 갭 분석
@@ -24,7 +24,7 @@ description: >-
 
 ## 생성 모드
 
-전제: `docs/requirements.md` 존재 필수. 없으면 "/nara-prep 먼저 실행" 안내 후 중단.
+전제: `docs/requirements.md` 존재 필수. 없으면 "/nara-ac-draft 먼저 실행" 안내 후 중단.
 
 판정 룰은 [references/gap-rubric.md](references/gap-rubric.md) 기계 적용. LLM 자의 판단 금지.
 

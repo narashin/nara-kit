@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**61 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**60 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -14,8 +14,7 @@
 
 | Skill | Description / 설명 |
 |-------|---------------------|
-| `nara-prep` | Localize external SoT (Jira/Figma/Confluence) into `docs/requirements.md` + Readiness score / 외부 SoT 로컬화 + 충분성 판정 |
-| `nara-ac-draft` | Generate User Stories + Gherkin AC from one-line intent (no external SoT). Sister of `prep` / 한 줄 의도 → US + Gherkin AC 생성 (외부 SoT 없을 때) |
+| `nara-ac-draft` | Write `docs/requirements.md`: localize an external source keeping its AC verbatim, or draft US + Gherkin AC from a one-line intent / 외부 원본(Jira·Confluence·Figma·붙여 넣은 본문) 로컬화 또는 한 줄 의도 → US + Gherkin AC. 원본에 AC가 없을 때만 `[draft]`로 초안 |
 | `nara-grill` | Pressure-test an idea/design/plan — fact-first, every answerable decision per round (설계 탐색 단계) / 사실 조사 후 답할 수 있는 결정을 한 라운드에 묻고 의존 질문만 미룸 |
 | `nara-research` | Compare external prior art for one pending decision, or distill a source skill/repo into keep/adapt/omit (every source pinned to a revision) → `docs/research/*.md` / 결정 하나를 위한 외부 선행 사례 비교 또는 남의 스킬·repo 증류. 제안만, 적용은 skill-forge·adr |
 | `nara-ask-repo` | Answer one concrete question about a repo's behavior — this repo, another checkout, or a remote GitHub repo pinned to a commit — read-only, `path:line` beside every claim / 저장소 동작 질문 하나에 근거로 답한다 (값 출처·존재 여부·영향 범위·책임 위치, 다른 저장소도) |
@@ -134,15 +133,15 @@ Jira·Slack과 주고받거나 주기적으로 돈다. 스케줄 호스트(cron,
 
 ## Usage / 사용법
 
-**Slash command (명시 호출)** — 정확히 그 스킬만: `/nara-now`, `/nara-prep PROJ-1234`, `/nara-code-review`.
+**Slash command (명시 호출)** — 정확히 그 스킬만: `/nara-now`, `/nara-ac-draft PROJ-1234`, `/nara-code-review`.
 
-**자연어 트리거 (라우팅)** — Claude가 `description`의 `USE FOR` 키워드로 자동 매칭: `"어디까지 했지"` → nara-now, `"요구사항 정리해줘"` → nara-prep, `"리뷰해줘"` → nara-code-review.
+**자연어 트리거 (라우팅)** — Claude가 `description`의 `USE FOR` 키워드로 자동 매칭: `"어디까지 했지"` → nara-now, `"요구사항 정리해줘"` → nara-ac-draft, `"리뷰해줘"` → nara-code-review.
 
 **명시 호출 전용** — 원격에 쓰는 여섯 스킬은 자연어로 안 불린다: `publish-spec`, `spec-revision`(Confluence), `slack-to-jira`, `worklog`, `jira-triage`(Jira·Multica), `release-finalize`(태그 push, prod 배포). 모델이 "준비됐어 보인다"는 판단으로 게시·배포를 시작하지 못하게 하려는 것이다. 대가로 이 여섯의 description은 컨텍스트에 실리지 않아 USE FOR 매칭이 없다. Claude Code는 `disable-model-invocation: true`, Codex는 `agents/openai.yaml`의 `allow_implicit_invocation: false`로 걸고, 둘이 어긋나면 `tools/check-docs.py`가 실패한다.
 
 **워크플로우 진입**: **`nara-now`** — 상태를 보고 다음 행동을 명령 형태로 제시한다. 워크플로우 진입용 별도 스킬은 없다.
 
-**첫 사용 권장 순서**: `nara-now` (상태 점검) → `nara-prep <TICKET>` (요구사항 로컬화) → `nara-plan` (작업 단위) → `nara-implement` → `nara-gap` (verify) → `nara-code-review` → `nara-pr` → `nara-worklog` (Jira 시간 기록, 미기록분은 `nara-pr`이 알려준다).
+**첫 사용 권장 순서**: `nara-now` (상태 점검) → `nara-ac-draft <TICKET>` (요구사항 정리) → `nara-plan` (작업 단위) → `nara-implement` → `nara-gap` (verify) → `nara-code-review` → `nara-pr` → `nara-worklog` (Jira 시간 기록, 미기록분은 `nara-pr`이 알려준다).
 
 ## Workflow / 워크플로우
 
@@ -158,7 +157,7 @@ Jira·Slack과 주고받거나 주기적으로 돈다. 스케줄 호스트(cron,
 
 ```mermaid
 flowchart LR
-    E["prep / ac-draft<br>(entry · AC 확정)"] --> P["plan<br>(nara-plan)"] --> X["execute<br>(nara-implement)"] --> V["verify<br>2-track"] --> R[code-review] --> RF[retro] --> F([finish])
+    E["ac-draft<br>(entry · AC 확정)"] --> P["plan<br>(nara-plan)"] --> X["execute<br>(nara-implement)"] --> V["verify<br>2-track"] --> R[code-review] --> RF[retro] --> F([finish])
     B["grill<br>large/greenfield"] -. 조건부 .-> P
     G["gap<br>brownfield 인수인계"] -. 조건부 .-> P
     V --- V1["코드 AC → gap"]
@@ -174,7 +173,7 @@ flowchart LR
     style RF fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
 ```
 
-- **진입 (조건부)**: 외부 SoT 있으면 `prep`, 한 줄 의도면 `ac-draft`. AC Gate 통과 후 아래 순서.
+- **진입**: `ac-draft`. 외부 원본이 있으면 가져와 옮기고, 한 줄 의도면 초안을 쓴다. AC Gate 통과 후 아래 순서.
 - **조건부 satellites**: `grill`(large/greenfield 설계 검증), `gap`(brownfield 인수인계 — 구현 전 진행률 파악이 먼저 필요할 때만), `adr`(구조 결정 시), impl-notes(medium/large — `nara-implement`가 소유). `small`/bugfix는 전부 skip하고 5단계 직행.
 - **verify는 2-track**: 코드 AC는 `gap`(이 시점에 `gap.md` 생성+판정 1회), `browser-visible: yes` AC는 `browser-verify`(런타임 증거 기반 축별 판정). 두 트랙이 판정 못 한 항목(gap의 `Needs Confirm`, browser-verify의 `Unverifiable`)은 `qa-sheet`가 사람이 볼 체크리스트로 넘긴다(판정이 아니라 인계). gap이 spine 맨 앞에서 빠진 이유는 `docs/adr/0001-verify-browser-ac-at-runtime.md` (repo-local, 배포 대상 아님).
 - **plan = `nara-plan`** (수직 작업 단위 → `docs/plan.md`), **execute = `nara-implement`** (검증 게이트 + TDD 옵션, 자동 커밋 없음 → `/nara-commit`).
@@ -186,10 +185,9 @@ flowchart LR
 flowchart LR
     RM["roadmap<br>방향·마일스톤"] -. 방향이 없을 때 .-> C
     RS["research<br>외부 선행 사례"] -. 조건부 .-> B
-    C{clarity?} -->|clear| B["grill"] --> PR[prep]
-    C -->|vague| AC[ac-draft]
-    PR --> AG{AC Gate}
-    AC --> AG
+    C{clarity?} -->|clear| B["grill"] --> AC[ac-draft]
+    C -->|vague| AC
+    AC --> AG{AC Gate}
     AG --> S[spec] --> PUB[publish-spec] --> RF[retro] --> E([END])
     PUB -. days/weeks later .-> REV[spec-revision v2,v3]
 
@@ -210,13 +208,12 @@ flowchart LR
 
 | Gate | Where | Mechanism | 강도 |
 |------|-------|-----------|------|
-| **AC Gate** | `prep` / `ac-draft` (plan 진입 전) | `## Acceptance Criteria` 비면 차단. Gherkin 빈 템플릿만 제시. SoT에 AC 있으면 자동 통과 | ★★★★ |
+| **AC Gate** | `ac-draft` (plan 진입 전) | `## Acceptance Criteria` 비면 차단. Gherkin 빈 템플릿만 제시. SoT에 AC 있으면 자동 통과 | ★★★★ |
 | **P0 Hard Gate** | `gap` | P0 Missing ≥ 1이면 점수 무관 차단. 점수 ≥ 80 + P0 0건만 review-ready | ★★★★ |
 | **Plan Approval** (folded) | `plan` (단계 내) | plan에 흡수된 AskUserQuestion 승인 전 코드 변경 금지. 별도 phase 아님 | ★★★★ |
 | **Implementation Notes Gate** (scope-scaled) | `implement` (medium/large) | medium/large만: impl-notes 생성 + `📝 notes:` trailing + verify 빈 notes reject. `small` skip | ★★★ |
 | **Fix-Ledger Verification** | `code-review` (fix 라운드마다) | 라운드 시작 파일 hash 스냅샷 → issue 단위 hunk·validation proof 대조 (claimed-but-unchanged / changed-but-unclaimed / changed-but-unresolved), mismatch → escalate + trailing status | ★★★ |
 | **Notes Reconciliation** | `gap --verify` | impl-notes Deviations ↔ gap Missing 매칭 → Agreed Exception 후보. Open Q [revise] → Spec Revise Candidates | ★★★ |
-| **Readiness Gate** | `prep` | 4기준 (Functional / UNVERIFIED / blocking-Q / Goal) 충족으로 다음 단계 분기 | ★★★ |
 
 강도: ★★ 텍스트 룰 · ★★★ trailing/preflight · ★★★★ state file/AskUserQuestion · ★★★★★ hook (shell 강제).
 
@@ -226,8 +223,7 @@ flowchart LR
 
 | File | Generated by | Purpose |
 |------|--------------|---------|
-| `docs/requirements.md` | `prep` / `ac-draft` | 외부 SoT 로컬화 + `## Acceptance Criteria`. 모든 후속 스킬의 입력 SoT |
-| `docs/sources/<id>.raw.md` | `prep` | 외부 SoT verbatim 원문 (AC 원본 보존) |
+| `docs/requirements.md` | `ac-draft` | 외부 원본 로컬화 또는 초안 + `## Acceptance Criteria`. 모든 후속 스킬의 입력 SoT |
 | `docs/gap.md` | `gap` | 요구 vs 구현 갭. P0/P1/P2 + Score + Hard Gate. AC 본문 = 자동 P0 |
 | `docs/gap-history.md` | `gap` | append-only score-trend 로그 (gen/verify). gap.md 덮어써져도 점수 추이 보존 |
 | `docs/plan.md` | `plan` (nara-plan) | 구현 계획 — 독립 검증 가능한 수직 작업 단위 (T-N + AC + 요구사항 추적). `nara-implement`의 입력. (기획 산출물 `docs/plan/*.md` 디렉터리와 구분) |
@@ -238,7 +234,7 @@ flowchart LR
 | `docs/plan/*.md` | 기획 흐름 | spec / RFC / design artifact (AC 박힌 채) |
 | `docs/research/YYMMDD-<slug>.md` | `research` | 결정 하나의 외부 선행 사례 비교 또는 증류 제안. 출처 revision 고정, 인용된 주장, keep/adapt/omit 표. 재조사는 갱신 절 append |
 
-**AC lifecycle**: AC는 모든 스킬의 공유 SoT. `prep`이 외부 SoT의 AC를 **verbatim 보존** → `docs/requirements.md`의 `## Acceptance Criteria`에 박힘 → `gap`(P0 자동분류) / `test-discover`(시나리오 1:1) 가 소비. SoT에 AC 없으면 `ac-draft`가 작성 강제.
+**AC lifecycle**: AC는 모든 스킬의 공유 SoT. `ac-draft`가 외부 원본의 AC를 **verbatim 보존** → `docs/requirements.md`의 `## Acceptance Criteria`에 박힘 → `gap`(P0 자동분류) / `test-discover`(시나리오 1:1) 가 소비. 원본에 AC가 없으면 `ac-draft`가 `[draft]`로 초안을 쓰고 사용자 확정을 받는다.
 
 ## Output Contract / 출력 규약
 

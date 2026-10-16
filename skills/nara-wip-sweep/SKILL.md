@@ -7,7 +7,7 @@ description: >-
   USE FOR: "In Progress 정리", "진행 중인데 안 하는 티켓", "wip 쓸어내", "티켓 상태 정리",
   "내 In Progress 몇 개야", "wip-sweep".
   DO NOT USE FOR: 큐 채우기 (→ nara-jira-triage), 보드 상태 미러 (→ jira-reconcile 스크립트),
-  요구사항 로컬화 (→ nara-prep), 구현 (→ nara-implement).
+  요구사항 로컬화 (→ nara-ac-draft), 구현 (→ nara-implement).
 ---
 
 # nara-wip-sweep

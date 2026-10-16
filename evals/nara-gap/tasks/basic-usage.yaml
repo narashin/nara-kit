@@ -17,6 +17,6 @@ expected:
     - "Score"
   output_not_contains:
     - "git commit"
-    - "/prep"
+    - "ac-draft"
   outcomes:
     - type: task_completed

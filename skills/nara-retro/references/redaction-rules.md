@@ -19,7 +19,7 @@ retro skill-incident 모드의 privacy gate 전체 규약. 이 파일은 **공�
 | 출력 형태에 대한 불만 | `source_type=output_shape_feedback` |
 
 > 주의: nara-kit 자신의 자산은 노출 OK — 유출 대상은 **소비 프로젝트** 자산이다.
-> - nara-kit 스킬/command 이름 (`gap`, `commit`, `prep` 등)
+> - nara-kit 스킬/command 이름 (`gap`, `commit`, `ac-draft` 등)
 > - nara-kit 컨벤션 경로 (`docs/requirements.md`, `docs/gap.md`, `.claude/overrides/<skill>.md` 등)
 >
 > 이들은 over-redact하지 말 것 — 개선안의 유용성이 떨어진다. `<internal-path>`로 가리는 건 *소비 프로젝트* 경로에만.

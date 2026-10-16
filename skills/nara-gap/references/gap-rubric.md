@@ -243,7 +243,7 @@ N          = Implemented + Needs Confirm     # §3 계열 확정 후의 카운�
 | `Deviations` (DEV-*) | Missing 또는 Partial | **Agreed Exception 후보**. 사용자 확정 시 Agreed Exceptions로 이동. 점수 재산출 시 분모에서 제외 |
 | `Design decisions` (DD-*) | Implemented | Evidence 보강. gap.md `Implemented` 표 `Why` 컬럼에 DD-ID 인용 |
 | `Tradeoffs` (TO-*) | 모든 분류 | gap.md `Needs Confirm` 섹션에 reviewer 컨텍스트로 추가 (점수 영향 X) |
-| `Open questions [Type: revise]` | (별도) | gap.md 새 섹션 `## Spec Revise Candidates`에 surface. 다음 `/nara-prep` 재실행 후보 |
+| `Open questions [Type: revise]` | (별도) | gap.md 새 섹션 `## Spec Revise Candidates`에 surface. 다음 `/nara-ac-draft` 재실행 후보 |
 | `Open questions [Type: confirm]` | 모든 분류 | `Needs Confirm` 섹션에 합류 |
 
 ### 매칭 규칙

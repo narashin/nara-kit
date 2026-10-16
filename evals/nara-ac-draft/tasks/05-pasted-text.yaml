@@ -1,0 +1,24 @@
+id: pasted-text-001
+name: "Pasted verbal requirements keep stated facts and mark the rest"
+description: |
+  The user pastes requirements in chat with no ticket. ac-draft treats the
+  text as the source, keeps OAuth2 and Redis as stated, and marks values the
+  text does not give (session lifetime, error codes) as unverified.
+tags:
+  - external-source
+  - edge-case
+inputs:
+  prompt: "로그인 기능 만들어야 해. OAuth2 쓰고, 세션은 Redis에 저장. 요구사항 정리해줘"
+  files: []
+expected:
+  output_contains:
+    - "requirements"
+    - "OAuth2"
+    - "Redis"
+    - "(?i)\\[UNVERIFIED"
+  output_not_contains:
+    - "30분"
+    - "24시간"
+    - "코드 리뷰"
+  outcomes:
+    - type: task_completed

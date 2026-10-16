@@ -4,7 +4,7 @@ description: >-
   Split a spec or request into independently verifiable VERTICAL work units — each with its own goal, scope, acceptance criteria, and verification — written to docs/plan.md.
   This is the plan step. Never implements code or posts to a remote tracker.
   USE FOR: "plan", "계획 짜줘", "작업 나눠", "수직 분할", "작업 단위로 쪼개", 구현 계획 단계.
-  DO NOT USE FOR: 방향·마일스톤 로드맵 (→ nara-roadmap), 스펙 작성 (→ nara-prep), 구현 (→ nara-implement), 원격 Jira 티켓 생성 (→ nara-slack-to-jira).
+  DO NOT USE FOR: 방향·마일스톤 로드맵 (→ nara-roadmap), 요구사항 정리 (→ nara-ac-draft), 구현 (→ nara-implement), 원격 Jira 티켓 생성 (→ nara-slack-to-jira).
 ---
 
 # nara-plan — 수직 작업 단위 분할

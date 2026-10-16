@@ -3,7 +3,7 @@ name: nara-publish-spec
 description: >-
   Publish a local spec/plan markdown file to Confluence wiki via dry-run, confirm, and publish flow.
   USE FOR: "publish", "wiki에 올려", "confluence에 게시", "publish-spec", "스펙 게시".
-  DO NOT USE FOR: creating specs from scratch (use nara-prep), editing existing Confluence pages directly.
+  DO NOT USE FOR: creating requirements from scratch (use nara-ac-draft), editing existing Confluence pages directly.
 disable-model-invocation: true
 ---
 

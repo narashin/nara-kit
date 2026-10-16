@@ -1,6 +1,6 @@
 # nara-kit
 
-Agent Skills repo — 61 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
+Agent Skills repo — 60 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
 
 ## Structure
 
@@ -106,8 +106,8 @@ Reference suite: `evals/nara-gap/validation.yaml` — 8/8 discriminate. Run arti
 
 Recommended order, not an executed pipeline:
 
-- **개발**: (prep | ac-draft) → plan → implement → verify → code-review → retro (handoff whenever a session stops mid-work). Verify is 2-track — code AC via `nara-gap`, `browser-visible: yes` AC via `nara-browser-verify` (see `docs/adr/0001-verify-browser-ac-at-runtime.md`). What either track cannot judge (gap's `Needs Confirm`, browser-verify's `Unverifiable`) goes to a human through `nara-qa-sheet` — a handoff, not a third verdict. Conditional: grill (large/greenfield), gap up front (brownfield handover), adr (structural decision).
-- **기획**: (prep | ac-draft) → grill → spec → claim-audit → publish-spec → retro
+- **개발**: ac-draft → plan → implement → verify → code-review → retro (handoff whenever a session stops mid-work). Verify is 2-track — code AC via `nara-gap`, `browser-visible: yes` AC via `nara-browser-verify` (see `docs/adr/0001-verify-browser-ac-at-runtime.md`). What either track cannot judge (gap's `Needs Confirm`, browser-verify's `Unverifiable`) goes to a human through `nara-qa-sheet` — a handoff, not a third verdict. Conditional: grill (large/greenfield), gap up front (brownfield handover), adr (structural decision).
+- **기획**: ac-draft → grill → spec → claim-audit → publish-spec → retro
 - The Implementation Notes Gate contract now lives in `nara-implement` (`references/implementation-notes.md`) — it moved with the retirement, it was not dropped.
 
 See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagrams.
@@ -168,7 +168,7 @@ Two traps, both hit in practice:
 **Renaming a skill is breaking:** consumers keep the old copy under the old name; they must remove it and reinstall.
 
 **Verify after release (consumer side):**
-- `ls ~/.claude/skills | grep -c '^nara-'` → 60 (+ `naranizer` = 61)
+- `ls ~/.claude/skills | grep -c '^nara-'` → 59 (+ `naranizer` = 60)
 - Run a quick smoke test of the changed skill in a fresh session
 
 Note: `claude-mem:version-bump` no longer applies — there are no manifests to bump.

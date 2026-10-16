@@ -2,13 +2,13 @@
 
 ## 절대 규칙
 
-1. **Gherkin 단일 형식 강제** — v0는 rule-list, checklist, free-form prose 혼용 금지. AC는 Given/When/Then만.
+1. **Gherkin 단일 형식 강제** — v0는 rule-list, checklist, free-form prose 혼용 금지. AC는 Given/When/Then만. 이 스킬이 만드는 AC에만 해당한다. 외부 원본의 AC는 원문 형식 그대로 둔다.
 2. **Why 의무** — User Story "so that <benefit>" 절 없으면 거부. 의도 자체가 얕아 작성 불가능하면 사용자에게 통지.
 3. **`[UNVERIFIED]` 마크 의무** — intent/code에 근거 없는 모든 구체값 (API path, 필드명, 임계값, 에러코드, 응답 시간 등). 환각 차단 1차 방어.
 4. **`Unknown / Needs Confirmation` never empty** — intents는 zero-ambiguity 아님. 비었으면 Step 2 재실행.
 5. **AC-ID 안정성** — 재실행 시 기존 ID 유지. 신규 AC만 다음 번호. 삭제 시 `[DEPRECATED]` 마크 (ID 재사용 금지).
 6. **구현 디테일 금지** — observable behavior만. HTTP status code, JWT, DB column type, framework 이름 등 작성 금지.
-7. **FR↔AC 1:1** — prep 규약 준수. US를 verbatim 재기술해 FR로 박음. 의역/재구성 금지.
+7. **FR↔AC 1:1** — US(외부 원본 모드면 원문 문장)를 verbatim 재기술해 FR로 박음. 의역/재구성 금지.
 8. **사용자 확정 루프** — 출력 후 add/remove/edit 수용. 확정 시 frontmatter `confirmed_at` 기록.
 
 ## 환각 방지 체크리스트
@@ -27,7 +27,7 @@
 | User Story 없이 AC만 출력 | Why 단절, downstream 모호 | US 없이 AC 출력 금지 |
 | 구체 임계값 가공 ("100ms", "최대 50개") | 환각 | `[UNVERIFIED]` 또는 `Open Questions` |
 | Unknown 섹션 비움 | 발견 미달 | Step 2 재실행 의무 |
-| FR을 AC와 다르게 의역 | prep 규약 위반 | US verbatim 재기술 |
+| FR을 AC와 다르게 의역 | FR↔AC 대응이 깨짐 | US verbatim 재기술 |
 | 구현 디테일 ("HTTP 200 반환", "JWT 검증") | 층위 침범 | observable behavior로 재기술 |
 | AC-ID 재실행마다 재번호 | downstream 매핑 깨짐 | 기존 ID 유지, 신규만 추가 |
 | Why 작성 어려워 omit | User Story 자격 미달 | 거부 — intent 보강 요청 |
@@ -44,7 +44,7 @@
 - **Artifact Paths**: `docs/requirements.md`
 - **Next Action**: `nara-gap` 또는 `nara-grill`
 
-prep 우회 명시: "외부 SoT 부재, internal-draft로 requirements.md 작성됨. prep 단계 건너뜀."
+외부 원본 모드에서 만든 AC가 있으면 Evidence에 `[draft]` 수를 적는다.
 
 ## Downstream Traceability
 

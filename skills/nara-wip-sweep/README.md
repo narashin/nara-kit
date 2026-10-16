@@ -19,7 +19,7 @@
 
 - 큐 채우기 → [nara-jira-triage](../nara-jira-triage/SKILL.md)
 - 보드 상태 미러 → `jira-reconcile.sh` (git 밖 크론 스크립트)
-- 요구사항 로컬화 → [nara-prep](../nara-prep/SKILL.md)
+- 요구사항 로컬화 → [nara-ac-draft](../nara-ac-draft/SKILL.md)
 - 구현 → [nara-implement](../nara-implement/SKILL.md)
 
 ## 왜 전이하지 않나

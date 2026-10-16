@@ -4,7 +4,7 @@ description: >-
   Pressure-test an idea, plan, design, ticket, or RFC by researching facts first, then asking every currently answerable decision in one round, deferring only questions that depend on an open answer.
   Silence is never consent; no source is mutated. Verdict: confirmed | pending | aborted | Blocked.
   USE FOR: "grill", "찔러줘", "이 설계 구멍", "설계 검증", "설계 리뷰", "design review", "API 설계 검토", "리팩터링 계획 검토", "모듈 경계", "계획 반박해줘", brainstorm/design exploration before committing.
-  DO NOT USE FOR: 외부 SoT 로컬화 (→ nara-prep), AC 초안 생성 (→ nara-ac-draft), 코드 리뷰 (→ nara-code-review), 작업 분할·계획 (→ nara-plan).
+  DO NOT USE FOR: 요구사항 정리·AC 초안 (→ nara-ac-draft), 코드 리뷰 (→ nara-code-review), 작업 분할·계획 (→ nara-plan).
 ---
 
 # nara-grill — 집중 검증
@@ -28,7 +28,7 @@ description: >-
 
 대상이 설계(구현 전 설계, 대규모 리팩터링 계획, API 설계, 모듈 경계)면 사실 조사와 질문 선정에 [design-probes](references/design-probes.md)의 압박 축을 사용한다. 대상이 제품 기획(기능 PRD, `docs/product/<slug>/` 기획 묶음, 정책·흐름·화면 구조)이면 [product-probes](references/product-probes.md)의 압박 축을 같은 방식으로 쓴다. 이미 코드 diff가 존재하면 이 스킬이 아니라 `nara-code-review`로 리다이렉트한다.
 
-같은 domain 용어가 다른 의미로 쓰이거나 인접 개념 구분이 결정에 필요하면 그 의미를 질문한다. 확정된 용어는 이후 `nara-prep`/`nara-ac-draft` 산출물에 담을 수 있지만, 이 스킬은 glossary·domain 문서·ADR을 자동 생성·수정하지 않는다.
+같은 domain 용어가 다른 의미로 쓰이거나 인접 개념 구분이 결정에 필요하면 그 의미를 질문한다. 확정된 용어는 이후 `nara-ac-draft` 산출물에 담을 수 있지만, 이 스킬은 glossary·domain 문서·ADR을 자동 생성·수정하지 않는다.
 
 사용자가 멈추면 완료로 보고하지 않고 `pending`(답변 대기) / `aborted`(사용자 중단) / `Blocked`(충돌 또는 필수 근거 부족) 중 하나로 보고한다.
 

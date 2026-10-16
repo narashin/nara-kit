@@ -2,7 +2,7 @@
 
 `jira_create_issue` 호출 시 `is_description_markdown=true` (그래야 `##` 헤더가 렌더링됨).
 
-## 창작 금지 규율 (prep/incident 차용)
+## 창작 금지 규율 (ac-draft/incident 차용)
 
 - 스레드에 없는 값(repro steps·environment·impact)은 **창작 금지** → `_not specified_` / `_TBD_` 표기
 - Slack permalink + reporter handle + **원문 verbatim 인용**(한국어 보존)은 항상 포함 → 추적성. 번역 gist는 영어, 원문은 손실 없이 복원 가능

@@ -51,7 +51,7 @@ reviewer context로 합류한 항목 (rubric §7 Tradeoffs/Open Q[confirm])은 P
 ### Spec Revise Candidates (선택 — gap --verify Notes Reconciliation 시만)
 | ID | Topic | Type | Context | Source |
 
-`Source` 형식: `implementation-notes.md OQ-<N>`. 다음 `/nara-prep` 재실행 후보 표시.
+`Source` 형식: `implementation-notes.md OQ-<N>`. 다음 `/nara-ac-draft` 재실행 후보 표시.
 
 ## Next Actions
 1. {P0 미구현 우선}

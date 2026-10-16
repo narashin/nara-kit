@@ -53,7 +53,7 @@ description: >-
 
 기본은 대화다. 대화에서는 섹션 이름을 굵은 줄로 쓰고 헤더를 쓰지 않는다. 사용자가 저장을 명시하면 같은 내용을 `docs/plan/roadmap-<slug>.md` 한 파일에 `##` 섹션으로 쓴다. 골격과 예시는 [roadmap-format](references/roadmap-format.md).
 
-부수효과가 없다. 티켓 생성, 구현, 담당 배정, 원격 게시, 다른 스킬 자동 호출을 하지 않는다. 다음 경로는 쓸모 있을 때만 하나 이름 붙인다: 외부 접근법 비교 `nara-research`, 계획 찔러보기 `nara-grill`, 요구사항 `nara-ac-draft` / `nara-prep`, 고른 단계의 코드 작업 분할 `nara-plan`.
+부수효과가 없다. 티켓 생성, 구현, 담당 배정, 원격 게시, 다른 스킬 자동 호출을 하지 않는다. 다음 경로는 쓸모 있을 때만 하나 이름 붙인다: 외부 접근법 비교 `nara-research`, 계획 찔러보기 `nara-grill`, 요구사항 `nara-ac-draft`, 고른 단계의 코드 작업 분할 `nara-plan`.
 
 ## Receipt (로드맵을 냈을 때)
 

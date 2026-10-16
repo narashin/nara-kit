@@ -1,0 +1,22 @@
+id: external-missing-ac-001
+name: "Draft AC only where the source has none, and tag them"
+description: |
+  The ticket has a description but an empty AC field. ac-draft keeps the
+  description as the source, drafts Gherkin AC, and tags each drafted AC
+  [draft] so the user can tell them from source AC.
+tags:
+  - external-source
+  - edge-case
+inputs:
+  prompt: "PROJ-2001 요구사항 정리해줘. 티켓 본문은 첨부한 파일이야."
+  files:
+    - path: jira-without-ac.md
+expected:
+  output_contains:
+    - "proj-2001"
+    - "[draft]"
+    - "Given"
+    - "Then"
+    - "(?i)(unknown|needs confirmation|open question)"
+  outcomes:
+    - type: task_completed

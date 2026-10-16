@@ -66,7 +66,8 @@ right:
     코드 품질 축은 다루지 않습니다. nara-code-review 로 넘기십시오.
 wrong:
   basic-usage-001: 이 변경사항의 코드 품질을 검토했습니다. 네이밍과 에러 처리에 개선 여지가 있습니다.
-  edge-case-001: docs/requirements.md 가 없습니다. /prep 을 먼저 실행하십시오. gap.md 재검증 불가. Score 산출 불가.
+  # Observed with /prep; the redirect target is now nara-ac-draft (prep merged 2026-10-16).
+  edge-case-001: docs/requirements.md 가 없습니다. /nara-ac-draft 를 먼저 실행하십시오. gap.md 재검증 불가. Score 산출 불가.
   evidence-path-audit-001: 'src/list/sort.ts:400 은 범위 밖이라 재grep 으로 :14 로 교체하고 Implemented 유지. src/list/removed-filter.ts
     는 없어 Needs Confirm.
 

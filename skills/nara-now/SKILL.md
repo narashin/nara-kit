@@ -29,17 +29,17 @@ description: >-
 |------|------|------|
 | ≤ 3일 | fresh | 정상 진행 |
 | 4-7일 | aging | 사용자에게 재fetch 권고 (선택) |
-| > 7일 | stale | "requirements.md 7일 이상 경과. `/nara-prep` 재실행 권고" 우선 표면화 |
+| > 7일 | stale | "requirements.md 7일 이상 경과. `/nara-ac-draft <원본>` 재실행 권고" 우선 표면화 |
 
-frontmatter에 `fetched_at` 없거나 `sources` 배열 누락 → `legacy prep` 표시 + 사용자에게 마이그레이션 안내.
+`sources: [internal-draft]`(원본 없는 초안)는 경과 판정을 하지 않는다. 그 밖에 `fetched_at`이나 `sources` 배열이 없으면 `legacy requirements` 표시 + `/nara-ac-draft`로 다시 쓰기를 안내한다.
 
 ## 판단 + 출력
 
 수집 결과로 판단 후 추천. Load [references/now-tables.md](references/now-tables.md) for judgment tables and output format.
 
-핵심 로직: **현재 작업 기획 묶음이 `drafting` → `/nara-planning <slug>`** | main 브랜치 → `/nara-prep` | requirements 없음 → `/nara-prep` | **requirements stale (>7일) → `/nara-prep` 재실행 권고** | plan 없음 → `/nara-plan` | **plan에 미완료 유닛 있음 → `/nara-implement T-N`(다음 유닛 번호를 실제로 박아서)** | 전 유닛 done, gap 없음 → verify (`/nara-gap` + browser AC면 `/nara-browser-verify`) | **P0 Missing ≥ 1 → P0 보완 (점수 무관)** | P0 0 + gap < 80 → 실행 방법 판단 | P0 0 + gap ≥ 80 → 리뷰/마무리 (`Needs Confirm`·`Unverifiable` 잔존 시 `/nara-qa-sheet` 인계 한 줄 추가).
+핵심 로직: **현재 작업 기획 묶음이 `drafting` → `/nara-planning <slug>`** | main 브랜치 → `/nara-ac-draft` | requirements 없음 → `/nara-ac-draft` | **requirements stale (>7일) → `/nara-ac-draft <원본>` 재실행 권고** | plan 없음 → `/nara-plan` | **plan에 미완료 유닛 있음 → `/nara-implement T-N`(다음 유닛 번호를 실제로 박아서)** | 전 유닛 done, gap 없음 → verify (`/nara-gap` + browser AC면 `/nara-browser-verify`) | **P0 Missing ≥ 1 → P0 보완 (점수 무관)** | P0 0 + gap < 80 → 실행 방법 판단 | P0 0 + gap ≥ 80 → 리뷰/마무리 (`Needs Confirm`·`Unverifiable` 잔존 시 `/nara-qa-sheet` 인계 한 줄 추가).
 
-**추천은 실행 가능한 명령 형태로 낸다** — "구현하세요"가 아니라 `/nara-implement T-2`. 인자가 있는 스킬은 인자까지 채운다(`/nara-prep PROJ-123`, `/nara-browser-verify --url …`). 그대로 복사해 붙일 수 있어야 한다.
+**추천은 실행 가능한 명령 형태로 낸다** — "구현하세요"가 아니라 `/nara-implement T-2`. 인자가 있는 스킬은 인자까지 채운다(`/nara-ac-draft PROJ-123`, `/nara-browser-verify --url …`). 그대로 복사해 붙일 수 있어야 한다.
 
 **Handoff 우선순위**: `docs/handoff.md` 존재하면 다른 추천보다 먼저 표면화. "이전 세션에서 X 작업 중단, Y 질문 미해결" 형태로 1-2줄 요약 후 그 다음 액션 추천.
 

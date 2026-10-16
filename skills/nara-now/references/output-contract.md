@@ -55,7 +55,7 @@ Next Action 규칙:
 
 ## 3-bis. 주장 provenance 라벨 (4-tier)
 
-§3 상태 라벨이 **행위 상태**(기록/적용/격상/스킵)라면, provenance 라벨은 **주장의 근거 수준**이다 — 관찰인가 추론인가 결정인가 제안인가. gap·retro·incident·code-review·prep이 각자 "evidence" 의미를 재발명하지 않도록 **단일 어휘** 사용. 주장의 근거가 자명하지 않을 때 붙인다.
+§3 상태 라벨이 **행위 상태**(기록/적용/격상/스킵)라면, provenance 라벨은 **주장의 근거 수준**이다 — 관찰인가 추론인가 결정인가 제안인가. gap·retro·incident·code-review·ac-draft가 각자 "evidence" 의미를 재발명하지 않도록 **단일 어휘** 사용. 주장의 근거가 자명하지 않을 때 붙인다.
 
 | 라벨 | 의미 | 규칙 |
 |------|------|------|
@@ -129,7 +129,7 @@ side effects:
 
 ## 7. Long-running 진행 보고
 
-다단계 스킬 (code-review multi-agent, prep multi-source, test-discover 4-stage) 중간 보고:
+다단계 스킬 (code-review multi-agent, ac-draft multi-source, test-discover 4-stage) 중간 보고:
 
 ```
 (2/5) Architecture agent 완료
@@ -195,14 +195,13 @@ vs 단순 추천:
 - next: <skill 1-2개>
 ```
 
-### /nara-prep
+### /nara-ac-draft
 ```
-요구사항 로컬화 완료 (recorded only).
+요구사항 정리 완료 (recorded only).
 - artifact: `docs/requirements.md`
-- sources: <n> · UNVERIFIED: <n>
+- sources: <n> (internal-draft면 0) · AC <n> (원문 <a> / [draft] <b>) · UNVERIFIED: <n>
 - side effects: jira/confluence read N건
-- readiness: <READY 4/4 | PARTIAL 2-3/4 | INSUFFICIENT 0-1/4>
-- next: /nara-gap | ooo interview
+- next: /nara-plan | [draft] AC 확정 요청
 ```
 
 ### /nara-gap
@@ -355,7 +354,7 @@ EPT 완료 (applied).
 
 ## 13. 점진 적용
 
-- ✅ 1차 (워크플로우 골격): `/nara-now`, `/nara-prep`, `/nara-gap`, `/nara-retro`, `/nara-handoff`
+- ✅ 1차 (워크플로우 골격): `/nara-now`, `/nara-ac-draft`, `/nara-gap`, `/nara-retro`, `/nara-handoff`
 - ✅ 2차 (코드 라이프사이클): `/nara-commit`, `/nara-pr`, `/nara-code-review`, `/nara-pr-respond`, `/nara-publish-spec`
 - ✅ 3차 선별 (문서·메타): `/nara-rfc`, `/nara-adr`, `/nara-skill-forge`, `/nara-empirical-prompt-tuning`
 - 일반 원칙 흡수 (명시 receipt 없이 CLAUDE.md 4요소 자동 적용): `/nara-explain`, `/nara-incident`, `/nara-incident-fix`, `/nara-test-discover`, `/nara-test-verify`, `/nara-test-implement`, `/nara-design-md`, `/nara-spec-revision`

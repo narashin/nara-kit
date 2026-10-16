@@ -14,6 +14,6 @@ expected:
     - "gap.md"
     - "Score"
   output_not_contains:
-    - "/prep"
+    - "ac-draft"
   outcomes:
     - type: task_completed

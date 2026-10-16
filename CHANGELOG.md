@@ -11,6 +11,15 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+> **업그레이드 시 수동 조치 필요.** `nara-prep`이 없어졌다. `rm -rf ~/.claude/skills/nara-prep` (Codex는 `~/.codex/skills/nara-prep`) 후 다시 설치한다. `/nara-prep`을 부르는 Multica autopilot 지침이나 개인 규칙 파일은 `/nara-ac-draft`로 바꿔야 한다. 스킬 파일만 바꿔서는 이미 등록된 autopilot 사본이 바뀌지 않는다.
+
+### Changed (breaking: skill removal)
+- **`nara-prep`을 `nara-ac-draft`에 합쳤다.** 이제 `docs/requirements.md`를 쓰는 입구는 ac-draft 하나다. 티켓 ID나 URL, 붙여 넣은 본문을 받으면 원문을 가져와 AC를 그대로 옮기고, 한 줄 의도를 받으면 지금처럼 US와 Gherkin AC를 만든다. 원본에 AC가 없을 때만 초안을 쓰고 `[draft]`를 붙여 원문 AC와 구분한다. 예전에는 prep이 AC 없음으로 막히면 ac-draft로 넘어가야 했다
+  - 60일 세션 기록(Claude Code + Codex 499개)에서 prep 호출은 0건이었다. 이름이 걸린 2개 세션은 nara-kit을 고치던 세션이라 본문 언급이었다. Multica jira-drain 안의 호출은 이 집계에 안 잡힌다
+  - 가져온 규칙은 둘이다: 원문 AC를 고치거나 보강하지 않기, 원문에 없는 FR·구체값을 만들지 않기(`[UNVERIFIED]`). 버린 것: `docs/sources/<id>.raw.md` 사본과 해시, 3일 재실행 판정, Readiness 4기준 점수, `[PREP]` 꼬리 줄
+  - `requirements.md`의 형식과 `sources[].fetched_at`은 그대로라 plan·gap·test-discover·browser-verify는 바뀌지 않는다. `nara-now`의 7일 경과 판정도 그대로이고, 추천 명령만 `/nara-ac-draft <원본>`으로 바뀌었다. `sources: [internal-draft]`는 경과 판정에서 뺀다
+  - ac-draft 평가 세트: 초안 전용이던 eval 수준 grader 둘(US·Gherkin 절, `[UNVERIFIED]` 표지)을 초안 task로 내렸다. 외부 원본 task가 그 조건을 만족할 이유가 없어서다. prep의 task 셋(Jira 로컬화, 붙여 넣은 본문, gap 요청 비발동)을 옮기고, 원본에 AC가 없을 때 `[draft]`를 다는지 보는 task를 더했다. gap 평가의 redirect 문자열도 `ac-draft`로 바꿨고 판별 검사는 8/8 그대로다
+
 ### Added
 - **`nara-planning`: 기능 하나의 기획 묶음(`docs/product/<slug>/`)을 소유하고 흐름까지 이끄는 스킬.** PRD, 근거 원장, 결정 로그, 해당할 때만 정책·흐름·IA, 요청 시 화면 설계서·운영 개발 요청서를 쓴다. PRD 머리의 커버리지 표가 다음 할 일을 고르고, 남의 몫(결정 질문, 인수 기준, 수치 대조)은 동의를 받아 같은 세션에서 `nara-grill`·`nara-ac-draft`·`nara-claim-audit`를 실행한다. 별도 워크플로 스킬이 아니라 산출물을 소유한 스킬이 흐름을 이끄는 형태다
   - 지어내지 않기: 근거 없는 수치·정책·일정은 본문에 쓰지 않고 미결로 둔다. 사용자가 채우라고 하면 `[가정]` 라벨, 측정해야 아는 기준선은 가정으로도 채우지 않는다
