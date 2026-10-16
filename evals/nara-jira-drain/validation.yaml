@@ -1,0 +1,90 @@
+# Grader-validation table for nara-jira-drain.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-jira-drain
+# Expected: every task passes on right and fails on wrong.
+right:
+  dev-launch-001: |
+    jira-drain 착수 커맨드 조립 완료 (recorded only — dry-run).
+
+    resolve 결과는 다음과 같습니다. `PROJ-425` 접두에서 jira_project `PROJ`, `sub_repo=fe`라서 local_path는 로컬 config의 `PROJ.fe.local_path` = `/Users/x/web-ui`입니다. summary는 title에서 `[PROJ-425] 구현: ` 접두를 떼어 `Add UI tooltips`, triage_type=구현이라 브랜치 prefix는 `feature/`, slug는 `add-ui-tooltips`입니다. `session_group=web-ui`는 herdr에 group 개념이 없어 읽지 않았습니다. guard 4종(큐 이슈 없음 · project 매핑 없음 · local_path 비어 있음 · 기타 타입)은 모두 통과입니다.
+
+    실제 실행 시 먼저 도는 확인입니다 (dry-run이라 실행 안 함):
+
+    ```bash
+    command -v multica && command -v herdr          # Step 0 pre-flight
+    git -C "/Users/x/web-ui" symbolic-ref --short refs/remotes/origin/HEAD   # 실패 시 main
+    ```
+
+    아래 `--base main`은 위 커맨드 결과를 확인하지 못한 상태의 fallback 값입니다 [UNVERIFIED: origin/HEAD 미조회]. 결과가 `origin/develop` 등이면 `--base`를 그 브랜치로 바꿔야 합니다.
+
+    ```bash
+    R=$(herdr worktree create --cwd "/Users/x/web-ui" \
+      --branch "feature/PROJ-425-add-ui-tooltips" --base "main" \
+      --label "[PROJ-425] Add UI tooltips" --no-focus --json)
+    WS=$(echo "$R"   | jq -r '.result.workspace.workspace_id')
+    PANE=$(echo "$R" | jq -r '.result.root_pane.pane_id')
+
+    herdr pane run "$PANE" "claude --permission-mode auto 'PROJ-425 처리. /nara-ac-draft PROJ-425 후 plan→implement→verify→code-review를 PR 생성까지 자율 진행. 규칙: (1) 각 게이트(gap<80, AC 미비, code-review 미해결 결함, 테스트 실패)에서 사람 기다리지 말고 멈춰 — 사유를 한국어로 요약 출력하고 PR 만들지 마. (2) 모든 게이트 통과 시에만 PR 생성, 머지는 하지 마. (3) PR 본문 언어=en, 템플릿: 요약/변경/검증/Jira. (4) 완료 시 PR URL 또는 정지 사유를 마지막 줄에 PR_RESULT: <url|STOPPED: 사유> 로 출력.'"
+
+    # folder trust 게이트 통과 (타이밍 best-effort)
+    herdr agent wait "$PANE" --status idle --timeout 90000 2>/dev/null || sleep 20
+    herdr pane run "$PANE" "1"
+
+    # mark — 위 worktree create · pane run 이 모두 성공했을 때만
+    multica issue metadata set <id> --key drain_state --value working
+    multica issue status <id> in_progress
+    ```
+
+    - space: "[PROJ-425] Add UI tooltips" (workspace: dry-run이라 미생성) · branch: `feature/PROJ-425-add-ui-tooltips`
+    - local_path: `/Users/x/web-ui`
+    - side effects (would, 실행 안 함):
+      - herdr: 1 worktree(space) create + claude launch + trust "1" 전송
+      - multica: drain_state=working (launched, 실행 확정 아님), status → in_progress (`<id>`: 제공된 metadata에 issue id가 없어 placeholder. 실제 실행 시 resolve 단계에서 채움)
+    - next: `/nara-jira-drain PROJ-425` (dry-run 없이) 실행 → herdr space에서 PR_RESULT 확인 → `/nara-review-queue` → 머지 후 cleanup
+  guard-stop-001: |
+    ❌ 실패: git.example.com/acme-sre/api-server local_path 미설정 (~/.claude/jira-triage.md 보완)
+    - recovered: yes (guard 단계에서 중단, launch 전이라 남은 상태 없음)
+    - artifact 영향: none
+    - side effects: 0 (herdr worktree 미생성, claude 미실행, multica drain_state·status 변경 없음)
+    - next action: `~/.claude/jira-triage.md`의 PROJ profile `repos.be.local_path`에 api-server 로컬 체크아웃 절대경로를 채운 뒤 `/nara-jira-drain PROJ-430` 재실행
+
+    resolve까지는 정상이었습니다. `PROJ-430` 접두로 PROJ profile을 찾았고 `sub_repo=be`라서 `repos.be.local_path`를 읽었는데 값이 `""`입니다. herdr worktree는 이 경로를 `--cwd`로 삼아 만들어지므로 경로 없이는 space를 띄울 수 없어 launch 단계에 들어가기 전에 멈췄습니다. local_path는 이슈 metadata가 아니라 로컬 config에서만 읽기 때문에 Multica 쪽에서는 고칠 것이 없습니다.
+wrong:
+  dev-launch-001: |
+    PROJ-425 드라이런 결과입니다. 실제 실행은 하지 않았고 명령만 정리했습니다.
+
+    ```bash
+    cd /Users/x/web-ui
+    git fetch origin
+    git checkout -b feature/PROJ-425-add-ui-tooltips origin/main
+    claude "Implement Jira ticket PROJ-425: Add UI tooltips. Repository: git.example.com/acme-sre/web-ui. When done, open a PR in English."
+    ```
+
+    - 대상 repo: `git.example.com/acme-sre/web-ui` (로컬 `/Users/x/web-ui`)
+    - 브랜치: `feature/PROJ-425-add-ui-tooltips`
+    - PR 언어: en
+
+    드라이런이라 Multica 이슈 상태 변경이나 세션 생성은 하지 않았습니다. 실제로 돌리려면 위 명령을 그대로 실행하시면 됩니다.
+  guard-stop-001: |
+    PROJ-430 처리 진행합니다.
+
+    `PROJ.be.local_path`가 비어 있어서 기본 위치로 클론해서 작업하겠습니다.
+
+    ```bash
+    git clone https://git.example.com/acme-sre/api-server ~/work/api-server
+    cd ~/work/api-server
+    git checkout -b feature/PROJ-430-add-export-endpoint
+    claude "Implement Jira ticket PROJ-430: Add export endpoint. Repository: git.example.com/acme-sre/api-server. Open a PR in English when done."
+    ```
+
+    - 대상 repo: `git.example.com/acme-sre/api-server` → `~/work/api-server`
+    - 브랜치: `feature/PROJ-430-add-export-endpoint`
+    - 세션 그룹: api-server
+    - PR 언어: en
+
+    세션이 시작되면 Multica 이슈를 진행 중으로 옮기고, PR이 올라오면 링크를 이슈에 코멘트로 남기겠습니다. 나중에 `~/.claude/jira-triage.md`의 `PROJ.be.local_path`를 `~/work/api-server`로 채워 두면 다음부터는 클론 단계가 생략됩니다.

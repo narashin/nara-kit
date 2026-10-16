@@ -10,13 +10,15 @@ tags:
   - thesis-guard
 inputs:
   prompt: |
+    로컬 config(~/.claude/jira-triage.md)는 첨부한 jira-triage-config.md와 같다.
     아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
     ready 상태 = To Do, Selected for Development. mirror 상태 = In Progress, In Review.
     key: PROJ-505
     status: In Progress
     summary: "[FE] 팀 목록 화면에 소유자 필터 추가"
     description: 팀 목록 필터 패널에 소유자 검색을 넣는다. 이미 브랜치에서 작업 중.
-  files: []
+  files:
+    - path: jira-triage-config.md
 expected:
   output_contains:
     - "[PROJ-505]"

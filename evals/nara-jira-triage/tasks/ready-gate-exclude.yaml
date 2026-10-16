@@ -8,13 +8,15 @@ tags:
   - thesis-guard
 inputs:
   prompt: |
+    로컬 config(~/.claude/jira-triage.md)는 첨부한 jira-triage-config.md와 같다.
     아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
     ready 상태 = To Do, Selected for Development. mirror 상태 = In Progress, In Review.
     key: PROJ-478
     status: Backlog
     summary: "[FE] Enforce non-blank approve/reject comment client-side"
     description: 아직 우선순위가 정해지지 않은 작업.
-  files: []
+  files:
+    - path: jira-triage-config.md
 expected:
   output_not_contains:
     - "Dev agent에 assign"

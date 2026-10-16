@@ -24,3 +24,4 @@ graders:
     config:
       regex_match:
         - "(?i)(comment|known|ABC-321)"
+        - "(?i)(COMMENT ABC-321|jira_add_comment)"

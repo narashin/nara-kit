@@ -1,5 +1,5 @@
 id: non-react-stop-001
-name: "Vue design-system source should stop with manual-pack message"
+name: Vue design-system source should stop with manual-pack message
 description: |
   SKILL.md §2 (Step 1) is a hard gate: Vue, Svelte, Web Components, Angular, or a plain
   CSS/HTML component library all fail it, because the skill only knows how to target
@@ -8,23 +8,23 @@ description: |
   manifest-schema.md) or use the bundled starter pack — never attempt component adaptation,
   and never report having extracted or adapted components.
 tags:
-  - gate
-  - negative-test
+- gate
+- negative-test
 inputs:
-  prompt: "build a design studio pack from our design system at ~/repos/acme-ds — it's built with Vue 3 single-file components"
+  prompt: build a design studio pack from our design system at ~/repos/acme-ds — it's built with Vue 3 single-file components
   files: []
 expected:
   output_not_contains:
-    - "components extracted"
+  - components extracted
   outcomes:
-    - type: task_completed
+  - type: task_completed
 graders:
-  - type: text
-    name: task_regex
-    config:
-      regex_match:
-        - "(?i)(react-only|react only)"
-        - "(?i)(build a pack by hand|by hand)"
-        - "(?i)(starter pack)"
-      regex_not_match:
-        - "(?i)(successfully extracted|extraction complete|adapted all components|pack is ready)"
+- type: text
+  name: task_regex
+  config:
+    regex_match:
+    - (?i)(react-only|react only|only .{0,40}from react|react 전용|react만)
+    - (?i)(build a pack by hand|by hand)
+    - (?i)(starter pack)
+    regex_not_match:
+    - (?i)(successfully extracted|extraction complete|adapted all components|pack is ready)

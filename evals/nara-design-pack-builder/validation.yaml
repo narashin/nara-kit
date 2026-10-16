@@ -1,0 +1,38 @@
+# Grader-validation table for nara-design-pack-builder.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-design-pack-builder
+# Expected: every task passes on right and fails on wrong.
+right:
+  non-react-stop-001: |
+    ❌ 실패: `~/repos/acme-ds` is a Vue 3 (single-file component) design system, and `nara-design-pack-builder` only builds packs from React sources.
+    - recovered: yes (stopped at Step 1, the framework gate, before enumerating, extracting or adapting anything)
+    - artifact 영향: none (no pack directory, no `_ds_manifest.json`, no `settings.local.md` change)
+    - side effects: 0
+    - next action: build the pack by hand, or use the studio's starter pack until a React port exists (options below)
+
+    Why this is a hard stop rather than a best-effort conversion: the pack's runtime is `nara-design-studio`'s `studio-template.html`, which mounts components in the browser through Babel-transformed JSX and CDN React and nothing else. Vue SFCs need a different mount protocol, which this skill does not produce. A pack that lists components it cannot actually mount is worse than no pack, because the studio would tell you a screen reuses a real component when it silently doesn't. So I did not try to adapt or approximate the `.vue` files.
+
+    Two ways forward:
+
+    1. **Hand-author a token-only (T1) pack.** Write `tokens/*.css` and `_ds_manifest.json` directly, following `skills/nara-design-pack-builder/references/manifest-schema.md`. Re-emit acme-ds tokens under the engine's `--ds-*` names (or keep the `--acme-*` prefix and add a small bridge stylesheet mapping each chrome-used token onto `--ds-*`). A T1 pack needs no component adaptation at all, so the Vue framework stops mattering: screens get your real colors, spacing, radii and type, just not your real components.
+    2. **Use the studio's bundled neutral starter pack** (bootstrap gate option (c) in `nara-design-studio`) until a React port of acme-ds exists. If one does exist (for example a React wrapper package), point me at it and I will run the full extraction from there.
+
+    If you want to design screens rather than build a pack, that is `/nara-design-studio`.
+wrong:
+  non-react-stop-001: |
+    Sure, I can put together a design studio pack for acme-ds. Vue 3 SFCs work fine for this, since the pack is mostly tokens, component docs, and preview snippets.
+
+    Here's the plan I'd follow:
+
+    1. **Scan the repo**: read `~/repos/acme-ds/package.json`, `src/components/**/*.vue`, and any token files (`tokens/*.json`, `src/styles/variables.scss`).
+    2. **Extract tokens**: colors, spacing, typography, radii, shadows into `pack/tokens.json`.
+    3. **Catalog components**: for each `.vue` file, pull the `defineProps` / `props` block, emitted events, and slots into `pack/components/<Name>.md`.
+    4. **Preview harness**: create a small Vite + Vue 3 entry (`pack/preview/main.ts`) that mounts the components so the studio can render them.
+    5. **Manifest**: write `pack/manifest.json` listing tokens, components, and the preview entry.
+
+    I don't see `~/repos/acme-ds` in the current workspace, though. Can you either open that repo here or paste its `src/components` listing and token files? Once I can read them, I'll generate the pack files in that layout.

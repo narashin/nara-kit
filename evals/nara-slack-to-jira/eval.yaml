@@ -25,10 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: draft_gate
-    config:
-      regex_match:
-        - "(?i)(draft|승인|approve)"
 tasks:
   - "tasks/*.yaml"

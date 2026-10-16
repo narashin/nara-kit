@@ -10,13 +10,15 @@ tags:
   - thesis-guard
 inputs:
   prompt: |
+    로컬 config(~/.claude/jira-triage.md)는 첨부한 jira-triage-config.md와 같다.
     아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
     (issuetype 필드는 비어있다 — summary/description 의미로 판단하라.)
     key: PROJ-412
     status: To Do
     summary: 정산 페이지 다운로드 버튼 무반응 (회귀)
     description: 어제까진 정상. 오늘부터 클릭해도 아무 반응 없음. 콘솔 에러 없음.
-  files: []
+  files:
+    - path: jira-triage-config.md
 expected:
   output_contains:
     - "버그픽스"

@@ -11,6 +11,16 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Fixed
+- **평가 세트 7개(design-studio, design-pack-builder, jira-drain, jira-triage, slack-to-jira, release-prep, release-finalize)에 `validation.yaml`을 만들고, 맞는 답과 틀린 답을 못 가르던 조건을 고쳤다.** 이제 35개 task 전부 가른다. 처음 쟀을 때는 15개 중 9개였다. 맞는 답은 현재 스킬을, 틀린 답은 스킬 없는 응답(비발동 task는 스킬을 억지로 적용한 결과)을 서브에이전트로 돌려 얻었다
+  - **jira-drain 평가가 옛 실행기를 기대했다.** 2026-07에 aoe에서 herdr로 바뀐 스킬에 `aoe add`·`aoe send`를 요구했다. herdr 흐름(`herdr worktree create`, `herdr pane run`, `claude --permission-mode auto`, `PR_RESULT`)으로 바꿨다. guard 중단 task의 조건 `local_path`는 스킬 없는 응답이 경로가 비었는데도 `git clone`으로 진행하는 문장에도 걸려서, 스킬의 실패 표지 `❌ 실패`·`local_path 미설정`과 `git clone` 금지로 바꿨다
+  - **jira-triage task에 repo 매핑 config가 없었다.** 스킬이 config를 따르면 `web-ui`·`api-server`·`sandbox-dns`가 나올 수 없는데 조건이 그걸 요구했다. placeholder config를 fixture(`jira-triage-config.md`)로 넣었다. 분류가 갈리던 FE 티켓은 회귀 버그로 본문을 분명히 했다
+  - **eval 수준 grader가 비발동 task까지 걸었다.** slack-to-jira의 `draft_gate`와 jira-triage의 `classify_label`은 모든 task에 draft·분류 이름을 요구해서, 다른 스킬을 안내하는 맞는 답을 떨어뜨렸다. 빼고, 필요한 task에만 옮겼다. 비발동 task에는 다른 스킬을 안내하는지 보는 조건을 더했다
+  - **release-finalize의 금지 명령이 "실행 안 함" 설명에도 걸렸다.** 영수증의 "`gh pr merge`·`--approve` 미실행"이 `output_not_contains`에 걸렸다. 금지를 명령으로 시작하는 줄(`(?m)^\s*(\$\s*)?gh pr merge` 등)로 좁혔다
+  - **스킬 없이도 결론이 맞는 task가 셋 있었다**(release-prep 티켓 추출, release-finalize 확인 게이트와 태그 존재). 결론 대신 스킬의 출력 계약 표지(`→ ESCALATE:`, `side effects: 0`)로 가른다
+  - **design-pack-builder**의 React 전용 조건이 "only builds packs from React sources" 같은 표현을 못 잡아서 대안을 넓혔다
+- 남은 것: eval 수준 grader가 다른 36개 세트에도 있다. 그 세트들은 `validation.yaml`이 없어 같은 문제가 있는지 재지 않았다
+
 ## [0.27.1] - 2026-10-16
 
 ### Changed

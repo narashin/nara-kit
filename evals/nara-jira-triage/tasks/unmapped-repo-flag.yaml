@@ -10,13 +10,15 @@ tags:
   - thesis-guard
 inputs:
   prompt: |
+    로컬 config(~/.claude/jira-triage.md)는 첨부한 jira-triage-config.md와 같다.
     아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
     config 매핑된 project: OPS, PROJ
     key: FOO-1
     status: To Do
     summary: 미지의 프로젝트 기능 추가
     description: config에 매핑 없는 project.
-  files: []
+  files:
+    - path: jira-triage-config.md
 expected:
   output_contains:
     - "UNVERIFIED"

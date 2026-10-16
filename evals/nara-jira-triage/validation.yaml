@@ -1,0 +1,599 @@
+# Grader-validation table for nara-jira-triage.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-jira-triage
+# Expected: every task passes on right and fails on wrong.
+right:
+  should-not-trigger-001: |
+    이 요청은 jira-triage가 다루는 일이 아닙니다. jira-triage는 내게 할당된 Jira 티켓을 분류해 Multica 큐 카드로 만드는 스킬이라, 코드를 읽거나 고치지 않습니다.
+
+    함수 리팩터링은 `/nara-implement`로 진행해 주세요. 바꿀 범위가 크면 `/nara-plan`으로 작업 단위를 먼저 나누고, 리팩터링 방향 자체를 검토받고 싶으면 `/nara-grill`이 맞습니다.
+
+    어떤 함수(파일 경로와 함수 이름)를 어떤 방향으로 바꾸고 싶으신지 알려 주세요.
+  bugfix-classify-001: |
+    jira-triage dry-run 결과입니다. PROJ-412 1건을 **버그픽스**로 분류했고, 큐 이슈 1개를 만들 예정입니다(`--dry-run`이라 Multica 쓰기는 skipped).
+
+    | 항목 | 값 |
+    |---|---|
+    | 그룹 | ready (To Do) |
+    | 타입 | 버그픽스 (회귀: 어제까지 정상이던 다운로드 버튼이 오늘부터 무반응) |
+    | 라우팅 | PROJ, pr_language `en`, sub_repo `[그룹 확인 필요: FE/BE 불명]` |
+    | readiness | ready `[확인 필요: 기대 동작은 "어제까지처럼 다운로드됨"으로 읽음]` |
+    | dedup | 기존 카드 조회 필요 (`multica issue list --metadata "jira_key=PROJ-412" --output json`) |
+    | 멘션 | 신규 ready라 대상 |
+
+    FE/BE는 자동으로 고르지 않았습니다. 말머리가 없고, "버튼 무반응"은 UI 쪽으로 읽히지만 콘솔 에러가 없다는 점은 다운로드 응답(서버) 쪽 원인일 수도 있어서 한쪽으로 단정할 근거가 없습니다. 그래서 `repo`·`sub_repo`·`session_group`은 착수 트리거 때 사람이 고르도록 비워 둡니다(fe면 `git.example.com/acme-sre/web-ui`, be면 `git.example.com/acme-sre/api-server`).
+
+    실제 실행이었다면 돌렸을 명령입니다.
+
+    ```bash
+    multica issue create \
+      --title "[PROJ-412] 버그픽스: 정산 페이지 다운로드 버튼 무반응 (회귀)" \
+      --description "<dev 큐 이슈 본문: 타입 버그픽스 · repo [그룹 확인 필요: FE/BE 불명] · PR 언어 en · 접근법 재현 → 실패 테스트(Red) → 수정 → 회귀 테스트 → verify · [확인 필요: 기대 동작]>" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key     --value "PROJ-412"
+    multica issue metadata set <issue_id> --key triage_type  --value "버그픽스"
+    multica issue metadata set <issue_id> --key pr_language  --value "en"
+    # repo / sub_repo / session_group: FE/BE 확정 전이라 미설정
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) PROJ-412 큐에 추가됨 (버그픽스)" --output json
+    ```
+
+    상태: skipped (dry-run). 카드는 UNASSIGNED `todo`로 생성 예정이며 코드는 실행하지 않습니다.
+
+    next: 1) `--dry-run` 없이 다시 돌려 카드 생성 2) 착수 시 FE/BE를 골라 `/nara-jira-drain PROJ-412`
+  dedup-cancelled-only-001: |
+    jira-triage dry-run 결과입니다. 2건 중 **OPS-88만 큐 이슈를 새로 만들고**, OPS-90은 dedup으로 스킵합니다(`--dry-run`이라 Multica 쓰기는 skipped).
+
+    | 키 | 타입 | 기존 카드 | 판정 |
+    |---|---|---|---|
+    | OPS-88 | 구현 (알림 본문에 버전 줄 추가) | Q-14 `cancelled`뿐 | **생성.** `cancelled` 카드만 있으면 없는 것으로 봅니다. Jira에 살아 있는 티켓이라 보드에도 카드가 있어야 거울이 됩니다 |
+    | OPS-90 | 구현 (헬스체크 타임아웃 10초→3초) | Q-20 `done` | **스킵.** `cancelled`가 아닌 카드가 있어 생성·멘션 모두 하지 않습니다. `done` 카드는 머지됐는데 Jira 전이가 실패한 경우 매 회차 재큐잉되는 걸 막는 근거로 남깁니다 |
+
+    OPS-88 라우팅은 OPS → default `git.example.com/acme-sre/sandbox-dns`, session_group `sandbox-dns`, pr_language `ko`입니다. readiness는 ready입니다. 바꿀 대상(배포 완료 Slack 알림 본문), 완료 조건(버전 한 줄 추가, 비면 생략), 미결 사항 없음이 모두 충족됩니다.
+
+    실제 실행이었다면 돌렸을 명령입니다(OPS-88만).
+
+    ```bash
+    multica issue create \
+      --title "[OPS-88] 구현: 배포 알림에 버전 줄 추가" \
+      --description "<dev 큐 이슈 본문: 타입 구현 · repo git.example.com/acme-sre/sandbox-dns · 세션그룹 sandbox-dns · PR 언어 ko · 접근법 ac-draft → plan → TDD → verify>" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key      --value "OPS-88"
+    multica issue metadata set <issue_id> --key triage_type   --value "구현"
+    multica issue metadata set <issue_id> --key repo          --value "git.example.com/acme-sre/sandbox-dns"
+    multica issue metadata set <issue_id> --key session_group --value "sandbox-dns"
+    multica issue metadata set <issue_id> --key pr_language   --value "ko"
+    multica issue metadata set <issue_id> --key sub_repo      --value "default"
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) OPS-88 큐에 추가됨 (구현)" --output json
+    ```
+
+    상태: skipped (dry-run). OPS-90 카드 상태가 실제와 어긋나 보이면 이 스킬 소관이 아니라 reconcile 크론 쪽입니다.
+
+    next: `--dry-run` 없이 다시 돌리면 OPS-88 카드 1개가 UNASSIGNED `todo`로 생성됩니다
+  feature-classify-001: |
+    jira-triage dry-run 결과입니다. OPS-88 1건을 **구현**으로 분류했고, 큐 이슈 1개를 만들 예정입니다(`--dry-run`이라 Multica 쓰기는 skipped).
+
+    | 항목 | 값 |
+    |---|---|
+    | 그룹 | ready (Selected for Development) |
+    | 타입 | 구현 (신규 엔드포인트: CSV 업로드로 DNS 레코드 다건 등록) |
+    | 라우팅 | OPS → default `git.example.com/acme-sre/sandbox-dns`, session_group `sandbox-dns`, pr_language `ko`, sub_repo `default` |
+    | readiness | ready `[확인 필요: CSV 컬럼 형식, 일부 행 실패 시 처리 방식]` |
+    | dedup | 기존 카드 조회 필요 (`multica issue list --metadata "jira_key=OPS-88" --output json`) |
+    | 멘션 | 신규 ready라 대상 |
+
+    readiness는 막지 않았습니다. 바꿀 대상(다건 등록 엔드포인트)이 특정되고 열린 질문·TBD도 없습니다. 다만 CSV 형식과 부분 실패 처리가 본문에 없어 완료 조건이 한 가지로만 읽힌다고 하기엔 애매해서, 막는 대신 본문에 확인 표기를 남깁니다.
+
+    실제 실행이었다면 돌렸을 명령입니다.
+
+    ```bash
+    multica issue create \
+      --title "[OPS-88] 구현: DNS 레코드 일괄 등록 API 추가" \
+      --description "<dev 큐 이슈 본문: 타입 구현 · repo git.example.com/acme-sre/sandbox-dns · 세션그룹 sandbox-dns · PR 언어 ko · 접근법 ac-draft → plan → TDD → verify · [확인 필요: CSV 컬럼 형식, 부분 실패 처리]>" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key      --value "OPS-88"
+    multica issue metadata set <issue_id> --key triage_type   --value "구현"
+    multica issue metadata set <issue_id> --key repo          --value "git.example.com/acme-sre/sandbox-dns"
+    multica issue metadata set <issue_id> --key session_group --value "sandbox-dns"
+    multica issue metadata set <issue_id> --key pr_language   --value "ko"
+    multica issue metadata set <issue_id> --key sub_repo      --value "default"
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) OPS-88 큐에 추가됨 (구현)" --output json
+    ```
+
+    상태: skipped (dry-run). 카드는 UNASSIGNED `todo`로 생성 예정이며 코드는 실행하지 않습니다.
+
+    next: 1) `--dry-run` 없이 다시 돌려 카드 생성 2) 큐에서 판단 후 `/nara-jira-drain OPS-88`
+  mirror-in-progress-001: |
+    jira-triage dry-run 결과입니다. PROJ-505는 Jira에서 이미 In Progress라 **mirror 카드** 1개를 만들 예정입니다(`--dry-run`이라 Multica 쓰기는 skipped).
+
+    | 항목 | 값 |
+    |---|---|
+    | 그룹 | mirror (In Progress) |
+    | 타입 | 구현 (팀 목록 필터 패널에 소유자 검색 추가) |
+    | 라우팅 | PROJ `[FE]` → fe `git.example.com/acme-sre/web-ui`, session_group `web-ui`, pr_language `en`, sub_repo `fe` |
+    | readiness | 판정 안 함 (mirror 카드) |
+    | 멘션 | 안 함 (mirror 카드) |
+    | dedup | 기존 카드 조회 필요 (`multica issue list --metadata "jira_key=PROJ-505" --output json`) |
+
+    mirror 카드는 "이미 손으로 하고 있는 일이 보드에 없다"를 메우는 용도이고 착수 지시가 아닙니다. 그래서 본문 첫 줄에 미러 표기를 붙이고 `**착수:**` 줄은 뺍니다. 카드는 `todo`로 생성되며, 이 스킬이 상태를 직접 옮기지 않습니다. 다음 reconcile 회차가 Jira 상태(indeterminate)를 보고 `in_progress` + `drain_state=manual`로 옮깁니다. 그 전 한 주기 동안은 `todo`로 보입니다.
+
+    실제 실행이었다면 돌렸을 명령입니다.
+
+    ```bash
+    multica issue create \
+      --title "[PROJ-505] 구현: [FE] 팀 목록 화면에 소유자 필터 추가" \
+      --description "**미러 카드:** Jira에서 이미 In Progress. 착수 지시가 아니다.
+    <dev 큐 이슈 본문: 타입 구현 · repo git.example.com/acme-sre/web-ui · 세션그룹 web-ui · PR 언어 en · 착수 줄 없음>" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key      --value "PROJ-505"
+    multica issue metadata set <issue_id> --key triage_type   --value "구현"
+    multica issue metadata set <issue_id> --key repo          --value "git.example.com/acme-sre/web-ui"
+    multica issue metadata set <issue_id> --key session_group --value "web-ui"
+    multica issue metadata set <issue_id> --key pr_language   --value "en"
+    multica issue metadata set <issue_id> --key sub_repo      --value "fe"
+    multica issue metadata set <issue_id> --key card_origin   --value "mirror"
+    # 멘션 코멘트 없음 (mirror)
+    ```
+
+    상태: skipped (dry-run).
+
+    next: `--dry-run` 없이 다시 돌려 mirror 카드 생성. 상태 이동은 reconcile 크론이 맡습니다
+  plan-classify-001: |
+    jira-triage dry-run 결과입니다. PROJ-500 1건을 **기획**으로 분류했고, doc 큐 이슈 1개를 만들 예정입니다(`--dry-run`이라 Multica 쓰기는 skipped).
+
+    | 항목 | 값 |
+    |---|---|
+    | 그룹 | ready (To Do) |
+    | 타입 | 기획 (알림 센터 UX 방향성·정보구조 PRD 작성, 본문이 "코드 작업 아님"이라고 명시) |
+    | 라우팅 | 기획이라 FE/BE sub-repo 판정 없음. pr_language `en` |
+    | readiness | 판정 안 함 (기획 티켓은 대상 아님) |
+    | dedup | 기존 카드 조회 필요 (`multica issue list --metadata "jira_key=PROJ-500" --output json`) |
+    | 멘션 | 신규 ready라 대상 |
+
+    착수 트랙은 기획 흐름입니다. 조사 → spec 초안 → 리뷰 순이고, 게시는 사람이 합니다.
+
+    실제 실행이었다면 돌렸을 명령입니다.
+
+    ```bash
+    multica issue create \
+      --title "[PROJ-500] 기획: 알림 센터 리뉴얼 기획서 작성" \
+      --description "<doc 큐 이슈 본문: 타입 기획 · 접근법 조사 → spec 초안 → 리뷰 (publish는 사람) · 착수 Stage 2 트리거 또는 /nara-ac-draft PROJ-500 → /nara-grill → spec>" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key     --value "PROJ-500"
+    multica issue metadata set <issue_id> --key triage_type  --value "기획"
+    multica issue metadata set <issue_id> --key pr_language  --value "en"
+    # repo / sub_repo: 기획이라 sub-repo 무관, 미설정
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) PROJ-500 큐에 추가됨 (기획)" --output json
+    ```
+
+    상태: skipped (dry-run). 카드는 UNASSIGNED `todo`로 생성 예정입니다.
+
+    next: 1) `--dry-run` 없이 다시 돌려 카드 생성 2) 착수 시 `/nara-jira-drain PROJ-500`
+  proj-be-classify-001: |
+    jira-triage dry-run 결과입니다. PROJ-491 1건을 **구현**으로 분류했고 **be** sub-repo로 라우팅합니다(`--dry-run`이라 Multica 쓰기는 skipped).
+
+    | 항목 | 값 |
+    |---|---|
+    | 그룹 | ready (Selected for Development) |
+    | 타입 | 구현 (approve API 검증 에러 메시지를 필드 단위로 특정하게 바꾸는 동작 변경) |
+    | 라우팅 | `[BE]` 말머리 + 서버 API 내용 → be `git.example.com/acme-sre/api-server`, session_group `api-server`, pr_language `en`, sub_repo `be` |
+    | readiness | ready `[확인 필요: 메시지 문구·응답 형식]` |
+    | dedup | 기존 카드 조회 필요 (`multica issue list --metadata "jira_key=PROJ-491" --output json`) |
+    | 멘션 | 신규 ready라 대상 |
+
+    결함 신고가 아니라 메시지 개선이라 버그픽스 대신 구현으로 봤습니다. 대상(ChangeRequest approve API의 `@NotBlank` 검증)과 완료 조건(어느 필드인지 드러나는 메시지)이 읽히고 미결 사항도 없어 막지 않습니다.
+
+    실제 실행이었다면 돌렸을 명령입니다.
+
+    ```bash
+    multica issue create \
+      --title "[PROJ-491] 구현: [BE] approve 엔드포인트 @NotBlank 검증 메시지 개선" \
+      --description "<dev 큐 이슈 본문: 타입 구현 · repo git.example.com/acme-sre/api-server · 세션그룹 api-server · PR 언어 en · 접근법 ac-draft → plan → TDD → verify · [확인 필요: 메시지 문구·응답 형식]>" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key      --value "PROJ-491"
+    multica issue metadata set <issue_id> --key triage_type   --value "구현"
+    multica issue metadata set <issue_id> --key repo          --value "git.example.com/acme-sre/api-server"
+    multica issue metadata set <issue_id> --key session_group --value "api-server"
+    multica issue metadata set <issue_id> --key pr_language   --value "en"
+    multica issue metadata set <issue_id> --key sub_repo      --value "be"
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) PROJ-491 큐에 추가됨 (구현)" --output json
+    ```
+
+    상태: skipped (dry-run). 카드는 UNASSIGNED `todo`로 생성 예정이며 코드는 실행하지 않습니다.
+
+    next: 1) `--dry-run` 없이 다시 돌려 카드 생성 2) 큐에서 판단 후 `/nara-jira-drain PROJ-491`
+  proj-fe-classify-001: |
+    **Outcome:** PROJ-490을 버그픽스 / FE(`acme-sre/web-ui`)로 분류했습니다. readiness는 `ready`입니다. `--dry-run`이라 Multica 쓰기는 하지 않았고 큐 이슈는 미리보기만 남깁니다 (상태: `recorded only`).
+
+    **Evidence:**
+    - 상태 그룹: `To Do`는 config `ready_statuses`에 있으므로 ready 그룹이고 `todo` 카드 대상입니다. subtask 정보가 없어 컨테이너가 아닌 작업 단위로 보고 정상 큐잉합니다.
+    - 분류: issuetype이 비어 있어 의미로 판단했습니다. "지난주까진 빈 코멘트를 막았는데 회귀됐다"는 결함·회귀이므로 **버그픽스**입니다. summary가 "검증 추가"라 구현처럼 읽힐 수 있지만, 있던 동작이 깨진 것이라 버그픽스가 맞습니다.
+    - FE/BE 판정: `[FE]` 말머리와 `ApprovalApproveModalContent`(UI 컴포넌트)가 둘 다 FE를 가리키므로 **fe**로 정했습니다. PROJ profile의 `repos.fe`로 라우팅합니다.
+    - readiness: 증상과 조건(코멘트를 비우고 승인하면 저장됨), 기대 동작(빈 코멘트는 인라인 검증으로 막혀야 함), 미결 사항 없음. 셋 다 충족해 `ready`입니다. 판정 근거가 아닌 참고로, 공백만 있는 코멘트를 빈 값으로 볼지는 본문에 `[확인 필요]`로 남깁니다.
+    - dedup: dry-run이라 `multica issue list --metadata "jira_key=PROJ-490" --output json`은 실행하지 않았습니다. 실제 실행 시 `cancelled`가 아닌 카드가 있으면 생성과 멘션을 건너뜁니다.
+
+    **큐 이슈 미리보기 (생성 안 함):**
+
+    ```bash
+    multica issue create \
+      --title "[PROJ-490] 버그픽스: [FE] 승인 모달 빈 코멘트 인라인 검증 추가" \
+      --description "<아래 본문>" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key      --value "PROJ-490"
+    multica issue metadata set <issue_id> --key triage_type  --value "버그픽스"
+    multica issue metadata set <issue_id> --key repo          --value "git.example.com/acme-sre/web-ui"
+    multica issue metadata set <issue_id> --key session_group --value "web-ui"
+    multica issue metadata set <issue_id> --key pr_language   --value "en"
+    multica issue metadata set <issue_id> --key sub_repo      --value "fe"
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) PROJ-490 큐에 추가됨 (버그픽스)" --output json
+    ```
+
+    담당자 없이(UNASSIGNED) `todo`로 만들고, 신규 ready 카드이므로 config `defaults.mention` 멤버에게 멘션합니다. `needs-spec`이 아니므로 `blocked` 전환과 `triage_block`은 없습니다.
+
+    본문:
+
+    ```markdown
+    **Jira:** PROJ-490 [UNVERIFIED: Jira 호스트 URL이 config에 없음]
+    **타입:** 버그픽스 · **repo:** git.example.com/acme-sre/web-ui
+    **세션그룹:** web-ui · **PR 언어:** en
+
+    [FE] 승인 모달 빈 코멘트 인라인 검증 추가
+    ApprovalApproveModalContent에서 코멘트를 비워도 승인이 저장된다. 지난주까지는 빈 코멘트를 막았는데 회귀됐다.
+
+    **접근법:**
+    - 버그픽스: 재현 → 실패 테스트(Red) → 수정 → 회귀 테스트 → verify
+
+    **착수:** 판단 후 Stage 2 트리거 (herdr가 space=repo@branch 워크트리에서 실행)
+    (수동: `/nara-wt PROJ-490` → `/nara-ac-draft PROJ-490` → `/nara-plan` → `/nara-implement`)
+
+    [확인 필요: 공백만 입력한 코멘트도 빈 코멘트로 막아야 하는지]
+    ```
+
+    **Artifact Paths:** 없음 (dry-run, Multica 쓰기 0건 · MCP 부수효과 없음)
+
+    **Next Action:** 미리보기가 맞으면 `--dry-run` 없이 다시 실행해 카드를 만드세요. 착수는 카드를 보고 `/nara-jira-drain PROJ-490`으로 직접 트리거합니다.
+  readiness-needs-spec-001: |
+    jira-triage dry-run 결과입니다. 2건 모두 카드를 만들 예정이고, **PROJ-611은 needs-spec이라 생성 직후 `blocked`**, PROJ-612는 ready로 `todo`에 둡니다(`--dry-run`이라 Multica 쓰기는 skipped).
+
+    | 키 | 타입 | 라우팅 | readiness |
+    |---|---|---|---|
+    | PROJ-611 | 구현 (승인 요청 제출 실패 처리 추가) | `[FE]` → fe `git.example.com/acme-sre/web-ui`, pr_language `en` | **needs-spec.** "재시도로 할지 초안으로 되돌릴지는 TBD"라 고르지 않은 선택지가 남아 있습니다 |
+    | PROJ-612 | 구현 (공백뿐인 코멘트면 제출 버튼 비활성화) | `[FE]` → fe `git.example.com/acme-sre/web-ui`, pr_language `en` | **ready.** 대상(승인/반려 다이얼로그), 완료 조건(한 글자 이상이면 활성화), 미결 사항 없음 모두 충족 |
+
+    PROJ-611도 카드는 만듭니다. 보드는 Jira의 거울이라 Jira에 있는 티켓은 보드에도 있어야 하고, 막힌 이유를 카드에 남겨 사람이 보게 합니다. Jira 티켓에는 코멘트를 달지 않습니다. 이 `blocked`는 이 스킬이 풀지 않고, Jira 본문·코멘트가 바뀌면 reconcile이 `todo`로 되돌리거나 사람이 `/drain`으로 판정과 무관하게 넘길 수 있습니다.
+
+    실제 실행이었다면 돌렸을 명령입니다. 공통 metadata(`jira_key`·`triage_type=구현`·`repo=git.example.com/acme-sre/web-ui`·`session_group=web-ui`·`pr_language=en`·`sub_repo=fe`)는 두 카드에 같은 형태로 박습니다.
+
+    ```bash
+    # PROJ-611
+    multica issue create \
+      --title "[PROJ-611] 구현: [FE] 승인 요청 실패 처리" \
+      --description "<dev 큐 이슈 본문 ...>
+    **기획 보완 필요:** 제출 실패 시 재시도할지 초안으로 되돌릴지 미정" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key --value "PROJ-611"   # + 공통 metadata
+    multica issue status <issue_id> blocked
+    multica issue metadata set <issue_id> --key triage_block --value "제출 실패 시 처리 방식(재시도/초안 복귀) 미정"
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) PROJ-611 기획 보완 필요: 1) 승인 요청 제출이 실패하면 자동 재시도인가요, 초안으로 되돌리나요? 2) 실패 시 화면에 무엇이 보여야 하나요? 3) 재시도라면 몇 번까지, 그 뒤엔 어떻게 되나요?"
+
+    # PROJ-612
+    multica issue create \
+      --title "[PROJ-612] 구현: [FE] 승인 코멘트 빈 값 차단" \
+      --description "<dev 큐 이슈 본문 ...>" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key --value "PROJ-612"   # + 공통 metadata
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) PROJ-612 큐에 추가됨 (구현)" --output json
+    ```
+
+    상태: skipped (dry-run). `triage_block`은 착수 실행기의 `drain_state`와 다른 키로 박습니다.
+
+    next: 1) `--dry-run` 없이 다시 돌려 카드 2개 생성 2) PROJ-611은 Jira 본문에 실패 처리 방식을 정한 뒤 reconcile 해제를 기다리거나 판단해서 `/drain`
+  ready-gate-exclude-001: |
+    jira-triage dry-run 결과입니다. **큐 이슈를 만들지 않습니다.** PROJ-478은 Backlog 상태라 큐 대상이 아닙니다.
+
+    보드가 받는 상태는 ready(To Do, Selected for Development)와 mirror(In Progress, In Review)뿐이고, Backlog와 Done은 올리지 않습니다. 본문도 "아직 우선순위가 정해지지 않은 작업"이라 착수 후보로 볼 근거가 없습니다. 실제 poll JQL(`status in ("To Do", "Selected for Development", "In Progress", "In Review")`)로 조회했다면 이 티켓은 결과에 아예 나오지 않습니다.
+
+    참고로 분류만 하면 `[FE]` 구현(fe `git.example.com/acme-sre/web-ui`)이지만, 상태 게이트에서 걸러져 라우팅·readiness·dedup·emit 모두 skipped입니다.
+
+    ✅ 신규 티켓 없음 (큐 대상 0건, Multica 쓰기 없음)
+
+    next: PROJ-478을 Jira에서 To Do 또는 Selected for Development로 옮기면 다음 회차에 자동으로 큐에 들어옵니다
+  subtask-container-001: |
+    jira-triage dry-run 결과입니다. **큐 이슈를 만들지 않습니다.** PROJ-477은 subtask(PROJ-478)를 가진 컨테이너라 큐에 넣지 않습니다.
+
+    parent는 epic처럼 묶음으로 열고 실제 작업은 subtask에 적는 경우가 많아서, subtask가 있는 티켓은 큐 대상에서 뺍니다. 내용상으로는 구현(빈 Approve 코멘트 필드 메시지 개선)이지만 컨테이너 판정에서 걸러져 라우팅·readiness·emit 모두 skipped입니다.
+
+    PROJ-478도 큐에 넣지 않습니다. 큐 대상은 poll 결과에 자기 행으로 나온 티켓뿐이고, parent의 `subtasks` 필드는 컨테이너 판정에만 씁니다. 그 목록엔 assignee가 없어서 거기서 키를 꺼내 큐잉하면 남의 작업이 섞입니다. PROJ-478이 내게 할당돼 있고 ready·mirror 상태라면 poll 결과에 자기 행으로 따로 오고, 그때 정상 분류됩니다.
+
+    ✅ 신규 티켓 없음 (큐 대상 0건, Multica 쓰기 없음)
+
+    next: 없음
+  subtask-foreign-assignee-001: |
+    jira-triage dry-run 결과입니다. **큐 이슈를 만들지 않습니다.** 조회 결과 1건(PROJ-293)은 컨테이너이고, subtask 2건은 큐 대상이 아닙니다.
+
+    PROJ-293은 subtask(PROJ-542, PROJ-543)를 가진 parent라 컨테이너로 보고 제외합니다. 내용상으로는 기획 성격(연동 설계 후 단계별 구현)이지만 컨테이너 판정에서 걸러져 라우팅·readiness·emit 모두 skipped입니다.
+
+    PROJ-542와 PROJ-543도 큐에 넣지 않습니다. 둘 다 `assignee = currentUser()` 조회 결과에 자기 행으로 나오지 않았고, parent의 `subtasks` 필드에만 있습니다. 그 목록엔 assignee가 없어 상태가 Selected for Development라도 내 작업이라는 근거가 되지 못합니다. 실제로 내 RfC 하나에서 남의 subtask 8건이 큐에 들어간 적이 있어 이 경로는 막아 둡니다. 두 subtask가 내게 할당되면 다음 poll에 자기 행으로 와서 정상 분류됩니다.
+
+    ✅ 신규 티켓 없음 (큐 대상 0건, Multica 쓰기 없음)
+
+    next: 없음
+  unmapped-repo-flag-001: |
+    jira-triage dry-run 결과입니다. FOO-1의 project `FOO`는 config에 매핑이 없어서, 큐 이슈는 만들되 **`[UNVERIFIED: project FOO repo 매핑 없음]`**으로 표기합니다(`--dry-run`이라 Multica 쓰기는 skipped).
+
+    | 항목 | 값 |
+    |---|---|
+    | 그룹 | ready (To Do) |
+    | 타입 | 구현 ("기능 추가") |
+    | 라우팅 | 매핑 없음. repo 미설정, session_group `nara-kit`(misc_session_group), 본문에 매핑 요청 표기 |
+    | readiness | **needs-spec.** summary가 "미지의 프로젝트 기능 추가"뿐이고 본문도 무엇을 바꾸는지, 끝나는 조건이 무엇인지 적혀 있지 않습니다 |
+    | dedup | 기존 카드 조회 필요 (`multica issue list --metadata "jira_key=FOO-1" --output json`) |
+
+    repo는 추측하지 않습니다. autopilot은 무인 실행이라 신규 project를 자동 학습하지 않고, 사람이 매핑을 추가하도록 notify 성격으로 떨어뜨립니다. readiness까지 비어 있어 생성 직후 `blocked`로 둡니다.
+
+    실제 실행이었다면 돌렸을 명령입니다.
+
+    ```bash
+    multica issue create \
+      --title "[FOO-1] 구현: 미지의 프로젝트 기능 추가" \
+      --description "**Jira:** <FOO-1 url>
+    **타입:** 구현 | [UNVERIFIED: project FOO repo 매핑 없음]
+    미지의 프로젝트 기능 추가
+    **착수:** 역할 agent 없음. config(~/.claude/jira-triage.md) profiles에 FOO 매핑 보완 후 재분류
+    **기획 보완 필요:** 추가할 기능과 완료 조건 없음" \
+      --priority medium --output json
+    multica issue metadata set <issue_id> --key jira_key      --value "FOO-1"
+    multica issue metadata set <issue_id> --key triage_type   --value "구현"
+    multica issue metadata set <issue_id> --key session_group --value "nara-kit"
+    # repo / pr_language / sub_repo: 매핑 없음, 미설정
+    multica issue status <issue_id> blocked
+    multica issue metadata set <issue_id> --key triage_block --value "추가할 기능과 완료 조건 미기재"
+    multica issue comment add <issue_id> \
+      --content "[@<표시명>](mention://member/00000000-0000-0000-0000-000000000000) FOO-1 기획 보완 필요: 1) 어떤 기능을 어느 화면·엔드포인트에 추가하나요? 2) 끝났다고 보는 조건은 무엇인가요? (repo 매핑도 없음: FOO가 어느 repo인지 알려 주세요)"
+    ```
+
+    상태: skipped (dry-run). `→ ESCALATE: project FOO repo 매핑 추가 필요` (트리거 전 수동 확인)
+
+    next: 1) `~/.claude/jira-triage.md` profiles에 `{jira_project: FOO, pr_language, repos}` 추가 2) `--dry-run` 없이 다시 돌려 카드 생성 3) Jira FOO-1 본문에 기능·완료 조건 보완
+wrong:
+  should-not-trigger-001: |
+    jira-triage를 실행합니다. 인자가 없어 기본값(`--assignee currentUser()`, config 매핑 project 전체)으로 돕니다.
+
+    Step 0: 로컬 config `~/.claude/jira-triage.md`를 찾았지만 이 작업 디렉터리에는 config가 없어 project 매핑을 읽을 수 없습니다.
+
+    Step 1 poll로 실행할 조회:
+
+    ```bash
+    jira_search jql='assignee = currentUser() AND status in ("To Do", "Selected for Development", "In Progress", "In Review") ORDER BY updated DESC' \
+      fields='key,summary,status,description,labels,subtasks,parent'
+    ```
+
+    요청 문장 "이 함수 리팩터링해줘"를 티켓처럼 분류하면 **구현**(리팩터링) 타입이지만, Jira 키가 없고 대상 함수와 repo가 특정되지 않아 route와 dedup을 진행할 수 없습니다.
+
+    - 분류: 구현 `[UNVERIFIED: Jira 키 없음, 대상 함수 불명]`
+    - route: 불가 (project key 없음)
+    - emit: 스킵
+
+    ❌ 실패: config 없음 + 티켓 키 없음으로 큐 이슈를 만들 수 없습니다.
+    → ESCALATE: 리팩터링할 작업의 Jira 티켓 키를 알려주시거나 `~/.claude/jira-triage.md`를 설정한 뒤 다시 실행해 주세요.
+  bugfix-classify-001: |
+    PROJ-412를 분류했습니다 (dry-run, 실제 생성은 하지 않았습니다).
+
+    분류: **버그** (어제까지 정상이던 기능이 오늘부터 동작하지 않는 회귀)
+    우선순위 제안: High. 정산 다운로드는 사용자 업무에 직접 영향이 있고 회귀라 빠른 대응이 필요해 보입니다.
+    담당 repo: config의 PROJ 프로필에 fe/be 두 개가 있는데, 버튼 무반응이라 우선 프론트엔드(acme-sre/web-ui)로 보았습니다. 다만 콘솔 에러가 없다는 점에서 API 응답 쪽 원인일 수도 있습니다.
+
+    생성할 큐 이슈 미리보기:
+
+    ```
+    제목: [PROJ-412] Bug: 정산 페이지 다운로드 버튼 무반응 (회귀)
+    repo: acme-sre/web-ui
+    session_group: web-ui
+    PR 언어: en
+    본문:
+      - 현상: 다운로드 버튼 클릭 시 반응 없음, 콘솔 에러 없음
+      - 시작 시점: 오늘 (어제까지 정상)
+      - 조사 제안: 어제 이후 배포된 web-ui 커밋 확인, 네트워크 탭에서 요청 발생 여부 확인
+    담당자: currentUser()
+    ```
+
+    dry-run이라 실제 이슈는 만들지 않았습니다. 실행하려면 dry-run 없이 다시 요청해 주세요.
+  dedup-cancelled-only-001: |
+    두 티켓 모두 ready 상태(To Do)라 큐 대상 후보입니다. 기존 카드 조회 결과를 보면 둘 다 이미 카드가 한 번씩 만들어진 이력이 있어서, 중복 생성을 피하기 위해 이번에는 **둘 다 새 큐 이슈를 만들지 않는** 것으로 판단했습니다 (dry-run).
+
+    - OPS-88 "배포 알림에 버전 줄 추가": 구현. 기존 카드 Q-14가 있으므로 스킵. Q-14가 cancelled 상태이니, 다시 진행하려면 Q-14를 재오픈하는 편이 이력이 남아 깔끔합니다.
+    - OPS-90 "헬스체크 타임아웃 3초로 조정": 구현. 기존 카드 Q-20이 done이라 스킵. 다만 Jira 상태가 아직 To Do인 걸 보면 Jira 쪽 전이가 누락됐을 수 있으니 확인해 보세요.
+
+    생성 예정 큐 이슈: 없음.
+  feature-classify-001: |
+    OPS-88을 분류했습니다 (dry-run).
+
+    분류: **기능 추가 (Feature)**. 단건 등록만 되던 DNS 레코드에 CSV 다건 등록 엔드포인트를 새로 만드는 작업입니다.
+    repo: OPS 프로필의 default → acme-sre/sandbox-dns (session_group: sandbox-dns)
+    PR 언어: ko
+
+    큐 이슈 미리보기:
+
+    ```
+    제목: [OPS-88] Feature: DNS 레코드 일괄 등록 API 추가
+    repo: git.example.com/acme-sre/sandbox-dns
+    본문:
+      목표: CSV 업로드로 DNS 레코드를 다건 등록하는 엔드포인트 신규 추가
+      고려할 점:
+       - CSV 포맷(컬럼 정의) 확정 필요
+       - 부분 실패 시 처리 방식 (전체 롤백 vs 성공분만 반영)
+       - 최대 행 수 제한
+    담당자: currentUser()
+    ```
+
+    dry-run이라 실제로 생성하지는 않았습니다.
+  mirror-in-progress-001: |
+    PROJ-505는 현재 **In Progress** 상태입니다. 큐는 착수 가능한(ready) 작업을 쌓는 곳이고, 이 티켓은 이미 브랜치에서 작업 중이라고 되어 있어 큐에 새로 넣을 대상이 아니라고 판단했습니다.
+
+    - 분류: 구현 (FE, 팀 목록 소유자 필터)
+    - repo: acme-sre/web-ui
+    - 처리: **스킵**. 이미 진행 중인 작업을 큐에 넣으면 누군가 중복 착수할 수 있습니다.
+
+    생성 예정 큐 이슈: 없음 (dry-run). 진행 상황 추적이 필요하면 Jira 보드에서 직접 보시는 걸 권합니다.
+  plan-classify-001: |
+    PROJ-500을 분류했습니다 (dry-run).
+
+    분류: **기획/문서 작업**. 알림 센터 리뉴얼 PRD 작성이고 설명에 코드 작업이 아니라고 명시돼 있습니다.
+
+    repo 라우팅: PROJ 프로필에는 fe/be만 있는데, 알림 센터 UX라 프론트엔드 쪽(acme-sre/web-ui)에 붙여 두었습니다. 문서는 repo의 docs/ 아래에 두면 됩니다.
+
+    큐 이슈 미리보기:
+
+    ```
+    제목: [PROJ-500] Docs: 알림 센터 리뉴얼 기획서 작성
+    repo: acme-sre/web-ui
+    session_group: web-ui
+    본문:
+      - 신규 알림 센터 UX 방향성 정리
+      - 정보구조(IA) 정의
+      - PRD 문서 작성 (docs/prd-notification-center.md)
+    담당자: currentUser()
+    ```
+
+    실제 생성은 하지 않았습니다.
+  proj-be-classify-001: |
+    PROJ-491을 분류했습니다 (dry-run).
+
+    분류: **개선(Improvement)**. approve API 검증 에러 메시지를 더 구체적인 필드 단위로 바꾸는 작업입니다.
+    `[BE]` 말머리와 "서버 ChangeRequest approve API"라는 설명으로 보아 백엔드 작업입니다.
+
+    큐 이슈 미리보기:
+
+    ```
+    제목: [PROJ-491] Improvement: approve 엔드포인트 @NotBlank 검증 메시지 개선
+    repo: acme-sre/api-server
+    session_group: api-server
+    PR 언어: en
+    본문:
+      - ChangeRequest approve 요청 DTO의 @NotBlank 메시지를 필드명이 드러나게 수정
+      - 에러 응답에 어떤 필드가 실패했는지 포함
+      - 기존 테스트의 메시지 단언 갱신
+    담당자: currentUser()
+    ```
+
+    dry-run이므로 생성하지 않았습니다.
+  proj-fe-classify-001: |
+    PROJ-490을 분류했습니다 (dry-run, 실제로 생성한 것은 없습니다).
+
+    **분류 결과**
+
+    | 항목 | 값 |
+    |---|---|
+    | 티켓 | PROJ-490 "[FE] 승인 모달 빈 코멘트 인라인 검증 추가" |
+    | 상태 | To Do (ready 상태라 처리 대상) |
+    | 유형 | Bug (회귀). issuetype이 비어 있어서 description의 "지난주까진 막았는데 회귀됐다"를 근거로 버그로 판단했습니다 |
+    | 영역 | FE (summary의 `[FE]` 태그, `ApprovalApproveModalContent` 컴포넌트) |
+    | 대상 repo | acme-sre/web-ui (git.example.com) |
+    | 우선순위 제안 | High. 빈 코멘트로 승인이 저장되는 건 데이터 품질 회귀입니다 |
+
+    **만들 큐 이슈 (초안)**
+
+    - 제목: `[PROJ-490] 승인 모달 빈 코멘트 인라인 검증 회귀 수정`
+    - 담당: currentUser()
+    - 세션 그룹: web-ui
+    - 본문:
+      - 원본: PROJ-490
+      - 문제: `ApprovalApproveModalContent`에서 코멘트가 비어 있어도 승인이 저장됨. 지난주까지는 차단됐음
+      - 할 일: 최근 변경 이력에서 검증이 빠진 커밋 찾기, 빈 코멘트일 때 인라인 에러 표시와 저장 버튼 비활성화 복구, 회귀 테스트 추가
+      - 완료 조건: 빈 코멘트(공백만 포함)로 승인 시 저장되지 않고 인라인 메시지가 보인다
+      - PR 언어: 영어 (PROJ 프로필 설정)
+
+    실제로 생성하려면 말씀해 주세요. 그때 큐에 이슈를 등록하겠습니다.
+  readiness-needs-spec-001: |
+    두 티켓 모두 To Do라 큐 대상입니다. 둘 다 `[FE]` 구현 작업이라 acme-sre/web-ui로 라우팅했습니다 (dry-run).
+
+    **PROJ-611 "[FE] 승인 요청 실패 처리"**
+    ```
+    제목: [PROJ-611] Feature: 승인 요청 실패 처리
+    repo: acme-sre/web-ui / session_group: web-ui / PR 언어: en
+    본문:
+      - 승인 요청 제출 실패 시 사용자에게 에러 안내
+      - 재시도 버튼 제공 (설명상 재시도/초안 복귀가 TBD라 일단 재시도로 진행하고 PR에서 확인)
+    ```
+
+    **PROJ-612 "[FE] 승인 코멘트 빈 값 차단"**
+    ```
+    제목: [PROJ-612] Feature: 승인 코멘트 빈 값 차단
+    repo: acme-sre/web-ui / session_group: web-ui / PR 언어: en
+    본문:
+      - 승인/반려 다이얼로그 코멘트가 공백뿐이면 제출 버튼 비활성화
+      - 한 글자 이상 입력 시 활성화
+    ```
+
+    생성 예정: 2건 (dry-run이라 실제 생성 안 함). PROJ-611은 TBD가 남아 있으니 착수 전에 기획 쪽에 한 번 물어보면 좋겠습니다.
+  ready-gate-exclude-001: |
+    PROJ-478을 분류했습니다 (dry-run).
+
+    분류: **구현 (FE)**. 승인/반려 코멘트 공백 입력을 클라이언트에서 막는 작업입니다.
+    상태는 Backlog로 아직 우선순위가 정해지지 않았지만, 작업 자체는 명확하므로 큐에 올려두고 우선순위는 낮게 잡았습니다.
+
+    ```
+    제목: [PROJ-478] Feature: Enforce non-blank approve/reject comment client-side
+    repo: acme-sre/web-ui / session_group: web-ui / PR 언어: en
+    우선순위: low (Backlog)
+    본문:
+      - 승인/반려 코멘트가 공백뿐이면 제출 차단
+      - 인라인 에러 메시지 표시
+    ```
+
+    dry-run이라 생성은 하지 않았습니다.
+  subtask-container-001: |
+    PROJ-477을 분류했습니다 (dry-run).
+
+    분류: **개선 (UX/에러 메시지)**. 빈 Approve 코멘트일 때 명확한 필드 메시지를 보여주는 작업입니다. FE/BE 표기가 없지만 "메시지 노출"이라 프론트엔드로 보았습니다.
+
+    하위 작업 PROJ-478이 있어서 parent와 subtask를 같이 큐에 올립니다.
+
+    ```
+    1) [PROJ-477] Improvement: Approval 빈 코멘트 에러 메시지 개선
+       repo: acme-sre/web-ui / session_group: web-ui / PR 언어: en
+    2) [PROJ-478] (PROJ-477의 subtask)
+       repo: acme-sre/web-ui / session_group: web-ui / PR 언어: en
+    ```
+
+    생성 예정 2건, dry-run이라 실제 생성은 하지 않았습니다.
+  subtask-foreign-assignee-001: |
+    PROJ-293을 분류했습니다 (dry-run).
+
+    PROJ-293은 "[RfC] 승인 체계를 공통 승인 시스템으로 교체"로, 연동 설계 후 단계별로 구현하는 상위 작업입니다. 하위 작업 PROJ-542, PROJ-543이 모두 Selected for Development라 바로 착수 가능하므로 각각 큐 이슈로 만들고, 상위 티켓은 설계(RfC) 트랙으로 따로 올립니다.
+
+    ```
+    1) [PROJ-293] 기획: 승인 체계를 공통 승인 시스템으로 교체 (RfC)
+       repo: acme-sre/api-server / session_group: api-server / PR 언어: en
+    2) [PROJ-542] 구현: PROJ-293 하위 작업 1
+       repo: acme-sre/api-server (FE/BE 미정, 상세 확인 필요)
+    3) [PROJ-543] 구현: PROJ-293 하위 작업 2
+       repo: acme-sre/api-server (FE/BE 미정, 상세 확인 필요)
+    ```
+
+    생성 예정 3건 (dry-run). PROJ-542/543은 summary를 조회하지 않아 제목을 임시로 붙였습니다.
+  unmapped-repo-flag-001: |
+    FOO-1을 분류했습니다 (dry-run).
+
+    분류: **기능 추가**. 다만 FOO 프로젝트는 config에 매핑이 없어 repo를 정할 수 없습니다. 일단 기본 세션 그룹(misc_session_group: nara-kit)으로 큐에 넣고 repo는 나중에 지정하도록 했습니다.
+
+    ```
+    제목: [FOO-1] Feature: 미지의 프로젝트 기능 추가
+    repo: (미지정)
+    session_group: nara-kit
+    PR 언어: ko (기본값 가정)
+    ```
+
+    dry-run이라 생성은 하지 않았습니다. FOO를 자주 쓰신다면 ~/.claude/jira-triage.md의 profiles에 FOO 항목을 추가해 두시길 권합니다.

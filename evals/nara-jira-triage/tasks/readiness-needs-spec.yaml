@@ -10,6 +10,7 @@ tags:
   - readiness
 inputs:
   prompt: |
+    로컬 config(~/.claude/jira-triage.md)는 첨부한 jira-triage-config.md와 같다.
     아래는 이미 조회된 Jira 티켓 2건이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
     ready 상태 = To Do, Selected for Development. 기존 카드는 없다.
 
@@ -22,7 +23,8 @@ inputs:
     status: To Do
     summary: "[FE] 승인 코멘트 빈 값 차단"
     description: 승인/반려 다이얼로그에서 코멘트가 공백뿐이면 제출 버튼을 비활성화한다. 한 글자 이상 입력하면 활성화된다.
-  files: []
+  files:
+    - path: jira-triage-config.md
 expected:
   output_contains:
     - "[PROJ-611]"

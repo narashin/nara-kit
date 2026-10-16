@@ -8,6 +8,7 @@ tags:
   - subtask-gate
 inputs:
   prompt: |
+    로컬 config(~/.claude/jira-triage.md)는 첨부한 jira-triage-config.md와 같다.
     아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
     (issuetype 필드는 비어있다 — summary/description 의미로 판단하라.)
     key: PROJ-477
@@ -15,7 +16,8 @@ inputs:
     summary: Approval 빈 코멘트 에러 메시지 개선
     subtasks: [PROJ-478]
     description: 빈 Approve 코멘트일 때 명확한 필드 메시지 노출.
-  files: []
+  files:
+    - path: jira-triage-config.md
 expected:
   output_not_contains:
     - "[PROJ-477] 버그픽스"

@@ -14,3 +14,9 @@ expected:
     - "CREATE Bug"
     - "draft 테이블"
     - "Acceptance Criteria"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(nara-explain|nara-ask-repo)"

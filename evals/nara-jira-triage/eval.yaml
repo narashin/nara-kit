@@ -25,10 +25,5 @@ graders:
       assertions:
         - "len(output) > 40"
         - "'Mock response for:' not in output"
-  - type: text
-    name: classify_label
-    config:
-      regex_match:
-        - "(?i)(구현|버그픽스|기획|기타)"
 tasks:
   - "tasks/*.yaml"

@@ -5,13 +5,15 @@ description: |
 tags: [classify, routing, proj-be]
 inputs:
   prompt: |
+    로컬 config(~/.claude/jira-triage.md)는 첨부한 jira-triage-config.md와 같다.
     아래는 이미 조회된 Jira 티켓이다. jira-triage로 분류하고 (dry-run) 큐 이슈를 만들어줘.
     (issuetype 비어있음 — summary/description 의미 판단)
     key: PROJ-491
     status: Selected for Development
     summary: "[BE] approve 엔드포인트 @NotBlank 검증 메시지 개선"
     description: 서버 ChangeRequest approve API의 검증 에러 메시지 필드 특정화.
-  files: []
+  files:
+    - path: jira-triage-config.md
 expected:
   output_contains: ["api-server"]
   output_not_contains: ["web-ui"]
@@ -20,4 +22,5 @@ graders:
     name: task_regex
     config:
       regex_match:
+        - "(구현|버그픽스|기획|기타)"
         - "(?i)(session.?group|api-server)"

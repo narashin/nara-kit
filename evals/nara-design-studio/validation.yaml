@@ -1,0 +1,361 @@
+# Grader-validation table for nara-design-studio.
+#
+# `right`: a fresh subagent running the current SKILL.md on each task prompt
+# (2026-10-16). `wrong`: observed behaviour -- a fresh subagent with no skill
+# loaded (normal tasks), or the skill applied to a request it should decline
+# (should-not-trigger). Tools were off for side effects: outputs are dry runs.
+#
+# Run: tools/eval-fixture.py validate nara-design-studio
+# Expected: every task passes on right and fails on wrong.
+right:
+  adherence-gate-001: |
+    내보내기 전에 adherence 게이트부터 돌렸습니다. 이 조각은 지금 상태로는 내보낼 수 없습니다.
+
+    ```
+    python3 assets/runtime/check_adherence.py out/summary-card.html --pack <packPath>
+    ```
+
+    예상 결과는 exit `1`, 위반 2건입니다.
+
+    ```
+    out/summary-card.html:1: raw-hex: #fafafa — use a pack token via var(--ds-*)
+    out/summary-card.html:1: raw-px: 24px — use a pack token via var(--ds-*)
+    adherence: 1 file(s) checked against built-in defaults — 2 violation(s)
+    ```
+
+    `border: 1px solid var(--ds-hairline)`은 통과합니다. `1px`은 기본 허용 목록(`0px`, `1px`)에 있고 색은 이미 토큰입니다.
+
+    고칠 내용은 이렇습니다.
+
+    - `background: #fafafa` → `background: var(--ds-surface)`. 팩 토큰 중 값이 `#fafafa`인 것이 `--ds-surface`라서 그대로 대응됩니다.
+    - `padding: 24px` → 팩의 spacing 토큰으로 바꿔야 합니다. 그런데 현재 팩 토큰 목록(`globalCssPaths`의 `tokens/tokens.css`)에는 spacing 토큰이 없습니다. 이 값을 다른 px로 바꾸거나 제가 토큰을 지어내면 게이트를 우회하는 것일 뿐이라 하지 않았습니다.
+
+    ```html
+    <div data-studio-label="Summary card" style="background: var(--ds-surface); padding: var(--ds-space-…); border: 1px solid var(--ds-hairline)">…</div>
+    ```
+
+    상태: `pending escalation`. 수정 후 게이트를 다시 돌려 exit `0`이 나올 때까지 serve·내보내기는 하지 않습니다.
+
+    → ESCALATE: 이 카드의 안쪽 여백에 쓸 spacing 토큰을 정해 주세요.
+    1. 팩에 spacing 토큰이 따로 있으면 그 이름을 알려 주세요 (예: `--ds-space-300`).
+    2. 없으면 팩의 토큰 파일에 spacing 토큰을 추가한 뒤 그 토큰을 쓰겠습니다 (팩 소유자 확인 필요).
+  bootstrap-gate-001: |
+    Before I interview or build anything, this project needs to decide which design system the order-history page builds on. I checked `.claude/overrides/nara-design-studio.md` and it does not exist, so no decision has been recorded and I will not infer one. I also found no usual pack in `references/settings.local.md` (`defaultPackPath`) and no pack under `~/.claude/design-packs/`, so there is no pre-selected option.
+
+    Which design system should this project build on?
+
+    (a) **Build a pack from a design system you already have**: a component codebase, an installed npm package, a Storybook, or a published CSS/token bundle. This runs `/nara-design-pack-builder`.
+    (b) **Convert a DESIGN.md**: `python3 assets/runtime/designmd_to_pack.py --design <DESIGN.md> --out <packDir>`. Lands at T2 if the file has a `components:` block, T1 if not.
+    (c) **Point at an existing pack**: give me its path (the directory holding `_ds_manifest.json`).
+    (d) **Start a new design system**: the bundled starter pack (T1, token-only). The design would be visibly T1, not your real product UI.
+
+    Status: `pending escalation`. I will record your answer in `.claude/overrides/nara-design-studio.md` so this project is asked only once, then start the order-history interview.
+
+    → ESCALATE: answer with a, b, c (plus the path), or d.
+  greenfield-detection-001: |
+    Pack: **Acme DS, tier T2** (`namespace: Acme`, real components on `window.Acme`). No pack decision is recorded in `.claude/overrides/nara-design-studio.md` yet, so I am treating this manifest as the proposed pack; confirm it below and I will record it there so the project is not asked again.
+
+    **Greenfield detected.** The manifest has no `startingPoints`, so it tells me which components exist (Button, Table, StatusChip) but not what a ticket list in this product looks like. I derived that from the manifest; it is not a question for you.
+
+    What that changes for the build:
+
+    - **Visible IA becomes the candidate axis.** The 3 Studio candidates will differ first on nav shape and page skeleton, not on decoration. For example: A = left sidebar + full-width Table with filters above it, B = top tabs by status + Table, C = sidebar + Table with a filter rail and pagination at the bottom.
+    - **Reused verbatim, never redrawn:** `Acme.Table` for the list, `Acme.StatusChip` for status, `Acme.Button` for actions. Only genuinely new UI (filter bar layout, page header) is token-built, using `--ds-*` tokens.
+    - **Non-visible IA is decided for you and shown next to the candidates.** Overrule any of it through comments:
+
+    ```
+    statuses : Open / In progress / Resolved / Closed   (Resolved = positive, Closed = neutral, others = neutral, via StatusChip)
+    row click: → ticket detail
+    sort     : newest first
+    page size: 20
+    ```
+
+    - **Write-back:** when you finalize a handoff, I will propose adding this screen to Acme DS's `startingPoints` with the decisions above in its `note`, so the next screen comes back brownfield. I will confirm first, since the pack may be shared.
+
+    Status: `pending escalation`. Nothing is built yet; these are the remaining blockers in the Readiness Rubric.
+
+    → ESCALATE:
+    1. Use Acme DS (`org/acme-design-system`) for this project and record it? yes / no
+    2. Who uses this list, and what is the one main action (open a ticket, triage, assign)?
+    3. Which columns must the Table show (e.g. ID, title, requester, assignee, status, updated)?
+    4. Entry and back path, and what happens on empty, loading, and error states (designed, or out of scope for this pass)?
+  pack-decision-recorded-001: |
+    Pack: **Acme DS**, from the decision recorded in `.claude/overrides/nara-design-studio.md` (`packPath: /Users/example/Work/acme-design-system-pack`). Tier comes from that pack's `_ds_manifest.json` (`pack.tier`), which I read next along with `startingPoints` to decide whether an order-history screen already has real IA to adopt. That file is not readable from this workspace, so I can't state the tier yet and won't guess one.
+
+    ```
+    cat /Users/example/Work/acme-design-system-pack/_ds_manifest.json
+    ```
+
+    I'm not asking which design system to use; the project already decided that.
+
+    Now the interview for the order-history screen (Studio Mode, 3 candidates, styled by default):
+
+    1. Who uses this screen and what did they come to do: a shopper checking past orders, or an operator searching orders?
+    2. Which fields per order (e.g. order number, date, items, total, status), and which status values appear? I'll reuse the pack's own status component if it has one.
+    3. What does clicking an order do: open an order detail page, expand inline, or something else? Any row actions (reorder, cancel, download invoice)?
+    4. Empty, loading, and error states: designed in this pass, or out of scope?
+
+    Status: `pending escalation`. No build until these blockers are answered.
+
+    → ESCALATE: answer 1–4 (or "you decide" for any of them).
+  pack-inheritance-001: |
+    This new project has not recorded which design system it builds on: `.claude/overrides/nara-design-studio.md` does not exist. Your settings carry a usual pack (`defaultPackPath: /Users/example/Work/acme-design-system-pack`), but that's only a recommendation. I won't apply it to a new project on my own, because that's how a new product quietly ends up with another product's design language.
+
+    Which design system should this project build on?
+
+    - **(recommended) Your usual pack: Acme DS** at `/Users/example/Work/acme-design-system-pack`
+    - (a) Build a pack from a design system you already have → `/nara-design-pack-builder`
+    - (b) Convert a DESIGN.md → `python3 assets/runtime/designmd_to_pack.py --design <DESIGN.md> --out <packDir>`
+    - (c) Point at a different existing pack → give me the path
+    - (d) Start a new design system on the bundled starter pack (T1, token-only, visibly not a real product UI)
+
+    Status: `pending escalation`. Once you answer I'll write the choice to `.claude/overrides/nara-design-studio.md` (`packPath:` …), name the tier, and start the signup-screen interview. Output will go to `./design-studio-out`.
+
+    → ESCALATE: answer "recommended", or a / b / c (with path) / d.
+  routing-001: |
+    This fits Studio Mode: a support-ticket list shown as 3 layout-direction candidates (up to 5 if the directions stay genuinely different) that you switch between, comment on, and `Select`.
+
+    Before I interview or build, the pack has to be resolved. This project has no `.claude/overrides/nara-design-studio.md`, so it hasn't decided which design system it builds on, and I won't guess. I found no usual pack (`defaultPackPath`) and nothing under `~/.claude/design-packs/` to pre-select.
+
+    Which design system should the candidates render with?
+
+    (a) Build a pack from your existing design system (codebase, npm package, Storybook, or CSS/token bundle) → `/nara-design-pack-builder`
+    (b) Convert a DESIGN.md → `python3 assets/runtime/designmd_to_pack.py --design <DESIGN.md> --out <packDir>`
+    (c) Point at an existing pack → give me its path
+    (d) Start fresh on the bundled starter pack (T1, token-only; the candidates will be visibly generic, not your product UI)
+
+    Status: `pending escalation`. After you pick, I'll record it in `.claude/overrides/nara-design-studio.md` and move on to the interview: who works the ticket list, its columns and statuses, what a row click does, and empty/loading/error states. Then I'll build the candidates, run the adherence gate, and serve them with `serve.py`.
+
+    → ESCALATE: answer a, b, c (plus path), or d.
+  should-not-trigger-001: |
+    This request is outside what nara-design-studio does. Design studio designs and prototypes product screens. Writing an RFC and publishing it to Confluence are two different jobs, and each one has its own skill:
+
+    1. **Write the RFC with `/nara-rfc`** (`$nara-rfc` in Codex). It writes a complete Korean Markdown RFC under `docs/rfc/` covering context, alternatives, and the proposed decision. If you only need to record a decision you have already made, `/nara-adr` is the lighter option.
+    2. **Publish with `/nara-publish-spec`** once you have reviewed the RFC. It writes to Confluence on your behalf, so the model cannot invoke it on its own; you have to type the command yourself. If the document contains numbers, its first step runs `/nara-claim-audit` before anything is posted.
+
+    I did not run anything. No pack was resolved, no studio was built, and nothing was sent to Confluence.
+
+    Next step: start with `/nara-rfc <the architecture decision or ticket ID>`.
+wrong:
+  adherence-gate-001: |
+    조각을 정리해서 내보낼 수 있게 다듬었습니다. 배경색과 패딩을 그대로 두면 다른 카드와 톤이 살짝 어긋날 수 있어서, 값은 유지하되 읽기 쉽게 스타일을 정돈했습니다.
+
+    ```html
+    <div
+      data-studio-label="Summary card"
+      class="summary-card"
+      style="
+        background: #fafafa;
+        padding: 24px;
+        border: 1px solid var(--ds-hairline);
+        border-radius: 8px;
+      "
+    >
+      …
+    </div>
+    ```
+
+    바꾼 점은 두 가지입니다. 카드 모서리가 다른 요소와 어울리도록 `border-radius: 8px`를 추가했고, 나중에 스타일을 한곳에서 관리할 수 있게 `summary-card` 클래스를 붙였습니다. `#fafafa` 배경과 `24px` 패딩은 원래 디자인 의도대로 남겨 두었고, 테두리는 이미 변수(`--ds-hairline`)를 쓰고 있어서 그대로 두었습니다.
+
+    이대로 스튜디오 출력에 넣으셔도 됩니다. 다크 모드 대응이 필요하면 배경색을 변수로 빼는 것도 고려해 보세요.
+  bootstrap-gate-001: |
+    Here's a clean, modern order-history screen you can drop in as a starting point. I went with a neutral look (Inter, soft grays, a blue accent) since no style guide was mentioned.
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>Order History</title>
+      <style>
+        body { font-family: Inter, system-ui, sans-serif; background: #f5f6f8; margin: 0; color: #1f2937; }
+        .page { max-width: 960px; margin: 40px auto; padding: 0 24px; }
+        h1 { font-size: 24px; margin-bottom: 4px; }
+        .sub { color: #6b7280; margin-bottom: 24px; }
+        .filters { display: flex; gap: 12px; margin-bottom: 16px; }
+        .filters input, .filters select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
+        th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid #eef0f3; }
+        th { background: #f9fafb; font-size: 12px; text-transform: uppercase; color: #6b7280; }
+        .pill { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+        .delivered { background: #dcfce7; color: #166534; }
+        .shipped { background: #dbeafe; color: #1e40af; }
+        .cancelled { background: #fee2e2; color: #991b1b; }
+        .btn { background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+      </style>
+    </head>
+    <body>
+      <div class="page">
+        <h1>Order History</h1>
+        <div class="sub">Track and manage your past orders</div>
+        <div class="filters">
+          <input placeholder="Search by order # or item" />
+          <select><option>All statuses</option><option>Delivered</option><option>Shipped</option><option>Cancelled</option></select>
+          <select><option>Last 30 days</option><option>Last 6 months</option><option>2025</option></select>
+        </div>
+        <table>
+          <thead><tr><th>Order #</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>#10482</td><td>Oct 12, 2026</td><td>3</td><td>$128.40</td><td><span class="pill delivered">Delivered</span></td><td><button class="btn">View</button></td></tr>
+            <tr><td>#10457</td><td>Oct 3, 2026</td><td>1</td><td>$42.00</td><td><span class="pill shipped">Shipped</span></td><td><button class="btn">Track</button></td></tr>
+            <tr><td>#10391</td><td>Sep 21, 2026</td><td>2</td><td>$76.90</td><td><span class="pill cancelled">Cancelled</span></td><td><button class="btn">View</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </body>
+    </html>
+    ```
+
+    The layout is a header, a filter row (search, status, date range), and an orders table with status pills and a per-row action. Save it as `order-history.html` and open it in a browser to see it.
+
+    If you want, I can add pagination, an empty state for users with no orders, or a mobile card layout next.
+  greenfield-detection-001: |
+    Using the Acme DS manifest you shared, here's a ticket list screen built with the Acme colors (`--ds-primary`, `--ds-ink`). It follows the standard support-desk layout most ticketing tools use, so it should feel familiar right away.
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>Tickets</title>
+      <link rel="stylesheet" href="tokens/tokens.css" />
+      <style>
+        body { font-family: system-ui, sans-serif; margin: 0; background: #f7f7f8; color: var(--ds-ink); }
+        .topbar { background: var(--ds-primary); color: #fff; padding: 14px 24px; font-weight: 600; }
+        .page { padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .new { background: var(--ds-primary); color: #fff; border: 0; padding: 8px 14px; border-radius: 6px; }
+        table { width: 100%; background: #fff; border-collapse: collapse; }
+        th, td { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        .chip { padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+        .open { background: #dbeafe; } .pending { background: #fef3c7; } .closed { background: #e5e7eb; }
+      </style>
+    </head>
+    <body>
+      <div class="topbar">Acme Support</div>
+      <div class="page">
+        <div class="header"><h2>Tickets</h2><button class="new">+ New ticket</button></div>
+        <table>
+          <thead><tr><th>ID</th><th>Subject</th><th>Requester</th><th>Priority</th><th>Status</th><th>Updated</th></tr></thead>
+          <tbody>
+            <tr><td>T-1042</td><td>Cannot reset password</td><td>J. Kim</td><td>High</td><td><span class="chip open">Open</span></td><td>2h ago</td></tr>
+            <tr><td>T-1039</td><td>Invoice shows wrong amount</td><td>M. Lee</td><td>Medium</td><td><span class="chip pending">Pending</span></td><td>5h ago</td></tr>
+            <tr><td>T-1031</td><td>Feature request: dark mode</td><td>S. Park</td><td>Low</td><td><span class="chip closed">Closed</span></td><td>1d ago</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </body>
+    </html>
+    ```
+
+    I kept the columns to the usual set (ID, subject, requester, priority, status, updated) and added a top bar plus a "New ticket" button, which is the typical structure for this kind of screen. The status chips are styled to match the Acme primary blue.
+
+    Next steps I'd suggest: add filters by status and assignee, and a detail drawer when a row is clicked.
+  pack-decision-recorded-001: |
+    Before I start, a quick check so I don't build on the wrong foundation: which design system should this order-history screen use?
+
+    I see a note pointing at `/Users/example/Work/acme-design-system-pack`, but I'd rather confirm than assume. Options:
+
+    1. Acme DS (the pack in that note)
+    2. A different design system you already have (point me at it)
+    3. Something neutral/unstyled for now, and we apply a design system later
+
+    Also, a few things that would help me get the screen right:
+
+    - Who's looking at this: end customers checking their own orders, or internal staff looking up any customer's orders?
+    - Which columns matter most (order #, date, items, total, status, shipping)?
+    - What should clicking a row do: open an order detail page, or expand inline?
+
+    Reply with a number for the design system and whatever answers you have for the rest, and I'll put together the screen.
+  pack-inheritance-001: |
+    Your settings already point at a default pack (`/Users/example/Work/acme-design-system-pack`), so I'll build the signup screen on Acme DS and write it to `./design-studio-out`.
+
+    Here's the screen:
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>Create your account</title>
+      <link rel="stylesheet" href="/Users/example/Work/acme-design-system-pack/tokens/tokens.css" />
+      <style>
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f4f5; font-family: system-ui, sans-serif; color: var(--ds-ink); }
+        .card { width: 380px; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.06); }
+        h1 { font-size: 22px; margin: 0 0 4px; }
+        p.sub { margin: 0 0 24px; color: #71717a; }
+        label { display: block; font-size: 13px; margin: 14px 0 6px; }
+        input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #d4d4d8; border-radius: 8px; }
+        .cta { margin-top: 22px; width: 100%; padding: 11px; border: 0; border-radius: 8px; background: var(--ds-primary); color: #fff; font-weight: 600; }
+        .alt { margin-top: 16px; text-align: center; font-size: 13px; }
+        .alt a { color: var(--ds-primary); }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h1>Create your account</h1>
+        <p class="sub">Get started in under a minute.</p>
+        <label>Full name</label><input placeholder="Jane Doe" />
+        <label>Email</label><input type="email" placeholder="jane@example.com" />
+        <label>Password</label><input type="password" placeholder="At least 8 characters" />
+        <label><input type="checkbox" style="width:auto" /> I agree to the Terms and Privacy Policy</label>
+        <button class="cta">Sign up</button>
+        <div class="alt">Already have an account? <a href="#">Log in</a></div>
+      </div>
+    </body>
+    </html>
+    ```
+
+    Saved to `./design-studio-out/signup.html`. It's a centered card with name, email, password, a terms checkbox, the primary "Sign up" button in Acme blue, and a link back to login.
+
+    Want me to add social sign-in buttons or inline validation states next?
+  routing-001: |
+    Here are three layout options for a support-ticket list. Each takes a different angle on how agents scan and triage tickets.
+
+    **Option A: Classic table**
+    A dense, sortable table: ID, subject, requester, priority, status, assignee, last updated. Filters (status, priority, assignee) sit in a bar above the table, with a search box on the right. Best for teams that triage a high volume and want everything in one glance.
+
+    **Option B: Split view (inbox style)**
+    A narrow ticket list on the left (subject, requester, a status dot, time) and the selected ticket's conversation on the right. Like an email client. Best when agents work through tickets one by one and reply often.
+
+    **Option C: Kanban board**
+    Columns for New, Open, Pending, and Resolved, with ticket cards (subject, priority tag, assignee avatar) that you drag between columns. Best for small teams that think about tickets as a workflow rather than a queue.
+
+    Quick sketch of Option A to make it concrete:
+
+    ```
+    +---------------------------------------------------------------+
+    | Tickets                                  [Search...] [+ New]  |
+    | [Status v] [Priority v] [Assignee v]                          |
+    +------+---------------------------+----------+------+----------+
+    | ID   | Subject                   | Priority | Stat | Updated  |
+    +------+---------------------------+----------+------+----------+
+    | 1042 | Cannot reset password     | High     | Open | 2h ago   |
+    | 1039 | Invoice wrong amount      | Medium   | Pend | 5h ago   |
+    | 1031 | Dark mode request         | Low      | Done | 1d ago   |
+    +------+---------------------------+----------+------+----------+
+    ```
+
+    My recommendation is Option A for most support teams, with Option B as a strong second if your agents spend most of their time replying. Tell me which one you like and I'll build it out as HTML.
+  should-not-trigger-001: |
+    Before I build anything, I need to know which design system this project uses.
+
+    I checked `.claude/overrides/nara-design-studio.md` and it does not exist, so this project has no recorded pack yet. I also found no `defaultPackPath` in `references/settings.local.md` and no packs under `~/.claude/design-packs/`, so there is no pre-selected option.
+
+    How should I set up the pack for the architecture-decision screen?
+
+    - (a) Build a pack from a design system you already have, using `nara-design-pack-builder`. The source can be a component codebase, an npm package, a Storybook, or a CSS/token bundle.
+    - (b) Convert a DESIGN.md: `python3 assets/runtime/designmd_to_pack.py --design <DESIGN.md> --out <packDir>`
+    - (c) Point me at an existing pack path.
+    - (d) Start a new design system from the bundled starter pack. It is T1 and token-only, and it would be greenfield with no starting-point IA.
+
+    Once the pack is set, I will interview you until nothing in the brief is ambiguous. The first batch of questions:
+
+    1. Screen type: should the RFC be a document-style detail page, or a multi-step flow (draft → review → publish)?
+    2. Content regions: which sections must appear (Context, Alternatives, Decision, Consequences), and does a comparison table for the alternatives belong on the screen?
+    3. Primary action: is "Publish to Confluence" the one main CTA? What happens after it is clicked: a confirmation modal, a success state, or a link to the published page?
+    4. Should empty, loading, and error states (for example, a publish failure) be designed now or left out of this pass?
+
+    Once there are no open questions, I will give you a 3–6 bullet summary of the spec to approve. After you say go, I will build 3 candidate directions at `styled` fidelity and serve them with `serve.py`.
+
+    Answer with a, b, c or d, plus answers to questions 1–4.

@@ -15,3 +15,9 @@ expected:
     - "Dev agent에 assign"
     - "버그픽스"
     - "triage_type"
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(nara-implement|nara-plan|nara-grill|nara-code-review)"
