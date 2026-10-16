@@ -84,7 +84,7 @@ There is no `waza eval` command — it is `waza run`. But neither engine measure
 | `waza check <skill>` | Works. Static only: tokens, links, frontmatter, description quality |
 | `waza coverage` | Works. Structural only: does a suite exist, which grader types |
 | `waza grade` on a real run's JSON | Works. The only path to a behavioural score |
-| `tools/eval-fixture.py generate <skill>` | Works, bills the headless quota. Hermetic `claude -p` (no settings, MCP or tools) with SKILL.md + references appended as system prompt. Real text for grader validation (`validate --right-from gen`), not a skill benchmark: tools are off, so git/gh steps are narrated, never run. Model is the CLI built-in default unless `--model` pins one; only the skill's own `references/*.md` are appended (sibling links are not followed); validate warns when a generation predates a SKILL.md change |
+| `tools/eval-fixture.py generate <skill>` | Works, bills the headless quota. Hermetic `claude -p` (no settings, MCP or tools) with SKILL.md + references appended as system prompt. Real text for grader validation (`validate --right-from gen`), not a skill benchmark: tools are off, so git/gh steps are narrated, never run, and a skill that scans the codebase first often emits a pseudo tool call (`<invoke ...>`) and stops; generate rejects that output rather than saving it. For those skills, generate with fresh tool-enabled subagents instead (see `evals/nara-ac-draft/validation.yaml` header). Model is the CLI built-in default unless `--model` pins one; only the skill's own `references/*.md` are appended (sibling links are not followed); validate warns when a generation predates a SKILL.md change |
 
 The mock echoes the prompt, the task's own `name`/`description`, and the fixture text verbatim. Grading that measures the eval against itself: `nara-gap` scored 4/8 purely because assertion strings appeared in its own description (`Score` matched `"produces docs/gap.md with a score (0-100)"`, case-insensitively). **Every suite therefore carries the `real_run` provenance gate, which fails all tasks under mock on purpose.** A loud 0/8 beats a quiet tautology that reads like a measurement. Never remove that gate to make a mock run look green.
 
@@ -95,6 +95,8 @@ What is measurable without an engine is the graders. Give them a correct output 
 ```bash
 tools/eval-fixture.py validate <skill>      # probe → fill both sides → grade → report
 ```
+
+Task-level `output_contains` / `output_not_contains` match literal substrings, not regex: `(?i)(a|b)` matches nothing.
 
 The table lives in `evals/<skill>/validation.yaml` (`right:` / `wrong:` keyed by task id). Populate `wrong:` from **behaviour the skill actually produced** — invented failures are trivially discriminated and prove nothing. Expected result: every task passes on `right` and fails on `wrong`. A `wrong`-side pass means the assertion is satisfiable by incorrect output; a `right`-side failure means it is unsatisfiable by correct output. Both are grader defects, not skill findings.
 
