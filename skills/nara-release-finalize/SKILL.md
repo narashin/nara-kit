@@ -14,6 +14,8 @@ disable-model-invocation: true
 
 # release-finalize — Merge-PR + Tag + Release Note, Gated at Prod Trigger
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 Picks up where `release-prep` leaves off: QA already passed on the release branch. Automates
 the two mechanical halves (merge-PR open, release note draft, tag + `gh release create`) and
 hard-gates the one step that fires production deploy (tag push). Never touches PR

@@ -11,6 +11,8 @@ metadata:
 
 # jira-drain — 큐 티켓 → herdr space 착수
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 사람이 고른 Multica 큐 티켓 1건을 받아, metadata 라우팅대로 herdr worktree(space)를 띄우고 그 안에서 claude가 워크플로를 PR까지 자율 실행한다. **인터랙티브 구독 = $0.**
 
 herdr에서 **space = repo@branch** 단위다 (`worktree create` 한 방에 workspace + tab + pane 생성). 티켓 하나 = space 하나 — tab/group은 신경 쓰지 않는다.

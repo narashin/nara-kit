@@ -56,14 +56,14 @@
   .panel.before { background:var(--code); } .panel.after { background:var(--accent-bg); }
   .panel h3 { font-size:15px; margin:0 0 6px; }
   figure { margin:16px 0; } figcaption { color:var(--muted); font-size:14px; margin-top:6px; }
-  .flow { display:grid; gap:8px; }
+  .flow { display:grid; gap:8px; list-style:none; margin:0; padding:0; }
   .step { border-radius:10px; padding:10px 12px; min-width:0; font-size:14px; }
   .step.new { border:2px dashed var(--accent); background:var(--accent-bg); }
   .step.old { border:2px solid var(--line); }
   .step.gone { border:2px dotted var(--muted); text-decoration:line-through; }
   .badge { display:inline-block; font-size:12px; font-weight:700; border:1px solid currentColor; border-radius:6px; padding:0 6px; margin-right:6px; }
   .step.new .badge { color:var(--accent); } .step.old .badge, .step.gone .badge { color:var(--muted); }
-  .arrow { text-align:center; color:var(--muted); font-size:14px; line-height:1; }
+  .arrow { display:block; text-align:center; color:var(--muted); font-size:14px; line-height:1; margin:-4px 0 6px; }
   svg { max-width:100%; height:auto; } svg text { fill:var(--fg); font-size:13px; }
   .table-wrap { overflow-x:auto; position:relative; }
   table { border-collapse:collapse; width:100%; font-size:15px; }
@@ -105,8 +105,8 @@
     <section id="intuition">
       <h2>직관: TODO 핵심 동작 차이</h2>
       <div class="row2">
-        <div class="panel before"><h3>이전</h3><pre><code>TODO 작은 입력과 이전 결과</code></pre></div>
-        <div class="panel after"><h3>이후</h3><pre><code>TODO 같은 입력과 새 결과</code></pre></div>
+        <div class="panel before"><h3>이전</h3><pre><code>TODO-예시: 작은 입력과 이전 결과</code></pre></div>
+        <div class="panel after"><h3>이후</h3><pre><code>TODO-예시: 같은 입력과 새 결과</code></pre></div>
       </div>
     </section>
 
@@ -114,15 +114,15 @@
       <h2>흐름: TODO 실행이 지나가는 길</h2>
       <figure aria-labelledby="fig-1-cap">
         <!-- Draw only verified components; delete the figure if prose says it better. -->
-        <div class="flow" role="img" aria-label="TODO 그림이 보여 주는 흐름 한 줄">
-          <div class="step new"><span class="badge">바뀜</span><strong>TODO 단계</strong>: TODO 무엇을 받아 무엇을 넘기나</div>
-          <div class="arrow" aria-hidden="true">↓</div>
-          <div class="step old"><span class="badge">그대로</span><strong>TODO 단계</strong>: TODO</div>
-        </div>
+        <!-- A real text list, not role="img": screen readers must reach every step and its 바뀜/그대로 badge. -->
+        <ol class="flow" aria-label="TODO 그림이 보여 주는 흐름 한 줄">
+          <li class="step new"><span class="badge">바뀜</span><strong>TODO 단계</strong>: TODO 무엇을 받아 무엇을 넘기나</li>
+          <li class="step old"><span class="arrow" aria-hidden="true">↓</span><span class="badge">그대로</span><strong>TODO 단계</strong>: TODO</li>
+        </ol>
         <figcaption id="fig-1-cap">읽는 법: TODO</figcaption>
       </figure>
       <ol>
-        <li>TODO 진입점 <code>path/to/file.py:120</code> TODO 무엇을 받는다<sup id="cite-2-1"><a href="#ref-2" aria-label="근거 2">[2]</a></sup></li>
+        <li>TODO 진입점 <code>TODO-path:TODO-line</code> TODO 무엇을 받는다<sup id="cite-2-1"><a href="#ref-2" aria-label="근거 2">[2]</a></sup></li>
       </ol>
       <p>바뀌지 않아야 하는 것: TODO 계약·불변식과 그 근거(테스트, base/head 코드), 또는 확인 못 한 한계.</p>
     </section>

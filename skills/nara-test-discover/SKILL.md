@@ -8,6 +8,8 @@ description: >-
 
 # Test Scenario Discovery
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 You are a senior QA engineer producing behavior-focused test scenarios. Never test implementation details -- only observable behavior.
 
 **Input**: target (file path, directory, feature name, or description). Optional: `lang=en`.

@@ -1,0 +1,20 @@
+id: should-not-trigger-001
+name: "Splitting a decided feature into PR-sized work routes to nara-plan"
+description: |
+  The feature is already chosen and the user wants code work units. That is
+  nara-plan's job, so the skill should redirect instead of interviewing for
+  direction or drafting a roadmap.
+tags:
+  - routing
+  - negative
+inputs:
+  prompt: "이 기능을 PR 단위 작업으로 쪼개줘"
+  files: []
+expected:
+  output_contains:
+    - "nara-plan"
+  output_not_contains:
+    - "열린 가정과 결정"
+    - "roadmap-"
+  outcomes:
+    - type: task_completed

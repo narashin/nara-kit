@@ -6,7 +6,14 @@
 # title shape than the repo rule (so copying commit subjects is detectable).
 set -euo pipefail
 dir="${1:?usage: template-repo.sh <empty-dir>}"
-mkdir -p "$dir" && cd "$dir"
+mkdir -p "$dir"
+# Refuse anything that is not empty: every step below overwrites (git config,
+# CONTRIBUTING.md, origin/main) and `git add -A` would commit whatever is there.
+if [ -n "$(ls -A "$dir")" ]; then
+  echo "refusing: $dir is not empty (pass a fresh dir, e.g. \"\$(mktemp -d)\")" >&2
+  exit 2
+fi
+cd "$dir"
 git init -q -b main
 git config user.name "dev" && git config user.email "dev@example.com"
 

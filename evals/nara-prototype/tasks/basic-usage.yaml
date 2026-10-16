@@ -1,0 +1,26 @@
+id: basic-usage-001
+name: "Comparing two debounce strategies yields a criteria-mapped report with one verdict"
+description: |
+  Given a small codebase description and a pending decision between leading and trailing
+  debounce, the skill states a hypothesis with measurable criteria, builds a logic harness
+  with realistic keystroke input and a fake search API, records each run under Tested,
+  writes docs/prototypes/<slug>/REPORT.md in the fixed section order, and ends with exactly
+  one verdict line. The checkpoint is pre-approved in the prompt.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "debounce-decision.md 보고 leading이랑 trailing 중 뭐가 맞는지 harness로 검증해줘. 체크포인트 승인함: 경로 docs/prototypes/search-debounce/, 검색 API는 fake, 질문과 기준은 파일에 적힌 3개 그대로."
+  files:
+    - path: debounce-decision.md
+expected:
+  output_contains:
+    - "## Confirmed"
+    - "## Tested"
+    - "## Still fake"
+    - "verdict:"
+  output_not_contains:
+    - "EVAL-FAKE-DO-NOT-USE"
+    - "프로토타입 불필요"
+  outcomes:
+    - type: task_completed

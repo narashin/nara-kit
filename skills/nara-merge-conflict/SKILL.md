@@ -8,6 +8,8 @@ description: >-
 
 # merge-conflict — 의도 기반 충돌 해결
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 머지/리베이스/체리픽 충돌을 hunk별로 **ours-intent vs theirs-intent를 재구성**해 후보 해결안으로 제시한다. 양쪽 다 의미있는 변경이면 사람이 결정 — AI는 후보 생성기, 판단은 사람.
 
 ## When to use

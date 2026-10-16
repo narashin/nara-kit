@@ -9,6 +9,8 @@ description: >-
 
 # nara-implement — 검증 게이트 구현
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 승인된 전략 없이 파일을 수정하지 않는다. 순서를 지킨다:
 
 ```text

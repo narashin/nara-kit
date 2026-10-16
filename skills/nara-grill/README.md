@@ -2,7 +2,7 @@
 
 > 사람용 문서. Claude는 런타임에 이 파일을 읽지 않음 (SKILL.md + references만 로드). 호출·용도 안내.
 
-Pressure-test an idea, plan, design, ticket, or RFC by researching facts first, then validating decisions one question at a time. Silence is never consent; no source is mutated. Verdict: confirmed | pending | aborted | Blocked.
+Pressure-test an idea, plan, design, ticket, or RFC by researching facts first, then asking every currently answerable decision in one round, deferring only questions that depend on an open answer. Silence is never consent; no source is mutated. Verdict: confirmed | pending | aborted | Blocked.
 
 ## 호출
 

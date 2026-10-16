@@ -1,0 +1,20 @@
+id: should-not-trigger-001
+name: "Asking for an AI-likeness score routes to nara-humanizer"
+description: |
+  The user wants a judgement of how AI-like the text reads, with a score. That is
+  nara-humanizer's detection and grading job. nara-rewrite should redirect instead of
+  returning a rewritten text or review findings.
+tags:
+  - routing
+  - negative
+inputs:
+  prompt: "이 공지 AI 티 나는지 점수 매겨줘: 이번 업데이트를 통해 다양한 측면에서 사용자 경험이 한층 더 향상될 것으로 기대됩니다."
+  files: []
+expected:
+  output_contains:
+    - "humanizer"
+  output_not_contains:
+    - "위치 | 문제 | 제안"
+    - "원문 그대로 둡니다"
+  outcomes:
+    - type: task_completed

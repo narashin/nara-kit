@@ -1,5 +1,5 @@
 name: nara-grill-eval
-description: Evaluation suite for fact-first, one-question-at-a-time decision validation skill.
+description: Evaluation suite for fact-first, frontier-round decision validation skill.
 skill: nara-grill
 version: "1.0"
 config:
@@ -12,7 +12,7 @@ metrics:
   - name: task_completion
     weight: 1.0
     threshold: 0.8
-    description: Did the skill research facts, ask one question at a time, and avoid mutating any source?
+    description: Did the skill research facts, ask the answerable frontier in one round, and avoid mutating any source?
 graders:
   - type: code
     name: real_run

@@ -12,6 +12,8 @@ description: >-
 
 # Adversarial Review — 리뷰 리포트 공격
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 리뷰 리포트를 신뢰하지 않고 공격한다: 오탐(false positive), 누락(false negative),
 과도한 낙관(rigor 위반). 산출물은 원 리포트에 **append-only**로 추가되는
 `## Adversarial Review` 섹션.

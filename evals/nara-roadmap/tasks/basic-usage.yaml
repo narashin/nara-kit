@@ -1,0 +1,29 @@
+id: basic-usage-001
+name: "A vague initiative with an unsourced deadline opens a numbered frontier round, not a roadmap"
+description: |
+  The note describes a nontechnical initiative with a "December" deadline nobody
+  owns and no capacity information. A correct first reply reflects the context,
+  tags the unsourced deadline and the missing capacity as UNVERIFIED instead of
+  filling them, and asks several independent decisions in one round (Q1, Q2, ...),
+  with the question block last. It must not draft milestones or write a roadmap
+  file before the interview.
+tags:
+  - basic
+  - interaction
+inputs:
+  prompt: "/nara-roadmap vague-initiative.md 보고 이거 어떻게 추진할지 같이 잡아줘"
+  files:
+    - path: vague-initiative.md
+expected:
+  # "UNVERIFIED" without brackets so both [UNVERIFIED] and [UNVERIFIED: ...] match.
+  # Deferral of dependent questions is not graded: question numbers are not stable
+  # (see evals/nara-grill/tasks/frontier-round.yaml).
+  output_contains:
+    - "Q1"
+    - "Q2"
+    - "UNVERIFIED"
+  output_not_contains:
+    - "열린 가정과 결정"
+    - "roadmap-"
+  outcomes:
+    - type: task_completed

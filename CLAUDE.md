@@ -1,6 +1,6 @@
 # nara-kit
 
-Agent Skills repo — 56 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
+Agent Skills repo — 59 opinionated workflow skills by shinnara. Installed via `npx skills add narashin/nara-kit` into Claude Code and Codex.
 
 ## Structure
 
@@ -43,7 +43,7 @@ description: >-
 
 ## Output Contract
 
-All nara-kit skills follow the shared output contract: [references/output-contract.md](references/output-contract.md).
+All nara-kit skills follow the shared output contract: [skills/nara-now/references/output-contract.md](skills/nara-now/references/output-contract.md). It lives inside a skill directory because only `skills/<name>/` ships to consumers; a repo-root file never reached an installed skill. Every SKILL.md carries one pointer line to it right under its H1 (`tools/check-docs.py` fails a skill without it).
 - Response = receipt (3-6 lines), not full artifact
 - 4 elements: Outcome / Evidence / Artifact Paths / Next Action
 - Status labels: `recorded only` / `applied` / `pending escalation` / `skipped`
@@ -51,7 +51,7 @@ All nara-kit skills follow the shared output contract: [references/output-contra
 - Escalation uses `→ ESCALATE:` prefix
 - Errors use `❌ 실패:` block
 
-Skills inherit this contract automatically — do not duplicate the reference in individual SKILL.md files.
+The pointer line is the only per-skill reference: do not copy the contract's rules into a SKILL.md. A skill whose body deliberately differs (for example nara-rewrite returns the rewrite itself, not a receipt) says so in its body; the pointer line already states that the body wins.
 
 ## Eval Structure
 
@@ -119,7 +119,7 @@ See [skills/README.md](skills/README.md) for the skill catalog + mermaid diagram
 3. Create `evals/<name>/eval.yaml` + `tasks/` + `fixtures/` — the eval-level `real_run` provenance gate is mandatory (see Eval Structure). Add `validation.yaml` and run `tools/eval-fixture.py validate <name>` once the skill has produced real output to copy from
 4. Add one row to the `skills/README.md` catalog under the **intent** group it serves (groups are by what the user wants to do, not by lifecycle stage), add the short name to the matching row of the root `README.md` "Skills by intent" index, and bump the counts. A skill that cannot run without the `multica` CLI goes under **Multica 연동** and carries `metadata: { nara: { scope: multica } }` in its frontmatter. Then run `tools/check-docs.py` — it fails on a missing/duplicate row, a stale count, or a tag/group mismatch
 5. If the skill sits in a flow, update `skills/README.md`'s recommended order and the relevant handoff lines
-6. New skill inherits output contract automatically — do not add per-skill output-contract reference (CLAUDE.md handles it)
+6. Put the output-contract pointer line under the SKILL.md H1, copied from any existing skill (`> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. ...`). Repo-level CLAUDE.md does not reach installed skills, so this line is the only way a consumer's agent sees the contract
 
 ## When Modifying a Skill
 
@@ -148,7 +148,7 @@ nara-kit ships as plain Agent Skills — no version manifest, no marketplace, no
 tools/check-docs.py
 ```
 
-`Pass: ...` = safe. Any other line blocks it. It checks, stdlib only: every skill directory has exactly one `skills/README.md` catalog row and no row lacks a directory; every skill count written in `README.md`, `skills/README.md` and `CLAUDE.md` equals the directory count; `metadata.nara.scope: multica` tags and the **Multica 연동** group agree; every `](../nara-<other>/...)` sibling link resolves (this replaced the old grep one-liner); every skill has `name` == directory, a `description`, and a `README.md`. Count drift is its reason to exist: the catalog sat at 51 against 55 directories, and the root README said 55 next to 56, and neither was caught by `waza` or by eye.
+`Pass: ...` = safe. Any other line blocks it. It checks, stdlib only: every skill directory has exactly one `skills/README.md` catalog row and no row lacks a directory; every skill count written in `README.md`, `skills/README.md` and `CLAUDE.md` equals the directory count; `metadata.nara.scope: multica` tags and the **Multica 연동** group agree; every sibling link resolves, both `](../nara-<other>/...)` from a SKILL.md and `](../../nara-<other>/...)` from a `references/` file (this replaced the old grep one-liner, which missed the second form); every skill has `name` == directory, a `description`, and a `README.md`; `disable-model-invocation: true` and `agents/openai.yaml` `allow_implicit_invocation: false` appear together or not at all; every SKILL.md carries the output-contract pointer before its first `##` section and the contract file exists. Its own docstring lists the checks in order. Count drift is its reason to exist: the catalog sat at 51 against 55 directories, and the root README said 55 next to 56, and neither was caught by `waza` or by eye.
 
 **What ships:** only `skills/<name>/` directories. `README.md`, `skills/README.md`, `CLAUDE.md`, `CHANGELOG.md`, `references/`, and `evals/` never reach consumers — pushes touching only those need no consumer action.
 
@@ -168,7 +168,7 @@ Two traps, both hit in practice:
 **Renaming a skill is breaking:** consumers keep the old copy under the old name; they must remove it and reinstall.
 
 **Verify after release (consumer side):**
-- `ls ~/.claude/skills | grep -c '^nara-'` → 55 (+ `naranizer` = 56)
+- `ls ~/.claude/skills | grep -c '^nara-'` → 58 (+ `naranizer` = 59)
 - Run a quick smoke test of the changed skill in a fresh session
 
 Note: `claude-mem:version-bump` no longer applies — there are no manifests to bump.

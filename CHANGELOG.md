@@ -19,6 +19,19 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - 측정: 같은 커밋 설명 task로 2회 모두 파일을 만들고 검사기를 통과했고 grader 4개(부모 SHA, `path:line`, `<details`, 검사기 실행) 통과. 그중 한 파일을 브라우저로 390px·1280px에서 열어 가로 넘침 없음(scrollWidth = innerWidth), 최소 글자 12px, 답 접힘을 확인했다
   - 안 가져온 것: tiger-kit 공용 테마 자산과 설정 파일, 실험 중인 `standard | dialogue | dialogue-eli5 | all` 탭
 
+### Changed (contract reaches installed skills)
+- **출력 계약이 설치본에 실린다.** `references/output-contract.md`(저장소 루트)를 `skills/nara-now/references/output-contract.md`로 옮겼다. 설치되는 것은 `skills/<name>/`뿐이라, 지금까지 계약은 nara-kit 저장소 안에서 작업할 때만(CLAUDE.md가 주입할 때만) 적용됐고 다른 저장소의 설치본은 계약을 본 적이 없었다. 이번 Next Action 규칙도 옮기지 않았으면 효과가 없었다
+  - 59개 SKILL.md 모두 제목 아래에 계약을 가리키는 한 줄을 넣었다(형제 링크, ADR-0002). 본문이 다르게 정한 곳은 본문이 우선하고, 파일이 없으면(단독 설치) 그 줄은 건너뛴다
+  - `tools/check-docs.py`가 이 줄이 없는 스킬과 계약 파일 부재를 실패시킨다. 한 스킬에서 줄을 지웠을 때 실패하는 것을 확인했다
+  - `waza check`의 "link escapes skill directory" 경고가 스킬마다 하나씩 늘어난다. 형제 링크 규약상 예상된 경고다
+  - Multica autopilot은 등록된 SKILL.md 사본만 쓰므로 계약 파일이 없고, 그 줄은 건너뛴다
+
+### Changed (behavior)
+- **`nara-grill`이 질문을 한 라운드에 묶는다(tiger-kit `tk-grill`).** "한 번에 한 질문씩"을 버리고, 지금 추측 없이 답할 수 있는 결정(frontier)을 번호(`Q1`, `Q2`)와 권고를 붙여 한 번에 묻는다. 다른 답에 달린 질문만 미루고 무엇에 걸렸는지 적는다. 결정을 바꿀 수 있는 사실까지만 조사하고, 끝내기 전 빠진 갈래·숨은 가정·모순을 점검하며, 결정 요약을 사용자가 확인한 것만 `confirmed`로 둔다. 질문 라운드 중간 응답은 헤더 없이 쓰고 섹션과 Receipt는 최종 보고에. 판정 4종과 "침묵은 동의가 아니다"는 그대로
+  - 측정: 독립 결정 셋과 그중 하나에 달린 결정 하나가 있는 설계 노트로 수정 전 2회는 둘 다 질문 하나만 하고 멈췄다(0/2). 수정 후 2회는 독립 질문 4~5개를 한 라운드에 묻고 의존 질문(중복 제거 키)은 둘 다 미뤘다(2/2). 처음 단 "Q4가 없어야 한다" grader는 질문 번호가 run마다 달라 번호를 재는 결함이었고 뺐다
+- **출력 계약 Next Action 규칙**(tiger-kit `tk-adhd`): 남은 사람 할 일은 빠짐없이, 없으면 `next: 없음`(후속 작업을 지어내지 않음), 스킬이 할 수 있는 일을 사용자 명령으로 넘기지 않음. 분량보다 빠짐없음이 먼저, `planned`와 `applied` 구분, 진행 보고의 시간·진행률은 잰 값만
+- **`naranizer`가 양태를 보존한다.** "줄여야 합니다"를 "줄이는 것이 어떨까요?"로 바꾸는 것을 허용 예로 들고 있었는데, 이것은 해야 할 일을 해도 되는 일로 바꾸는 의미 변경이다. 자기 판단을 부드럽게 쓰는 것은 그대로 허용하고, 요구·권고·확정의 양태는 불변으로 바꿨다. 자체검증에 "양태 불변" 항목 추가
+
 ### Changed (breaking: invocation)
 - **원격에 쓰는 여섯 스킬이 명시 호출 전용이 됐다**: `publish-spec`, `spec-revision`, `slack-to-jira`, `worklog`, `jira-triage`, `release-finalize`. 모델이 "준비돼 보인다"는 판단으로 게시·티켓 생성·태그 push를 시작하지 못하게 한다. Claude Code는 프론트매터 `disable-model-invocation: true`, Codex는 새 `agents/openai.yaml`의 `policy.allow_implicit_invocation: false`(Codex는 SKILL.md 플래그를 읽지 않는다)
   - 대가: 이 여섯의 description이 컨텍스트에 실리지 않아 "위키에 올려", "시간 기록해줘" 같은 자연어로는 안 불린다. `/nara-<name>` 또는 `$nara-<name>`으로 부른다. 각 스킬 README의 호출 절을 그렇게 고쳤다
@@ -27,6 +40,11 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - 출발점은 tiger-kit의 `user` / `hybrid` 구분이다. 그쪽은 description 접두어와 README 열까지 세 표면을 스크립트로 맞추고, 여기는 두 표면만 둔다
 
 ### Added
+- **신규 스킬 셋(tiger-kit `5e35b6a` 재대조 결과, 56 → 59).** 앞선 증류에서 "이미 있음"으로 넘겼다가, 주 산출물 형식까지 행으로 대조하자 nara-kit에 대응물이 없다고 드러난 것들이다
+  - `nara-rewrite`: 맥락 모르는 독자를 위한 의미 보존 재작성(한국어·영어). 요구는 요구로, 권고는 권고로, 강도·시제·근거 위치를 지키는 자체 점검을 출력 전에 돌린다. 산출물은 **재작성 한 벌**이고 머리말·분석 블록·점수가 없다. `review` 모드만 `위치 | 문제 | 제안` 지적을 낸다. 고칠 곳이 없으면 원문 그대로가 정상 결과. humanizer(AI 패턴 등급)·naranizer(내 말투)·ko-prose(조사·어미 수리)와 트리거를 나눴고, 그 셋의 DO NOT 줄이 이 스킬을 가리킨다
+  - `nara-roadmap`: 불분명한 상황 → 제약 기반 로드맵. repo 없는 기획도 대상. grill과 같은 frontier 라운드로 묻고, 제약을 고정/협상 가능/미확인으로, 범위를 후보/권고/합의로 가른다. 마일스톤은 결과·범위·완료 증거·의존성, 반복 운영은 따로, 조사 마일스톤은 계속/보류/중단 기준. no-go도 결론. 날짜·담당자·수치는 지어내지 않고 `[UNVERIFIED]`. 기본은 대화, 저장 요청 시 `docs/plan/roadmap-<slug>.md`. 기획 흐름 맨 앞
+  - `nara-prototype`: 결정 질문 하나를 위한 일회성 프로토타입(UI 변형 2개 또는 로직 harness). 가설과 측정 기준을 먼저 세우고, 저장소가 이미 답하면 만들지 않는다. 연동마다 fake/real 선언, 실행마다 `## Tested` 영수증(명령·cwd·exit code·증거). 산출물은 `## Confirmed`로 시작해 `verdict: Pass | Fail | Blocked | Unverifiable`로 끝나는 `docs/prototypes/<slug>/REPORT.md`. 승격·커밋하지 않는다. 화면 핸드오프는 design-studio가 그대로 맡는다
+  - 측정: 측정(같은 요청, 스킬 없음 2회 대 스킬 2회). rewrite: 스킬 없는 2회는 둘 다 요구의 "반드시"를 빼서 강도를 낮추고 재작성 뒤에 변경 설명을 붙였다. 스킬 2회는 "반드시"·숫자·식별자를 지켰지만 내용 없는 상투 문장까지 보존해 "정보 없는 문장은 뺀다" 규칙을 넣었고, 재실행 2회는 상투 문장만 빼고 사실 문장은 남겼다. roadmap: 스킬 없는 2회도 날짜를 지어내지 않고 질문을 여럿 물어 첫 턴 내용은 좋았다. 차이는 질문마다 고를 안과 권고, 요청 주체 구분, `[UNVERIFIED]` 표시였고 grader 차이의 상당 부분은 어휘 차이다. 로드맵 초안 단계는 재지 않았다. prototype: 스킬 없는 2회도 harness를 실제로 돌리고 fake 한계를 밝혔다. 스킬 2회는 `## Confirmed` 비교표, `## Tested` 실행 기록, `verdict:`를 남겼고, 그중 1회가 API 지연을 한 값에 고정해 결정 조건(지연 400ms 경계)을 놓쳐서 "fake 값에 걸린 기준은 경계까지 돌린다" 규칙과 판정 단위(질문 전체) 정의를 넣었다. 두 스킬의 몫은 판단의 질보다 형식·기록의 고정이다
 - `tools/eval-fixture.py generate <skill> [--task id]`: Copilot 좌석 없이 실제 모델 출력을 얻는 경로. `claude -p`를 설정·MCP·도구 없이 돌리고 SKILL.md와 references를 시스템 프롬프트에, 태스크 프롬프트와 fixture를 stdin에 넣는다. `validate --right-from gen`이 그 출력을 right 쪽에 쓴다. 도구가 꺼져 있어 스킬 벤치마크가 아니라 그레이더 검증용이고, 생성마다 헤드리스 과금이 든다(nara-gap 1회 약 0.26달러)
 
 - `tools/check-docs.py`: 카탈로그 정합성 검사(표준 라이브러리만). 스킬 디렉터리 ↔ `skills/README.md` 행 1:1, 세 문서(`README.md`·`skills/README.md`·`CLAUDE.md`)의 스킬 수, `metadata.nara.scope: multica` 태그 ↔ Multica 연동 묶음 일치, 형제 스킬 링크 해석, 프론트매터 `name`과 README.md 존재, 명시 호출 전용 플래그의 Claude Code·Codex 두 표면 일치. CLAUDE.md 릴리즈 절의 형제 링크 grep 한 줄을 대체한다. tiger-kit의 같은 역할 스크립트는 행과 디렉터리만 비교해 숫자 드리프트(2026-10-09의 51 대 55, 루트 README의 55 대 56)를 못 잡는다

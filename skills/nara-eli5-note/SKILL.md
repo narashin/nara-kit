@@ -15,6 +15,8 @@ description: >-
 
 # ELI5 노트 — 쉬운 설명을 Obsidian에 남긴다
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 실무에서 막힌 것을 **5살에게 가르치듯 풀고, 그릴 수 있는 건 그려서**, vault의 기존 관례에 맞춰 노트로 남긴다.
 
 기존 `/eli5`는 설명하고 끝난다. `/nara-reflect`는 저장하지만 대상이 memory·handoff고 톤이 다르다. 이 스킬은 그 사이 — **설명의 질과 저장을 한 번에** 가져간다.

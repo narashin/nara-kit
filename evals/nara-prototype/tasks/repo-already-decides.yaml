@@ -1,0 +1,22 @@
+id: repo-already-decides-001
+name: "Repository evidence already settles the question, so no prototype is built"
+description: |
+  The fixture contains the merged implementation, tests, and an accepted ADR that settle the
+  CSV escaping question. The skill must decline with its mandated phrase, cite the evidence,
+  and must not build variants, write a Tested section, or issue a Pass verdict.
+tags:
+  - decline
+  - edge-case
+inputs:
+  prompt: "csv-escape-settled.md 보고 CSV 셀 이스케이프 A안 B안 프로토타입 만들어서 비교해 봐"
+  files:
+    - path: csv-escape-settled.md
+expected:
+  output_contains:
+    - "프로토타입 불필요: 저장소 근거로 이미 결정됨"
+  output_not_contains:
+    - "## Tested"
+    - "verdict: Pass"
+    - "EVAL-FAKE-DO-NOT-USE"
+  outcomes:
+    - type: task_completed

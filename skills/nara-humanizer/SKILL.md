@@ -3,11 +3,13 @@ name: nara-humanizer
 description: >-
   Detect AI writing patterns in Korean text and rewrite as natural human prose. Based on KatFishNet (94.88% AUC) + empirical patterns.
   USE FOR: "humanizer", "윤문", "AI 티 제거", "한국어 자연스럽게", "humanize", "ai-detection 회피".
-  DO NOT USE FOR: 개인 말투/페르소나 적용 (use naranizer), 생략된 조사·어미 복원 (use nara-ko-prose), 영어 텍스트, 코드 리뷰 (use nara-code-review), 번역, 사실 검증.
+  DO NOT USE FOR: 맥락 모르는 독자용 재구성·의미 보존 재작성 (use nara-rewrite), 개인 말투/페르소나 적용 (use naranizer), 생략된 조사·어미 복원 (use nara-ko-prose), 영어 텍스트, 코드 리뷰 (use nara-code-review), 번역, 사실 검증.
 license: MIT
 ---
 
 # humanizer — 한국어 AI 작문 패턴 감지·교정
+
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
 
 LLM이 생성한 한국어 텍스트의 특징적 마커(쉼표 과다, 경직된 띄어쓰기, 번역투, AI 유행어, 단조로운 구조)를 감지해 자연스러운 한국어로 윤문한다. KatFishNet 논문(ArXiv 2503.00032v4, 2025) 기반 6카테고리 41패턴.
 

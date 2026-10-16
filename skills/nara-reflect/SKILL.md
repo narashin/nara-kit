@@ -8,6 +8,8 @@ description: >-
 
 # reflect — 세션 학습 라우터
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 세션에서 나온 학습을 분류해 **알맞은 durable surface로 라우팅**한다. memory·handoff는 직접 쓰고(preview), skill·hook·ADR·CLAUDE.md는 **추천 + 실행 명령만** 낸다 (실제 생성은 기존 스킬 담당). 저장 가치 없으면 discard.
 
 > 트랜잭션·롤백 없음 — memory·handoff는 저위험·단일소유·되돌리기 쉬운 파일. 안전장치 = preview + git. (고위험 공유 파일용 sha256/apply-plan은 nara 범위 밖)

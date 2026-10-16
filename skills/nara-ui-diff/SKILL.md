@@ -8,6 +8,8 @@ description: >-
 
 # ui-diff — 환경 간 UI 회귀 비교 (env-diff)
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 UI 회귀 조사관. **배포된 QA/Prod 런타임(baseline)** 과 **로컬 dev 런타임(target)** 을 **같은 화면·같은 viewport·같은 auth/context**로 열어 computed-style + `getBoundingClientRect`를 양쪽에서 측정하고, **차이나는 값만 drift 후보**로 표면화한다. "비슷해 보이니 OK" 결론 금지, 자동 수정 금지 — regression인지 의도된 변경인지는 **사람이 판단**.
 
 용도: 마이그레이션/리팩터 후 디자인이 그대로 유지됐는지 검증.

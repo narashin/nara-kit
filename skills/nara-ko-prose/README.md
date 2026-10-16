@@ -34,7 +34,7 @@ output style로 켤 필요는 없다. 파일이 디스크에 있으면 이 스�
 ## 언제 쓰나
 
 - **USE FOR:** "ko-prose", "한국어 다듬어", "문장 완결해", "조사 빠진 것 고쳐", "공유 문서 한국어 정리".
-- **DO NOT USE FOR:** AI 티 제거·탐지 회피 (use nara-humanizer), 개인 말투 적용 (use naranizer), 커밋 메시지·변수명·주석·로그 문자열 (규약상 대상 아님), 영어 텍스트, 사실·수치 교정.
+- **DO NOT USE FOR:** 맥락 모르는 독자용 재구성 (use nara-rewrite), AI 티 제거·탐지 회피 (use nara-humanizer), 개인 말투 적용 (use naranizer), 커밋 메시지·변수명·주석·로그 문자열 (규약상 대상 아님), 영어 텍스트, 사실·수치 교정.
 
 ## humanizer·naranizer와의 구분
 

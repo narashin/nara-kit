@@ -10,6 +10,8 @@ disable-model-invocation: true
 
 # Spec Revision — Dated Changelog + Inline Edits for Confluence Specs
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 Record a revision on an existing Confluence spec by **(1) prepending a dated changelog entry at the top of the page** and **(2) editing the changed sections inline** — striking through what was removed and marking what is new — mirroring the team's RfC revision convention. Traceability comes from the **top changelog + inline `<del>` markers + Confluence version history**, not from a separate appended "Revision vN" section.
 
 > **Pattern reference** (the shape to mirror): a top `<blockquote>` holding dated `**YYYY-MM-DD Updated**: …` lines newest-first, with the body edited in place (`<del>old</del>` + `**(Revised YYYY-MM-DD)** new`, decision-table rows struck/bolded). Example in the wild: Confluence `pageId=4276145441`.

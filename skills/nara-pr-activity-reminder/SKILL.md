@@ -11,6 +11,8 @@ metadata:
 
 # nara-pr-activity-reminder — PR 활동 기록
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 지정된 레포의 열린 PR을 폴링해 새 활동을 감지하고, **그 PR을 이미 들고 있는 카드에 코멘트로 적는다.** 카드를 만들지 않는다. `nara-review-reminder`(미리뷰 PR 탐지)의 형제 스킬.
 
 > **이 로직은 100% 결정론 — classify/의미 판단이 전혀 없다** (gh api 조회 + cursor 비교 + multica 쓰기뿐). 따라서 **헤드리스 LLM 오토파일럿이 아니라 out-of-band 셸/스크립트 크론으로 실행**하는 것이 정석 — 빈 런 LLM 토큰 낭비도, codex inactivity 타임아웃도 없다. 이 파일은 그 스크립트의 **로직 스펙**이다 (참조 구현: `gh` + `multica` CLI + cursor).

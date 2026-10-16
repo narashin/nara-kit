@@ -8,6 +8,8 @@ description: >-
 
 # PR Review Response
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 Systematically analyze and respond to PR review comments. Verify each comment technically before deciding accept, rebut, hold, ask, or follow-up, then publish the approved result through to resolved threads and re-requested review.
 
 **Core principle**: no performative agreement, no unverified acceptance, technical accuracy first — verify each comment against the code before accepting or rebutting.

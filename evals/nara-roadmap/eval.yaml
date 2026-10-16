@@ -1,0 +1,29 @@
+name: nara-roadmap-eval
+description: Evaluation suite for frontier-round roadmap interviews that never fabricate dates or capacity and keep recurring operations apart from milestones.
+skill: nara-roadmap
+version: "1.0"
+config:
+  trials_per_task: 1
+  timeout_seconds: 600
+  parallel: false
+  executor: copilot-sdk
+  model: claude-sonnet-4.6
+metrics:
+  - name: task_completion
+    weight: 1.0
+    threshold: 0.8
+    description: Did the skill ask the answerable frontier in one numbered round, tag unsourced deadlines or capacity as UNVERIFIED instead of filling them, draft milestones with completion evidence and dependencies plus a separate recurring-operations section, and redirect code work splitting to nara-plan?
+graders:
+  - type: code
+    name: real_run
+    config:
+      # Provenance gate, not a behavioural one: it asserts the graded output came
+      # from a real skill run. Under `executor: mock` it fails every task by
+      # construction -- that is the correct signal, because mock output grades the
+      # eval's own description and fixture text, never the skill. Measurement goes
+      # through `waza grade` on a real run; see CLAUDE.md.
+      assertions:
+        - "len(output) > 40"
+        - "'Mock response for:' not in output"
+tasks:
+  - "tasks/*.yaml"

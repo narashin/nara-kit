@@ -9,6 +9,8 @@ disable-model-invocation: true
 
 # slack-to-jira — Slack 스레드 → Jira 티켓
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 슬랙 permalink N개 → 분류·중복검사 → draft 테이블 → 일괄 승인 → Jira create. 티켓 내용 영어. 리포터 구분 없음. 순차 처리.
 
 참조: [Config](references/config.md) (profile 자동학습·라우팅), [Templates](references/templates.md) (영어 본문), [Dedup](references/dedup.md) (3분기·JQL·테이블)

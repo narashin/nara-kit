@@ -8,6 +8,8 @@ description: >-
 
 # prep — 외부 SoT 로컬화
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 이중 저장: `docs/sources/<id>.raw.md` (verbatim 원문) + `docs/requirements.md` (구조화 view).
 
 참조: [Template](references/prep-template.md), [Gates](references/prep-gates.md) (trailing, stale, readiness, raw 규약)

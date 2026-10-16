@@ -1,0 +1,27 @@
+id: draft-roadmap-001
+name: "Enough answers plus a draft request yields milestones with evidence and separate recurring operations"
+description: |
+  The transcript already settles the change, beneficiaries, constraints and the
+  chosen direction, and the user asks for the draft. A correct reply drafts the
+  six fixed sections; milestones carry result, scope in/out, completion evidence
+  and dependencies; the monthly follow-up check sits under recurring operations,
+  not as a milestone. No deadline is invented (the transcript says none), the
+  unassigned owner stays open, and no file is written because saving was not asked.
+tags:
+  - draft
+  - happy-path
+inputs:
+  prompt: "/nara-roadmap answered-context.md에 지금까지 답한 거 있어. 이제 초안 보여줘"
+  files:
+    - path: answered-context.md
+expected:
+  output_contains:
+    - "완료 증거"
+    - "의존성"
+    - "반복 운영"
+    - "열린 가정과 결정"
+  output_not_contains:
+    - "EVAL-FAKE-DO-NOT-USE"
+    - "티켓을 생성했"
+  outcomes:
+    - type: task_completed

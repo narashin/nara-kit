@@ -1,8 +1,8 @@
 id: basic-usage-001
-name: "One-question-at-a-time design validation"
+name: "Frontier-round design validation"
 description: |
-  Test that the skill researches verifiable facts first, then surfaces the single
-  highest-impact open decision as one question with a recommendation, without
+  Test that the skill researches verifiable facts first, then asks every currently
+  answerable open decision in one round, each with a recommendation, without
   finalizing decisions on the user's behalf or mutating any document.
 tags:
   - basic

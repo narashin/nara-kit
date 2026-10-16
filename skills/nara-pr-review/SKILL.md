@@ -14,6 +14,8 @@ description: >-
 
 # PR Review — 원격 PR evidence-based 리뷰
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 원격 PR을 코드 평면 + PR 평면 양쪽에서 리뷰한다. 산출물은 리포트 —
 코멘트 게시는 명시적 승인 후에만 (외부 side effect).
 

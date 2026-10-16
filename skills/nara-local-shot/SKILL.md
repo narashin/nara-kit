@@ -5,6 +5,8 @@ description: Capture screenshots of a locally-running web app — even auth/SSO-
 
 # nara-local-shot — capture local app screenshots (auth-gated ok)
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 Produce real screenshot files of a locally-running web app and save them to disk — for a PR's Before/After visual comparison, or to let a human eyeball a UI change. Handles the common blocker: the app is behind SSO and a fresh automated browser has no session.
 
 Core insight: **capture the screenshots yourself and save the files** — never stop at leaving `_drag image here_` placeholders. The human only does the final drag-drop into the PR editor.

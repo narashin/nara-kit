@@ -1,0 +1,31 @@
+id: frontier-round-001
+name: "Independent decisions are asked in one round; the dependent one waits"
+description: |
+  The design note lists four open decisions. Delivery guarantee, handshake auth
+  and fallback are independent of each other and answerable now. The dedup key
+  explicitly depends on the delivery decision. A correct first round asks the
+  three independent ones together, each with a recommendation, and holds the
+  dedup question until delivery is answered. Nothing is marked confirmed before
+  the user answers.
+tags:
+  - frontier
+  - interaction
+inputs:
+  prompt: "/nara-grill 이 설계 검토해줘"
+  files:
+    - path: ws-notify-design.md
+expected:
+  # Q1-Q3 prove a multi-question round; a one-question-per-turn run stops at Q1.
+  # Deferral of the dedup-key question is NOT graded here: an earlier
+  # `output_not_contains: "Q4"` assumed Q4 would be the dedup point, but correct
+  # runs (2026-10-16, both) numbered other independent questions Q4/Q5 and still
+  # deferred the key. Question numbers are not stable, so that check graded
+  # numbering, not deferral. Deferral was verified by reading both outputs.
+  output_contains:
+    - "Q1"
+    - "Q2"
+    - "Q3"
+  output_not_contains:
+    - "구현 완료"
+  outcomes:
+    - type: task_completed

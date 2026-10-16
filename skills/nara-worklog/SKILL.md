@@ -9,6 +9,8 @@ disable-model-invocation: true
 
 # worklog — Jira Worklog from Session Timestamps
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 시간 산정은 결정론적 스크립트가 소유한다. 나는 표를 제시하고 승인만 받는다. **팀이 읽는 숫자이므로 승인 없이 쓰지 않는다.**
 
 타임스탬프는 `nara-worklog-stamp.py` hook이 쌓는다. ledger 디렉터리(`~/.claude/worklog/`, `$NARA_WORKLOG_DIR`)가 없으면 hook 미설치 — [hook-setup.md](references/hook-setup.md) 안내 후 중단.

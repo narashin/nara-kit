@@ -1,0 +1,30 @@
+id: basic-usage-001
+name: "Default rewrite keeps the requirement, number and identifiers, and returns only the rewrite"
+description: |
+  The fixture is a deployment note with AI-ish filler, middle-dot noun stacking, a
+  reading-order heading and a noun-pile sentence, wrapped around one hard requirement
+  with a number and two identifiers. A correct run returns one final rewrite: the
+  requirement keeps its obligation word, the number and identifiers are unchanged, the
+  requirement is not softened into advice, and no analysis, grade or change log appears.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: "deploy-note.md 를 이 프로젝트 배경 모르는 사람이 읽을 수 있게 다시 써줘."
+  files:
+    - path: deploy-note.md
+expected:
+  output_contains:
+    - "반드시"
+    - "30초"
+    - "PROJ-123"
+    - "api-server"
+  output_not_contains:
+    - "자연도"
+    - "## 분석"
+    - "## 변경"
+    - "다음과 같이"
+    - "것이 좋습니다"
+    - "먼저 볼 것"
+  outcomes:
+    - type: task_completed

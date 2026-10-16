@@ -8,6 +8,8 @@ description: >-
 
 # release-watch — 알림(watch)과 증류 판정(digest)의 2단계
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 판정을 릴리즈 단위로 매일 하면 릴리즈 잦은 repo는 감시가 불가능하다 — 임계를 붙이면 알림까지 죽고, 안 붙이면 매일 발화한다 (stablyai/orca: minor 고정 + 일간 패치). 그래서 알림은 매일 기계 필터로, 판정은 주 1회 큐 누적분을 놓고 한다.
 
 ```

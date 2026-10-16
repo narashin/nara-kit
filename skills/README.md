@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**56 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**59 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -16,8 +16,9 @@
 |-------|---------------------|
 | `nara-prep` | Localize external SoT (Jira/Figma/Confluence) into `docs/requirements.md` + Readiness score / 외부 SoT 로컬화 + 충분성 판정 |
 | `nara-ac-draft` | Generate User Stories + Gherkin AC from one-line intent (no external SoT). Sister of `prep` / 한 줄 의도 → US + Gherkin AC 생성 (외부 SoT 없을 때) |
-| `nara-grill` | Pressure-test an idea/design/plan — fact-first, one question at a time (설계 탐색 단계) / 사실 조사 후 한 번에 한 질문씩 설계 검증 |
+| `nara-grill` | Pressure-test an idea/design/plan — fact-first, every answerable decision per round (설계 탐색 단계) / 사실 조사 후 답할 수 있는 결정을 한 라운드에 묻고 의존 질문만 미룸 |
 | `nara-research` | Compare external prior art for one pending decision, or distill a source skill/repo into keep/adapt/omit (every source pinned to a revision) → `docs/research/*.md` / 결정 하나를 위한 외부 선행 사례 비교 또는 남의 스킬·repo 증류. 제안만, 적용은 skill-forge·adr |
+| `nara-roadmap` | Turn an unclear situation into a constraint-aware roadmap: frontier-round interview, fixed/negotiable/unknown constraints, milestones with completion evidence, recurring ops apart, no-go is a valid end; chat by default, saved on request / 불분명한 상황 → 제약 기반 로드맵 (repo 없는 기획도). 대화 기본, 요청 시 `docs/plan/roadmap-*.md` |
 | `nara-plan` | Split a spec into independently verifiable vertical work units → `docs/plan.md` / 스펙을 독립 검증 가능한 수직 작업 단위로 분할 |
 | `nara-rfc` | Write RFC document in Korean Markdown / RFC 문서 작성 |
 | `nara-adr` | Architecture Decision Record / 아키텍처 결정 기록 |
@@ -53,6 +54,7 @@
 | `nara-golden-path-discover` | Discover live golden-path E2E scenarios + Playwright-ready export / 라이브 골든패스 E2E 발굴 + Playwright export |
 | `nara-ui-diff` | Env-diff visual regression: QA/Prod baseline vs local target computed-style + rect diff (candidates only) / 환경 간 UI 회귀 비교 — computed-style·bounding-rect 차이 후보 |
 | `nara-local-shot` | Screenshots of locally-running web apps (SSO-gated via dummy-cookie bypass) for PR visual comparison / 로컬 앱 스크린샷 캡쳐 |
+| `nara-prototype` | Throwaway prototype (2 UI variants or a logic harness) to answer one decision question: hypothesis and criteria first, fake/real boundary, `## Tested` run receipts, `## Confirmed` report, verdict Pass/Fail/Blocked/Unverifiable / 결정 하나를 위한 일회성 프로토타입 + 판정 리포트 |
 
 ### 리뷰·PR·릴리즈 / Review, PR & Release
 
@@ -89,6 +91,7 @@
 | `nara-humanizer` | Detect AI writing patterns in Korean text and rewrite as natural prose (KatFishNet 94.88% AUC, 41 patterns) / 한국어 AI 작문 패턴 감지 + 윤문 |
 | `naranizer` | Rewrite AI-drafted Korean text into the user's own measured style from a local profile (register auto-detect, fact-preserving) / 실측 프로필 기반 개인 말투 변환 |
 | `nara-ko-prose` | Repair Korean prose in shared artifacts — restore dropped particles/endings, complete noun-phrase sentence breaks, replace em-dashes. Applies snflkd/fluent-korean (MIT) by reading the installed rules file; ships no copy / 공유 문서 한국어 명확성 수리 |
+| `nara-rewrite` | Meaning-preserving rewrite for a reader without the context (Korean/English): modality, intensity, tense and evidence kept; returns one clean rewrite, `review` mode returns findings / 맥락 모르는 독자용 의미 보존 재작성 (재작성 한 벌만, review는 지적만) |
 
 ### 세션·툴킷 / Session & Toolkit
 
@@ -178,6 +181,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    RM["roadmap<br>방향·마일스톤"] -. 방향이 없을 때 .-> C
     RS["research<br>외부 선행 사례"] -. 조건부 .-> B
     C{clarity?} -->|clear| B["grill"] --> PR[prep]
     C -->|vague| AC[ac-draft]
@@ -192,6 +196,7 @@ flowchart LR
 
 - **Revision loop**: `publish-spec` 이후 피드백 수집되면 별개 세션에서 `/nara-spec-revision <URL>` — 라운드마다 버전 append (워크플로 재진입 아닌 standalone).
 - `adr`(구조 결정), `rfc`(기술 결정)는 필요 시 spec 산출 후 호출.
+- `roadmap`은 방향 자체가 아직 없을 때 기획 흐름 맨 앞에서 부른다. 대화로 끝나는 것이 기본이고, 저장하면 `docs/plan/roadmap-<slug>.md`. 고른 단계는 `ac-draft`·`grill`·`plan`으로 이어진다.
 - `research`(외부 선행 사례 비교, 남의 스킬·repo 증류)는 결정 하나가 외부 근거에 걸릴 때 `grill` 앞에서 호출. 산출물은 제안이고 적용은 `skill-forge`·`adr`이 한다.
 
 **Legend**: 🟢 green border = 핵심 5단계 · 🟡/🔴 = gate / block. 전부 개별 스킬 직접 호출이다.
@@ -234,7 +239,7 @@ flowchart LR
 
 ## Output Contract / 출력 규약
 
-모든 스킬은 공통 출력 규약을 따름 — 응답은 **영수증(3-6라인)**이며 산출물 자체가 아님. 상태 라벨 (`recorded only` / `applied` / `pending escalation` / `skipped`), MCP 부수효과, 격상 신호 (`→ ESCALATE:`)가 표준화됨. See [../references/output-contract.md](../references/output-contract.md).
+모든 스킬은 공통 출력 규약을 따름 — 응답은 **영수증(3-6라인)**이며 산출물 자체가 아님. 상태 라벨 (`recorded only` / `applied` / `pending escalation` / `skipped`), MCP 부수효과, 격상 신호 (`→ ESCALATE:`)가 표준화됨. See [nara-now/references/output-contract.md](nara-now/references/output-contract.md). 설치본에도 실리도록 스킬 폴더 안에 두고, 모든 SKILL.md가 제목 아래 한 줄로 이 파일을 가리킨다.
 
 ## Project Override Convention / 프로젝트 오버라이드
 

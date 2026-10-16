@@ -12,6 +12,8 @@ disable-model-invocation: true
 
 # jira-triage — 내 Jira 티켓 → Multica 작업 큐
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 내게 할당된 Jira 티켓을 폴링해 **구현/버그픽스/기획/기타**로 분류하고, **티켓당 Multica 이슈**(UNASSIGNED)로 만든다. 보드는 Jira의 거울이다. 착수 가능(To Do / Selected) 티켓은 큐로, 이미 진행 중(In Progress / In Review)인 티켓은 미러 카드로 들어온다. Backlog와 Done은 올리지 않는다.
 
 > **테제 가드:** autopilot은 코드를 실행하지 않는다. 큐만 채운다. 네가 **큐에서 골라 착수 트리거(판단)**하는 순간이 착수 결정(심사) — 그때부터 [Stage 2](#stage-2--착수-네가-트리거)가 돈다.

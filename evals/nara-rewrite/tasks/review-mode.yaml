@@ -1,0 +1,24 @@
+id: review-mode-001
+name: "Review mode returns location/problem/suggestion findings, not a full rewrite"
+description: |
+  The fixture buries its decision in the last sentence and mixes a recommendation
+  with background. In review mode the skill lists consequential findings in its fixed
+  per-finding form and suggests local edits. It must not return a full rewritten memo,
+  a grade, or upgrade the recommendation into a requirement.
+tags:
+  - mode
+  - review
+inputs:
+  prompt: "handover-memo.md 리뷰만 해줘. 다시 쓰지는 말고. review"
+  files:
+    - path: handover-memo.md
+expected:
+  output_contains:
+    - "위치 | 문제 | 제안"
+  output_not_contains:
+    - "자연도"
+    - "## 분석"
+    - "반드시 주 1회"
+    - "원문 그대로 둡니다"
+  outcomes:
+    - type: task_completed

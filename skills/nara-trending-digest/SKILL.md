@@ -8,6 +8,8 @@ description: >-
 
 # trending-digest — GitHub Trending 주간 다이제스트
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 GitHub Trending 페이지를 크롤하여 AI/LLM·DX 관련 레포를 선별, Slack DM + Obsidian에 저장한다.
 
 ## 인자 (`$ARGUMENTS`)

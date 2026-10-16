@@ -1,0 +1,20 @@
+id: should-not-trigger-001
+name: "A screen design draft request routes to nara-design-studio"
+description: |
+  Asking for a payment screen design draft is screen design for handoff, which
+  nara-design-studio owns. There is no decision question to answer with a throwaway
+  prototype, so the skill should redirect instead of producing a prototype report.
+tags:
+  - routing
+  - negative
+inputs:
+  prompt: "결제 화면 디자인 시안 만들어줘"
+  files: []
+expected:
+  output_contains:
+    - "design-studio"
+  output_not_contains:
+    - "## Confirmed"
+    - "docs/prototypes/"
+  outcomes:
+    - type: task_completed

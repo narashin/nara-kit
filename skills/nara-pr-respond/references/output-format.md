@@ -16,7 +16,7 @@ PR #<N> 리뷰 대응 완료.
 - next: hold 항목 사용자 결정 또는 reviewer 응답 대기
 ```
 
-Receipt는 nara-kit output-contract `/nara-pr-respond` 템플릿 그대로 (CLAUDE.md 자동 상속).
+Receipt는 [nara-kit 출력 계약](../../nara-now/references/output-contract.md)의 `/nara-pr-respond` 템플릿 그대로 (파일이 없으면 이 문서의 Receipt Header가 기준).
 
 ## Standard Output (Receipt + Verification Preview)
 

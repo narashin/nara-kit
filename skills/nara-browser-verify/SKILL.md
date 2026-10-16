@@ -8,6 +8,8 @@ description: >-
 
 # browser-verify — 브라우저 AC 런타임 검증
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 승인된 **browser-visible AC**만 헤드리스 런타임에서 판정한다. 읽기 전용 verifier — 소스·커밋·원격 상태를 수정하지 않는다. `nara-ui-diff`와 달리 baseline 없이 **criterion 대비 판정**만 하므로, 결론은 후보가 아니라 `Pass | Fail | Blocked | Unverifiable`이다.
 
 ## Core Rules

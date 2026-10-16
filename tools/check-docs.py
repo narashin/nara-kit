@@ -19,6 +19,10 @@ Checks:
                     agents/openai.yaml `policy.allow_implicit_invocation: false` (Codex)
                     appear together or not at all. Codex ignores the SKILL.md flag, so a
                     skill with only one of them is user-only on one host and not the other.
+  8. contract       every SKILL.md links the shared output contract
+                    (skills/nara-now/references/output-contract.md) before its first `##`
+                    section. Only skills/<name>/ ships, so this pointer is the only way an
+                    installed skill sees the contract.
 
 Exit 1 with one line per error, exit 0 with a one-line summary. Prose still needs review.
 """
@@ -37,6 +41,8 @@ SCOPE_KEY = ("metadata", "nara", "scope")
 
 CODEX_POLICY = re.compile(r"^\s+allow_implicit_invocation:\s*false\s*$", re.MULTILINE)
 TRUE_VALUES = {"true", "yes", "on", "1"}
+
+CONTRACT = SKILLS / "nara-now" / "references" / "output-contract.md"
 
 ROW = re.compile(r"^\|\s*`([a-z0-9-]+)`\s*\|")
 HEADING = re.compile(r"^(#{2,3})\s+(.*)$")
@@ -143,7 +149,7 @@ def main() -> int:
     for d in dirs:
         rel = d.relative_to(ROOT).as_posix()
         try:
-            data, _ = frontmatter(d / "SKILL.md")
+            data, body = frontmatter(d / "SKILL.md")
         except (ValueError, UnicodeError) as exc:
             errors.append(f"{rel}/SKILL.md: {exc}")
             continue
@@ -166,6 +172,10 @@ def main() -> int:
             errors.append(f"{rel}: has {has} but lacks {lacks}")
         if claude_user_only:
             user_only.append(d.name)
+        head = body.split("\n## ", 1)[0]
+        expected = "references/output-contract.md" if d.name == "nara-now" else "../nara-now/references/output-contract.md"
+        if f"]({expected})" not in head:
+            errors.append(f"{rel}/SKILL.md: no output-contract pointer ]({expected}) before the first ## section")
 
     catalog_text = CATALOG.read_text(encoding="utf-8")
     rows = catalog_rows(catalog_text)
@@ -191,6 +201,9 @@ def main() -> int:
             errors.append(f"skills/README.md:{line}: `{name}` is tagged metadata.nara.scope=multica but sits under '{category}'")
         if in_multica and not tagged:
             errors.append(f"skills/{name}/SKILL.md: listed under '{category}' but lacks metadata.nara.scope: multica")
+
+    if not CONTRACT.is_file():
+        errors.append(f"{CONTRACT.relative_to(ROOT).as_posix()}: shared output contract is missing")
 
     total = len(names)
     for path in COUNT_FILES:

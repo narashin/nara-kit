@@ -3,11 +3,13 @@ name: nara-ko-prose
 description: >-
   Repair Korean prose in shared artifacts (PR, RFC, ADR, Confluence): restore dropped particles and endings, complete noun-phrase sentence breaks, replace em-dashes. Reads the installed snflkd/fluent-korean (MIT) rules.
   USE FOR: "ko-prose", "한국어 다듬어", "문장 완결해", "조사 빠진 것 고쳐", "공유 문서 한국어 정리".
-  DO NOT USE FOR: AI 티 제거 (nara-humanizer), 개인 말투 (naranizer), 커밋 메시지·변수명·주석·로그, 영어 텍스트, 사실 교정.
+  DO NOT USE FOR: 맥락 모르는 독자용 재구성 (nara-rewrite), AI 티 제거 (nara-humanizer), 개인 말투 (naranizer), 커밋 메시지·변수명·주석·로그, 영어 텍스트, 사실 교정.
 license: MIT
 ---
 
 # ko-prose — 공유 문서 한국어 명확성 수리
+
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
 
 여러 사람이 함께 읽는 산출물의 한국어를 한 가지 뜻으로 읽히게 고친다. 압축·전보체 때문에 **빠진 문법 재료를 되돌리는 가산 작업**이며, AI 마커를 덜어내는 감산 작업(`nara-humanizer`)과 방향이 반대다.
 

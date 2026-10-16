@@ -6,6 +6,8 @@ description: >-
   DO NOT USE FOR: designing screens (use nara-design-studio), non-React design systems (manual pack), backend work.
 ---
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 This skill turns a real design-system codebase into a pack `nara-design-studio` can render against — real
 components, real tokens, a manifest — so screens designed against the pack are what implementers actually build
 with, not a lookalike drawn from tokens. It is **not** a magic auto-extractor: it is a guided, per-component

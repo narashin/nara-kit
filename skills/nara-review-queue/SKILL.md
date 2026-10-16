@@ -11,6 +11,8 @@ metadata:
 
 # review-queue — 멀티카 리뷰 큐 드레인
 
+> 출력 형식은 [nara-kit 출력 계약](../nara-now/references/output-contract.md)을 따른다. 이 본문이 다르게 정한 곳은 본문이 우선한다. 파일이 없으면(단독 설치) 이 줄은 건너뛴다.
+
 `nara-review-reminder` 가 멀티카에 쌓아둔 "리뷰 필요" 이슈를 읽어, 각 PR에 대해 내장 `review` 스킬을 트리거하고 결과를 이슈 코멘트로 되돌려쓴다. nara-review-reminder(생산자)의 소비자 짝.
 
 ## 인자 (`$ARGUMENTS`)
