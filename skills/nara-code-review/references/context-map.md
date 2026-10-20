@@ -9,7 +9,7 @@ For each changed file:
 
 1. Read full file content (diff alone is insufficient).
 2. Check imported modules and type definitions.
-3. Read project CLAUDE.md and .claude/rules/ if present.
+3. Read the project's agent instruction files if present: `CLAUDE.md`, `AGENTS.md`, `.claude/rules/`.
 4. Check related test files.
 5. Search for reusable existing code — scan utility directories, shared modules,
    adjacent files with `grep -r` (feeds architecture-reuse).

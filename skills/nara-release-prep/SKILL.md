@@ -41,7 +41,8 @@ When `gh_host` is set, prefix every `gh` call with `GH_HOST=<gh_host>`.
 Entered only when the config file does not exist. Writes the config, asks the minimum:
 
 1. Scan `.github/workflows/*.y*ml` for files containing a `workflow_dispatch` trigger.
-   List candidates via AskUserQuestion → user picks `deploy_workflow`. Zero candidates →
+   List candidates in one question (the runtime's option-question tool if it has one,
+   otherwise chat, then stop until answered) → user picks `deploy_workflow`. Zero candidates →
    abort: this skill requires a workflow_dispatch deploy (report which workflows exist).
 2. Parse the chosen workflow's `workflow_dispatch.inputs`. For each input ask a value
    (present `default`/`options` from the schema). No inputs → omit `workflow_inputs`.

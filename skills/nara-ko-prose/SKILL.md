@@ -33,9 +33,13 @@ license: MIT
 ls ~/.claude/plugins/marketplaces/fluent-korean/plugins/fluent-korean/output-styles/fluent-korean.md
 # 3) versioned cache (여러 버전이면 가장 높은 버전)
 ls -d ~/.claude/plugins/cache/fluent-korean/fluent-korean/*/output-styles/fluent-korean.md | sort -V | tail -1
+# 4) Codex plugin cache (Codex can install Claude marketplaces)
+find ~/.codex/plugins -path '*fluent-korean*/output-styles/fluent-korean.md' 2>/dev/null | sort -V | tail -1
+# 5) a copy installed as an Agent Skill (same rule body under SKILL.md frontmatter)
+ls ~/.agents/skills/fluent-korean/SKILL.md ~/.codex/skills/fluent-korean/SKILL.md 2>/dev/null | head -1
 ```
 
-셋 다 없으면 미설치다. 설치 안내는 `/plugin marketplace add snflkd/fluent-korean` 이후 `/plugin install fluent-korean@fluent-korean`.
+다섯 곳 다 없으면 미설치다. 5)는 frontmatter를 뺀 본문이 원문이다. 설치 안내(Claude Code): `/plugin marketplace add snflkd/fluent-korean` 이후 `/plugin install fluent-korean@fluent-korean`. upstream에 Codex 설치 경로는 없으니 Codex에서는 규칙 파일 경로를 인자로 넘기라고 안내한다.
 
 ## Modes
 

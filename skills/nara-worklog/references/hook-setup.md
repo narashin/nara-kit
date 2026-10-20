@@ -5,9 +5,17 @@
 ## 1. hook 스크립트 배치
 
 ```bash
-cp ~/.claude/skills/nara-worklog/assets/nara-worklog-stamp.py ~/.claude/hooks/
+# Installed skill dir differs per runtime: ~/.agents/skills (npx skills --global),
+# ~/.claude/skills (Claude Code symlink), ~/.codex/skills (Codex-only install).
+SKILL_DIR=$(for d in ~/.agents/skills ~/.claude/skills ~/.codex/skills; do
+  [ -f "$d/nara-worklog/assets/nara-worklog-stamp.py" ] && echo "$d/nara-worklog" && break
+done)
+mkdir -p ~/.claude/hooks
+cp "$SKILL_DIR/assets/nara-worklog-stamp.py" ~/.claude/hooks/
 chmod +x ~/.claude/hooks/nara-worklog-stamp.py
 ```
+
+Codex만 쓰는 머신에서도 복사 위치는 `~/.claude/hooks/` 그대로다. 아래 2b의 `~/.codex/hooks.json`이 이 경로를 가리킨다.
 
 심링크 대신 복사한다 — `~/.claude/hooks/*`는 실파일 규약이고, 스킬 디렉터리는 재설치 때 덮어써진다.
 
@@ -137,7 +145,7 @@ PY
 
 ```bash
 ls ~/.claude/worklog/                      # <TICKET>.jsonl 이 생겨야 함
-python3 ~/.claude/skills/nara-worklog/assets/worklog.py list
+python3 "$SKILL_DIR/assets/worklog.py" list
 ```
 
 비어 있으면 순서대로 확인:

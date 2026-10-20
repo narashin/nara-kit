@@ -71,7 +71,9 @@ For each task in `evals/<name>/tasks/*.yaml`:
    each task **twice** (two fresh subagents) — one run is noisy signal; if the
    two disagree on any grader, treat that task as unresolved, not passed.
 3. Collect per run: output text, `tool_uses`, `duration_ms`, self-reported
-   unclear points + discretionary fills.
+   unclear points + discretionary fills. Metrics come from the result's usage
+   metadata; without it (e.g. Codex), use a self-reported tool-call count (request it
+   in the dispatch prompt) and `duration_ms: 0` noted as `duration: unmeasured`.
 
 Write results in the `waza run` output schema — the mechanical field-mapping
 (mock probe, `runs[]` overwrite) lives in [reporting.md](references/reporting.md#results-schema).

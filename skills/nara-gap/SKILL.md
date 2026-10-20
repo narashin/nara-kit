@@ -79,7 +79,7 @@ gap.md는 매 실행 덮어써지는 스냅샷이므로 점수 추이는 append-
    - Deviations entry ↔ Missing/Partial 항목 (의도된 갭 후보)
    - Design decisions entry ↔ Implemented 항목 (evidence 보강)
    - Open questions [revise] entry → gap.md `## Spec Revise Candidates` 섹션에 surface
-3. **사용자 확인**: 매칭된 항목을 AskUserQuestion으로 일괄 제시
+3. **사용자 확인**: 매칭된 항목을 한 번의 질문으로 일괄 제시하고 답을 기다린다(런타임에 선택지 질문 도구가 있으면 그것으로, 없으면 채팅으로)
    - "이 N개를 `Agreed Exceptions`로 처리?" — 응답 YES/SELECT/NO
 4. **반영**: 확정된 항목 `Agreed Exceptions`로 이동. 점수 재산출
 5. **Notes log 갱신** (필수): 확정된 entry를 `implementation-notes.md` `## Reconciliation Log` 표에 append (섹션 없으면 생성). 컬럼: Note ID / Mapped Gap Item / Resolution / Date / Source. 4섹션 원본은 **수정 금지** — Log만 append

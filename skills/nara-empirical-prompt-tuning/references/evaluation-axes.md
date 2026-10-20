@@ -7,7 +7,7 @@
 | Success/failure | Did executor produce intended deliverable (binary) | Minimum bar |
 | Accuracy | What % of requirements satisfied | Partial success degree |
 | Step count | Tool-call / decision-step count | Instruction waste indicator |
-| Duration | Executor's duration_ms | Cognitive load proxy |
+| Duration | Executor's duration_ms (or wall clock, see [workflow](workflow.md) Step 4) | Cognitive load proxy |
 | Retry count | Same decision redone count | Instruction ambiguity signal |
 | Unclear points | Executor enumerates as bullets | Qualitative improvement material |
 | Discretionary fill-ins | Decisions not fixed by instruction | Surfaces implicit specification |
@@ -23,6 +23,8 @@ Using `tool_uses` as a **relative value across scenarios** reveals structural de
 - Fix: add inline minimum complete example or guidance at top of SKILL.md -> significantly drops `tool_uses`
 
 Even at 100% accuracy, `tool_uses` skew is grounds for triggering iter 2.
+
+The ratio holds only when every scenario's count comes from the same source. A self-reported count (no usage metadata) is still usable for a 3-5x skew; do not read small differences from it.
 
 ## Fix Propagation Patterns
 

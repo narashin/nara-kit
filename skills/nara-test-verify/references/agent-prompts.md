@@ -7,7 +7,7 @@
 
 ## QA Lead Agent
 
-Dispatch with Agent tool (description: "QA Lead review"):
+Dispatch as a subagent (description: "QA Lead review"):
 
 ```
 Input schema: {{discover | golden-path}}  ← coordinator fills this before dispatch.
@@ -42,7 +42,7 @@ Output format:
 
 ## Developer Agent
 
-Dispatch with Agent tool (description: "Developer review"):
+Dispatch as a subagent (description: "Developer review"):
 
 ```
 Input schema: {{discover | golden-path}}  ← coordinator fills this before dispatch. discover → cite scenario IDs; golden-path → cite 시나리오 제목 + step 번호 (no S2/S3 IDs exist).
@@ -74,7 +74,7 @@ Output format:
 
 ## Red Team Agent
 
-Dispatch with Agent tool (description: "Red Team adversarial review"):
+Dispatch as a subagent (description: "Red Team adversarial review"):
 
 ```
 Input schema: {{discover | golden-path}}  ← coordinator fills this before dispatch. Cite/propose using the native unit: discover → scenario IDs; golden-path → 시나리오 제목 + step 번호 (proposals get a title only, no fabricated S-ID).

@@ -51,8 +51,8 @@ description: >-
 |---|---|---|
 | 오래 남길 사실: 결정(+이유)·주의사항·외부 제약 | **auto-memory** | 직접 write (preview) |
 | 기계로 잡을 수 있는 반복 실수 | 테스트·린트·스크립트·CI | 추천 + 넣을 자리 |
-| 이 repo 팀이 앞으로 지킬 규범 | repo `CLAUDE.md` | 추천 (suggest-only) |
-| 모든 repo에 적용할 개인 규범 | user `CLAUDE.md`·rules | 추천 (suggest-only) |
+| 이 repo 팀이 앞으로 지킬 규범 | repo 지침 파일(`CLAUDE.md`·`AGENTS.md` 중 repo가 쓰는 쪽) | 추천 (suggest-only) |
+| 모든 repo에 적용할 개인 규범 | user 지침 파일(`CLAUDE.md`·rules, Codex는 `~/.codex/AGENTS.md`) | 추천 (suggest-only) |
 | 아키텍처 결정 (대안 비교·구조 변경·외부 제약) | ADR | 추천 → `/nara-adr` |
 | 반복되는 절차 | skill | 추천 → `skill-development`(신규) · `/nara-skill-forge`(개선) |
 | lifecycle 자동화 ("매번 X 하면 Y") | hook | 추천 → `hook-development` |
@@ -65,6 +65,8 @@ description: >-
 skill 추천은 **절차형이면서 반복**일 때만 낸다. 두 lane에 걸치는 후보, 규범과 서술의 판별선, 실패 처리 표는 [routing-rules](references/routing-rules.md).
 
 ## 4. auto-memory 쓰기
+
+파일 층은 런타임의 memory dir(Claude Code `projects/<slug>/memory/`)이다. 없으면(Codex 등) 도구 층에만 쓰고, 도구도 없으면 지침 파일 추천으로 돌린다: `store: none (<사유>)`.
 
 - **dedup 먼저, 층마다 따로.** 파일 층은 memory dir과 `MEMORY.md`를 slug와 주제로 grep. 도구 층(memory MCP)은 명사 키워드 1~3개로 검색한다. 0건은 부재가 아니다. 더 짧은 키워드로 다시 찾고, 특정 레코드는 ID로 확인한다. 겹치면 새로 만들지 않고 기존 것을 고친다.
 - **dual-store**: 파일 층에 쓴 학습은 memory 도구에도 독립 레코드로 남긴다. 고칠 때도 양쪽을 같이 고친다. 도구가 없으면 건너뛰고 receipt에 `store: file-only (<사유>)`.

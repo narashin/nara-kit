@@ -7,8 +7,8 @@
 
 한 학습이 2개 lane에 걸칠 때:
 
-- **미래 세션/팀 동작을 지속적으로 규율하려는 rule·가이드라인** (강제 가능하든 — "gap<80이면 PR 차단" — 권고든 — "PR 본문은 한국어") → **CLAUDE.md suggest-only 우선** (repo=팀, user=개인).
-  CLAUDE.md는 매 세션 context에 로드되고 repo는 git으로 공유됨 — recall-on-search인 memory보다 rule 전파에 맞다.
+- **미래 세션/팀 동작을 지속적으로 규율하려는 rule·가이드라인** (강제 가능하든 — "gap<80이면 PR 차단" — 권고든 — "PR 본문은 한국어") → **지침 파일 suggest-only 우선** (repo=팀, user=개인). 지침 파일은 `CLAUDE.md`(Claude Code)와 `AGENTS.md`(Codex 등) 중 그 repo·사용자가 실제로 쓰는 쪽이다. 둘 다 있으면 한쪽이 다른 쪽을 import하는지 보고 원본에 추천한다. 이하 `CLAUDE.md`는 이 지침 파일을 가리킨다.
+  지침 파일은 매 세션 context에 로드되고 repo는 git으로 공유됨 — recall-on-search인 memory보다 rule 전파에 맞다.
   그 rule이 *왜* 생겼는지가 코드·rule 텍스트만으로 복원 불가할 때만 memory에도 이유를 별도 write (2개 타깃 허용 예외).
   - **판별선**: 규범(prescriptive — "앞으로 X 해라") → CLAUDE.md. 서술(descriptive — "이 코드/시스템은 이렇게 동작한다"는 사실·주의사항) → auto-memory. 둘 다면 위 예외로 양쪽.
 - 그 외 모든 충돌 (일회성 결정·발견 등) → 처분 표의 **위쪽 행 우선** (auto-memory > 결정적 검사 > CLAUDE.md > ADR > skill > hook).

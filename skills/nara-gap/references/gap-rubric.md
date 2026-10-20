@@ -254,7 +254,7 @@ N          = Implemented + Needs Confirm     # §3 계열 확정 후의 카운�
 
 ### 사용자 확정 흐름
 
-매칭 결과를 AskUserQuestion으로 일괄 제시:
+매칭 결과를 한 번의 질문으로 일괄 제시하고 답을 기다린다(선택지 질문 도구가 있으면 그것으로, 없으면 채팅으로):
 ```
 다음 N개를 Agreed Exception으로 처리?
 - FR-3 Email 발송 (DEV-1: 다음 phase로 미룸)

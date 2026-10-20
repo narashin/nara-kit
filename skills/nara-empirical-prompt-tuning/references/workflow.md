@@ -17,7 +17,7 @@ Fix the target prompt and prepare:
 
 ## Step 2: Bias-Free Read
 
-Dispatch a new subagent via Agent tool. Do NOT self-reread (structurally impossible to view own text objectively). Multiple scenarios can run in parallel via multiple Agent invocations in a single message.
+Dispatch a new subagent via the runtime's subagent tool. Do NOT self-reread (structurally impossible to view own text objectively). Multiple scenarios can run in parallel by dispatching them in the same turn.
 
 ## Step 3: Execution
 
@@ -32,8 +32,14 @@ Record from results:
 - **Instruction-side measurements**:
   - Success/failure: binary. All `[critical]` items must be met for success.
   - Accuracy: % of requirements checklist (full=1, partial=0.5, miss=0)
-  - Step count: `tool_uses` from Agent tool usage meta
-  - Duration: `duration_ms` from Agent tool usage meta
+  - Step count: `tool_uses` from the subagent result's usage metadata
+  - Duration: `duration_ms` from the same metadata
+  - **No usage metadata** (some runtimes, e.g. Codex, return only the report): take step
+    count from the executor's `Tool calls` self-report and duration from the caller's
+    wall clock (time before dispatch to time the result is read). Tag both values
+    `(self-reported)` / `(wall-clock)` in the table. Compare scenarios only when every
+    value in the comparison has the same source; with parallel dispatch the wall clock
+    measures the slowest run, so record duration as `n/a` there.
   - Retry count: from subagent self-report
   - On failure: note which `[critical]` item dropped
 

@@ -37,6 +37,7 @@ You are an executor reading <target prompt name> with a blank slate.
   - General Fix Rule: <class-level rule, not a spot fix>
 - Discretionary fill-ins: places not fixed by instruction, filled by own judgment (bullets)
 - Retries: number of times same decision was redone and why
+- Tool calls: total number of tool invocations you made (count every call, including failed ones)
 ```
 
-The caller extracts self-report from the report and fills the evaluation-axis table by obtaining `tool_uses` / `duration_ms` from the Agent tool's usage meta.
+The caller extracts self-report from the report and fills the evaluation-axis table by obtaining `tool_uses` / `duration_ms` from the subagent result's usage metadata. When the runtime returns no such metadata, the `Tool calls` line above stands in for `tool_uses` (fallback rules in [workflow](workflow.md) Step 4).

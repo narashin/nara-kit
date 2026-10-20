@@ -59,4 +59,4 @@ What was chosen and the primary reasoning.
 When recording a decision made in a previous session:
 1. Use the original decision date, not today
 2. Add `(backfilled YYYY-MM-DD)` after the date
-3. Reconstruct context from git history and CLAUDE.md
+3. Reconstruct context from git history and the repo's agent instruction file (`CLAUDE.md`/`AGENTS.md`)

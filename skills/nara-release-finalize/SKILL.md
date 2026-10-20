@@ -43,7 +43,8 @@ Entered only when the config file does not exist.
 3. Detect the production trigger mode: scan `.github/workflows/*.y*ml` for a file with an
    `on.push.tags` trigger. Found → propose `production_deploy_trigger: tag_push_auto` with that
    filename (informational only, not dispatched by this skill). Not found → list
-   `workflow_dispatch` candidates via AskUserQuestion; user picks one → `workflow_dispatch` mode,
+   `workflow_dispatch` candidates in one question (option-question tool if the runtime has
+   one, otherwise chat, then stop until answered); user picks one → `workflow_dispatch` mode,
    then ask its required inputs (a `${TAG}` placeholder is resolved to the pushed tag at
    dispatch time).
 4. Write `.claude/release-finalize.local.md`. Report the path. Version argument already given →

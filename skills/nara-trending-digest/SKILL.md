@@ -114,7 +114,9 @@ mcp__obsidian-mcp-tools__create_vault_file
 
 ## 크론 설정
 
-Claude Code CronCreate로 주간 자동 실행 설정:
+세션 크론 도구(`CronCreate`/`CronList`/`CronDelete`)가 있는 런타임(Claude Code)에서만 아래 등록과 Step 0이 적용된다. 그런 도구가 없는 런타임(Codex 등)에서는 **Step 0을 건너뛰고 Step 1부터 실행**하며, 응답 끝에 `schedule: skipped (no session cron tool)`을 남긴다. 그 런타임에서 주간 실행이 필요하면 외부 스케줄러(Multica autopilot, launchd 등)에 `$nara-trending-digest --since weekly`를 등록한다. 외부 스케줄러는 만료가 없어 self-renew가 필요 없다.
+
+세션 크론 도구로 주간 자동 실행 설정:
 
 ```
 cron: "3 9 * * 1"       # 매주 월요일 09:03 로컬 (off-minute — jitter 만료경계 완화)

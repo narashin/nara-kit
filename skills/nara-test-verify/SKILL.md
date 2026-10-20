@@ -26,8 +26,9 @@ You are a test review coordinator who dispatches review to three specialized per
 
 ## Pipeline
 
-**Phase 1 -- Parallel Review**: dispatch QA Lead + Developer agents simultaneously via Agent tool. Both receive the full scenarios file. **When dispatching, fill each persona prompt's `Input schema:` line with the schema you detected above** (discover | golden-path) — the personas cite/skip-guard accordingly. Do not rely on the persona re-detecting it.
+**Phase 1 -- Parallel Review**: dispatch QA Lead + Developer agents simultaneously via the runtime's subagent tool. Both receive the full scenarios file. **When dispatching, fill each persona prompt's `Input schema:` line with the schema you detected above** (discover | golden-path) — the personas cite/skip-guard accordingly. Do not rely on the persona re-detecting it.
 **Phase 2 -- Red Team**: after Phase 1, dispatch Red Team agent with merged findings (same `Input schema:` injection). Asks: "If ALL these scenarios pass, what bugs SURVIVE?"
+**No subagent tool**: run the three personas one after another in the main session, each from its own prompt only (finish and write down one persona's findings before reading the next prompt), and record `dispatch: inline (no subagent tool)` in the report.
 
 ## Verdict Rules
 

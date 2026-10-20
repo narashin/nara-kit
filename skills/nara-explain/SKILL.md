@@ -25,7 +25,7 @@ Infer from user message. If not stated, ask.
 
 | Scope | Strategy |
 |-------|----------|
-| Project | CLAUDE.md/README -> directory structure -> key files |
+| Project | CLAUDE.md/AGENTS.md/README -> directory structure -> key files |
 | Feature | Components/services/routes + data flow |
 | Method | Function body + call context + I/O |
 | Change (PR, branch, commit, range, working tree) | One self-contained HTML file: [change-html](references/change-html.md) |

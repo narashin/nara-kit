@@ -25,7 +25,7 @@ jira-drain <KEY|issue_id> [--dry-run]
 
 ## Step 0 — Pre-flight
 
-`multica`, `herdr` PATH 확인. 없으면 `❌ 실패: <cmd> not found (PATH 확인)` 후 중단.
+`multica`, `herdr`, `claude` PATH 확인. 없으면 `❌ 실패: <cmd> not found (PATH 확인)` 후 중단. `claude`는 이 스킬을 돌리는 런타임과 무관하게 필요하다. 워커 pane이 항상 Claude Code를 띄우기 때문이다(아래 파이프라인). Codex에서 이 스킬을 불러도 워커는 Claude Code다.
 
 ## 파이프라인
 

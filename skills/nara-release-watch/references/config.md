@@ -58,10 +58,22 @@ repo 릴리즈는 그 안의 특정 디렉터리가 바뀌었는지 알려주지
 - 경로에 커밋이 **0건**이면 `unwatchable`로 1회 보고된다. 거의 항상 경로 오타다
 - `..`가 든 경로는 파싱 단계에서 버려진다
 
+## 스킬 위치 — `$SKILL_DIR`
+
+아래 명령은 설치된 스킬 디렉터리를 `$SKILL_DIR`로 가리킨다. 설치 위치는 런타임마다 다르다(`npx skills add --global`은 `~/.agents/skills`, Claude Code는 그 심링크 `~/.claude/skills`, Codex 단독 설치는 `~/.codex/skills`). 한 번 잡아 두고 쓴다:
+
+```bash
+SKILL_DIR=$(for d in ~/.agents/skills ~/.claude/skills ~/.codex/skills; do
+  [ -f "$d/nara-release-watch/assets/watch.py" ] && echo "$d/nara-release-watch" && break
+done)
+```
+
+비어 있으면 스킬이 설치되지 않은 것이다.
+
 ## 씨딩
 
 ```bash
-python3 ~/.claude/skills/nara-release-watch/assets/watch.py seed --top 50
+python3 "$SKILL_DIR/assets/watch.py" seed --top 50
 ```
 
 스타한 repo를 후보로 출력한다. **자동으로 watchlist에 넣지 않는다** — 스타는 다른 이유로도 누르니 노이즈다. 사람이 솎아서 붙인다.
@@ -80,8 +92,8 @@ python3 ~/.claude/skills/nara-release-watch/assets/watch.py seed --top 50
 기계 소유. `poll`이 신규 항목(임계 통과분만)을 적재하고, digest가 판정·배달을 마친 뒤 `digest --drain`으로 비운다. `(repo, id)`로 dedup 하므로 state를 손으로 되감아 재폴링해도 중복 적재되지 않는다. 파일이 깨지면 백로그만 잃고 폴링은 계속된다.
 
 ```bash
-python3 ~/.claude/skills/nara-release-watch/assets/watch.py digest           # 읽기만
-python3 ~/.claude/skills/nara-release-watch/assets/watch.py digest --drain   # 배달 완료 후에만
+python3 "$SKILL_DIR/assets/watch.py" digest           # 읽기만
+python3 "$SKILL_DIR/assets/watch.py" digest --drain   # 배달 완료 후에만
 ```
 
 ## 설정
@@ -97,8 +109,8 @@ python3 ~/.claude/skills/nara-release-watch/assets/watch.py digest --drain   # �
 ## 확인
 
 ```bash
-python3 ~/.claude/skills/nara-release-watch/assets/watch.py list
-python3 ~/.claude/skills/nara-release-watch/assets/watch.py poll --dry-run
+python3 "$SKILL_DIR/assets/watch.py" list
+python3 "$SKILL_DIR/assets/watch.py" poll --dry-run
 ```
 
 `--dry-run`은 state를 쓰지 않으므로 반복 실행해도 baseline이 굳지 않는다.
@@ -127,7 +139,7 @@ prompt:   /nara-release-watch digest
 
 ## 등록 — CronCreate (대안)
 
-Multica를 안 쓸 때. CronCreate 잡은 **7일 후 자동 만료**되므로 self-renew가 필요하다. 일간 스케줄이라 만료 전에 7번은 발화하지만, 갱신하지 않으면 8일째 죽는다.
+Multica를 안 쓰고 세션 크론 도구가 있는 런타임(Claude Code)일 때. Codex처럼 그런 도구가 없으면 Multica나 launchd 같은 외부 스케줄러에 등록한다. CronCreate 잡은 **7일 후 자동 만료**되므로 self-renew가 필요하다. 일간 스케줄이라 만료 전에 7번은 발화하지만, 갱신하지 않으면 8일째 죽는다.
 
 ```
 CronCreate(cron="47 8 * * *", prompt="/nara-release-watch", durable=true, recurring=true)

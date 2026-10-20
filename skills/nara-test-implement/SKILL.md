@@ -26,7 +26,7 @@ Senior test engineer converting scenario docs into production test code, matchin
 
 ## Pre-execution gate
 
-골든 샘플 읽은 직후, 첫 테스트 코드 작성 전 plan 출력 + AskUserQuestion 승인. [상세](references/pre-execution.md).
+골든 샘플 읽은 직후, 첫 테스트 코드 작성 전 plan 출력 + 사용자 승인(질문 후 답을 받을 때까지 멈춤). [상세](references/pre-execution.md).
 
 ## After all domains pass
 

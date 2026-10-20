@@ -21,7 +21,7 @@ Bridges Jira ticket → branch name → shell `wt` helper, producing a worktree 
 `<ticket-id> [type-prefix]`
 
 - `<ticket-id>` (required): Jira key, e.g. `APP-346`.
-- `[type-prefix]` (optional): git branch type. Allowed: `feature`, `fix`, `hotfix`, `chore`, `release`, `test`, or `none`. If omitted, the skill asks via `AskUserQuestion`. **Never auto-derive from Jira issue type.**
+- `[type-prefix]` (optional): git branch type. Allowed: `feature`, `fix`, `hotfix`, `chore`, `release`, `test`, or `none`. If omitted, the skill asks the user (step 5). **Never auto-derive from Jira issue type.**
 
 ## Steps
 
@@ -37,7 +37,7 @@ Bridges Jira ticket → branch name → shell `wt` helper, producing a worktree 
    - if summary is empty / TBD / single ambiguous word → present 2–3 slug candidates and ask the user to pick, **do not guess**.
 5. **Resolve type prefix**:
    - If `TYPE` provided as 2nd arg → use it as-is.
-   - If omitted → `AskUserQuestion` with options: `feature`, `fix`, `hotfix`, `chore`, `release`, `test`, `none (no prefix)`.
+   - If omitted → ask with options: `feature`, `fix`, `hotfix`, `chore`, `release`, `test`, `none (no prefix)`, and stop until answered. Use the runtime's option-question tool if it has one and it fits seven options; otherwise ask in chat.
 6. **Compose branch name**:
    - With prefix: `<TYPE>/<TICKET>-<slug>` (e.g. `feature/APP-346-edit-planned-date`)
    - With `none`: `<TICKET>-<slug>` (e.g. `APP-346-edit-planned-date`)

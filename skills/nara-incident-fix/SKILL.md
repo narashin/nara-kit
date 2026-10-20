@@ -25,7 +25,7 @@ incident-report.md 읽은 직후, **Phase 1 시작 전**:
    - 영향 파일 목록 (Proposed Fix + Similar Patterns)
    - 작성 예정 실패 테스트 시나리오 한 줄 요약
    - Side Effects 검증 대상 경로
-2. **AskUserQuestion**: "이 방향으로 Red-Green-Refactor 진행할까요?"
+2. **승인 질문** (선택지 질문 도구가 있으면 그것으로, 없으면 채팅으로 묻고 턴을 끝낸다): "이 방향으로 Red-Green-Refactor 진행할까요?"
 3. 승인 전 테스트 작성/코드 수정 **금지**
 
 **Skip 조건**:

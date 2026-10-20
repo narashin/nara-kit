@@ -18,7 +18,7 @@ description: >-
 
 | 영역 | 대상 | 절차 |
 |---|---|---|
-| **memory** | `<agent-config>/projects/<slug>/memory/*.md` (`MEMORY.md`, `archive/` 제외) + memory MCP 레코드 | 아래 [memory 절차](#memory-절차) |
+| **memory** | `<agent-config>/projects/<slug>/memory/*.md` (`MEMORY.md`, `archive/` 제외) + memory MCP 레코드. 파일 memory dir이 없는 런타임(Codex 등)은 MCP 레코드만 보고 파일 층은 `skipped (no memory dir)` | 아래 [memory 절차](#memory-절차) |
 | **rules** | user·repo `CLAUDE.md`, `AGENTS.md`, `rules/*.md`, `@import`로 끌려오는 파일 | [context-audit](references/context-audit.md) |
 | **skills** | repo `skills/`·`.claude/skills/`, 설치본 `~/.claude/skills`·`~/.codex/skills` | [context-audit](references/context-audit.md) |
 
@@ -108,6 +108,6 @@ next: <다음 등급 승인 질문 | 남은 사람 할 일 | 없음>
 
 ## 문제 해결
 
-- `❌ 실패: memory dir 없음 — <path>` → `<agent-config>/projects/<slug>/memory/` 확인.
+- `❌ 실패: memory dir 없음 — <path>` → `<agent-config>/projects/<slug>/memory/` 확인. 런타임에 그런 디렉터리 규약 자체가 없으면(Codex) 실패가 아니라 위 `skipped`다.
 - skill 참조가 `unknown`인데 판정이 필요하면 `CLAUDE_PROJECT_DIR`을 툴킷 저장소로 지정한다. `NARA_SKILLS_DIRS`는 루트 탐색 목록만 바꾼다.
 - 실패 경로별 대응(소유 불명, 대상 표류, 백업 실패, 검증 실패): [context-audit](references/context-audit.md#실패-경로).

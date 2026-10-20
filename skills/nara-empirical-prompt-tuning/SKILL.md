@@ -16,7 +16,7 @@ The author of a prompt cannot judge its quality. This skill has a **bias-free ex
 
 0. **Iter 0 -- static check**: verify description/body consistency (no dispatch needed). Reconcile gaps before iter 1.
 1. **Prepare**: fix target prompt, create 2-3 evaluation scenarios (1 median + edges), define requirements checklist (3-7 items, at least one `[critical]`).
-2. **Dispatch**: new subagent via Agent tool (never self-reread). Parallel scenarios OK.
+2. **Dispatch**: new subagent via the runtime's subagent tool (never self-reread). Parallel scenarios OK.
 3. **Execute**: subagent runs scenario per contract, returns self-report.
 4. **Evaluate two-sided**: executor self-report (unclear points, discretionary fill-ins) + instruction-side metrics (success, accuracy, steps, duration, retries). Tag unclear points by phase.
 5. **Fix**: minimum diff, one theme per iteration. Check failure pattern ledger first.

@@ -16,6 +16,18 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - `--model=`은 자유 문자열이 됐고 `--verifier-model=`을 추가했다. `nara-review-queue`의 `--model` 알리아스 제한은 그대로 둔다. 그쪽은 오타를 잡아 줄 사람이 없는 무인 경로라 제한한 것이고, 대화형 리뷰는 런타임이 오타를 바로 거부한다
 - **`nara-commit`이 만드는 메시지 끝에 Co-author trailer 한 줄을 붙인다.** 이 스킬은 메시지만 내고 커밋은 사람이 하므로, trailer가 없으면 AI가 관여한 커밋이라는 기록이 남지 않아 사내 AI-Assisted 집계에서 빠졌다. 도구 이름은 지금 실행 중인 도구, 이메일은 사용자·프로젝트 규칙이 정한 값(없으면 도구 기본값)을 쓴다
 
+### Fixed
+- **Codex에서 실패하던 스킬 단계 네 곳을 고쳤다.**
+  - `nara-trending-digest`는 매 실행 첫 단계에서 `CronCreate`/`CronList`를 불렀다. 이제 세션 크론 도구가 없으면 그 단계를 건너뛰고 `schedule: skipped (no session cron tool)`을 남긴다. 주간 실행은 외부 스케줄러에 등록하도록 안내한다
+  - `nara-release-watch`와 `nara-worklog`의 설치·확인 명령이 `~/.claude/skills/...`를 박아 둬서 Codex 단독 설치에서는 경로가 없었다. 이제 `~/.agents/skills`, `~/.claude/skills`, `~/.codex/skills`에서 설치 위치를 찾는다. worklog는 `~/.claude/hooks`가 없는 머신을 위해 `mkdir -p`를 추가했다
+  - `nara-jira-drain`의 사전 점검에 `claude`를 넣었다. 워커는 런타임과 상관없이 항상 Claude Code를 띄우는데, 지금까지는 `claude`가 없으면 pane 실행 단계에서야 실패했다
+- **승인 질문이 Claude Code의 `AskUserQuestion` 도구 이름에 묶여 있던 곳을 런타임 중립으로 바꿨다** (`nara-gap`, `nara-incident-fix`, `nara-test-implement`, `nara-release-prep`, `nara-release-finalize`, `nara-wt`). 선택지 질문 도구가 있으면 그것을 쓰고, 없으면 채팅으로 묻고 답을 받을 때까지 멈춘다. Codex에는 그 도구가 없어 승인 게이트가 질문 없이 지나갈 여지가 있었다
+- **`nara-empirical-prompt-tuning`과 `nara-skill-forge`가 서브에이전트 사용량 메타데이터가 없는 런타임에서도 측정을 이어 간다.** 단계 수(`tool_uses`)와 소요 시간(`duration_ms`)을 Claude Code Agent 도구의 메타데이터에서만 얻도록 적혀 있어 Codex에서는 두 축이 비었다. 이제 메타데이터가 없으면 실행 서브에이전트가 보고한 도구 호출 수와 호출 측 경과 시간을 쓰고 출처를 표에 남긴다. 출처가 섞인 값끼리는 비교하지 않고, 병렬 실행의 경과 시간은 `n/a`로 둔다
+- **`nara-test-verify`가 페르소나를 "Agent tool"이 아니라 런타임의 서브에이전트 도구로 띄운다.** 서브에이전트 도구가 없으면 세 페르소나를 메인 세션에서 하나씩 돌리고 리포트에 `dispatch: inline (no subagent tool)`을 남긴다
+- **`CLAUDE.md`만 읽거나 추천하던 곳이 `AGENTS.md`도 본다** (`nara-retro`, `nara-code-review` 컨텍스트 수집, `nara-adr`, `nara-explain`). Codex는 `AGENTS.md`만 읽으므로, Codex 사용자가 읽히지도 않는 파일에 규칙을 넣으라는 추천을 받거나 리뷰가 repo 규칙을 놓쳤다. retro는 repo가 실제로 쓰는 지침 파일에 추천하고, memory dir이 없는 런타임에서는 memory 도구 층에만 쓰며 둘 다 없으면 지침 파일 추천으로 돌린다
+- **`nara-grooming`이 파일 memory dir이 없는 런타임에서 실패하지 않는다.** Codex에서는 memory 영역이 매번 `memory dir 없음`으로 실패했다. 이제 그 런타임은 memory MCP 레코드만 보고 파일 층을 `skipped (no memory dir)`로 남긴다. `nara-adr` 템플릿의 backfill 맥락 복원도 `AGENTS.md`를 본다
+- **`nara-ko-prose`가 규칙 원문을 Claude 플러그인 경로 밖에서도 찾는다.** Codex 플러그인 캐시와, Agent Skill로 설치한 `fluent-korean/SKILL.md`(같은 본문)를 추가로 탐색한다. upstream에 Codex 설치 경로가 없으므로 Codex 사용자에게는 경로 인자를 안내한다
+
 ## [0.27.6] - 2026-10-16
 
 ### Fixed
