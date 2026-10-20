@@ -11,6 +11,8 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-10-20
+
 ### Changed
 - **`nara-code-review`가 판단 모델 이름을 스킬에 박지 않는다.** `opus`/`fable` 중 고르라는 질문이 Codex에서는 고를 수 있는 답이 하나도 없는 질문이 됐다. 이제 선택지를 런타임에서 만든다: 세션 모델 유지(기본 권장), 서브에이전트 도구가 스스로 밝힌 모델 이름, 직접 지정. Verifier도 `sonnet` 고정 대신 `$VERIFIER_MODEL`(런타임이 내놓는 싼 등급, 없으면 세션 모델)을 쓴다. 런타임이 이름을 거부하면(Codex `spawn_agent`의 "Unknown model") 세션 모델로 다시 띄우고 리포트 헤더에 `session fallback`으로 남긴다
   - `--model=`은 자유 문자열이 됐고 `--verifier-model=`을 추가했다. `nara-review-queue`의 `--model` 알리아스 제한은 그대로 둔다. 그쪽은 오타를 잡아 줄 사람이 없는 무인 경로라 제한한 것이고, 대화형 리뷰는 런타임이 오타를 바로 거부한다
