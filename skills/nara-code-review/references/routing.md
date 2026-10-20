@@ -41,12 +41,29 @@ costs tokens; false-negative routing costs coverage.
 ## Launch rules
 
 - Before dispatching, ask once: **"판단 역할(리뷰어·Judge·Fixer)에 쓸 모델을 고르세요."**
-  Options: `opus` (기본 권장) | `fable`. Save the answer as `$JUDGMENT_MODEL`; do
-  not ask again in re-review rounds. If the user supplied `--model=opus|fable`, use
-  it and skip the question. The Verifier always uses `sonnet`.
+  Build the options from the runtime, never from a fixed list:
+  1. `현재 세션 모델 유지 (권장)` — omit the model argument; subagents inherit the
+     session model. Name the session model in the label when it is known.
+  2. Up to two model names the subagent tool itself declares it accepts (an enum or
+     list in its model parameter, e.g. Claude Code's Agent `model`). Offer none when
+     the tool declares no list; do not guess names from memory.
+  3. `모델 직접 지정` — the user types a name their runtime accepts.
+
+  Use the runtime's own question tool if it has one, otherwise ask in chat. Save the
+  answer as `$JUDGMENT_MODEL` (`session` for option 1); do not ask again in re-review
+  rounds. `--model=<name>` sets it and skips the question.
+- `$VERIFIER_MODEL`: `--verifier-model=<name>` if given; otherwise the cheapest name
+  the subagent tool declares that is not a small/fast tier (Claude Code: `sonnet`);
+  otherwise `session`. Do not ask for it separately.
 - Dispatch all selected reviewers concurrently as parallel subagents (one batch),
-  each with `model: $JUDGMENT_MODEL`. If unavailable, do not substitute a different
-  model: omit `model` and record session-model fallback in the report.
+  each with the model argument set to `$JUDGMENT_MODEL` (omitted when `session`).
+  If the runtime rejects the name (Codex's `spawn_agent` fails with "Unknown model"
+  and lists the names it accepts), do not substitute a different model: re-dispatch
+  with the model argument omitted, record `session fallback (<rejected name>)` in the
+  report header, and show the accepted list in the receipt so the user can rerun with
+  `--model=`. The same rule applies to `$VERIFIER_MODEL`.
+- No subagent tool at all (the runtime cannot dispatch subagents): stop before Flow 4
+  with `→ ESCALATE:` naming that; the main session does not play the reviewers.
 - Each reviewer prompt = [reviewer-contract](reviewer-contract.md)
   + its own `agents/<name>.md` + relevant [stack-specific](stack-specific.md) section
   + project override block (if loaded) + manifest + diff + context map (code context

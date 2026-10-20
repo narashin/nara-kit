@@ -9,7 +9,15 @@ parser — it may read "in Claude Code" and conclude "not for me".
 ```bash
 grep -nE "(in Claude Code|Claude Code skill|Claude Code only|Cursor only|Codex only|~/\.claude/skills/[a-z]|/plugin install)" \
   skills/<name>/SKILL.md skills/<name>/references/*.md 2>/dev/null
+grep -nwiE "(opus|sonnet|haiku|fable|gpt-[0-9][a-z0-9.-]*|claude-(opus|sonnet|haiku|fable)[a-z0-9.-]*)" \
+  skills/<name>/SKILL.md skills/<name>/references/*.md 2>/dev/null
 ```
+
+The second scan catches hardcoded model names. A skill that offers or pins a
+model by name breaks on the other runtime, and behind a gateway even on the same
+one, because the accepted catalog differs. Allowed only as a runtime-labeled
+example next to a neutral rule (`Claude Code: \`sonnet\`` after "the cheapest name
+the subagent tool declares").
 
 Non-empty output = red flag → make Phase 4 round 1 a P0 `runtime-lock` fix.
 Ignore hits inside `runtime-gate.md` itself — it quotes the patterns it scans

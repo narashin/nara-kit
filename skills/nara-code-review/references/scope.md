@@ -72,8 +72,11 @@ re-review it silently — escalate in the report and set `scope-integrity: MISMA
 - `--worktree` / `--no-worktree` — include/exclude working-tree changes with explicit baseline
 - `--show-all` — show all findings regardless of confidence/evidence gate
 - `--threshold=N` — confidence threshold (default 80)
-- `--model=opus|fable` — 리뷰어·Judge·Fixer의 판단 모델. 생략하면 dispatch 전
-  `opus`/`fable` 중 하나를 질문한다; Verifier는 항상 `sonnet`.
+- `--model=<name>` — 리뷰어·Judge·Fixer의 판단 모델. 런타임의 서브에이전트 도구가
+  받는 이름 그대로(Claude Code 예: `opus`, Codex 예: 그 환경 카탈로그의 slug).
+  `session`은 세션 모델 상속. 생략하면 dispatch 전 1회 질문한다 — [routing](routing.md).
+- `--verifier-model=<name>` — Verifier 모델. 생략하면 런타임이 내놓는 싼 등급,
+  없으면 세션 모델 — [routing](routing.md).
 - `--focus=<agent>` — run only a specific reviewer agent. Legacy aliases:
   logic→behavior-state, type-safety→contracts-compatibility,
   error-handling→resilience-data-integrity, architecture→architecture-reuse,
@@ -101,7 +104,8 @@ re-review it silently — escalate in the report and set `scope-integrity: MISMA
   --show-all                      evidence/신뢰도 필터 없이 전체 출력
   --threshold=N                   신뢰도 기준 변경 (기본: 80)
   --max-rounds=N                  수정-검증 반복 횟수 (기본: 3, 최대: 5)
-  --model=opus|fable              판단 역할 모델 (미지정 시 질문; Verifier=sonnet)
+  --model=<name>|session          판단 역할 모델 (미지정 시 질문, 기본 세션 모델)
+  --verifier-model=<name>         Verifier 모델 (미지정 시 런타임의 싼 등급 또는 세션 모델)
   --focus=<agent>                 특정 리뷰어만 실행
   --worktree / --no-worktree      명시 baseline 지정 시 워킹트리 변경 포함/제외
   --no-save                       파일 저장 없이 콘솔 출력만

@@ -23,13 +23,13 @@ each fix. Loop until convergence.
 | Reviewer | core 4 + conditional agents, parallel | NO (read-only) | `$JUDGMENT_MODEL` |
 | Judge | independent blind adjudicator | NO | `$JUDGMENT_MODEL` |
 | Fixer | single central fixer, serial | YES (only writer) | `$JUDGMENT_MODEL` |
-| Verifier | issue-level proof checker | NO | `sonnet` (고정) |
+| Verifier | issue-level proof checker | NO | `$VERIFIER_MODEL` |
 
-**Model**: Agent 툴의 `model` param으로 넘긴다. 열린 판단(찾기·판정·수정) 3역은
-`$JUDGMENT_MODEL` 하나를 공유하고, Verifier는 hash/hunk에 앵커돼 `sonnet` 고정
-(예외는 [verification](references/verification.md)). `$JUDGMENT_MODEL`은 리뷰어
-dispatch 직전 1회 질문으로 정한다 — [routing](references/routing.md). 미가용 시 다른
-모델로 대체하지 말고 `model` 생략(세션 모델 상속), 실제 사용 모델은 리포트 헤더에 기록.
+**Model**: 서브에이전트 도구의 모델 인자로 넘기되, 이름은 스킬에 박지 않고 런타임에서
+얻는다. 열린 판단(찾기·판정·수정) 3역은 `$JUDGMENT_MODEL`을 공유하고, Verifier는
+hash/hunk에 앵커돼 더 싼 `$VERIFIER_MODEL`을 쓴다(예외는 [verification](references/verification.md)).
+정하는 법, 기본값(세션 모델), 거부 시 처리는 [routing](references/routing.md). 실제 사용
+모델은 리포트 헤더에 기록.
 오케스트레이션(Flow 0–3, 5, 9)은 세션 모델 고정 — 스킬 안에서 못 바꾼다.
 Override may reassign: 자원 노브이므로 base check가 아니고 Conflict rule 대상 아님.
 
