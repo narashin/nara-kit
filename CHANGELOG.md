@@ -11,6 +11,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ## [Unreleased]
 
+### Fixed
+- **`nara-now`가 대규모 작업에 이미 제거된 `subagent-driven-development`를 추천하던 것을 고쳤다.** superpowers 의존을 끊을 때(2026-07-16) 이 표만 남아 있어서, 런타임과 상관없이 없는 스킬을 가리켰다. 이제 `/nara-plan`으로 작업 단위를 나눈 뒤 `/nara-implement`를 유닛별로 돌리라고 추천하고, 작은 작업에는 `/nara-implement` 단일 유닛도 선택지로 둔다
+
 ## [0.28.0] - 2026-10-20
 
 ### Changed
