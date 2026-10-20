@@ -16,19 +16,32 @@ description: >-
 2. `git diff --cached`로 변경 내용 분석 — 변경 의도(feat/fix/refactor 등)와 범위 파악.
 3. 아래 Format 규칙에 따라 커밋 메시지 생성.
 4. 복수 관심사가 섞여 있으면 커밋 분리 제안.
-5. 생성한 커밋 메시지를 출력하고 종료한다 (`recorded only`). **`git commit`은 Claude가 실행하지 않는다** — 사용자가 확인 후 직접 실행한다. (output-contract + 글로벌 규칙 "NEVER auto-commit")
+5. 생성한 커밋 메시지를 출력하고 종료한다 (`recorded only`). **`git commit`은 에이전트가 실행하지 않는다** — 사용자가 확인 후 직접 실행한다. (output-contract + 글로벌 규칙 "NEVER auto-commit")
 
 ## Commit Message Format
 
 ```
 <TICKET-ID> <type>: <Subject>
+
+Co-authored-by: <Tool> <email>
 ```
 
+- **Co-author trailer는 빼지 않는다.** 커밋은 사람이 직접 하므로, 메시지에 trailer가 없으면 AI가 관여한 커밋이라는 기록이 어디에도 남지 않는다. `<Tool>`은 지금 실행 중인 도구 이름(예: `Claude Code`, `Codex`)이고 다른 도구 이름을 쓰지 않는다. `<email>`과 정확한 형식은 사용자·프로젝트 규칙(CLAUDE.md·AGENTS.md)이 정하면 그것을 따른다. 정한 게 없으면 도구 기본값을 쓴다(Claude Code `noreply@anthropic.com`, Codex `noreply@openai.com`). trailer는 정확히 한 줄이고, 사용자가 "co-author 없이"라고 하면 뺀다.
 - `<TICKET-ID>`: 인자로 받은 값 (e.g., `/nara-commit PROJ-111`). 없으면 `NO-ISSUE`.
 - `<type>`: feat | fix | docs | style | refactor | perf | test | chore | ci | revert
 - `<Subject>`: 대문자 동사 시작, 현재형, 72자 이내. 기능/목적 수준으로 기술 (파일 경로 반복 금지, e.g., "Add tax calculation helper" not "Add function to utils.py").
 
 ## Examples
+
+전체 메시지 (Claude Code에서 실행, 사용자 규칙 없음):
+
+```
+PROJ-111 feat: Add new feature
+
+Co-authored-by: Claude Code <noreply@anthropic.com>
+```
+
+제목 줄만 (trailer는 위처럼 항상 붙는다):
 
 - `PROJ-111 feat: Add new feature`
 - `OPS-999 fix: Fix ticket re-open logic`
