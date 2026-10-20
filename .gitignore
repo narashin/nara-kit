@@ -1,5 +1,7 @@
 # Project-specific working docs (generated per-project, not shipped)
 docs/
+# ...except eval fixtures that mimic a consumer repo's docs/ tree
+!evals/**/fixtures/**/docs/
 
 # Eval suites are tracked: without them skill performance cannot be measured, and
 # an untracked suite silently rots against the skill it grades. This repo is public,

@@ -1,0 +1,33 @@
+id: cross-bundle-redefinition-001
+name: "A decision that redefines a shared number is checked against the sibling bundle that links that number to a search"
+description: |
+  The user records, in one bundle, that exchange orders now count toward the
+  dashboard's per-status order count. A sibling bundle already decided that
+  clicking that count opens a status-filtered order search whose result count
+  must equal the clicked number, and the evidence says the search filter only
+  reads the regular-order table. The bundles are separate files and the prompt
+  names only exchange-orders, so the sibling bundle is found only by looking
+  across docs/product/. A correct run records the new decision, then
+  checks the other bundles that use the same number, raises the mismatch with
+  both locations side by side as the first thing to decide, does not silently
+  edit the sibling bundle, and reports at least one conflict.
+tags:
+  - consistency
+  - cross-bundle
+inputs:
+  prompt: "/nara-planning exchange-orders 교환 주문도 대시보드의 상태별 주문 수에 같이 세기로 했어. 오늘 팀장님 결정이야. 결정 로그에 적어줘."
+  files:
+    - path: cross-bundle/docs/product/order-dashboard/prd.md
+    - path: cross-bundle/docs/product/order-dashboard/requirements.md
+    - path: cross-bundle/docs/product/exchange-orders/prd.md
+    - path: cross-bundle/docs/product/exchange-orders/evidence.md
+    - path: cross-bundle/docs/product/returns-portal/prd.md
+expected:
+  output_contains:
+    - "먼저 정할 것"
+    - "누른 숫자"
+    - "consistency:"
+  output_not_contains:
+    - "conflicts 0"
+  outcomes:
+    - type: task_completed

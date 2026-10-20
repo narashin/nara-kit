@@ -13,6 +13,7 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 
 ### Fixed
 - **`nara-now`가 대규모 작업에 이미 제거된 `subagent-driven-development`를 추천하던 것을 고쳤다.** superpowers 의존을 끊을 때(2026-07-16) 이 표만 남아 있어서, 런타임과 상관없이 없는 스킬을 가리켰다. 이제 `/nara-plan`으로 작업 단위를 나눈 뒤 `/nara-implement`를 유닛별로 돌리라고 추천하고, 작은 작업에는 `/nara-implement` 단일 유닛도 선택지로 둔다
+- **`nara-planning`이 다른 묶음이 기대는 뜻을 바꾸는 새 결정을 "고치기"로 다룬다.** 새 결정은 "덧붙이기"라 확인 없이 적어도 되는지가 본문에 없어서, 평가 실행 4번이 모두 이 점을 모호하다고 짚고 각자 근거를 찾아 맞췄다. 이제 Core Rule 6이 직접 말한다. 함께 `bundle-format.md`의 영향 확인 범위가 자기 묶음 폴더만 적고 있어 본문의 "다른 묶음 문서"와 어긋나던 것을 `docs/product/` 아래 모든 묶음으로 맞췄다. 평가 과제 `cross-bundle-redefinition`(묶음을 파일별로 나눈 fixture)을 더했고, 루트 `.gitignore`의 `docs/`가 평가 fixture 안 `docs/`까지 무시하던 것에 예외를 넣었다
 
 ## [0.28.0] - 2026-10-20
 

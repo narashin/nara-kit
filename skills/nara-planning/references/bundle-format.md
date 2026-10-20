@@ -125,7 +125,7 @@ requirements: docs/requirements.md | docs/product/<slug>/requirements.md | none
 
 ## 갱신과 영향 확인
 
-기존 파일은 덮어쓰지 않고 바뀐 절만 고친다. 고치기 전에 바뀌는 사실의 숨긴 추적 키(`ref: <키>`)와 그 사실의 핵심 문구를 `docs/requirements.md`, `docs/product/<slug>/` 안 파일, `docs/test-scenarios/`에서 찾는다. 찾은 곳을 "영향받는 곳" 목록으로 보여 주되, 파일과 그 문장을 뜻으로 보여 준다. 확인을 받은 뒤 고친다. 다른 파일을 이 스킬이 대신 고치지 않는다. AC를 고쳐야 하면 `nara-ac-draft`로 이어 간다.
+기존 파일은 덮어쓰지 않고 바뀐 절만 고친다. 고치기 전에 바뀌는 사실의 숨긴 추적 키(`ref: <키>`)와 그 사실의 핵심 문구를 `docs/requirements.md`, `docs/product/` 아래 모든 묶음, `docs/test-scenarios/`에서 찾는다. 찾은 곳을 "영향받는 곳" 목록으로 보여 주되, 파일과 그 문장을 뜻으로 보여 준다. 확인을 받은 뒤 고친다. 다른 파일을 이 스킬이 대신 고치지 않는다. AC를 고쳐야 하면 `nara-ac-draft`로 이어 간다.
 
 ## 요구사항 이동
 
