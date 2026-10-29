@@ -88,4 +88,4 @@ Jira Ticket Link: APP-XXX
 - **코드 레벨 참조 금지 (Confluence)**: 파일명, 타입명, 컴포넌트명, 함수명 등 코드 레벨 디테일을 Work to do에 포함하지 않음
   - Confluence: "무엇을 해야 하는가" (what) — 시나리오 기준
   - 로컬 spec.md: "어떻게 해야 하는가" (how) — 코드 레벨 상세
-- **언어 분리**: dry-run 프리뷰는 한국어 OK. Confluence 게시 본문은 **영어** 필수. 유저가 한국어 명시 시에만 한국어
+- **언어 분리**: dry-run 프리뷰는 한국어 OK. Confluence 게시 본문은 **영어** 필수. 유저가 한국어 명시 시에만 한국어. RFC 원본이거나 세 언어 탭을 요청받으면 [multilingual-tabs.md](multilingual-tabs.md)를 따른다

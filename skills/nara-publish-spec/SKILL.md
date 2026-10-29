@@ -30,6 +30,7 @@ Convert a local markdown spec/plan to the **APP Confluence RfC template** (7 man
 - **No code-level references in Confluence** (file names, type names, function names) -- those belong in local spec.md only
 - **Storage format required**: `content_format: "storage"` (XHTML), not markdown
 - **Language**: dry-run preview in Korean OK; Confluence body in English unless user specifies Korean. **When the body is Korean**, run a `nara-ko-prose` repair post-pass on it before the Step 2 preview (skip if the rule source is absent / plugin not installed). English bodies are out of scope
+- **Multilingual tabs**: source is a `nara-rfc` RFC (`docs/rfc/*-rfc.md`) or the user asks for 한국어/English/日本語 tabs → follow [multilingual-tabs.md](references/multilingual-tabs.md) instead of the language default above. Re-read the page after publishing; if the tab macro is unavailable, stop instead of publishing plain body
 - **[UNVERIFIED] markers**: warn if present before publishing
 
 ## Safety
@@ -43,3 +44,4 @@ Convert a local markdown spec/plan to the **APP Confluence RfC template** (7 man
 - [7-section body template and mapping guide](references/template.md)
 - [Storage format conversion rules and MCP API](references/storage-format.md)
 - [Step-by-step procedure, config, error handling](references/procedure.md)
+- [Korean / English / Japanese tab publishing](references/multilingual-tabs.md)

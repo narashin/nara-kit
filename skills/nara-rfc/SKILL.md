@@ -3,7 +3,7 @@ name: nara-rfc
 description: >-
   Generate a complete RFC document in Korean Markdown for technical decisions and feature proposals.
   USE FOR: "rfc", "RFC 작성", "기술 결정 문서", "설계 문서 써줘", "/nara-rfc TICKET-ID".
-  DO NOT USE FOR: ADR (use /nara-adr), code implementation, PR creation.
+  DO NOT USE FOR: ADR (use /nara-adr), Confluence publishing (use /nara-publish-spec), code implementation, PR creation.
 ---
 
 # rfc — RFC 문서 작성
@@ -20,6 +20,7 @@ You are a senior software engineer and tech lead.
 4. "Work to do" 항목은 검증 가능하게 (what/where/condition) 기술.
 5. `nara-ko-prose` repair post-pass — 한국어 본문 명확성 수리 (규칙 원문 없음·미설치면 스킵). 코드 블록·기술 용어는 대상 아님.
 6. 유저 확인 후 파일 저장.
+7. Confluence 게시를 요청받으면 직접 게시하지 않고 `/nara-publish-spec docs/rfc/<TICKET-ID>-rfc.md`를 안내한다 (명시 호출 전용 스킬). 그쪽이 한국어, English, 日本語 탭으로 게시한다. 로컬 RFC는 한국어 Markdown 원문 하나로 둔다.
 
 ## Rules
 

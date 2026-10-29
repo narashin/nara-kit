@@ -13,7 +13,7 @@ Generate a complete RFC document in Korean Markdown for technical decisions and 
 ## 언제 쓰나
 
 - **USE FOR:** "rfc", "RFC 작성", "기술 결정 문서", "설계 문서 써줘", "/nara-rfc TICKET-ID".
-- **DO NOT USE FOR:** ADR (use /nara-adr), code implementation, PR creation.
+- **DO NOT USE FOR:** ADR (use /nara-adr), Confluence publishing (use /nara-publish-spec), code implementation, PR creation.
 
 ## 더 보기
 

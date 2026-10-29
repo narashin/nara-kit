@@ -33,6 +33,7 @@ Use Confluence storage format (see references/storage-format.md).
 
 ## Step 5: Post-Publish
 
+- 탭 게시(references/multilingual-tabs.md)면 URL 출력 전에 게시 후 확인을 먼저 마친다
 - 성공: Confluence page URL 출력
 - 실패: 에러 메시지 + `confluence-draft.md` 경로 안내 (수동 업로드용)
 
