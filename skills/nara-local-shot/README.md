@@ -13,7 +13,7 @@ Capture screenshots of a locally-running web app — even auth/SSO-gated pages �
 ## 언제 쓰나
 
 - **USE FOR:** "스샷 찍어줘", "PR 스샷", "before/after 캡쳐", "visual comparison 이미지 만들어", "로컬 앱 스샷", "capture a screenshot of the local app", "as-is/to-be 스샷".
-- **DO NOT USE FOR:** env-diff visual regression across QA/prod (use nara-ui-diff), figma-vs-runtime diff, writing/running Playwright test code (use nara-test-implement), 브라우저 AC 판정 (use nara-browser-verify).
+- **DO NOT USE FOR:** env-diff visual regression across QA/prod (use nara-ui-diff), figma-vs-runtime diff, writing/running Playwright test code (use nara-test-implement), 브라우저 AC 판정 (use nara-browser-verify), 이미 있는 이미지를 PR 본문에 넣기 (use nara-pr).
 
 ## 이웃 스킬과의 차이
 
@@ -25,7 +25,7 @@ Capture screenshots of a locally-running web app — even auth/SSO-gated pages �
 
 ## 알아둘 것
 
-- 캡처는 **직접 저장까지** 한다 — PR 본문에 `_drag image here_` 자리표시자만 남기지 않는다. 사람은 마지막 드래그-드롭만.
+- 캡처는 **직접 저장까지** 한다 — PR 본문에 `_drag image here_` 자리표시자만 남기지 않는다. PR 본문에 넣는 일은 `/nara-pr`이 한다(사내 GHES 포함). 이 스킬은 원격에 쓰지 않는다.
 - SSO 우회는 **더미 쿠키가 통하는 페이지에만** 유효하다(미들웨어가 값 유효성이 아니라 존재만 검사할 때). 실제 API를 호출하는 페이지는 진짜 `storageState`가 필요하다 — [references/auth-bypass.md](references/auth-bypass.md).
 - Before/After는 **서로 다른 리비전의 렌더 2장**이다. 비싼 건 사진이 아니라 앱을 띄우는 과정이라, 두 패스를 미리 계획한다 — [references/comparison-passes.md](references/comparison-passes.md).
 

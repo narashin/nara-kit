@@ -1,6 +1,6 @@
 ---
 name: nara-local-shot
-description: Capture screenshots of a locally-running web app — even auth/SSO-gated pages — for PR visual comparison or UI verification, then save the image files. Drives a local dev server + chrome-devtools MCP, bypassing SSO with a dummy session cookie when the target page needs no real backend. USE FOR "스샷 찍어줘", "PR 스샷", "before/after 캡쳐", "visual comparison 이미지 만들어", "로컬 앱 스샷", "capture a screenshot of the local app", "as-is/to-be 스샷". DO NOT USE FOR env-diff visual regression across QA/prod (use nara-ui-diff), figma-vs-runtime diff, or writing/running Playwright test code (use nara-test-implement).
+description: Capture screenshots of a locally-running web app — even auth/SSO-gated pages — for PR visual comparison or UI verification, then save the image files. Drives a local dev server + chrome-devtools MCP, bypassing SSO with a dummy session cookie when the target page needs no real backend. USE FOR "스샷 찍어줘", "PR 스샷", "before/after 캡쳐", "visual comparison 이미지 만들어", "로컬 앱 스샷", "capture a screenshot of the local app", "as-is/to-be 스샷". DO NOT USE FOR env-diff visual regression across QA/prod (use nara-ui-diff), figma-vs-runtime diff, writing/running Playwright test code (use nara-test-implement), or putting existing image files into a PR body (use nara-pr).
 ---
 
 # nara-local-shot — capture local app screenshots (auth-gated ok)
@@ -9,7 +9,7 @@ description: Capture screenshots of a locally-running web app — even auth/SSO-
 
 Produce real screenshot files of a locally-running web app and save them to disk — for a PR's Before/After visual comparison, or to let a human eyeball a UI change. Handles the common blocker: the app is behind SSO and a fresh automated browser has no session.
 
-Core insight: **capture the screenshots yourself and save the files** — never stop at leaving `_drag image here_` placeholders. The human only does the final drag-drop into the PR editor.
+Core insight: **capture the screenshots yourself and save the files** — never stop at leaving `_drag image here_` placeholders. Putting them into the PR body is `nara-pr`'s job, not this skill's.
 
 ## When each capture strategy applies
 
@@ -52,7 +52,7 @@ Use `take_screenshot` with `filePath`. Note: chrome-devtools **only writes insid
 Before tearing anything down, confirm every planned shot from step 1 exists on disk — a missing pass found after teardown costs the whole launch sequence again. Then delete the temp preview page(s), kill the dev server (`lsof -ti:<port> | xargs kill`), confirm the tracked tree is clean. Screenshots stay untracked (not committed).
 
 ### 7. Hand off
-Report absolute file paths and open the folder (`open <dir>`). For GHE PRs, the human drags the files into the PR editor to get `user-attachments` URLs (CLI cannot attach): the `gh`/API path cannot upload PR-body image attachments, so hand the absolute paths back and let the user drop them into the web editor.
+Report absolute file paths and open the folder (`open <dir>`). When the shots are for a PR, end with one line offering `/nara-pr` with those paths: it commits them to a hidden upload ref and embeds the links in the PR body, on GitHub Enterprise Server too. This skill itself never writes to the remote. If `nara-pr` is not installed, the user drags the files into the PR editor.
 
 ## Project specifics
 

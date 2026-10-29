@@ -2,7 +2,8 @@
 name: nara-pr
 description: >-
   Analyze commits against the auto-detected base branch and generate a Pull Request title and body in Korean.
-  USE FOR: "pr", "PR 만들어", "pull request", "PR 제목", "/nara-pr".
+  Can embed local image files into the PR body.
+  USE FOR: "pr", "PR 만들어", "pull request", "PR 제목", "/nara-pr", "PR에 스샷 넣어", "PR 본문에 이미지 첨부".
   DO NOT USE FOR: git commit, branch management, code review.
 ---
 
@@ -12,14 +13,14 @@ description: >-
 
 ## Steps
 
-0. 인자가 기존 PR URL·본문 갱신 의도면 → [existing-PR 모드](references/existing-pr-mode.md). 1~8은 신규 생성.
+0. 인자가 기존 PR URL·본문 갱신 의도면 → [existing-PR 모드](references/existing-pr-mode.md). 기존 PR에 이미지만 넣는 요청도 여기로 간다. 1~8은 신규 생성.
 1. 아래 스크립트로 base branch 자동 감지.
 2. `git log $BASE..HEAD --oneline`으로 커밋 목록 수집.
 3. **repo의 PR 규칙을 먼저 읽는다** ([repo-rules.md](references/repo-rules.md)): 기본 브랜치의 PR 템플릿, CONTRIBUTING·AGENTS·CLAUDE.md의 PR 지침, 최근 머지된 PR 제목. 규칙이 있으면 그것이 이기고, 아래 Title Format·5섹션은 규칙이 없을 때의 기본값이다.
 4. 커밋 분석 → 제목 생성 (repo 규칙 > Title Format). [body-guide.md](references/body-guide.md) Read → 본문 생성 (Korean). 템플릿이 있으면 템플릿 헤딩에 채운다.
 5. naranizer post-pass 어투 변환 (프로필 없음·미설치면 스킵). 규칙: body-guide.md.
 6. `nara-ko-prose` repair post-pass — 한국어 명확성 수리 (규칙 원문 없음·미설치면 스킵). naranizer **다음**에 실행하며, 어휘·말투를 건드리지 않으므로 5의 결과를 되돌리지 않는다.
-7. `gh pr create` 제안, 유저 확인 후 실행. 확인 화면에 어떤 규칙이 제목·본문을 정했는지 한 줄 (`규칙: template <path> · title <source>` 또는 `규칙: 내장 형식`).
+7. `gh pr create` 제안, 유저 확인 후 실행. 확인 화면에 어떤 규칙이 제목·본문을 정했는지 한 줄 (`규칙: template <path> · title <source>` 또는 `규칙: 내장 형식`). 첨부할 이미지 경로가 주어졌으면 같은 확인 화면에 파일 목록을 넣고, 생성 직후 [이미지 첨부](references/attach-images.md) 절차로 본문에 넣는다. 확인은 한 번으로 PR 생성과 업로드를 함께 덮는다.
 8. 미기록 작업시간 알림 — `python3 ../nara-worklog/assets/worklog.py list` 실행 (스크립트 없으면 이 스텝 스킵). 이 PR의 티켓에 미기록 시간이 있으면 **한 줄만** 알린다: `미기록 작업시간 3h 12m (2일) — /nara-worklog`. 여기서 Jira에 쓰지 않는다 — worklog 쓰기는 승인 게이트가 있는 별도 스킬 소관이다.
 
 ## Base Branch Detection
