@@ -12,6 +12,9 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 ## [Unreleased]
 
 ### Added
+- **`nara-pr`이 화면이 바뀐 PR에 배포 환경과 로컬 캡처를 넣는다.** diff가 화면 파일을 바꿨고 이미지 경로가 없으며 저장소에 `.claude/ui-diff/env.md`가 있으면, 확인 화면 전에 기준 환경(기본 QA, env.md에 prod라고 적혔을 때만 prod)과 이 브랜치의 로컬을 같은 화면, 같은 viewport로 찍는다(`references/visual-capture.md`). 기준 환경에서는 로그인과 화면 이동만 하고 제출은 하지 않는다. 표 헤더는 "수정 전/후"가 아니라 출처로 단다(`QA 배포본 (배포 버전 미확인, <날짜> 캡처)` / `이 브랜치 (로컬 @ <SHA>)`). 배포본이 base 브랜치와 같은 코드라는 보장이 없어서다. 개인정보가 보이면 캡처 전에 CSS blur를 주입하고, 확인 화면에 올라온 이미지만 승인 한 번으로 업로드한다. env.md가 없으면 한 줄 안내만 남기고, 브라우저 도구가 없으면 `Unverifiable`로 적고 이미지를 지어내지 않는다
+  - 화면 정보는 ui-diff의 env.md, `screens/*.md`, 드라이버 순서를, 로컬 쪽은 nara-local-shot을, 업로드는 기존 숨은 ref 첨부를 그대로 쓴다. 새 스킬은 없다
+  - 측정: 화면 변경 + env.md fixture(`evals/nara-pr/fixtures/ui-repo.sh`, 브라우저 없음)에서 수정 전 1회는 grader 0/2(캡처 언급 없이 스크린샷을 달라고만 함), 수정 후 2회는 2/2(env.md의 QA 기준과 대상 화면을 찾고 `Unverifiable`, 이미지 자리표시 없음). 화면이 아닌 변경은 수정 후 2회 모두 캡처 경로를 타지 않았다. 실제 브라우저로 찍고 올리는 경로는 eval로 돌리지 않았다
 - **`nara-pr`이 한 브랜치를 PR 여러 개로 나눠 올린다(stacked).** 리뷰 관심사가 둘 이상 한 줄로 이어지거나 사용자가 나눠 올리라고 하면 `references/stacked.md`로 간다. 나눌지는 줄 수가 아니라 관심사로 정하고, 생성물·스냅샷은 층을 만들지 않는다. 원래 브랜치는 그대로 두고 merge base에서 경로 단위로 층을 다시 쌓으며, push 전에 최상층 tree가 원래 tree와 같은지 확인한다. 확인 화면에 층별 커밋 제목을 모두 보여 주고 한 번 승인으로 커밋, push, PR 생성까지 덮는다
   - 도구: github.com에 공식 `github/gh-stack`이 있고 stacks API가 200이면 gh-stack을 쓴다. 아니면 아래층을 base로 건 평범한 PR 사슬로 올리고 그렇다고 밝힌다. GHES 3.19.9는 stacks API가 404를 돌려준다(2026-10-30 실측)
   - 측정: 세 관심사가 섞인 브랜치(`evals/nara-pr/fixtures/stack-repo.sh three-concerns`)에서 수정 전 2회는 grader 0/3(한 번은 범위 밖이라며 사용자에게 넘김, 한 번은 즉흥으로 나눴지만 tree 확인과 원래 브랜치 보존이 없음), 수정 후 2회는 3/3. 크기만 큰 refactor(`coherent-churn`)는 수정 후 4회 모두 PR 하나. 모든 실행에서 승인 전 브랜치·커밋 생성 0

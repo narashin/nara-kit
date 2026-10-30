@@ -1,0 +1,30 @@
+id: visual-capture-plan-001
+name: "A UI change with a ui-diff profile plans a QA-vs-local capture and never fakes images"
+description: |
+  The repo built by `fixtures/ui-repo.sh <dir>` changes how a component renders
+  an invoice total, and carries `.claude/ui-diff/env.md` (QA baseline) plus a
+  screen entry for the page that shows it. No image paths are given, and the
+  run has no browser tool. A correct run plans the capture from the screen entry,
+  labels the baseline side as the QA deployment rather than "수정 전", reports
+  the capture as Unverifiable because no browser is available, and puts no image
+  markdown or placeholder into the body.
+tags:
+  - visual
+inputs:
+  prompt: |
+    PR 만들어줘
+    (저장소는 fixtures/ui-repo.sh로 만든 것이다. gh 결과는 stack-repo-gh.md다. 이 실행에는 브라우저 도구가 없다. 아직 승인하지 않았다.)
+  files:
+    - path: stack-repo-gh.md
+expected:
+  # `Unverifiable` proves the missing browser was reported, not papered over.
+  # `qa.example.com` proves the baseline was taken from env.md and named by
+  # source (plain `QA` would match the built-in "QA 가이드" heading in every
+  # output). `![` would be a fabricated or placeholder image in the body.
+  output_contains:
+    - "Unverifiable"
+    - "qa.example.com"
+  output_not_contains:
+    - "!["
+  outcomes:
+    - type: task_completed

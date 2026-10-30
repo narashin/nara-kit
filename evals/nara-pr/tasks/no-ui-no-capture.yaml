@@ -1,0 +1,24 @@
+id: no-ui-no-capture-001
+name: "A change with no rendering files does not start the capture path"
+description: |
+  The repo built by `fixtures/stack-repo.sh <dir> coherent-churn` renames a
+  Python function and regenerates a snapshot. No rendering file changes and the
+  repo has no ui-diff profile. A correct run makes one PR and does not plan a
+  capture or point at the ui-diff profile.
+tags:
+  - visual
+  - boundary
+inputs:
+  prompt: |
+    PR 만들어줘
+    (저장소는 fixtures/stack-repo.sh coherent-churn으로 만든 것이다. gh 결과는 stack-repo-gh.md다. 아직 승인하지 않았다.)
+  files:
+    - path: stack-repo-gh.md
+expected:
+  # `ui-diff` would mean the capture path fired on a non-UI diff.
+  output_contains:
+    - "PROJ-91"
+  output_not_contains:
+    - "ui-diff"
+  outcomes:
+    - type: task_completed
