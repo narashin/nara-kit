@@ -2,7 +2,7 @@
 name: nara-grooming
 description: >-
   Audit persistent instructions — auto-memory, CLAUDE.md/AGENTS.md and rules files, installed or repo skills — for duplication, conflict, staleness, and stale overrides that explain a behavior the user just corrected. Report first; fix, archive or move only on per-tier approval, with a durable backup before touching files outside git.
-  USE FOR: "grooming", "메모리 감사", "메모리 점검", "stale memory", "규칙 정리", "CLAUDE.md 중복", "규칙끼리 충돌", "왜 옛날 규칙대로 했지", "스킬 지침 낡았나", memory-audit, after a breaking rename / skill add-remove / migration.
+  USE FOR: "grooming", "메모리 감사", "메모리 점검", "stale memory", "규칙 정리", "CLAUDE.md 중복", "규칙끼리 충돌", "왜 옛날 규칙대로 했지", "스킬 지침 낡았나", "안 쓰는 스킬", memory-audit, after a breaking rename / skill add-remove / migration.
   DO NOT USE FOR: 새 메모리 쓰기 (→ nara-retro), 세션 회고·재발 방지 (→ nara-retro), 스킬 개선 실행 (→ nara-skill-forge), 영구 삭제 (수동 rm), 일반 코드 정리.
 ---
 
@@ -20,7 +20,7 @@ description: >-
 |---|---|---|
 | **memory** | `<agent-config>/projects/<slug>/memory/*.md` (`MEMORY.md`, `archive/` 제외) + memory MCP 레코드. 파일 memory dir이 없는 런타임(Codex 등)은 MCP 레코드만 보고 파일 층은 `skipped (no memory dir)` | 아래 [memory 절차](#memory-절차) |
 | **rules** | user·repo `CLAUDE.md`, `AGENTS.md`, `rules/*.md`, `@import`로 끌려오는 파일 | [context-audit](references/context-audit.md) |
-| **skills** | repo `skills/`·`.claude/skills/`, 설치본 `~/.claude/skills`·`~/.codex/skills` | [context-audit](references/context-audit.md) |
+| **skills** | repo `skills/`·`.claude/skills/`, 설치본 `~/.claude/skills`·`~/.codex/skills` | [context-audit](references/context-audit.md). 안 쓰는 스킬을 물으면 [usage](references/usage.md) |
 
 경로는 지금 호스트에서 실제로 확인된 것만 쓴다. 다른 호스트의 경로 관례를 가져다 붙이지 않는다. 심링크는 실제 대상까지 풀고 링크 경로와 실제 경로를 둘 다 기록한다.
 
@@ -42,6 +42,7 @@ description: >-
 | `conflict` | 둘 다 현행인데 서로 다르게 요구한다 |
 | `stale override` | 낡은 지침이 현재 소유자와 충돌하고, 관찰된 동작을 설명한다 |
 | `stale` | 가리키는 경로·스킬·사실이 더는 없다 |
+| `unused` | 세션 기록이 남은 기간 동안 아무도 부르지도 읽지도 않았고, 그 기록 밖의 실행 경로도 확인했다 |
 | `keep` / `keep (vendor)` | 결과를 바꾸는 문제가 증명되지 않았다 / 외부 설치본이다 |
 
 처분 동작은 `keep | tighten | merge | split | move | archive | fix`다. `tighten`은 소유·범위·뜻을 바꾸지 않고 중복이나 모호함만 걷어 낼 때만 쓴다. 뜻이 바뀌는 `merge`·`split`·의미 재작성은 정확한 제안으로만 남긴다. 길지만 살아 있는 지침은 `keep`이다.
@@ -90,6 +91,7 @@ memory 영역의 기계 검사와 의미 검증이다. 전체 알고리즘과 Ti
 status: audited | applied | partial
 scope: memory <N> · rules <N> · skills <N>
 flagged: duplicate <a> · conflict <b> · stale override <c> · stale <d>
+unused: <n> (창 <days>일) · unverifiable <m> (scheduler <i> · runtime <k> · age <j>) | 해당 없음
 applied: <n> fixed, <n> archived, <n> moved | none
 backup: <absolute path> (byte-equal) | 해당 없음
 mirror: <n> MCP records updated/superseded | skipped (<사유>)
@@ -101,6 +103,7 @@ next: <다음 등급 승인 질문 | 남은 사람 할 일 | 없음>
 - **승인 전 변경 없음.** Tier 1·Tier 2와 rules·skills 대조는 읽기만 한다.
 - **옮기지 지우지 않는다.** `rm`은 사용자가 직접 한다.
 - 외부 시스템에 대한 주장은 `UNVERIFIABLE`. 추측하지 않는다.
+- **사용량은 후보를 낼 뿐이다.** 호출 수가 적다는 것만으로 archive나 제거를 정하지 않는다. 낮은 호출이 정상인 스킬도 있다.
 - **전수 조사라고 주장하지 않는다.** Tier 1은 MCP 저장소를 못 읽는다. 백틱 안의 맨 스킬 이름은 Tier 2에서만 잡힌다. 툴킷 저장소 밖에서는 이름이 바뀌었지만 설치돼 있는 스킬을 `unknown`으로만 판정한다.
 - **확인 못 한 것과 깨진 것은 다르다. 다만 어디에도 없는 것은 깨진 것이다.** `skill_ref_unknown`(0점)은 "스킬은 있는데 이 저장소에서 경로를 확인 못 함"일 뿐이다.
 - **신호를 끄려고 진짜 앵커를 지우지 않는다.** 있는 파일에서 `ref_validity`가 실패하면 읽는 쪽이 틀린 것이다.

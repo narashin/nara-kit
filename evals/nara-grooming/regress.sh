@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
-# Deterministic Tier-1 regression harness for nara-grooming/scripts/audit.sh.
+# Deterministic regression harness for nara-grooming's mechanical half:
+# scripts/audit.sh (memory Tier 1, cases R*) and scripts/usage.py (skills usage, cases U*).
 #
-# This is the code grader for the skill's mechanical half: audit.sh is a bash
-# script, so its correctness is asserted directly rather than through a subagent.
+# Both are scripts, so their correctness is asserted directly rather than through a subagent.
 # Every case builds its own throwaway repo + memory dir, so runs are hermetic
 # and order-independent.
 #
 # Usage: regress.sh            # run all cases
 #        regress.sh -v         # also print each JSON result
-# Exit 0 = all pass. Requires: jq, git, bash 3.2+ (macOS default).
+# Exit 0 = all pass. Requires: jq, git, python3 3.9+, bash 3.2+ (macOS default).
 
 set -uo pipefail
 
-AUDIT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../skills/nara-grooming/scripts" && pwd)/audit.sh"
+SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../skills/nara-grooming/scripts" && pwd)"
+AUDIT="$SCRIPTS/audit.sh"
+USAGE="$SCRIPTS/usage.py"
 [[ -x "$AUDIT" ]] || { echo "FATAL: audit.sh not executable at $AUDIT"; exit 1; }
+[[ -f "$USAGE" ]] || { echo "FATAL: usage.py missing at $USAGE"; exit 1; }
 
 VERBOSE=0
 [[ "${1:-}" == "-v" ]] && VERBOSE=1
@@ -645,11 +648,128 @@ EOF
     '.details.skill_refs_broken | index("skills/code-review") | type' 'number'
 }
 
+# ---- usage.py helpers -------------------------------------------------------
+
+# Timestamps are relative to now so the window never drifts out from under a case.
+ago() { date -u -v-"$1"d +%Y-%m-%dT%H:%M:%SZ; }
+
+# new_skill <root> <name> -> creates <root>/<name>/SKILL.md
+new_skill() {
+  mkdir -p "$1/$2"
+  printf -- '---\nname: %s\ndescription: fixture\n---\n' "$2" > "$1/$2/SKILL.md"
+}
+
+# Transcript record emitters. Shapes mirror the host's session JSONL: a typed record
+# with cwd + timestamp, and message.content as a string or a list of parts.
+rec_user() { printf '{"type":"user","cwd":"%s","timestamp":"%s","message":{"role":"user","content":"%s"}}\n' "$1" "$2" "$3"; }
+rec_tool() { printf '{"type":"assistant","cwd":"%s","timestamp":"%s","message":{"role":"assistant","content":[{"type":"tool_use","name":"%s","input":%s}]}}\n' "$1" "$2" "$3" "$4"; }
+rec_result() { printf '{"type":"user","cwd":"%s","timestamp":"%s","message":{"role":"user","content":[{"type":"tool_result","content":"ok"}]}}\n' "$1" "$2"; }
+
+run_usage() {
+  local out
+  out=$("$@" 2>&1) || true
+  [[ $VERBOSE -eq 1 ]] && printf '    > %s\n' "$out" >&2
+  printf '%s' "$out"
+}
+
+# ---- U1: slash + Skill tool both count; a prefixed name does not ------------
+# User-typed slash commands never pass through the Skill tool, so a counter that
+# watches only one path misses the other. A plugin-prefixed `x:gamma` is a
+# different skill and must not credit the local `gamma`.
+u1() {
+  local roots tdir json
+  roots="$ROOT/u1/roots"; tdir="$ROOT/u1/t/proj"; mkdir -p "$tdir"
+  new_skill "$roots" alpha; new_skill "$roots" beta; new_skill "$roots" gamma
+  {
+    rec_user /work/app "$(ago 3)" '<command-name>/alpha</command-name>'
+    rec_tool /work/app "$(ago 2)" Skill '{"skill":"beta"}'
+    rec_tool /work/app "$(ago 2)" Skill '{"skill":"x:gamma"}'
+  } > "$tdir/s1.jsonl"
+  json=$(run_usage env CLAUDE_PROJECT_DIR="$ROOT/u1" NARA_SKILLS_DIRS="$roots" \
+    NARA_TRANSCRIPTS_DIR="$ROOT/u1/t" python3 -I "$USAGE")
+  assert_jq U1 "slash invocation counted" "$json" '.skills.alpha.slash' 1
+  assert_jq U1 "Skill tool invocation counted" "$json" '.skills.beta.tool' 1
+  assert_jq U1 "both count as used" "$json" '[.skills.alpha.status, .skills.beta.status] | join(",")' 'used,used'
+  assert_jq U1 "prefixed name does not credit the local skill" "$json" '.skills.gamma.tool' 0
+}
+
+# ---- U2: reading your own source tree is development, not use ---------------
+# Editing a skill means reading its SKILL.md from inside the repo that holds it.
+# Only a read from a session whose cwd does NOT contain the file is recall.
+u2() {
+  local roots tdir json
+  roots="$ROOT/u2/src/skills"; tdir="$ROOT/u2/t/proj"; mkdir -p "$tdir"
+  new_skill "$roots" devonly; new_skill "$roots" recalled
+  {
+    rec_tool "$ROOT/u2/src" "$(ago 4)" Read "{\"file_path\":\"$roots/devonly/SKILL.md\"}"
+    rec_tool /work/app "$(ago 3)" Read "{\"file_path\":\"$roots/recalled/SKILL.md\"}"
+  } > "$tdir/s1.jsonl"
+  json=$(run_usage env CLAUDE_PROJECT_DIR="$ROOT/u2/none" NARA_SKILLS_DIRS="$roots" \
+    NARA_TRANSCRIPTS_DIR="$ROOT/u2/t" python3 -I "$USAGE")
+  assert_jq U2 "in-tree read is not counted" "$json" '.skills.devonly.reads' 0
+  assert_jq U2 "out-of-tree read is counted" "$json" '.skills.recalled.reads' 1
+  assert_jq U2 "read without invocation is viewed, not used" "$json" '.skills.recalled.status' viewed
+}
+
+# ---- U3: a name newer than the window is on probation, an old one is unused ---
+# The transcript window is short (the host prunes old sessions). A skill that
+# appeared inside it never had a fair sample and must not be offered for archive.
+u3() {
+  local repo tdir json
+  repo=$(new_repo u3); tdir="$ROOT/u3/t/proj"; mkdir -p "$tdir"
+  new_skill "$repo/skills" oldone
+  git -C "$repo" add skills/oldone
+  GIT_AUTHOR_DATE=2020-01-01T00:00:00 GIT_COMMITTER_DATE=2020-01-01T00:00:00 \
+    git -C "$repo" commit -qm old
+  new_skill "$repo/skills" newone
+  git -C "$repo" add skills/newone
+  git -C "$repo" commit -qm new
+  rec_user /work/app "$(ago 10)" 'hello' > "$tdir/s1.jsonl"
+  json=$(run_usage env CLAUDE_PROJECT_DIR="$repo" NARA_SKILLS_DIRS="$repo/skills" \
+    NARA_TRANSCRIPTS_DIR="$ROOT/u3/t" python3 -I "$USAGE")
+  assert_jq U3 "name added inside the window is probation" "$json" '.skills.newone.status' probation
+  assert_jq U3 "name older than the window is unused" "$json" '.skills.oldone.status' unused
+  assert_jq U3 "unused total" "$json" '.totals.unused' 1
+}
+
+# ---- U4: no git history -> unverifiable, never unused ------------------------
+# An installed copy with no source history has no known age. Calling it unused
+# would offer a skill that may have landed yesterday.
+u4() {
+  local roots tdir json
+  roots="$ROOT/u4/roots"; tdir="$ROOT/u4/t/proj"; mkdir -p "$tdir"
+  new_skill "$roots" orphan
+  rec_user /work/app "$(ago 5)" 'hello' > "$tdir/s1.jsonl"
+  json=$(run_usage env CLAUDE_PROJECT_DIR="$ROOT/u4/none" NARA_SKILLS_DIRS="$roots" \
+    NARA_TRANSCRIPTS_DIR="$ROOT/u4/t" python3 -I "$USAGE")
+  assert_jq U4 "age unknown is unverifiable" "$json" '.skills.orphan.status' unverifiable
+  assert_jq U4 "reason names the gap" "$json" '.skills.orphan.reason' age_unknown
+}
+
+# ---- U5: user turns exclude tool results; the window spans the oldest record ---
+u5() {
+  local roots tdir json
+  roots="$ROOT/u5/roots"; tdir="$ROOT/u5/t/proj"; mkdir -p "$tdir"
+  new_skill "$roots" any
+  {
+    rec_user /work/app "$(ago 7)" 'first'
+    rec_result /work/app "$(ago 7)"
+    rec_user /work/app "$(ago 1)" 'second'
+    printf 'not json\n'
+  } > "$tdir/s1.jsonl"
+  json=$(run_usage env CLAUDE_PROJECT_DIR="$ROOT/u5/none" NARA_SKILLS_DIRS="$roots" \
+    NARA_TRANSCRIPTS_DIR="$ROOT/u5/t" python3 -I "$USAGE")
+  assert_jq U5 "tool results are not user turns" "$json" '.user_turns' 2
+  assert_jq U5 "window reaches the oldest record" "$json" '.window.days' 8
+  assert_jq U5 "a corrupt line does not break the scan" "$json" '.transcripts' 1
+}
+
 # ---- run --------------------------------------------------------------------
-echo "nara-grooming memory Tier-1 regression"
+echo "nara-grooming mechanical regression"
 echo "audit.sh: $AUDIT"
+echo "usage.py: $USAGE"
 echo
-for c in r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18; do
+for c in r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 u1 u2 u3 u4 u5; do
   echo "[$c]"
   "$c"
 done

@@ -1,0 +1,29 @@
+id: usage-candidates-001
+# The name and description avoid the strings asserted below: the mock executor
+# echoes both back, so an assertion that appears here would be satisfied by the echo.
+name: "A usage scan is corrected for invisible runs before anything is offered"
+description: |
+  The usage script reports three skills with no calls and no reads. Its own
+  output is only half the evidence: it reads one runtime's session log, so a
+  skill driven by a scheduler or invoked from another runtime looks idle here.
+  A correct run checks both before offering anything, offers only what survives,
+  folds the rest into the receipt as counts, and removes nothing.
+tags:
+  - skills
+  - usage
+inputs:
+  prompt: |
+    안 쓰는 스킬 정리해줘. 사용량 스캔 결과는 첨부한 usage-scan.md 와 같아.
+  files:
+    - path: usage-scan.md
+expected:
+  output_contains:
+    - "unused: 1"
+    - "scheduler 1"
+  output_not_contains:
+    - "unused: 3"
+    - "unused: 2"
+    - "git rm"
+    - "삭제했습니다"
+  outcomes:
+    - type: task_completed

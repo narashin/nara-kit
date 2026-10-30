@@ -161,6 +161,44 @@ right:
     mirror: skipped (대상 없음)
     next: 감사할 memory 디렉터리 경로를 알려 주세요. 앱 저장소에서 Tier 1을 돌려 /nara-gap 언급별 판정을 드리겠습니다
     ```
+  # usage-candidates-001: right = fresh subagent on the SKILL.md with the usage step, on the fixture
+  # revision where one skill shows Codex use only as a file open, never as a `$` call (2026-10-30).
+  # wrong = fresh subagent with no skill loaded, recorded on the previous fixture revision (Codex
+  # `$` hits pre-computed). It reached the same single candidate, so this task discriminates on the
+  # receipt contract; `unused: 2` in output_not_contains catches the earlier `$`-only rule.
+  usage-candidates-001: |
+    안 쓰는 스킬 후보는 `nara-sketch` 하나입니다. 세션 기록이 남은 38일 동안 호출과 읽기가 모두 0이었고, Codex 세션에서도 `$nara-sketch` 호출과 `skills/nara-sketch/` 파일 열람이 모두 0이었습니다. 아무것도 수정하지 않았고, 아래는 제안입니다.
+
+    ## Disposition
+
+    | ID | 항목 | 등급 | 판정·동작 | 대상(실제 경로) | 근거 |
+    |---|---|---|---|---|---|
+    | 1 | nara-sketch | T3 | unused · archive(제거 제안) | `~/src/acme-skills/skills/nara-sketch/` | 38일 호출 0 · 읽기 0 · Codex 호출 0 · Codex 파일 열람 0 · 스케줄러 언급 없음 |
+
+    사용량 스캔에서 `unused`로 나온 3개 중 나머지 둘은 후보에서 뺐습니다.
+    - `nara-lint-docs`: Codex 세션 3개에서 `skills/nara-lint-docs/` 파일을 열었습니다. 모델이 직접 골라 쓴 흔적이라 쓰이는 스킬입니다.
+    - `nara-nightly-report`: frontmatter에 `scope: multica`가 있고 팀 스케줄러에서 도는 스킬입니다. 그 실행은 세션 기록에 남지 않아 사용 여부를 확인할 수 없습니다(`unverifiable (scheduler)`).
+
+    `nara-recall`(읽힘), `nara-onboard`(생성 38일 이내라 표본 부족), `nara-search`(사용 중)는 대상이 아닙니다.
+
+    제안 패치입니다. 실행하지 않았습니다.
+    - 제거 대상: 툴킷 저장소의 `skills/nara-sketch/`. 설치본은 이 저장소를 가리키므로 소스에서 제거합니다.
+    - 함께 고칠 곳: 카탈로그에 이 스킬을 적은 행과 스킬 개수 표기.
+    - 이 제거는 consumer에게 breaking입니다. 이미 설치한 사용자에게는 이 스킬이 없어지므로 CHANGELOG에 Removed로 남기는 것을 권합니다.
+    - 호출 수가 적다는 것만으로 제거를 정하지 않았습니다. 위 근거는 후보를 낸 것이고 판단은 사용자 몫입니다.
+
+    ```
+    status: audited
+    scope: memory 0 · rules 0 · skills 7
+    flagged: duplicate 0 · conflict 0 · stale override 0 · stale 0
+    unused: 1 (창 38일) · unverifiable 2 (scheduler 1 · runtime 0 · age 1)
+    applied: none
+    backup: 해당 없음
+    mirror: skipped (skills 영역만 점검)
+    next: T3 제거 제안(nara-sketch)을 적용할까요?
+    ```
+
+    `nara-sketch` 제거 패치를 지금 적용할까요, 아니면 제안으로만 두고 넘어갈까요?
 wrong:
   basic-usage-001: |
     메모리 3개를 감사했습니다. audit.sh 결과 기준으로 정리하면 이렇습니다.
@@ -273,3 +311,21 @@ wrong:
     - 메모리 인덱스에서도 해당 항목 줄을 함께 제거해 주세요.
 
     해당 메모리 파일 목록을 주시면 어떤 항목을 지울지 하나씩 정리해 드리겠습니다.
+  usage-candidates-001: |
+    스캔 결과로는 정리 후보가 nara-sketch 하나뿐이고, 아직 아무것도 바꾸지 않았습니다.
+
+    스캔 범위는 2026-03-02부터 38일, 대화 기록 140개입니다. "안 쓴다"는 이 기간 안에서 안 보였다는 뜻이라서, 삭제보다 보관(archive)을 권합니다. 저장소가 git으로 추적되니 되돌리기는 쉽습니다.
+
+    **nara-sketch**: Claude 기록에서 호출·조회가 모두 0이고, Codex 기록(`~/.codex/sessions`)에서도 `$nara-sketch`가 0건입니다. SKILL.md와 README에 스케줄러 언급도 없습니다. 만든 지 오래됐는데(2025-10-01) 어느 런타임에서도 흔적이 없어서 보관 후보로 올립니다.
+
+    나머지는 건드리지 않는 쪽을 권합니다.
+    - **nara-lint-docs**: Claude 기록은 0이지만 Codex 기록에서 `$nara-lint-docs`가 4개 세션에 나옵니다. Claude 쪽만 보면 미사용으로 보이는 오탐이라 유지합니다.
+    - **nara-nightly-report**: 사용량이 0이라 미사용으로 분류됐지만, 팀 스케줄러가 실행하는 스킬(`scope: multica`)입니다. 스케줄러 실행은 이 대화 기록에 잡히지 않으니 근거가 못 됩니다. 유지합니다.
+    - **nara-onboard**: 만든 지 2026-03-20이라 관찰 기간이 짧은 유예 상태입니다. 다음 스캔까지 봅니다.
+    - **nara-recall**: 직접 호출은 없지만 파일을 3번 열어 봤습니다. 참고용으로 쓰이는 중이라 유지합니다.
+    - **vendor-helper**: 서드파티 인스톨러로 깔린 것이라 생성일을 알 수 없고 저장소 추적 밖입니다. 판정 불가라서 제 쪽에서 지우거나 옮기지 않습니다.
+    - **nara-search**: 현재 사용 중이라 해당 없습니다.
+
+    보관하면 `skills/nara-sketch/`를 보관 위치로 옮기고, 설치 경로에서 이 저장소를 가리키는 심링크도 같이 정리합니다. 삭제는 하지 않습니다.
+
+    nara-sketch를 보관해도 될까요? (예 / 아니오)
