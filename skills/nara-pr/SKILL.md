@@ -15,7 +15,7 @@ description: >-
 
 0. 인자가 기존 PR URL·본문 갱신 의도면 → [existing-PR 모드](references/existing-pr-mode.md). 기존 PR에 이미지만 넣는 요청도 여기로 간다. 1~8은 신규 생성.
 1. 아래 스크립트로 base branch 자동 감지.
-2. `git log $BASE..HEAD --oneline`으로 커밋 목록 수집.
+2. `git log $BASE..HEAD --oneline`으로 커밋 목록 수집. 리뷰 관심사가 둘 이상 직선 의존으로 이어지거나 사용자가 나눠 올리라고 하면 → [stacked](references/stacked.md)로 형태를 판정한다(줄 수 기준 없음, `single`이면 계속).
 3. **repo의 PR 규칙을 먼저 읽는다** ([repo-rules.md](references/repo-rules.md)): 기본 브랜치의 PR 템플릿, CONTRIBUTING·AGENTS·CLAUDE.md의 PR 지침, 최근 머지된 PR 제목. 규칙이 있으면 그것이 이기고, 아래 Title Format·5섹션은 규칙이 없을 때의 기본값이다.
 4. 커밋 분석 → 제목 생성 (repo 규칙 > Title Format). [body-guide.md](references/body-guide.md) Read → 본문 생성 (Korean). 템플릿이 있으면 템플릿 헤딩에 채운다.
 5. naranizer post-pass 어투 변환 (프로필 없음·미설치면 스킵). 규칙: body-guide.md.

@@ -1,0 +1,26 @@
+id: coherent-churn-single-001
+name: "A large diff with one review concern stays a single PR"
+description: |
+  The repo built by `fixtures/stack-repo.sh <dir> coherent-churn` has one rename
+  refactor (`total` to `grand_total`) and a regenerated 1500-line snapshot. The
+  raw diff is large, but there is one review concern, and generated churn does
+  not justify a layer. A correct run proposes one PR and does not split by size.
+  This guards against the stacked path firing on line count alone.
+tags:
+  - stacked
+  - boundary
+inputs:
+  prompt: |
+    PR 만들어줘
+    (저장소는 fixtures/stack-repo.sh coherent-churn으로 만든 것이다. gh 결과는 stack-repo-gh.md다. 아직 승인하지 않았다.)
+  files:
+    - path: stack-repo-gh.md
+expected:
+  # `형태: stacked` would mean the split fired on size; a single PR never prints it.
+  # `PROJ-91` proves a title was actually produced.
+  output_contains:
+    - "PROJ-91"
+  output_not_contains:
+    - "형태: stacked"
+  outcomes:
+    - type: task_completed

@@ -12,6 +12,10 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
 ## [Unreleased]
 
 ### Added
+- **`nara-pr`이 한 브랜치를 PR 여러 개로 나눠 올린다(stacked).** 리뷰 관심사가 둘 이상 한 줄로 이어지거나 사용자가 나눠 올리라고 하면 `references/stacked.md`로 간다. 나눌지는 줄 수가 아니라 관심사로 정하고, 생성물·스냅샷은 층을 만들지 않는다. 원래 브랜치는 그대로 두고 merge base에서 경로 단위로 층을 다시 쌓으며, push 전에 최상층 tree가 원래 tree와 같은지 확인한다. 확인 화면에 층별 커밋 제목을 모두 보여 주고 한 번 승인으로 커밋, push, PR 생성까지 덮는다
+  - 도구: github.com에 공식 `github/gh-stack`이 있고 stacks API가 200이면 gh-stack을 쓴다. 아니면 아래층을 base로 건 평범한 PR 사슬로 올리고 그렇다고 밝힌다. GHES 3.19.9는 stacks API가 404를 돌려준다(2026-10-30 실측)
+  - 측정: 세 관심사가 섞인 브랜치(`evals/nara-pr/fixtures/stack-repo.sh three-concerns`)에서 수정 전 2회는 grader 0/3(한 번은 범위 밖이라며 사용자에게 넘김, 한 번은 즉흥으로 나눴지만 tree 확인과 원래 브랜치 보존이 없음), 수정 후 2회는 3/3. 크기만 큰 refactor(`coherent-churn`)는 수정 후 4회 모두 PR 하나. 모든 실행에서 승인 전 브랜치·커밋 생성 0
+  - 출처는 tiger-kit `tk-pr-open`(`b483cdf`). 그쪽 승인 패킷 파일, 증거 manifest, `rerere` 설정 변경은 가져오지 않았다
 - **`nara-grooming`이 안 쓰는 스킬 후보를 낸다.** "안 쓰는 스킬"을 물으면 새 `scripts/usage.py`(Python stdlib)가 세션 기록에서 스킬마다 사용자 슬래시 호출, 모델의 Skill 도구 호출, 스킬 폴더 밖 세션에서의 SKILL.md 읽기를 센다. 사용자 슬래시 호출은 Skill 도구를 거치지 않아서 따로 세야 한다. 실측 52건 중 Skill 도구로 이어진 것이 0건이었다. 저장소 안에서 읽은 것은 개발이라 빼고, 기록 기간 안에 생긴 스킬은 git 이력으로 나이를 보고 표본 부족으로 둔다. 후보는 처분 표에 올리기 전에 이 기록에 안 남는 실행을 확인한다. 스케줄러 실행(`scope: multica` 등)은 판정 불가로 돌리고, Codex 세션은 `$<name>` 호출과 모델이 스킬 파일을 연 경로를 둘 다 찾는다. 호출 형태만 찾으면 모델이 스스로 고른 사용이 빠진다. 한 스킬은 `$` 호출 1회에 파일을 연 세션이 16개였다. 사용량은 후보일 뿐이고 처분은 기존 등급별 승인을 그대로 거친다
   - receipt에 `unused: <n> (창 <days>일) · unverifiable <m> (scheduler · runtime · age)` 한 줄을 더했다. 판정 불가 항목은 실행마다 같은 목록이 반복되지 않게 행으로 펼치지 않고 수만 적는다
   - 회귀 스크립트에 사용량 케이스 5개를 더했다(57 단언 통과). 평가 과제 `usage-candidates`는 판단보다 receipt 계약으로 갈린다. fixture가 보정 결과를 미리 계산해 주어서, 스킬 없이 돌린 실행도 같은 후보를 골랐다

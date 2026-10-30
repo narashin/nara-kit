@@ -37,4 +37,4 @@ Built-in format: five sections from body-guide.md, built-in title. That is the d
 
 At the confirm step, one line: `규칙: template .github/pull_request_template.md · title CONTRIBUTING.md` (or `규칙: 내장 형식 (repo 규칙 없음)`). The user sees which source shaped the PR before it is created.
 
-Provenance: adapted from tiger-kit `tk-pr-open` (MTGVim/tiger-kit `5e35b6a`, MIT): template detection, heading/checklist preservation, title precedence. Omitted: stacked-PR split, evidence manifest, Mermaid visuals.
+Provenance: adapted from tiger-kit `tk-pr-open` (MTGVim/tiger-kit `5e35b6a`, MIT): template detection, heading/checklist preservation, title precedence. Omitted here: evidence manifest, Mermaid visuals. The stacked-PR split lives in [stacked.md](stacked.md).

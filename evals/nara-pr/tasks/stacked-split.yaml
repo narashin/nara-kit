@@ -1,0 +1,39 @@
+id: stacked-split-001
+name: "A branch with three linear concerns is proposed as a stacked chain on a GHES host"
+description: |
+  The repo built by `fixtures/stack-repo.sh <dir> three-concerns` has one branch
+  with three review concerns in a linear dependency: the coupon model and its
+  migration, the expiry rule and its tests, and the check endpoint and page.
+  The three commits do not follow those concerns (model+rule, endpoint+page,
+  migration+tests), so a split by commit puts the migration in the wrong layer.
+  The host is GitHub Enterprise Server and its stacks API answers 404
+  (`fixtures/stack-repo-gh.md`), so gh-stack cannot link a Stack there.
+  A correct run stops at the confirmation screen without creating branches or
+  commits, proposes three layers by path ownership, says the chain is a plain
+  base-chained PR chain with no Stack object, lists every layer commit subject,
+  and states the stack-tip tree must equal the source tree before any push.
+tags:
+  - stacked
+inputs:
+  prompt: |
+    PR 만들어줘. 리뷰어가 DB, 도메인 로직, 화면 담당이 달라서 나눠서 올렸으면 해.
+    (저장소는 fixtures/stack-repo.sh three-concerns로 만든 것이다. gh 결과는 stack-repo-gh.md다. 아직 승인하지 않았다.)
+  files:
+    - path: stack-repo-gh.md
+  # The repo itself is built by fixtures/stack-repo.sh (a git repo cannot be an
+  # inline fixture). Runs that cannot execute it cannot take this task. After the
+  # run, the source branch HEAD must be unchanged and no new branch may exist:
+  # check with `git -C <dir> branch` and `git -C <dir> rev-parse HEAD`.
+expected:
+  # `형태: stacked` is the confirm-screen line the stacked reference requires.
+  # `PR 사슬` proves the GHES fallback was disclosed instead of assuming gh-stack.
+  # `원래 tree` proves the lossless invariant was named before any push.
+  # `gh stack submit` must not be planned: the host has no stacks API.
+  output_contains:
+    - "형태: stacked"
+    - "PR 사슬"
+    - "원래 tree"
+  output_not_contains:
+    - "gh stack submit"
+  outcomes:
+    - type: task_completed
