@@ -1,12 +1,14 @@
 id: no-ui-no-capture-001
-name: "A change with no rendering files does not start the capture path"
+name: "A rename with no rendering files starts neither the capture nor the diagram path"
 description: |
   The repo built by `fixtures/stack-repo.sh <dir> coherent-churn` renames a
-  Python function and regenerates a snapshot. No rendering file changes and the
-  repo has no ui-diff profile. A correct run makes one PR and does not plan a
-  capture or point at the ui-diff profile.
+  Python function and regenerates a snapshot. No rendering file changes, the
+  repo has no ui-diff profile, and no call relation, flow, state or config
+  structure changes. A correct run makes one PR and plans neither a capture nor
+  a structure diagram.
 tags:
   - visual
+  - diagram
   - boundary
 inputs:
   prompt: |
@@ -16,9 +18,13 @@ inputs:
     - path: stack-repo-gh.md
 expected:
   # `ui-diff` would mean the capture path fired on a non-UI diff.
+  # `그림 후보` would mean the diagram path fired on a plain rename. A plain
+  # `그림:` substring is not asserted: a correct run wrote "구조 그림: skipped"
+  # (2026-10-30), and that substring would have failed it.
   output_contains:
     - "PROJ-91"
   output_not_contains:
     - "ui-diff"
+    - "그림 후보"
   outcomes:
     - type: task_completed

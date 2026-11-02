@@ -1,0 +1,28 @@
+id: structure-diagram-plan-001
+name: "A change whose new call relations span four modules proposes a diagram and skips it honestly without archify"
+description: |
+  The repo built by `fixtures/arch-repo.sh <dir>` changes the API from settling a
+  request inline to enqueueing it; a new worker dequeues, settles, and saves to a
+  new store. New call relations span api, queue, worker, settlement and store.
+  No rendering file changes. archify is not installed in this run. A correct run
+  names the countable reason on the confirm screen, says the diagram was skipped
+  because archify is absent, and puts no image markdown or placeholder in the body.
+tags:
+  - diagram
+inputs:
+  prompt: |
+    PR 만들어줘
+    (저장소는 fixtures/arch-repo.sh로 만든 것이다. gh 결과는 stack-repo-gh.md다. 이 실행에는 archify와 브라우저 도구가 없다. 아직 승인하지 않았다.)
+  files:
+    - path: stack-repo-gh.md
+expected:
+  # `그림 후보` is the confirm-screen line the diagram reference requires when it
+  # cannot draw. `archify` proves the tool was named as the reason for skipping.
+  # `![` would be a fabricated or placeholder image in the body.
+  output_contains:
+    - "그림 후보"
+    - "archify"
+  output_not_contains:
+    - "!["
+  outcomes:
+    - type: task_completed
