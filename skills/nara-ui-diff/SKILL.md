@@ -46,7 +46,7 @@ UI 회귀 조사관. **배포된 QA/Prod 런타임(baseline)** 과 **로컬 dev 
 test -f .claude/overrides/ui-diff.md && cat .claude/overrides/ui-diff.md   # add/raise/narrow only, 없으면 silent skip
 ```
 
-`.claude/ui-diff/{env.md, login.md, login.local.md, screens/<name>.md}` 로드. **없으면** `references/templates/`에서 repo-local로 bootstrap 후 **중단** — "env.md 채우고 `login.local.md.example` → `login.local.md` 복사" 안내 receipt. `git check-ignore .claude/ui-diff/login.local.md` 실패(=untracked 아님) 시 **ESCALATE**, 진행 거부.
+`.claude/ui-diff/{env.md, login.md, login.local.md, screens/<name>.md}` 로드. **없으면** `references/templates/`에서 repo-local로 bootstrap 후 **중단** — "env.md 채우고 `login.local.md.example` → `login.local.md` 복사" 안내 receipt. `git check-ignore .claude/ui-diff/login.local.md` 실패(=untracked 아님) 시 **ESCALATE**, 진행 거부. `env.md`도 같다: 추적 중이거나 무시되지 않으면 진행 거부. env.md는 저장소에 절대 커밋하지 않고 `.git/info/exclude`로만 뺀다([profile](references/profile.md)).
 
 ## Auto-detect gate (human usability)
 

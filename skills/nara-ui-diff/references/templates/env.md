@@ -1,5 +1,6 @@
 # ui-diff env profile — <project>
 # 소비 repo의 .claude/ui-diff/env.md 로 bootstrap됨. 실제 값으로 채우세요.
+# 이 파일은 저장소에 절대 커밋하지 않는다. .git/info/exclude로 빠져 있어야 한다.
 
 ## local
 - local_url: http://localhost:3000

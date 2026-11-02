@@ -31,6 +31,8 @@ nara-kit은 매니페스트 없는 Agent Skills repo — `main` 브랜치가 곧
   - `nara-rfc`는 직접 게시하지 않고 `/nara-publish-spec`을 안내한다. 게시는 원격 쓰기라 명시 호출 전용 스킬 한곳에 모았다
 
 ### Changed
+- **`nara-ui-diff`와 `nara-pr`이 `.claude/ui-diff/env.md`를 저장소에 들이지 않는다.** env.md에는 배포 환경 주소가 있고, 있으면 nara-pr이 그 환경에 자동으로 접속해 캡처한다. 커밋되면 저장소를 받은 사람의 에이전트도 같은 일을 하게 된다. ui-diff는 env.md를 만들기 전에 공유 `.gitignore`가 아니라 `.git/info/exclude`에 넣고, 두 스킬 모두 쓰기 전에 `git ls-files --error-unmatch`·`git check-ignore`로 확인해 추적 중이면 거부한다. 이미 env.md를 커밋한 저장소는 사용자가 `git rm --cached`로 빼야 다시 캡처된다. nara-pr 캡처의 켜는 조건은 순서 있는 판정이 됐고(env.md 없음 → 저장소에 들어갈 수 있음 → 브라우저 없음 → 캡처), 브라우저가 없을 때도 기준 주소와 대상 화면을 적는다
+  - 측정: env.md를 커밋한 fixture(`ui-repo.sh <dir> tracked-env`)에서 수정 후 2회 모두 캡처를 거부하고 PR 생성은 계속했다. 로컬 전용 env.md에서는 판정 순서를 다시 쓴 뒤 2회 모두 기준 주소까지 적었다(다시 쓰기 전 2회는 1회가 기준 주소를 빠뜨림)
 - **`nara-ko-prose`가 저자가 고른 개조식 문서의 종결어미를 바꾸지 않는다.** 산문 문장의 절반 이상이 "~임", "~함", "~셈"으로 끝나면 그 문서는 일부러 그렇게 쓴 것으로 보고 종결어미 완결 조항을 건너뛴다. 지금까지는 기획 문서의 "첫 화면에서 봄"을 "본다"로 되돌려 저자 선택을 지웠다. 절반 미만이면 섞여 든 것으로 보고 전처럼 수리한다
 
 ### Fixed

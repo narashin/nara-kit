@@ -6,9 +6,12 @@ diff가 화면 파일(컴포넌트, 페이지, 템플릿, 스타일)을 바꿨�
 
 ## 1. 켜는 조건
 
-- 저장소에 `.claude/ui-diff/env.md`가 있고 `baseline_url`이 채워져 있다 → 묻지 않고 캡처한다. env.md를 채운 것을 동의로 본다.
-- env.md가 없다 → 캡처하지 않는다. 확인 화면에 한 줄만 남긴다: `화면 변경 있음 · 캡처하려면 /nara-ui-diff로 .claude/ui-diff/env.md를 만드세요`. PR 생성은 막지 않는다.
-- 브라우저 도구(chrome-devtools 또는 playwright MCP)가 연결돼 있지 않다 → 캡처하지 않고 `캡처: Unverifiable (브라우저 도구 없음)`으로 적는다. 이미지를 지어내거나 자리표시를 넣지 않는다.
+위에서부터 차례로 본다. 처음 걸리는 줄에서 멈추고 그 줄 하나만 확인 화면에 남긴다. 어느 경우든 PR 생성은 막지 않고, 이미지를 지어내거나 자리표시를 넣지 않는다.
+
+1. `.claude/ui-diff/env.md`가 없거나 `baseline_url`이 비어 있다 → `화면 변경 있음 · 캡처하려면 /nara-ui-diff로 .claude/ui-diff/env.md를 만드세요`.
+2. env.md가 저장소에 들어갈 수 있다. `git ls-files --error-unmatch .claude/ui-diff/env.md`가 성공(추적 중)하거나 `git check-ignore -q .claude/ui-diff/env.md`가 실패(무시 안 됨)하는 경우다 → `캡처: 거부 (env.md가 저장소에 들어갈 수 있음)`. 이어서 정리 방법을 적는다: `git rm --cached .claude/ui-diff/env.md`, 그리고 `.claude/ui-diff/env.md`를 `$(git rev-parse --git-common-dir)/info/exclude`에 추가. 이 명령은 사용자가 실행하고, 삭제 커밋은 이 PR과 따로 둔다. 커밋된 env.md는 동의의 표시가 아니다.
+3. 브라우저 도구(chrome-devtools 또는 playwright MCP)가 연결돼 있지 않다 → `캡처: Unverifiable (브라우저 도구 없음) · 기준 <baseline_url> · 화면 <screens 파일 이름>`. 기준과 화면을 적어서 env.md를 읽었다는 것과 무엇을 찍으려 했는지가 보이게 한다.
+4. 모두 통과 → 묻지 않고 캡처한다. 로컬 전용 env.md를 채운 것을 동의로 본다.
 
 env.md, `login.md`, `screens/*.md`의 형식은 [ui-diff 프로필](../../nara-ui-diff/references/profile.md)과 [드라이버 순서](../../nara-ui-diff/references/drivers.md)를 따른다(같이 설치된 스킬 파일. 없으면 env.md의 viewport와 로그인 항목만 읽고 진행한다).
 
@@ -47,7 +50,7 @@ env.md, `login.md`, `screens/*.md`의 형식은 [ui-diff 프로필](../../nara-u
 | QA 배포본 (배포 버전 미확인, 2026-10-30 캡처) | 이 브랜치 (로컬 @ 1a2b3c4) |
 |---|---|
 | ![baseline](<link>) | ![local](<link>) |
-| 정산 금액이 소수점 없이 보임 | 정산 금액이 소수점 둘째 자리까지 보임 |
+| 담당자 이름이 길면 말줄임표로 잘림 | 담당자 이름이 두 줄로 다 보임 |
 ```
 
 receipt 한 줄: `캡처 <n>쌍: 기준 <env> (<host>) · 로컬 @ <short SHA> · blur <k>곳`.

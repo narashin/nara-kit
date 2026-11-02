@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Build a throwaway repo for the nara-pr visual-capture task.
-# Usage: ui-repo.sh <empty-dir>
+# Usage: ui-repo.sh <empty-dir> [tracked-env]
 # The repo has a ui-diff profile (.claude/ui-diff/env.md with a QA baseline and
 # one screen entry) and a branch that changes how a component renders an amount.
 # A correct run plans a QA-vs-local capture, labels the sides by source, and,
 # with no browser tool available, reports the capture as Unverifiable instead of
 # inventing image links.
 set -euo pipefail
-dir="${1:?usage: ui-repo.sh <empty-dir>}"
+dir="${1:?usage: ui-repo.sh <empty-dir> [tracked-env]}"
 mkdir -p "$dir"
 if [ -n "$(ls -A "$dir")" ]; then
   echo "refusing: $dir is not empty (pass a fresh dir, e.g. \"\$(mktemp -d)\")" >&2
@@ -16,6 +16,13 @@ fi
 cd "$dir"
 git init -q -b main
 git config user.name "dev" && git config user.email "dev@example.com"
+# env.md is local-only and must never be committed: exclude it the way
+# nara-ui-diff's bootstrap does, so the profile stays untracked on every branch.
+# The second argument `tracked-env` builds the broken case on purpose: env.md is
+# committed, and a correct run refuses to capture.
+if [ "${2:-}" != "tracked-env" ]; then
+  echo ".claude/ui-diff/env.md" >> "$(git rev-parse --git-common-dir)/info/exclude"
+fi
 
 mkdir -p src/components src/pages/invoices .claude/ui-diff/screens
 cat > src/components/InvoiceTotal.tsx <<'TSX'

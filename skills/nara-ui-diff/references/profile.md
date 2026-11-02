@@ -5,11 +5,18 @@ Engine/profile 분리: 스킬 = 엔진(절차+템플릿), 모든 제품값 = **�
 ## Lookup + bootstrap
 
 1. `<repoRoot>/.claude/ui-diff/` 있으면 로드
-2. 없으면 `skills/nara-ui-diff/references/templates/`에서 repo-local로 생성 후 **중단** — "env.md 채우고 `login.local.md.example` → `login.local.md` 복사" 안내. 엔진은 repo-local 파일만 생성(user-global provisioning 금지)
+2. 없으면 `skills/nara-ui-diff/references/templates/`에서 repo-local로 생성 후 **중단** — "env.md 채우고 `login.local.md.example` → `login.local.md` 복사" 안내. 엔진은 repo-local 파일만 생성(user-global provisioning 금지). env.md를 만들기 **전에** `.claude/ui-diff/env.md` 한 줄을 `$(git rev-parse --git-common-dir)/info/exclude`에 추가한다. 공유되는 `.gitignore`는 건드리지 않는다. common dir이라 모든 worktree에 같이 적용된다
 
 ## 파일
 
-### `.claude/ui-diff/env.md` (tracked, non-secret)
+### `.claude/ui-diff/env.md` (**저장소에 절대 커밋하지 않음**, 로컬 전용)
+
+배포 환경 주소가 들어 있고, 이 파일이 있으면 nara-pr이 그 환경에 자동으로 접속해 캡처한다. 커밋되면 저장소를 받은 다른 사람의 에이전트도 같은 일을 하게 된다. 그래서 Step 0에서 매번 확인한다.
+
+- `git ls-files --error-unmatch .claude/ui-diff/env.md`가 성공(= 이미 추적 중) → **진행 거부**. `git rm --cached .claude/ui-diff/env.md` 후 exclude에 넣으라고 안내한다. 이 명령은 사용자가 실행한다.
+- `git check-ignore -q .claude/ui-diff/env.md`가 실패(= 무시 안 됨) → **진행 거부**. 위 exclude 한 줄을 추가할지 묻는다.
+
+내용:
 4섹션: **local**(local_url, local_dev_cmd, local_ready_signal, notes) · **baseline**(baseline_url = qa/staging/prod-like, notes) · **viewport**(width, height, device_scale_factor) · **auth/context**(requires_login, default_user_role, seed_or_fixture, context_notes = feature-flag/locale/org-selector). endpoint+viewport+context parity의 단일 소스.
 
 ### `.claude/ui-diff/login.md` (tracked, non-secret)
