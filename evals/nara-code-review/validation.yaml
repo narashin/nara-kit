@@ -5,6 +5,10 @@
 # loaded (normal tasks), or the skill applied to a request it should decline
 # (should-not-trigger). Tools were off for side effects: outputs are dry runs.
 #
+# round-cap-final-review-001 (2026-11-05): `right` is a fresh subagent on the
+# SKILL.md that carries the round-cap rule; `wrong` is a fresh subagent on the
+# SKILL.md before that rule, which stopped correctly but never escalated.
+#
 # Run: tools/eval-fixture.py validate nara-code-review
 # Expected: every task passes on right and fails on wrong.
 right:
@@ -624,6 +628,32 @@ right:
     → ESCALATE: scope-integrity MISMATCH — 선언 스코프 밖 9개 파일이 사유·사전 고지·승인 없이 변경됨. 파일별로 어느 finding 수정에 속하는지 확인하고, 속하지 않는 변경은 되돌리거나 별도 변경으로 분리해야 함
     → ESCALATE: validation fail — tsc exit 2(TS2307 1건)·eslint exit 1(19 problems)이 기존 문제인지 측정되지 않음. baseline a1b2c3d에서 같은 명령을 실행해 exit code를 비교해야 함
     ```
+  round-cap-final-review-001: |
+    리뷰는 라운드 상한(3/3)에서 끝났고, 보안 major SEC-011을 어떻게 처리할지는 정해 주셔야 합니다 (pending escalation, 질문은 맨 아래).
+
+    SEC-011은 R1이고 `--fix=all`로 돌렸으니 보통은 자동 수정 대상입니다. 그런데 최종 baseline 리뷰에서 나온 finding이라 이번 실행에서는 고치지 않습니다. 최종 리뷰 뒤에 수정을 넣으면 아무도 다시 보지 않은 최종 상태로 리뷰가 끝나기 때문입니다. 그래서 리포트의 수동 수정 섹션(🟠 MAJOR)에 사유 `라운드 상한`으로 들어갑니다. 한 줄짜리로 보이는 것도, 보안 major를 남기고 싶지 않으신 것도 맞습니다. 다만 라운드 상한은 사용자가 정하는 값이라 심각도가 높다고 실행이 알아서 올리지는 않습니다. 남기기 싫다는 말씀은 방향이지 아래 두 길 중 하나를 고르신 답은 아니어서 그대로 여쭙니다.
+
+    리포트 헤더의 라운드 줄은 `라운드: 3/3 (stopped)`입니다. `--max-rounds`를 주지 않았으니 기본 상한은 3입니다. 요약 줄은 `🔄 라운드: 3회 (수렴: ⚠️ Max rounds)`입니다. 루프가 상한을 다 썼기 때문에 `🖐 Manual-only`가 아니라 Max rounds입니다.
+
+    확인할 것이 하나 더 있습니다. `test_webhook_logs_redacted`가 round 1에도 있었다면 BEH-003은 "검증 통과" 조건을 채울 수 없었으니 verified가 될 수 없었습니다. 로그에는 그 테스트가 언제 생겼는지가 없어서 리포트의 확인 질문 칸에 넣었고, 아래 집계는 로그에 적힌 대로 9 verified로 두었습니다. 리포트를 확정한 뒤에는 `/nara-adversarial-review`로 이 판정들을 한 번 공격해 보시기를 권합니다.
+
+    리포트는 `docs/review/261105-billing-webhook-review.md`에 저장할 내용입니다 (이번 응답에서는 저장하지 않았습니다). 첨부 로그만으로 증거를 댈 수 없는 칸은 `미측정`이나 `unverifiable`로 적었습니다. fix-ledger의 세 번째 칸은 라운드 끝 snapshot compare 결과가 채웁니다. 0이면 `match (9 claimed, 9 changed, 0 unclaimed)`가 되고, 0이 아니면 MISMATCH로 바뀌면서 ESCALATE가 하나 더 붙습니다.
+
+    고르실 수 있는 길은 둘입니다.
+
+    1. `/nara-code-review --fix=all --max-rounds 4`로 다시 돌립니다 (상한은 최대 5). SEC-011을 고치는 라운드가 하나 더 돌고, 그 실행도 자체 최종 baseline 리뷰로 끝납니다.
+    2. 직접 고칩니다. `handlers/stripe_event.py`에서 `event.raw` 대신 `event.id`를 로그로 남기고, `pytest services/billing-webhook -q`로 `test_webhook_logs_redacted`가 통과하는지 확인한 다음 리뷰를 다시 돌립니다.
+
+    ```
+    overrides: unverifiable (첨부 로그에 .claude/overrides/code-review.md 확인 기록 없음)
+    fix-ledger: match (9 claimed, 9 changed, 미측정 unclaimed)
+    fix-verification: 9 verified, 0 unverified, 0 mismatched, 0 disproved
+    scope-integrity: unverifiable (scope 11 → touched 미측정: 로그에 수정이 건드린 파일 목록 없음)
+    validation: fail (pytest services/billing-webhook -q → exit 1; ruff check services/billing-webhook → exit 0; baseline 9f3e1c2 미측정)
+    ```
+    → ESCALATE: SEC-011 (major, 웹훅 로그에 card.fingerprint와 customer.email 노출)은 라운드 상한 때문에 고치지 않았습니다. `--max-rounds <n>`로 다시 돌릴지, 직접 고칠지 정해 주세요.
+
+    답: 1 (재실행) 또는 2 (직접 수정)
 wrong:
   authz-consistency-001: |
     변경사항 살펴봤습니다. 전체적으로 공동 소유자(co-owner)를 소유자로 취급하려는 의도는 이해되는데, 레이어마다 "소유자"의 정의가 달라져서 일관성이 깨진 부분이 있습니다.
@@ -830,3 +860,38 @@ wrong:
     scope-integrity: expanded (23 → 32 files, +9: jest.env.ts, jest.setup.ts, styles/table.scss, hooks/useFilterReset.ts, components/orders/list/OrderListTable.tsx, components/my-items/list/MyItemListTable.tsx, tests/support/renderWithProviders.tsx, tests/components/orders/list/OrderListTable.test.tsx, tests/components/my-items/list/MyItemListTable.test.tsx)
     validation: fail (tsc exit 2: 1 error, eslint exit 1: 19 problems, jest 68/68 suites, 583/583 tests 통과; baseline 비교 미실행)
     ```
+  round-cap-final-review-001: |
+    이번 실행은 SEC-011을 고치지 못한 채 끝납니다. `--max-rounds`를 주지 않았으니 상한은 기본값 3이고, 3라운드는 이미 다 썼습니다. 최종 baseline 리뷰는 라운드가 끝난 뒤 한 번 도는 마지막 점검이라서 여기서 나온 finding을 고칠 라운드가 남아 있지 않습니다. SEC-011은 R1이고 `--fix=all`이면 자동 수정 대상이지만, 지금 이 실행 안에서 고치면 아무도 요청하지 않은 4라운드를 돌리는 셈입니다. 게다가 그 수정은 최종 baseline 리뷰 뒤에 들어가니 리뷰를 한 번도 거치지 않은 코드가 됩니다. 그래서 이 실행의 리포트에는 SEC-011을 고치지 않은 major로 남기고, 실제 수정은 다음 실행에서 합니다.
+
+    다음에 할 일은 순서대로 이렇습니다.
+
+    1. 이 실행의 리포트를 `./docs/review/261105-billing-webhook-review.md`에 저장합니다. SEC-011은 🟠 MAJOR 절에 수동 수정이 필요한 항목으로 적습니다. 수정하지 못한 이유는 R2/R3라서가 아니라 라운드 상한에 걸려서라고 씁니다. 수정안은 `handlers/stripe_event.py`의 로그를 `event.raw`에서 `event.id`로 바꾸는 것이고, 검증은 `test_webhook_logs_redacted` 통과로 적습니다. 이 결함이 1라운드 수정 BEH-003에서 생겼다는 점도 같이 적습니다. 여러 수정 사이의 상호작용을 잡는 것이 최종 baseline 리뷰의 일이고, 이번에 잡은 것이 바로 그 경우입니다.
+    2. 보안 major를 남기지 않으려면 같은 baseline `9f3e1c2`로 `/nara-code-review --fix=all`을 새로 실행하세요. SEC-011은 지금 트리에서 실패하는 테스트로 재현되는 E3 결함이라서 새 실행의 리뷰어가 다시 찾을 것이고, 테스트가 있는 R1이니 Fixer가 고치고 Verifier가 그 테스트로 증명합니다. 새 실행은 라운드를 1부터 다시 세고 수정이 들어가면 최종 baseline 리뷰도 다시 하니, 이 한 줄 수정이 다른 곳을 건드리는지도 거기서 확인됩니다. 직접 한 줄을 고치고 나서 리뷰를 새로 돌려도 결과는 같습니다. 어느 쪽이든 수정한 뒤 리뷰를 다시 거쳐야 합니다.
+    3. `pytest`가 exit 1인 상태이니 SEC-011이 닫히기 전에는 `/nara-pr`로 가지 않습니다. 닫힌 뒤에는 `/nara-adversarial-review`나 `/codex:adversarial-review`(직접 입력해야 합니다)로 리포트를 한 번 공격해 보고, `/nara-retro` 다음에 `/nara-pr`로 가면 됩니다. retro에서 볼 거리도 하나 있습니다. 2라운드의 수정 중심 재리뷰가 1라운드 hunk를 봤는데도 BEH-003의 `event.raw` 로그를 놓쳤습니다.
+
+    리포트 헤더의 라운드 줄과 요약의 수렴 라벨은 이렇게 씁니다.
+
+    ```
+    ║ 라운드: 3/3 (stopped)     ║
+    🔄 라운드: 3회 (수렴: ⚠️ Max rounds)
+    ```
+
+    `✅ Clean`은 쓸 수 없습니다. 확정된 major가 남아 있기 때문입니다. `🖐 Manual-only`도 아닙니다. 남은 SEC-011이 R1이고 `--fix=all`에서 자동 수정할 수 있는 항목이라, 라운드가 남았다면 진행할 수 있었습니다. 같은 지문이 다시 나온 것도 아니니 `🔁 No progress`도 아닙니다. 멈춘 이유는 상한 하나입니다.
+
+    라운드별 이력은 로그 그대로 옮기면 됩니다. Round 3은 신규 발견 0건이라 수정도 0건이고, 마지막 줄은 `Final baseline review: 실행됨 — 신규 발견 1건 (SEC-011, major, Judge confirmed)`입니다.
+
+    trailing status는 이렇습니다.
+
+    ```
+    overrides: unverifiable (첨부 로그에 .claude/overrides/code-review.md 확인 기록 없음)
+    fix-ledger: unverifiable (로그에 claimed 9, Verifier verified 9만 있고 라운드별 snapshot compare의 changed/unclaimed 수가 없음)
+    fix-verification: 9 verified, 0 unverified, 0 mismatched, 0 disproved
+    scope-integrity: unverifiable (scope 11 → touched 수가 로그에 없음)
+    validation: fail (pytest services/billing-webhook -q → exit 1; ruff check services/billing-webhook → exit 0; baseline 미측정)
+    ```
+
+    MISMATCH가 없으니 `→ ESCALATE:` 줄은 붙지 않습니다.
+
+    이 중 세 줄은 로그에 근거가 없어서 `unverifiable`로 썼습니다. 실행 세션에 override 확인 결과와 라운드별 snapshot compare(`git hash-object`와 `git diff`)가 남아 있다면 그 값으로 채우세요. 예를 들어 `fix-ledger: match (9 claimed, 9 changed, 0 unclaimed)`, `scope-integrity: match (scope 11 → touched 11)`처럼 쓰면 됩니다. 다만 0 unclaimed나 touched 11 같은 숫자는 제가 추측해 넣을 수 없습니다. `fix-verification`은 ledger가 9건의 수정 주장을 모두 설명하니 나머지 칸이 0입니다. SEC-011은 수정 주장이 아니라 `open` 상태의 finding이라서 unverified로 세지 않습니다. `validation`은 SEC-011의 테스트가 실패하니 `fail`입니다. 이 실패는 이번 수정이 만든 것이고 baseline에서 같은 명령을 돌린 기록도 없으니 원래 있던 실패로 볼 수 없습니다.
+
+    로그만으로 확인할 수 없는 것이 두 가지 있어서, 리포트를 쓸 때 실행 세션에서 확인해야 합니다. 하나는 1라운드에서 confirmed 9건 중 7건만 고친 이유입니다. 나머지 2건이 R3인지 suggestion인지에 따라 리포트에서 들어갈 절이 달라집니다. 다른 하나는 `test_webhook_logs_redacted`가 1라운드 검증 때 이미 있었는지입니다. 있었다면 BEH-003은 그때 이 테스트가 실패했어야 하니 BEH-003의 verified 판정을 다시 봐야 하고, 나중에 추가됐다면 문제없습니다.

@@ -95,15 +95,15 @@ project-defined package scripts and standard read-only validators
 ## Output Status (mandatory trailing lines)
 
 ```
-overrides: applied (path) | none (...) | unverifiable (...)
-fix-ledger: match (...) | MISMATCH (...)
-fix-verification: N verified, N unverified, N mismatched
-scope-integrity: match | expanded (...) | MISMATCH (...)
-validation: pass | fail (...) | unavailable
+overrides: applied | none | unverifiable (...)
+fix-ledger: match | MISMATCH | n/a (...)
+fix-verification: N verified, N unverified, N mismatched, N disproved
+scope-integrity: match | expanded | MISMATCH (...)
+validation: pass | fail | unavailable (...)
 ```
 
-Contract enforcement gate — without trailing status, the review is incomplete. No line
-has a bare-word form; every verdict carries its evidence. Any MISMATCH → `→ ESCALATE:`
-under the block, never reported as applied; `expanded` (disclosed + approved) is neither.
+No block, no complete review. Every verdict carries its evidence; exact forms in
+[report](references/report.md). Any MISMATCH → `→ ESCALATE:` under the block, never
+reported as applied; `expanded` (disclosed + approved) is neither.
 
 **다음**: 리포트 확인 후 `/nara-retro`(배운 것이 있으면) → `/nara-pr`.

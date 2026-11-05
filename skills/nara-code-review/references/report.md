@@ -42,7 +42,7 @@ Final baseline review: {실행됨/스킵(수정 없음)} — 신규 발견 N건
   📝 {무엇을 어떻게 수정}
   🔬 proof: {observed hunk} + {validation/테스트 결과}
 
-🔴 CRITICAL — 수동 수정 필요 (R2/R3 또는 fix 실패)
+🔴 CRITICAL — 수동 수정 필요 (R2/R3, fix 실패, 또는 라운드 상한)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [SEC-001] {invariant}
   📍 {path}::{symbol} | ⚖️ {verdict} | E{n} | 신뢰도 {N} | {fix_risk}
@@ -77,6 +77,12 @@ Stats table rules: a reviewer whose return was not accepted (no coverage — see
 routing) shows `unverifiable` across its row, never zeros. Unadjudicated findings show `-(unadjudicated)` in the confirmed
 column. Fingerprint-merged findings count ONCE under the merge representative's row;
 co-reporters keep their 발견 count with the merge noted in their row.
+
+The 🔕 게이트 미달 count is taken at aggregation (Flow 5), after fingerprint dedup,
+from the items reviewers returned: E0/E1 items plus E2+ items under the confidence
+threshold. A reviewer that returned its risks as prose rather than items gives
+nothing to count; write `미집계 (<리뷰어>: 항목으로 반환 안 함)` for the whole line, or
+`N건 + 미집계 (<리뷰어>)` when only some did. Never an estimate.
 
 ## Trailing status (contract gate — 없으면 리뷰 미완료)
 
@@ -129,11 +135,27 @@ evidence.** A bare verdict is a contract violation even when the verdict is righ
   fill the numeric slots by inference; an invented `0 verified, 0 unverified,
   0 mismatched, 0 disproved` reads as a measurement that was taken.
 
-`--fix=none` runs print `fix-ledger: n/a` and `fix-verification: n/a`.
-Fix-enabled runs that applied ZERO fixes (nothing eligible) print `fix-ledger: match`
-and `fix-verification: 0 verified, 0 unverified, 0 mismatched, 0 disproved`; `validation` reflects
+  A count is not inference when the ledger exists: if the ledger accounts for every
+  claim (5 claimed, 5 verified), the remaining slots are `0`, not `unverifiable`. A
+  fix the Fixer claimed with no Verifier proof counts as `unverified`; an open finding
+  no fix claimed is in none of these counts. Inside a line, a slot that was not
+  measured while the others were is written `미측정` in place of its number
+  (`MISMATCH (0 claimed-but-unchanged, 12 changed-but-unclaimed, 미측정
+  changed-but-unresolved)`). When the verdict itself rests on the unmeasured slot
+  (`match` asserts 0 unclaimed), the whole line is `unverifiable`, which is also the
+  form for a line with no evidence at all.
+- **`n/a` is a verdict too, so it carries its reason**: `n/a (--fix=none)` or
+  `n/a (empty scope)`. It means the line's subject did not exist in this run, unlike
+  `unverifiable`, which means it existed and was not measured.
+
+`--fix=none` runs print `fix-ledger: n/a (--fix=none)` and `fix-verification: n/a (--fix=none)`.
+Fix-enabled runs that applied ZERO fixes (nothing eligible) print `fix-ledger: match
+(0 claimed, 0 changed, 0 unclaimed)`, where `0 changed` is the Verifier's snapshot
+compare (verification.md); a run that could not take that compare prints
+`fix-ledger: unverifiable (<이유>)`. `fix-verification` is `0 verified, 0 unverified,
+0 mismatched, 0 disproved`, counted from the empty ledger; `validation` reflects
 whatever actually ran (`unavailable` if no validation was executed). Empty-scope
-stops: see scope.md (all `n/a`).
+stops: see scope.md (all `n/a (empty scope)`).
 
 ## Adversarial review (manual follow-up)
 

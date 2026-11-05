@@ -32,9 +32,8 @@ fallback source in the manifest. If both are empty too: STOP before launching an
 reviewer. Output (Korean): state there is nothing to review, list re-run options
 (`/nara-code-review 1|N|<branch>` or explicit file paths), save NO report file, and
 emit the FULL trailing status block: `overrides:` as resolved in Step 0 (which
-still runs before scope), then `fix-ledger: n/a`, `fix-verification: n/a`,
-`scope-integrity: n/a (empty scope)`, `validation: n/a`. Zero findings — never
-fabricate.
+still runs before scope), then `fix-ledger`, `fix-verification`, `scope-integrity` and
+`validation` each as `n/a (empty scope)`. Zero findings — never fabricate.
 
 ## Review manifest (frozen at start)
 

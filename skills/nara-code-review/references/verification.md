@@ -68,12 +68,18 @@ Scope it, batch it, and guard the residue.
 3. **Batch cap 4** — at most 4 mutants per invocation, and each batch's result is
    persisted before the next starts. A batch killed by a tool timeout must not
    discard the batches already done.
-4. **Residue guard** — before each batch record the mutated files' pre-state
-   (`git stash create` or per-file `git hash-object`) and `git status --porcelain`;
-   compare after. Not identical → a mutant is still applied to production code:
-   restore from the recorded pre-state, STOP, and escalate. Never start the next
-   batch on a dirty carry-over, and never report a run whose residue check failed
-   as verified.
+4. **Residue guard** — before each batch store every file a mutant may touch with
+   `git hash-object -w <file>` (`-w` writes the blob; without it the hash detects
+   residue but nothing can be restored) plus `git status --porcelain`; after the
+   batch, compare the hashes. Porcelain alone misses residue in a file that was
+   already ` M` before the batch. A moved hash → a mutant is still applied to
+   production code: the writer role (Fixer, or the main session when no Fixer is
+   live) restores that file's working copy with `git cat-file blob <sha> > <file>`,
+   which undoes only the run's own mutant and leaves the index alone (`git stash
+   create` + `checkout <sha> -- <file>` would overwrite staged state). Then STOP and
+   escalate. A file with no stored blob is never restored by guess: name it in the
+   escalation. Never start the next batch on a dirty carry-over, and never report a
+   run whose residue check failed as verified.
 
 ## Re-review loop (max rounds: 3, `--max-rounds` cap 5)
 
@@ -92,9 +98,9 @@ R2/R3 or otherwise auto-fix-ineligible — no further round can make progress; l
 the run `manual-only`, never `clean`).
 
 When a round applies ZERO fixes, the Verifier still runs its snapshot compare
-(claimed 0 vs observed 0) — report `fix-ledger: match` and
+(claimed 0 vs observed 0) — report `fix-ledger: match (0 claimed, 0 changed, 0 unclaimed)` and
 `fix-verification: 0 verified, 0 unverified, 0 mismatched, 0 disproved`, not `n/a` (`n/a` is
-reserved for `--fix=none`). The final baseline review is skipped (no fix applied).
+reserved for `--fix=none` and empty scope). The final baseline review is skipped (no fix applied).
 Zero-fix runs are NOT required to execute validation commands — the `validation`
 status line reports what actually ran: the round-start baseline result if one was
 captured, else `unavailable`.
@@ -107,6 +113,17 @@ review over the FULL diff from `baseline_commit` (manifest) to the final state:
 - 미해결 원래 finding 잔존 여부
 - 여러 fix 사이의 상호작용
 - 최종 public behavior 변화가 의도 범위 내인지
+
+**Its findings are not fixed in this run, and the cap is the user's.** A fix applied
+after the final baseline review leaves the final state unreviewed, so the review's
+confirmed findings go to the manual-fix section with the reason `라운드 상한`, never
+to the Fixer. The round cap is set by the user (`--max-rounds`, or an explicit answer
+to an escalation); the run never raises it on its own, however severe the finding.
+Header: `라운드: {current}/{max} (stopped)`; summary `⚠️ Max rounds` when the loop
+used the cap, else `🖐 Manual-only`. Each confirmed
+critical/major from it gets a `→ ESCALATE:` line asking the user to choose: a new run
+with `--max-rounds <n>` (counted from round 1, ending with its own final baseline
+review) or a fix by hand.
 
 ## Validation commands — safety rule
 
