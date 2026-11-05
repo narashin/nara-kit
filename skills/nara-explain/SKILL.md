@@ -45,6 +45,10 @@ Use audience-matched format. Default to Tech peer if audience not specified.
 - **Other scopes**: Markdown document by default. Save to `docs/explain-<target>.md` when it runs past about 40 lines or the user asks for a file. When the user asks for a page, pictures, or something to share or present ("HTML로", "그림으로", "공유용", "발표 자료"), write one HTML page at `docs/explain/<target>.html` in a format chosen from formats-by-audience. `<target>` is the short SHA, `pr-<N>`, or the feature name in kebab-case.
 - **Reply**: when a file was written, the reply is a receipt (path, pinned `base..head` for changes, checker result, what was not verified), not the document again.
 
+## Step 4 (optional): Publish
+
+Only when an HTML page was written and `~/.claude/overrides/nara-explain.md` exists: ask once whether to publish it, and follow that file only if the user says yes in this run. A yes never carries over to the next run. Without the file, skip this step and say nothing about publishing.
+
 ## Rules
 
 - Only state facts verified from code. Mark uncertain content `[UNVERIFIED]`. Facts taken from docs (CHANGELOG, ADR, README) are allowed when cited as such.
