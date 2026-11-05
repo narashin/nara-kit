@@ -79,6 +79,30 @@ def mtime(path):
         return 0.0
 
 
+def staged_mtimes(files, cwd):
+    """When each file's staged content was written, from the index's stat record.
+
+    The working-tree mtime answers the wrong question: a file staged before the review
+    and edited again afterwards (unstaged) looks newer than the review even though the
+    commit carries only the reviewed content. The index records the file's stat at
+    `git add` time. It is zero when git could not record one (e.g. a partial `add -p`);
+    the caller falls back to the working-tree mtime for those.
+    """
+    res = run(["git", "ls-files", "--debug", "--"] + files, cwd)
+    found = {}
+    current = None
+    for line in res.stdout.splitlines() if res.returncode == 0 else []:
+        if not line.startswith(" "):
+            current = line.strip()
+        elif current and line.strip().startswith("mtime:"):
+            secs, _, nanos = line.split(":", 1)[1].strip().partition(":")
+            try:
+                found[current] = int(secs) + int(nanos or 0) / 1e9
+            except ValueError:
+                pass
+    return found
+
+
 def main():
     try:
         raw = sys.stdin.read()
@@ -127,8 +151,10 @@ def main():
         block(MSG_NONE)
 
     newest_review = max(mtime(p) for p in reviews)
+    # Paths from `git diff --cached --name-only` are root-relative; ask from the root.
+    staged_at = staged_mtimes(source_files, root)
     source_mtimes = [
-        mtime(os.path.join(root, f))
+        staged_at.get(f) or mtime(os.path.join(root, f))
         for f in source_files
         if os.path.exists(os.path.join(root, f))
     ]
