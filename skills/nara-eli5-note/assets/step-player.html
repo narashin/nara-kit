@@ -1,0 +1,382 @@
+<!doctype html>
+<!-- Step player starter: one STEPS array drives a map view, a sequence view, a data table and a detail panel.
+     Rules: ../references/diagram-patterns.md ("스텝 재생기"). Copy, replace every SAMPLE block below with
+     verified facts, then delete data-sample. No external fonts, CDN, fetch or storage.
+     Inside SAMPLE strings write "</" as "<\/": a literal "</script" ends this script early. -->
+<html lang="ko" data-sample="true">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAMPLE 택배가 문 앞에 오기까지</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg:#f4f5f7; --surface:#ffffff; --fg:#1f2430; --muted:#5b6470; --line:#e2e5ea;
+    --code:#f6f8fa; --accent:#274b9b; --accent-bg:#e8efff; --bad:#b3261e; --hold:#946200;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0d1117; --surface:#161b22; --fg:#e6edf3; --muted:#9aa4af; --line:#30363d;
+      --code:#0d1117; --accent:#8ab4ff; --accent-bg:#1b2a44; --bad:#ff7b72; --hold:#d29922;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:16px/1.65 "Pretendard","Apple SD Gothic Neo",-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:18px; min-width:0; }
+  h1 { font-size:23px; line-height:1.35; margin:0 0 8px; }
+  .conclusion { background:var(--accent-bg); border-radius:10px; padding:12px 16px; margin:0; }
+  .muted { color:var(--muted); font-size:14px; }
+  .tag { display:inline-block; font-size:12px; font-weight:700; border:1px solid currentColor; border-radius:6px; padding:0 6px; color:var(--hold); }
+  button { font:inherit; font-size:14px; border:1px solid var(--accent); background:var(--surface); color:var(--accent);
+           border-radius:8px; padding:6px 14px; cursor:pointer; }
+  button.primary { background:var(--accent); color:var(--surface); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  [hidden] { display:none !important; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:4px 0 12px; }
+  .counter { margin-left:auto; color:var(--muted); font-size:14px; font-variant-numeric:tabular-nums; }
+  .stage { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:14px; }
+  @media (max-width: 820px) { .stage { grid-template-columns:minmax(0,1fr); } }
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px; }
+  .tabs [role="tab"] { padding:4px 14px; }
+  .tabs [role="tab"][aria-selected="true"] { background:var(--accent); color:var(--surface); }
+  .tabs [role="tablist"] { display:flex; gap:6px; }
+  .legend { list-style:none; padding:0; margin:0 0 0 auto; display:flex; flex-wrap:wrap; gap:10px; font-size:13px; color:var(--muted); }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+  svg { display:block; } svg text { fill:var(--fg); font-size:12.5px; font-family:inherit; }
+  /* Map view */
+  .map-wrap { position:relative; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+              background-image:linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+              background-size:28px 28px; background-position:-1px -1px; }
+  #map { width:100%; height:auto; }
+  #cam { transform-origin:0 0; transition:transform .7s cubic-bezier(0.16, 1, 0.3, 1); }
+  .zoom { position:absolute; top:8px; right:8px; display:flex; gap:4px; z-index:1; }
+  .zoom button { padding:2px 10px; min-width:32px; font-size:13px; }
+  .zoom button[aria-pressed="true"] { background:var(--accent); color:var(--surface); }
+  /* On narrow screens the zoom buttons get their own row so they never sit on a node. */
+  @media (max-width: 640px) { .zoom { position:static; justify-content:flex-end; padding:6px 6px 0; } }
+  .edge { stroke:var(--muted); stroke-opacity:.45; stroke-width:2; stroke-dasharray:6 5; fill:none; }
+  .edge.is-active { stroke:var(--accent); stroke-opacity:1; stroke-width:2.6; animation:lane-flow .55s linear infinite; }
+  @keyframes lane-flow { to { stroke-dashoffset:-11; } }
+  .node rect { fill:var(--surface); stroke:var(--line); stroke-width:1.5; }
+  .node.is-on rect { stroke:var(--accent); stroke-width:2.4; }
+  .node .name { font-weight:700; font-size:14px; } .node .sub { fill:var(--muted); font-size:11.5px; }
+  .chip rect { rx:9; } .chip text { fill:#fff; font-size:12px; font-weight:700; }
+  .chip .x circle { fill:var(--surface); stroke:var(--bad); stroke-width:2; } .chip .x path { stroke:var(--bad); stroke-width:2.4; }
+  /* Sequence view: lane names live outside the vertical scroller so they never scroll away. */
+  .seq-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:10px; min-width:0; }
+  .seq-scroll { overflow-y:auto; overflow-x:hidden; max-height:480px; width:max-content; }
+  #seqHead { border-bottom:1px solid var(--line); background:var(--surface); }
+  .lane-line { stroke:var(--line); stroke-width:1.5; stroke-dasharray:4 4; }
+  .lane-head rect { fill:var(--accent-bg); stroke:var(--accent); stroke-width:1; }
+  .lane-head text { font-weight:700; }
+  .msg path { stroke:var(--muted); stroke-width:1.6; fill:none; } .msg polygon { fill:var(--muted); } .msg text { fill:var(--muted); }
+  .msg.now path { stroke:var(--accent); stroke-width:2.4; } .msg.now polygon { fill:var(--accent); } .msg.now text { fill:var(--fg); font-weight:700; }
+  .msg .cross { stroke:var(--bad); stroke-width:2.4; }
+  .msg.future { visibility:hidden; }
+  /* Detail + data table */
+  .detail { border:1px solid var(--line); border-radius:10px; padding:14px; min-width:0; }
+  .detail h3 { font-size:16px; margin:2px 0 6px; } .detail p { margin:6px 0; font-size:15px; }
+  .rows { margin-top:14px; } .rows h3 { font-size:15px; margin:0 0 6px; }
+  .rows ol { list-style:none; margin:0; padding:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .rows li { font:12.5px/1.5 ui-monospace,"SF Mono",Menlo,monospace; padding:6px 10px; border-bottom:1px solid var(--line);
+             overflow-wrap:anywhere; display:grid; gap:6px; align-items:baseline; }
+  .rows li:last-child { border-bottom:0; }
+  .rows li.head { color:var(--muted); font-family:inherit; font-size:12px; font-weight:700; }
+  .rows li.fresh { background:var(--accent-bg); }
+  .rows li.empty { display:block; color:var(--muted); font-family:inherit; }
+  .rows .dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .js .rows li.future { display:none; }
+  /* The js class is added only after the first successful draw, so no JS or a script error shows the notice instead. */
+  .js .nojs, html:not(.js) .controls, html:not(.js) .stage { display:none; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  @media (prefers-reduced-motion: reduce) { #cam { transition:none; } .edge.is-active { animation:none; } }
+</style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <h1>SAMPLE 택배가 문 앞에 오기까지</h1>
+    <p class="conclusion"><strong>요약.</strong> SAMPLE 첫 화면에서 결론을 한 문장으로.</p>
+  </section>
+
+  <section class="card">
+    <p class="muted"><span class="tag">설명용 가정</span> SAMPLE 무엇이 예시이고 무엇이 실제 실행 결과인지. Space는 재생/멈춤, ←/→는 한 칸.</p>
+    <div class="controls">
+      <button type="button" class="primary" id="play">재생</button>
+      <button type="button" id="prev" aria-label="이전 단계">←</button>
+      <button type="button" id="next" aria-label="다음 단계">한 칸 →</button>
+      <button type="button" id="speed">1×</button>
+      <button type="button" id="reset">처음부터</button>
+      <span class="counter" id="counter"></span>
+    </div>
+    <p class="sr-only" id="announce" aria-live="polite" aria-atomic="true"></p>
+    <div class="stage">
+      <div>
+        <div class="tabs">
+          <div role="tablist" aria-label="보기 전환">
+            <button type="button" role="tab" id="tabMap" aria-selected="true" aria-controls="mapWrap">지도</button>
+            <button type="button" role="tab" id="tabSeq" aria-selected="false" aria-controls="seqWrap" tabindex="-1">시퀀스</button>
+          </div>
+          <ul class="legend" id="legend" aria-label="칩 색 범례"></ul>
+        </div>
+        <div class="map-wrap" id="mapWrap" role="tabpanel" aria-labelledby="tabMap">
+          <div class="zoom" role="group" aria-label="지도 확대·축소">
+            <button type="button" id="zoomOut" aria-label="축소">−</button>
+            <button type="button" id="zoomIn" aria-label="확대">+</button>
+            <button type="button" id="zoomFit">전체</button>
+            <button type="button" id="zoomFollow" aria-pressed="true">따라가기</button>
+          </div>
+          <svg id="map" viewBox="0 0 640 380" role="img" aria-label="참여자 배치도. 현재 단계의 칩이 출발에서 도착으로 이동한다. 옆 설명이 같은 내용을 글로 담는다."></svg>
+        </div>
+        <div class="seq-wrap" id="seqWrap" role="tabpanel" aria-labelledby="tabSeq" hidden>
+          <svg id="seqHead" aria-hidden="true"></svg>
+          <div class="seq-scroll" id="seqScroll"><svg id="seq" role="img" aria-label="단계별 시퀀스 다이어그램. 옆 설명이 같은 내용을 글로 담는다."></svg></div>
+        </div>
+      </div>
+      <div>
+        <div class="detail">
+          <div class="muted" id="dWho"></div>
+          <h3 id="dTitle"></h3>
+          <p id="dBody"></p>
+          <p class="muted" id="dRef"></p>
+        </div>
+        <div class="rows">
+          <h3 id="rowsTitle"></h3>
+          <ol id="rows"></ol>
+        </div>
+      </div>
+    </div>
+    <p class="nojs muted">이 그림은 JavaScript가 켜져 있어야 그려진다.</p>
+  </section>
+</main>
+<script>
+(() => {
+  // ===== SAMPLE: replace everything in this block with verified facts. =====
+  const LANES = ["보내는 사람", "택배 앱", "집하 센터", "배송 기사", "받는 사람", "알림"];
+  // Map positions inside the 640x380 viewBox. Keep 70px from the left/right edge and 30px from top/bottom.
+  const NODES = [
+    { x: 80, y: 175, sub: "편의점 접수" }, { x: 245, y: 80, sub: "운송장" }, { x: 420, y: 175, sub: "분류" },
+    { x: 570, y: 290, sub: "지역 배송" }, { x: 245, y: 300, sub: "문 앞" }, { x: 570, y: 80, sub: "문자" },
+  ];
+  const KINDS = {
+    data: { label: "정보", color: "#7a5af5" }, goods: { label: "물건", color: "#1b7f4d" },
+    notify: { label: "알림", color: "#2f6fde" }, lost: { label: "실패", color: "#b3261e" },
+  };
+  // kind=lost stops the chip halfway and shows an X. from===to draws a self step.
+  const STEPS = [
+    { from: 0, to: 1, kind: "data", chip: "접수", label: "운송장 등록", title: "접수", body: "SAMPLE 무엇이 무엇을 넘기나.", ref: "근거 [1]", row: 0 },
+    { from: 0, to: 2, kind: "goods", chip: "상자", label: "상자 인계", title: "집하", body: "SAMPLE", ref: "근거 [2]", row: 1 },
+    { from: 2, to: 2, kind: "data", chip: "분류", label: "지역 코드로 분류", title: "분류", body: "SAMPLE", ref: "근거 [2]" },
+    { from: 2, to: 3, kind: "goods", chip: "상자", label: "배송 출발", title: "출발", body: "SAMPLE", ref: "근거 [3]", row: 2 },
+    { from: 1, to: 5, kind: "notify", chip: "문자", label: "출발 알림", title: "알림", body: "SAMPLE", ref: "근거 [3]" },
+    { from: 3, to: 4, kind: "lost", chip: "부재", label: "부재 → 전달 실패", title: "실패 경로", body: "SAMPLE 실패하면 어디서 멈추나.", ref: "근거 [4]", row: 3 },
+    { from: 3, to: 4, kind: "goods", chip: "상자", label: "재배송", title: "도착", body: "SAMPLE", ref: "근거 [4]", row: 4 },
+  ];
+  const ROWS_TITLE = "배송 기록";
+  const COLUMNS = ["시각", "상태", "위치"];
+  // One row per data effect; each must be revealed by exactly one step (checked below).
+  const ROWS = [
+    { kind: "data", cells: ["09:10", "접수", "편의점"] }, { kind: "goods", cells: ["13:40", "집하", "센터"] },
+    { kind: "goods", cells: ["08:20", "배송 출발", "지역"] }, { kind: "lost", cells: ["14:05", "부재", "문 앞"] },
+    { kind: "goods", cells: ["18:30", "배송 완료", "문 앞"] },
+  ];
+  // ===== end SAMPLE =====
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const $ = (id) => document.getElementById(id);
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); parent.appendChild(n); return n; };
+
+  const revealed = STEPS.filter((s) => s.row !== undefined).map((s) => s.row).sort((a, b) => a - b);
+  console.assert(revealed.length === ROWS.length && revealed.every((r, k) => r === k), "each data row is revealed by exactly one step");
+  console.assert(STEPS.every((s) => KINDS[s.kind] && LANES[s.from] && LANES[s.to]), "every step has a known kind and lanes");
+  // Legend.
+  for (const k of Object.values(KINDS)) { const s = document.createElement("li"); const i = document.createElement("i"); i.style.background = k.color; s.append(i, k.label); $("legend").appendChild(s); }
+
+  // Data table.
+  const grid = `22px repeat(${COLUMNS.length - 1}, minmax(56px, auto)) minmax(0, 1fr)`;
+  const rowLi = (cells, cls) => { const li = document.createElement("li"); li.className = cls || ""; li.style.gridTemplateColumns = grid; cells.forEach((c) => { const s = document.createElement("span"); if (c instanceof Node) s.appendChild(c); else s.textContent = c; li.appendChild(s); }); $("rows").appendChild(li); return li; };
+  $("rowsTitle").textContent = ROWS_TITLE;
+  const kindHead = document.createElement("span"); kindHead.className = "sr-only"; kindHead.textContent = "종류";
+  rowLi([kindHead, ...COLUMNS], "head");
+  const rowEls = ROWS.map((r) => { const d = document.createElement("span"); d.className = "dot"; d.style.background = KINDS[r.kind].color; d.setAttribute("role", "img"); d.setAttribute("aria-label", KINDS[r.kind].label); d.title = KINDS[r.kind].label; return rowLi([d, ...r.cells]); });
+  const emptyLi = document.createElement("li"); emptyLi.className = "empty"; emptyLi.textContent = "아직 비어 있다."; $("rows").appendChild(emptyLi);
+
+  // Map.
+  const cam = el("g", { id: "cam" }, $("map"));
+  const edgeKey = (a, b) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+  const edges = {};
+  STEPS.forEach((s) => {
+    const k = edgeKey(s.from, s.to);
+    if (s.from === s.to || edges[k]) return;
+    const a = NODES[s.from], b = NODES[s.to];
+    edges[k] = el("path", { class: "edge", d: `M ${a.x} ${a.y} L ${b.x} ${b.y}` }, cam);
+  });
+  const nodeEls = NODES.map((n, i) => {
+    const g = el("g", { class: "node" }, cam);
+    el("rect", { x: n.x - 66, y: n.y - 24, width: 132, height: 48, rx: 10 }, g);
+    el("text", { class: "name", x: n.x, y: n.y - 3, "text-anchor": "middle" }, g).textContent = LANES[i];
+    el("text", { class: "sub", x: n.x, y: n.y + 15, "text-anchor": "middle" }, g).textContent = n.sub;
+    return g;
+  });
+  const chip = el("g", { class: "chip" }, cam);
+  const chipRect = el("rect", { x: -34, y: -11, width: 68, height: 22 }, chip);
+  const chipText = el("text", { x: 0, y: 4, "text-anchor": "middle" }, chip);
+  // The failure mark sits beside the chip, not on it, so it never shares the chip's colour or covers its label.
+  const chipX = el("g", { class: "x", visibility: "hidden" }, chip);
+  el("circle", { cx: 46, cy: 0, r: 10 }, chipX);
+  el("path", { d: "M 41 -5 l 10 10 M 51 -5 l -10 10" }, chipX);
+  let chipAnim = null;
+
+  // Sequence.
+  const LW = 100, LX = (i) => 56 + i * LW, TOP = 14, ROW = 40, HEAD_H = 44;
+  const W = LX(LANES.length - 1) + 52, H = TOP + STEPS.length * ROW + 24;
+  for (const [node, h] of [[$("seq"), H], [$("seqHead"), HEAD_H]]) { node.setAttribute("viewBox", `0 0 ${W} ${h}`); node.setAttribute("width", W); node.setAttribute("height", h); }
+  LANES.forEach((name, i) => {
+    el("line", { class: "lane-line", x1: LX(i), y1: 0, x2: LX(i), y2: H - 8 }, $("seq"));
+    const g = el("g", { class: "lane-head" }, $("seqHead"));
+    el("rect", { x: LX(i) - 46, y: 8, width: 92, height: 28, rx: 6 }, g);
+    el("text", { x: LX(i), y: 27, "text-anchor": "middle" }, g).textContent = name;
+  });
+  const seqRows = STEPS.map((s, i) => {
+    const y = TOP + i * ROW + 14, x1 = LX(s.from), x2 = LX(s.to);
+    const g = el("g", { class: "msg future" }, $("seq"));
+    let path, lx = (x1 + x2) / 2, anchor = "middle";
+    if (s.from === s.to) {
+      path = el("path", { d: `M ${x1} ${y} h 34 v 14 h -28` }, g);
+      el("polygon", { points: `${x1 + 4},${y + 14} ${x1 + 11},${y + 10} ${x1 + 11},${y + 18}` }, g);
+      lx = x1 + 40; anchor = "start";
+    } else if (s.kind === "lost") {
+      const mid = (x1 + x2) / 2;
+      path = el("path", { d: `M ${x1} ${y + 8} L ${mid} ${y + 8}` }, g);
+      el("path", { class: "cross", d: `M ${mid - 6} ${y + 2} l 12 12 M ${mid + 6} ${y + 2} l -12 12` }, g);
+      lx = mid + 12; anchor = "start";
+    } else {
+      const dir = x2 > x1 ? 1 : -1;
+      path = el("path", { d: `M ${x1} ${y + 8} L ${x2 - dir * 7} ${y + 8}` }, g);
+      el("polygon", { points: `${x2},${y + 8} ${x2 - dir * 8},${y + 4} ${x2 - dir * 8},${y + 12}` }, g);
+    }
+    el("text", { x: 14, y: y + 12, "font-size": "11" }, g).textContent = String(i + 1);
+    el("text", { x: lx, y: y + 2, "text-anchor": anchor }, g).textContent = s.label;
+    return { g, path };
+  });
+
+  // Camera: follow mode zooms by pair distance; manual mode keeps the reader's zoom but stays centred on the pair.
+  const Z_MIN = 1, Z_MAX = 2, Z_STEP = 0.25;
+  let follow = true, manualZ = 1, cur = 0, timer = null, speed = 1;
+  const applyCam = () => {
+    const s = STEPS[cur], a = NODES[s.from], b = NODES[s.to];
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    // Fit both boxes (132x48) plus a margin on each axis separately, so a tall pair is not cut vertically.
+    const fit = Math.min(640 / (Math.abs(b.x - a.x) + 132 + 40), 380 / (Math.abs(b.y - a.y) + 48 + 80));
+    const z = follow ? Math.min(1.3, Math.max(1, fit)) : manualZ;
+    const tx = Math.max(640 - 640 * z, Math.min(0, 320 - mx * z)), ty = Math.max(380 - 380 * z, Math.min(0, 190 - my * z));
+    cam.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`;
+    $("zoomOut").disabled = !follow && manualZ <= Z_MIN;
+    $("zoomIn").disabled = !follow && manualZ >= Z_MAX;
+    $("zoomFollow").setAttribute("aria-pressed", String(follow));
+  };
+  const currentZ = () => { const m = /scale\(([\d.]+)\)/.exec(cam.style.transform); return m ? Number(m[1]) : 1; };
+  const setManual = (z) => { follow = false; manualZ = Math.min(Z_MAX, Math.max(Z_MIN, Math.round(z * 4) / 4)); applyCam(); };
+
+  const drawMap = (animate) => {
+    const s = STEPS[cur], a = NODES[s.from], b = NODES[s.to];
+    Object.values(edges).forEach((e) => e.classList.remove("is-active"));
+    if (s.from !== s.to) edges[edgeKey(s.from, s.to)].classList.add("is-active");
+    nodeEls.forEach((g, k) => g.classList.toggle("is-on", k === s.from || k === s.to));
+    chipRect.setAttribute("fill", KINDS[s.kind].color);
+    chipText.textContent = s.chip;
+    // The chip rides between box edges, not centres, so it never covers a node name.
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+    // rim = box edge along the direction + the chip's own half-extent along it + a gap.
+    // Capped at half the distance so a close pair never makes the chip run backwards.
+    const rim = Math.min(len / 2, Math.min(ux ? 66 / Math.abs(ux) : Infinity, uy ? 24 / Math.abs(uy) : Infinity) + 34 * Math.abs(ux) + 11 * Math.abs(uy) + 6);
+    const self = s.from === s.to, lost = s.kind === "lost";
+    // A self step's chip pops above the box, or below it when the box is too close to the top edge.
+    const up = a.y >= 80 ? -1 : 1;
+    const start = self ? { x: a.x, y: a.y + up * 24 } : { x: a.x + ux * rim, y: a.y + uy * rim };
+    const end = self ? { x: a.x, y: a.y + up * 46 } : lost ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } : { x: b.x - ux * rim, y: b.y - uy * rim };
+    const at = (p) => `translate(${p.x}px, ${p.y}px)`;
+    chipX.setAttribute("visibility", "hidden");
+    if (chipAnim) chipAnim.cancel();
+    if (animate && !reduce) {
+      chipAnim = chip.animate([{ transform: at(start) }, { transform: at(end) }], { duration: 900 / speed, easing: "cubic-bezier(0.45, 0, 0.25, 1)", fill: "forwards" });
+      if (lost) chipAnim.onfinish = () => chipX.setAttribute("visibility", "visible");
+    } else {
+      chip.style.transform = at(end); chipAnim = null;
+      if (lost) chipX.setAttribute("visibility", "visible");
+    }
+    applyCam();
+  };
+
+  const draw = (animate) => {
+    drawMap(animate);
+    seqRows.forEach((r, k) => { r.g.classList.toggle("future", k > cur); r.g.classList.toggle("now", k === cur); });
+    if (animate && !reduce) {
+      const p = seqRows[cur].path, len = p.getTotalLength();
+      p.animate([{ strokeDasharray: `${len} ${len}`, strokeDashoffset: len }, { strokeDasharray: `${len} ${len}`, strokeDashoffset: 0 }], { duration: 420 / speed, easing: "cubic-bezier(0.16, 1, 0.3, 1)" });
+    }
+    const s = STEPS[cur];
+    // Kind, label and node subtitles are otherwise only inside the SVGs, so the text panel carries them too.
+    const who = (i) => `${LANES[i]}(${NODES[i].sub})`;
+    $("dWho").textContent = `${cur + 1}. ${who(s.from)} → ${who(s.to)} · ${KINDS[s.kind].label} · ${s.label}`;
+    $("dTitle").textContent = s.title; $("dBody").textContent = s.body; $("dRef").textContent = s.ref || "";
+    $("announce").textContent = `${cur + 1}/${STEPS.length}. ${s.title}: ${s.label}.` + (s.row !== undefined ? ` ${ROWS_TITLE} 한 줄 추가.` : "");
+    const shown = STEPS.slice(0, cur + 1).filter((x) => x.row !== undefined).map((x) => x.row);
+    rowEls.forEach((li, k) => { li.classList.toggle("future", !shown.includes(k)); li.classList.toggle("fresh", s.row === k); });
+    emptyLi.style.display = shown.length ? "none" : "";
+    $("counter").textContent = `${cur + 1} / ${STEPS.length}`;
+    $("prev").disabled = cur === 0; $("next").disabled = cur === STEPS.length - 1;
+    $("seqScroll").scrollTo({ top: Math.max(0, TOP + cur * ROW - $("seqScroll").clientHeight / 2), behavior: reduce ? "auto" : "smooth" });
+  };
+
+  const stop = () => { clearTimeout(timer); timer = null; $("play").textContent = "재생"; };
+  const tick = () => { if (cur >= STEPS.length - 1) return stop(); cur += 1; draw(true); timer = setTimeout(tick, 1800 / speed); };
+  const toggle = () => {
+    if (timer) return stop();
+    if (cur >= STEPS.length - 1) { cur = 0; draw(true); }
+    $("play").textContent = "멈춤"; timer = setTimeout(tick, 1800 / speed);
+  };
+  const go = (d) => { stop(); cur = Math.min(STEPS.length - 1, Math.max(0, cur + d)); draw(d > 0); };
+  const show = (mapOn) => {
+    $("tabMap").setAttribute("aria-selected", String(mapOn)); $("tabSeq").setAttribute("aria-selected", String(!mapOn));
+    $("tabMap").tabIndex = mapOn ? 0 : -1; $("tabSeq").tabIndex = mapOn ? -1 : 0;
+    $("mapWrap").hidden = !mapOn; $("seqWrap").hidden = mapOn;
+    if (!mapOn) draw(false);
+  };
+  $("play").addEventListener("click", toggle);
+  $("next").addEventListener("click", () => go(1));
+  $("prev").addEventListener("click", () => go(-1));
+  $("reset").addEventListener("click", () => { stop(); cur = 0; draw(false); });
+  $("speed").addEventListener("click", (e) => { speed = speed === 1 ? 2 : 1; e.currentTarget.textContent = `${speed}×`; });
+  $("tabMap").addEventListener("click", () => show(true));
+  $("tabSeq").addEventListener("click", () => show(false));
+  $("zoomIn").addEventListener("click", () => setManual((follow ? currentZ() : manualZ) + Z_STEP));
+  $("zoomOut").addEventListener("click", () => setManual((follow ? currentZ() : manualZ) - Z_STEP));
+  $("zoomFit").addEventListener("click", () => setManual(1));
+  $("zoomFollow").addEventListener("click", () => { follow = !follow; if (!follow) manualZ = currentZ(); applyCam(); });
+  // A mouse click leaves focus on the button, which would turn the next Space into a second click of it.
+  // Pointer clicks (detail > 0) drop that focus; keyboard activation (detail 0) keeps it.
+  document.querySelectorAll("button").forEach((b) => b.addEventListener("click", (e) => { if (e.detail > 0) b.blur(); }));
+  document.addEventListener("keydown", (e) => {
+    const t = e.target instanceof HTMLElement ? e.target : null;
+    if (t && t.closest("input, textarea, select, [contenteditable]")) return;
+    if (t && t.getAttribute("role") === "tab" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+      const mapOn = t.id !== "tabMap"; show(mapOn); $(mapOn ? "tabMap" : "tabSeq").focus(); e.preventDefault(); return;
+    }
+    if (e.code === "Space") {
+      if (t && t.closest("button, summary")) return; // keyboard users activate the focused control
+      e.preventDefault(); if (!e.repeat) toggle();
+    }
+    else if (e.key === "ArrowRight") go(1);
+    else if (e.key === "ArrowLeft") go(-1);
+  });
+  draw(false);
+  document.documentElement.classList.add("js");
+})();
+</script>
+</body>
+</html>

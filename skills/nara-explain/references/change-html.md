@@ -2,6 +2,8 @@
 
 A change (PR, branch, commit, range, working tree) is explained as one self-contained HTML file by default. Markdown only when the user asks for it, for Brief mode, or when the target is a chat message.
 
+The template and the checker below are for Tech peer and New member audiences. For Non-tech and External audiences follow [formats-by-audience](formats-by-audience.md) instead: only the evidence rules in this file still apply.
+
 Start from [the template](../assets/change-template.html). Before delivery run `python3 <this skill>/assets/check_explain.py <file>`; a FAIL line means the file is not done. Save to `docs/explain/<target>.html` (`<target>` = short SHA, `pr-<N>`, or kebab-case feature name; add `-2` on collision, ask before overwriting a path the user named).
 
 ## Evidence before writing

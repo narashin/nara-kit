@@ -30,6 +30,8 @@ Infer from user message. If not stated, ask.
 | Method | Function body + call context + I/O |
 | Change (PR, branch, commit, range, working tree) | One self-contained HTML file: [change-html](references/change-html.md) |
 
+Change scope with no stated audience goes to Tech peer without asking (template path). Otherwise, when the result will be an HTML page whose format is chosen (Step 3), ask the audience and the format in one message, using the table in [formats-by-audience](references/formats-by-audience.md).
+
 ## Step 2: Explore code
 
 Read code before explaining — no guessing. If nothing found, report "no results" and stop.
@@ -39,14 +41,14 @@ Read code before explaining — no guessing. If nothing found, report "no result
 Use audience-matched format. Default to Tech peer if audience not specified.
 
 - **Brief mode**: when user says "짧게", "슬랙에 올릴", or "한 문단" — max 5 bullet points.
-- **Change scope**: HTML file at `docs/explain/<target>.html`, built from the template and passed through `assets/check_explain.py` before delivery. Markdown only when asked ("md로", "마크다운") or in Brief mode.
-- **Other scopes**: Markdown document. Save to `docs/explain-<target>.md` when it runs past about 40 lines or the user asks for a file. `<target>` is the short SHA, `pr-<N>`, or the feature name in kebab-case.
+- **Change scope**: HTML file at `docs/explain/<target>.html`. For Tech peer and New member, build it from the change template and pass it through `assets/check_explain.py` before delivery. For Non-tech and External, choose a format from formats-by-audience instead; the checker does not apply and the receipt says so. Markdown only when asked ("md로", "마크다운") or in Brief mode.
+- **Other scopes**: Markdown document by default. Save to `docs/explain-<target>.md` when it runs past about 40 lines or the user asks for a file. When the user asks for a page, pictures, or something to share or present ("HTML로", "그림으로", "공유용", "발표 자료"), write one HTML page at `docs/explain/<target>.html` in a format chosen from formats-by-audience. `<target>` is the short SHA, `pr-<N>`, or the feature name in kebab-case.
 - **Reply**: when a file was written, the reply is a receipt (path, pinned `base..head` for changes, checker result, what was not verified), not the document again.
 
 ## Rules
 
 - Only state facts verified from code. Mark uncertain content `[UNVERIFIED]`. Facts taken from docs (CHANGELOG, ADR, README) are allowed when cited as such.
 - Non-tech audience: no code snippets.
-- Change scope: cite each substantive claim as `path:line` (head lines; deleted code as `base:path:line`).
+- Change scope: cite each substantive claim as `path:line` (head lines; deleted code as `base:path:line`). For an External audience the citations go in the receipt, not on the page.
 
-**Load** [references/change-html.md](references/change-html.md) for change scope. **Load** [references/output-formats.md](references/output-formats.md) for the other audience templates (Tech Peer / New Member / Non-tech / External / Brief) and the Markdown change layout used only when Markdown is requested.
+**Load** [references/change-html.md](references/change-html.md) for change scope. **Load** [references/formats-by-audience.md](references/formats-by-audience.md) before writing any HTML page whose format is chosen. **Load** [references/output-formats.md](references/output-formats.md) for the other audience templates (Tech Peer / New Member / Non-tech / External / Brief) and the Markdown change layout used only when Markdown is requested.

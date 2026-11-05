@@ -14,6 +14,7 @@ Generate shareable explanations of code, features, projects, or PRs tailored to 
 
 - **USE FOR:** "explain", "설명해줘", "explain to PM", "발표 자료", "온보딩 문서", "이 PR 뭐 바꿨는지 설명해줘", "이 커밋 설명", "diff 설명".
 - PR·커밋·브랜치·작업 트리 설명은 **HTML 한 장**(`docs/explain/<대상>.html`)으로 나온다. 비교 기준(base/head SHA)을 먼저 고정하고 주장마다 `path:line`을 단다. 순서는 배경, 직관, 흐름, 꼭 볼 곳, 이해 확인. "md로"라고 하면 Markdown. 만든 파일은 `assets/check_explain.py`로 정적 검사한다.
+- 기능·개념을 "그림으로", "공유용", "발표 자료"로 요청하거나 PR을 기획자·발표 청중에게 설명하면, 대상별 추천 형식표(`references/formats-by-audience.md`)에서 형식을 함께 고른 뒤 HTML 한 장으로 낸다. 참여자가 주고받는 흐름은 지도와 시퀀스를 단계별로 재생하는 스텝 재생기로 그린다.
 - **DO NOT USE FOR:** own study notes (use nara-eli5-note), code review, documentation generation, a single repo question answered with path:line evidence (use nara-ask-repo).
 
 ## 더 보기
