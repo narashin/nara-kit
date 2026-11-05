@@ -2,7 +2,7 @@
 
 A change (PR, branch, commit, range, working tree) is explained as one self-contained HTML file by default. Markdown only when the user asks for it, for Brief mode, or when the target is a chat message.
 
-The template and the checker below are for Tech peer and New member audiences. For Non-tech and External audiences follow [formats-by-audience](formats-by-audience.md) instead: only the evidence rules in this file still apply.
+The template and the checker below are for Tech peer and New member audiences. For Non-tech and External audiences follow [formats-by-audience](formats-by-audience.md) instead: only the evidence rules and the claim check in this file still apply.
 
 Start from [the template](../assets/change-template.html). Before delivery run `python3 <this skill>/assets/check_explain.py <file>`; a FAIL line means the file is not done. Save to `docs/explain/<target>.html` (`<target>` = short SHA, `pr-<N>`, or kebab-case feature name; add `-2` on collision, ask before overwriting a path the user named).
 
@@ -44,8 +44,12 @@ Draw only when a figure carries something prose cannot: before/after structure, 
 - Light and dark both readable (the template's tokens). No horizontal page scroll at 390 px; wide tables scroll inside their own wrapper.
 - Hand-drawn SVG whose look matters, or an interactive figure: offer `/nara-browser-verify` on the file. The static checker does not prove rendering, so the receipt says "render not checked" unless that ran.
 
+## Claim check
+
+After the static checker passes, follow [claim-check](claim-check.md): a fresh reader that did not write the file lists claims their evidence does not support. Always for Non-tech and External audiences, on request for the others. It reports; it does not edit the file.
+
 ## Receipt
 
-The chat reply is a receipt, not the document: the file path, the pinned `base..head`, the checker result, and what was not verified.
+The chat reply is a receipt, not the document: the file path, the pinned `base..head`, the checker result, the claim check line, and what was not verified.
 
 Provenance: adapted from tiger-kit `tk-explain-diff` and its `references/html-output.md` (MTGVim/tiger-kit `5e35b6a`, MIT). Kept: evidence pinning, the four-part teaching order, attention surface, invariants, figure honesty, offline single-file and no-JS rules, static checks. Omitted: tiger-kit's shared theme assets and settings file, the experimental `standard | dialogue | dialogue-eli5 | all` tabs, `.tigerkit/` paths.

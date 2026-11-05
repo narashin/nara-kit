@@ -41,7 +41,7 @@ Read code before explaining — no guessing. If nothing found, report "no result
 Use audience-matched format. Default to Tech peer if audience not specified.
 
 - **Brief mode**: when user says "짧게", "슬랙에 올릴", or "한 문단" — max 5 bullet points.
-- **Change scope**: HTML file at `docs/explain/<target>.html`. For Tech peer and New member, build it from the change template and pass it through `assets/check_explain.py` before delivery. For Non-tech and External, choose a format from formats-by-audience instead; the checker does not apply and the receipt says so. Markdown only when asked ("md로", "마크다운") or in Brief mode.
+- **Change scope**: HTML file at `docs/explain/<target>.html`. For Tech peer and New member, build it from the change template and pass it through `assets/check_explain.py` before delivery. For Non-tech and External, choose a format from formats-by-audience instead; the checker does not apply and the receipt says so. Change-scope pages then go through the claim check in change-html: always for Non-tech and External, on request otherwise. Markdown only when asked ("md로", "마크다운") or in Brief mode.
 - **Other scopes**: Markdown document by default. Save to `docs/explain-<target>.md` when it runs past about 40 lines or the user asks for a file. When the user asks for a page, pictures, or something to share or present ("HTML로", "그림으로", "공유용", "발표 자료"), write one HTML page at `docs/explain/<target>.html` in a format chosen from formats-by-audience. `<target>` is the short SHA, `pr-<N>`, or the feature name in kebab-case.
 - **Reply**: when a file was written, the reply is a receipt (path, pinned `base..head` for changes, checker result, what was not verified), not the document again.
 
