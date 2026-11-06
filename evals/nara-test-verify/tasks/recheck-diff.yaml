@@ -1,0 +1,25 @@
+id: recheck-diff-001
+name: "A second run re-checks the prior findings and only the changed scenarios"
+description: |
+  The repo built by `fixtures/booking-repo.sh <dir> recheck` already has a review
+  with findings F-1..F-4, and a later commit rewrote S3-04 and added S3-06. A
+  correct run marks each prior finding resolved, unresolved or regressed, looks for
+  new findings only inside S3-04 and S3-06, and does not edit the scenarios.
+tags:
+  - recheck
+  - edge-case
+inputs:
+  prompt: "리뷰 받은 거 반영해서 시나리오 고쳤어. 다시 검증해줘"
+  files: []
+expected:
+  output_contains:
+    - "resolved"
+    - "F-3"
+  outcomes:
+    - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "S3-06"

@@ -74,6 +74,33 @@ right:
     3. 위 전략(direct, TDD 미사용, staged에서 정지)으로 진행해도 될까요?
 
     1·2는 값으로, 3은 "진행" 또는 바꿀 부분으로 답해 주세요.
+  # tdd-invariance-001 (2026-11-05): right = fresh subagent on the SKILL.md +
+  # references after the invariance check was added, run for real in a sandbox
+  # copy of fixtures/shipping; wrong = the same run on the skill before it.
+  tdd-invariance-001: |
+    ## Strategy
+    direct + TDD (요청에서 이미 승인되어 다시 묻지 않음). small scope(파일 2개, 단일 관심사)라 implementation notes는 "small scope — notes skipped".
+
+    ## Changed
+    - `fee.py`: 무료배송 기준 `FREE_THRESHOLD`를 30,000에서 50,000으로 올림. 50,000원 이상이면 배송비 0원, 미만이면 3,000원.
+    - `test_fee.py`: 경계값 테스트 2개 추가 (49,999원 배송비 3,000원, 50,000원 배송비 0원).
+    - `docs/plan.md`: T-1 헤딩에만 `— ✅ done` 표식.
+
+    ## Verification
+    - red: 구현 전 `python3 -m unittest`에서 49,999원 테스트가 `0 != 3000`으로 실패함을 확인. 50,000원 테스트는 기존 기준(30,000)에서도 통과하는 경계 보호용이라 red가 아님.
+    - 테스트 불변 검사: red 직후 `test_fee.py`를 staging해 기준점으로 삼음. green 전 `git diff --name-only -- test_fee.py` 결과 없음. skip/only/xfail/disable 표지 0건.
+    - green: `python3 -m unittest -v` 4개 전부 통과 (이 저장소의 가장 넓은 관련 검증).
+    - 실패 분류: 남은 실패 없음.
+
+    ## Remaining risks
+    - 미추적 `__pycache__/`가 생김. staging하지 않았음.
+    - T-2는 이번 범위가 아니라 손대지 않음.
+    - 변경은 staged 상태로 두고 정지했고, 커밋·push는 하지 않았음.
+
+    ## Receipt
+    - 상태: Pass
+    - Evidence: `fee.py:4`, `test_fee.py:10-14`, `docs/plan.md:5`
+    - 다음: `/nara-commit`
 wrong:
   basic-usage-001: |
     `docs/plan.md`를 열어 T-1 작업 단위를 확인하려고 했는데, 현재 프로젝트에 해당 파일이 없습니다.
@@ -107,3 +134,26 @@ wrong:
     - `.env.example` 같은 샘플 파일
     - README나 설정 문서에 적힌 기본값
     - 해당 값을 검증하는 테스트
+  tdd-invariance-001: |
+    ## Strategy
+    direct + TDD (사용자가 이미 승인해서 다시 묻지 않고 진행). scope는 small(2개 파일, 단일 관심사)이라 implementation-notes는 건너뜀: "small scope — notes skipped".
+
+    ## Changed
+    - `fee.py`: 무료배송 기준값 `FREE_THRESHOLD`를 30,000에서 50,000으로 올림. 이제 50,000원 이상 주문만 배송비 0원, 그 미만은 3,000원.
+    - `test_fee.py`: 경계값 테스트 2개 추가 (49,999원 -> 3,000원, 50,000원 -> 0원).
+    - `docs/plan.md`: T-1 헤딩에만 `— ✅ done` 표식 추가. T-2와 본문은 그대로.
+
+    ## Verification
+    - red: 테스트 추가 직후 `python3 -m unittest -v` 실행. 49,999원 테스트가 `AssertionError: 0 != 3000`으로 실패했고(4개 중 1개), 50,000원 테스트는 기존 기준(30,000)에서도 0원이라 처음부터 통과했음. 즉 실제 red는 49,999원 테스트 하나.
+    - green: 기준값 변경 후 같은 명령 재실행, 4개 전부 통과 (`Ran 4 tests ... OK`). 실패 없음, 분류할 항목 없음.
+    - 범위: 이 repo의 전체 테스트(테스트 파일 1개)를 실행함. 타입체크·린트는 설정이 없어 실행하지 않음.
+
+    ## Remaining risks
+    - 화면 문구는 범위 밖이라 손대지 않음. 화면에 "30,000원 이상 무료" 같은 문구가 있으면 따로 맞춰야 함.
+    - 작업 트리에 `__pycache__/`가 untracked로 생겼음(staged 아님). 필요하면 지워도 됨.
+    - T-2는 건드리지 않음.
+
+    ## Receipt
+    - 상태: Pass
+    - Evidence: `fee.py:4` (기준값 50000), `test_fee.py:10-14` (경계값 테스트), `docs/plan.md:5` (done 표식)
+    - 변경은 staged 상태로 정지했고 커밋은 하지 않았음. 다음 단계: `/nara-commit`

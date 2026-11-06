@@ -12,7 +12,7 @@ metrics:
   - name: task_completion
     weight: 1.0
     threshold: 0.8
-    description: Did the skill dispatch QA Lead, Developer, and Red Team personas and produce a unified verdict?
+    description: Did the skill run one critic over fixed inputs, tag each finding with its fix target, and give a verdict without editing scenarios?
 graders:
   - type: code
     name: real_run

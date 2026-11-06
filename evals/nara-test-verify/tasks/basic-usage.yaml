@@ -1,20 +1,17 @@
 id: basic-usage-001
-name: "Verify test scenarios with 3-persona parallel review"
+name: "Named scenarios file is missing: stop and point to the producer"
 description: |
-  Verifies that the skill dispatches QA Lead and Developer agents in parallel (Phase 1),
-  then Red Team agent (Phase 2), and synthesizes a unified verdict (PASS/NEEDS_WORK/FAIL)
-  into docs/test-scenarios/scenarios-review.md.
+  The named scenarios file does not exist in this run. A correct run says so,
+  writes no review and no verdict, and names nara-test-discover as the way to
+  produce the file. The full review path is covered by critic-lenses-001.
 tags:
   - basic
-  - happy-path
 inputs:
   prompt: "시나리오 검증해줘 docs/test-scenarios/scenarios-detailed.md"
   files: []
 expected:
   output_contains:
-    - "QA Lead"
-    - "Developer"
-    - "Red Team"
+    - "nara-test-discover"
   output_not_contains:
     - "describe("
     - "it("
@@ -26,4 +23,4 @@ graders:
     name: task_regex
     config:
       regex_match:
-        - "(?i)(QA Lead|Developer|Red Team|PASS|NEEDS_WORK|FAIL)"
+        - "(없|not found|NOT FOUND|찾지 못)"

@@ -1,0 +1,29 @@
+id: critic-lenses-001
+name: "One critic, two lenses, every finding says where to fix it"
+description: |
+  The repo built by `fixtures/booking-repo.sh <dir>` has requirements, a plan and a
+  discover-schema scenarios file with planted gaps. A correct run sends one critic
+  the fixed inputs (scenarios, requirement AC and edge cases, plan context, a
+  whitelist of code paths named in the plan), tags every finding with its lens and
+  its fix target, and keeps the skill read-only.
+tags:
+  - critic
+  - happy-path
+inputs:
+  prompt: "시나리오 검증해줘 docs/test-scenarios/scenarios-detailed.md"
+  files: []
+expected:
+  output_contains:
+    - "fix:"
+  output_not_contains:
+    - "Red Team"
+    - "QA Lead"
+  outcomes:
+    - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(PASS|NEEDS_WORK|FAIL)"
+        - "AC-3"

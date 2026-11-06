@@ -88,6 +88,46 @@ right:
     이 요청은 테스트 코드 작성이라 시나리오 검증 범위가 아닙니다.
 
     next: `/nara-test-implement` 로 요청해 주세요. 코드로 옮길 시나리오 문서가 없으면 `/nara-test-discover src/api/users.ts` 가 먼저입니다.
+  # critic-lenses-001 / recheck-diff-001 (2026-11-06): right = excerpts of fresh
+  # subagent runs on the one-critic SKILL.md in repos built by
+  # fixtures/booking-repo.sh; wrong = the same runs on the three-persona skill
+  # before the change. Excerpts keep the reply and report head verbatim.
+  critic-lenses-001: |
+    판정은 **FAIL**입니다. High 3건, Medium 3건, Low 2건이 나왔고, 리포트는 `docs/test-scenarios/scenarios-review.md`에 썼습니다.
+
+    # Test Scenario Review Report
+
+    - Source: scenarios-detailed.md
+    - Reviewer: critic (lenses: contract, survivor) · dispatch: inline (subagent spawn denied)
+
+    ## Summary Verdict
+    - Overall: FAIL
+
+    ## Findings
+    ### High
+    - F-1 [lens: contract] [fix: scenario] AC-3을 덮는 시나리오가 없다. S3-01~S3-05의 AC-ID는 AC-1, AC-2, AC-4뿐이고, plan이 구현 대상으로 적은 `Rooms.cancel`을 부르는 시나리오도 없다. → 10:00-11:00 예약 후 그 id로 취소하고 같은 시간을 다시 예약하면 성공한다
+    - F-2 [lens: survivor] [fix: scenario] S3-02는 새 예약의 시작이 기존 예약 안에 들어가는 경우만 본다. 기존 10:00-11:00 위에 09:30-11:30을 잡으면 예약이 성공한다. → 10:00-11:00 예약 뒤 09:30-11:30 예약 시 Conflict
+    - F-3 [lens: survivor] [fix: scenario] 예약 id가 `len(self._bookings) + 1`이라 취소 뒤 재사용된다. → 예약 둘 뒤 id 1 취소, 새 예약의 id가 2와 다르다
+
+    ## Action Items
+    - 시나리오 보강 → `nara-test-discover` 재실행: F-1, F-2, F-3, F-4, F-5, F-6, F-7, F-8
+  recheck-diff-001: |
+    재검증 결과는 NEEDS_WORK입니다. 이번에 반영하신 두 건은 해결됐는데, 고친 S3-06을 통과하고도 남는 버그가 하나 새로 보였습니다.
+
+    # Test Scenario Review Report
+
+    - Re-check of: 2026-11-01 · changed: S3-04, S3-06, 헤더 개수(S3 selected 5 → 6)
+    - Reviewer: critic (lenses: contract, survivor) · dispatch: inline (no subagent tool)
+
+    ## Prior Findings
+    - F-1: resolved — S3-04 기대가 `_bookings` 길이 대신 "같은 10:00-11:00 재예약 시 Conflict"라는 관찰 가능한 결과로 바뀌었다.
+    - F-2: resolved — S3-06이 AC-3(예약 → 취소 → 같은 시간 재예약 성공)을 덮는다.
+    - F-3: unresolved — S3-05는 바뀌지 않았고 여전히 응답 `status`가 `"confirmed"`라고 단정한다.
+    - F-4: unresolved — S3-05는 여전히 "S3-01 다음에"로 S3-01의 예약에 기대면서 "독립 실행: 가능"으로 표기돼 있다.
+
+    ## Findings
+    ### High
+    - F-5 [lens: survivor] [fix: scenario] [S3-06] 예약 하나만 만들고 취소하므로, 예약 id가 `len(self._bookings) + 1`로 매겨지는 결함이 살아남는다.
 wrong:
   basic-usage-001: |
     `docs/test-scenarios/scenarios-detailed.md` 파일을 열 수 없었어요. 현재 프로젝트에 해당 경로가 없는 것 같습니다.
@@ -117,3 +157,45 @@ wrong:
     - `src/api/users.ts`는 시나리오 문서가 아니라 입력 스키마(discover / golden-path) 판정 불가, 파일도 [NOT FOUND]
     - QA Lead · Developer · Red Team 리뷰 미실행, `docs/test-scenarios/scenarios-review.md` 미작성
     - next: 검증할 시나리오 파일 경로를 알려주세요. 아직 시나리오가 없다면 `nara-test-discover`로 먼저 발굴한 뒤 검증할 수 있습니다.
+  critic-lenses-001: |
+    시나리오 5건을 검증했고, 판정은 NEEDS_WORK입니다 (High 2건, Medium 5건).
+
+    # Test Scenario Review Report
+
+    - Source: scenarios-detailed.md
+    - Reviewers: QA Lead, Developer, Red Team
+    - dispatch: inline (no subagent tool). 서브에이전트 생성이 깊이 제한으로 거부되어 세 페르소나를 메인 세션에서 QA Lead, Developer, Red Team 순으로 실행했다.
+
+    ## Summary Verdict
+    - Overall: NEEDS_WORK (High 2건, Medium 5건)
+    - Key gaps:
+      1. 예약 취소(요구사항 AC-3)를 다루는 시나리오가 0건이다.
+
+    ## QA Lead Findings
+    ### High
+    - 예약 취소 커버리지 0건. 요구사항 AC-3(취소하면 그 시간을 다시 예약할 수 있다)에 대응하는 시나리오가 없다.
+
+    ## Red Team Findings
+    ### Surviving Bug Paths
+    - **감싸는 겹침이 이중 예약으로 통과한다 (실행으로 확인).** A 회의실 10:00-11:00 뒤 09:00-12:00을 예약하면 Conflict 없이 받아들여진다.
+
+    ## Consolidated Action Items
+    - [ ] 취소(AC-3) 시나리오 추가: 취소 후 재예약, 취소 후 id 고유성과 단건 삭제 (S3-08, S3-09 제안)
+  recheck-diff-001: |
+    다시 검증했습니다. 판정은 **NEEDS_WORK**입니다(High 2, Medium 6, Low 4).
+
+    # Test Scenario Review Report
+
+    - Source: scenarios-detailed.md (commit 3b2ddb6 "address review: rewrite S3-04, add S3-06")
+    - Reviewers: QA Lead, Developer, Red Team
+
+    ## Summary Verdict
+    - Prior review: Prior review found. 지적 4건 중 2건은 해소, 2건은 그대로 남았다.
+      - F-1 [S3-04] 내부 리스트 단정: 해소. 기대가 "같은 시간 재예약 시 Conflict"로 바뀌어 관찰 가능한 동작이 됐다.
+      - F-2 [AC-3] 취소 후 재예약 없음: 해소. S3-06 추가. 단, S3-06은 예약 1건만 다뤄 취소 뒤 id 재사용 버그를 잡지 못한다.
+      - F-3 [S3-05] 정의되지 않은 `status` 필드: 미해소, 이번에도 같은 결론.
+      - F-4 [S3-05] 독립 실행인데 S3-01에 의존: 미해소, 이번에도 같은 결론.
+
+    ## QA Lead Findings
+    ### High
+    - [S3-02, S3-04] AC-2 그룹이 "새 시작이 기존 구간 안"(S3-02)과 "완전히 같은 구간"(S3-04)만 다룬다.

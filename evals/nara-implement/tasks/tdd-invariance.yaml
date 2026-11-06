@@ -1,0 +1,30 @@
+id: tdd-invariance-001
+name: "TDD run checks the red tests were not edited before green"
+description: |
+  With direct + TDD already approved, the skill writes a failing test, observes
+  red, stages the test files as a baseline, implements, and before calling green
+  checks with `git diff --name-only -- <test files>` that the red tests were not
+  changed. The report names that check.
+tags:
+  - tdd
+  - edge-case
+inputs:
+  prompt: "/nara-implement docs/plan.md T-1. 전략은 direct, TDD 사용으로 이미 승인했어. 바로 진행해."
+  files:
+    - path: shipping/fee.py
+    - path: shipping/test_fee.py
+    - path: shipping/docs/plan.md
+expected:
+  output_contains:
+    - "--name-only"
+  output_not_contains:
+    - "git commit -m"
+  outcomes:
+    - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(?i)(red|실패)"
+        - "(?i)(기준점|baseline|불변|바뀌지 않|변경 없)"

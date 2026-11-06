@@ -50,7 +50,7 @@
 | `nara-browser-verify` | Judge browser-visible AC against a headless runtime — per-axis verdict from trusted input, network req/res, inspected screenshots / 브라우저 AC 런타임 판정 (축별 증거 기반) |
 | `nara-qa-sheet` | Single-file HTML checklist of screens a human must check by hand, for AC automation left `Unverifiable` / 자동 검증이 못 닿은 화면의 수동 QA 체크리스트 (체크·메모 브라우저 저장) |
 | `nara-test-discover` | Discover test scenarios for a feature or file / 테스트 시나리오 발굴 |
-| `nara-test-verify` | Review and validate test scenarios (3-persona review) / 테스트 시나리오 검증 |
+| `nara-test-verify` | Review and validate test scenarios (one critic, read-only) / 테스트 시나리오 검증 |
 | `nara-test-implement` | Implement tests from scenario documents / 시나리오 기반 테스트 구현 |
 | `nara-golden-path-discover` | Discover live golden-path E2E scenarios + Playwright-ready export / 라이브 골든패스 E2E 발굴 + Playwright export |
 | `nara-ui-diff` | Env-diff visual regression: QA/Prod baseline vs local target computed-style + rect diff (candidates only) / 환경 간 UI 회귀 비교 — computed-style·bounding-rect 차이 후보 |

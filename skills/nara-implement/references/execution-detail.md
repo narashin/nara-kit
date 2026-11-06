@@ -20,6 +20,10 @@
 
 의미 있는 공개 동작 경계를 골라 수직 slice 하나의 focused test를 쓰고, **실제 실행해 red를 관찰**한 뒤 최소 구현으로 green을 만들고 재실행한다. 핵심 loop는 `red → green`이며 refactor를 매 cycle 강제하지 않는다. 이미 통과하는 테스트를 red로 표현하거나, 내부 구현을 테스트하거나, 테스트를 위해 production API를 왜곡하지 않는다. 유용한 seam이 없으면 TDD를 강제하지 않는다.
 
+**테스트 불변 검사.** red를 관찰한 직후 그 테스트 파일들을 `git add`로 staging해 기준점으로 삼는다. green 판정 전에 `git diff --name-only -- <그 파일들>`(작업 트리 대 index라 `--cached`는 붙이지 않는다)로 기준점 이후 바뀐 파일이 있는지 보고, diff 안의 테스트 파일에 새로 생긴 skip·only·xfail·disable 표지도 본다. 바뀌었으면 되돌리거나, 바꾼 이유를 implementation notes의 `## Deviations`(small scope라 notes가 없으면 보고의 `## Verification`)에 남긴다. 이유 없이 바뀐 채로 green이라 부르지 않는다. 검사 명령과 결과는 `## Verification`에 한 줄로 쓴다. TDD가 아니면 검사를 건너뛰고 그 사실을 한 줄로 남긴다.
+
+`delegated` + TDD에서는 red 테스트 작성·red 관찰·기준점 staging을 현재 에이전트가 한 뒤 구현만 넘긴다. implementor에게 기준점 파일을 고치지 말라고 전하고, 돌아온 결과에 대한 불변 검사도 현재 에이전트가 직접 한다.
+
 ## 위임 정의
 
 `direct`는 현재 에이전트가 구현 책임을 직접 소유한다. context-mode·MCP·검색·정적 분석·브라우저·샌드박스·subprocess·테스트 러너·formatter·linter·typechecker 사용은 direct와 양립하며 delegation이 **아니다**.
@@ -50,6 +54,8 @@ Delegated 고려:
 ## Implementor 계약
 
 Implementor 한 명에게 전달한다: 목표·포함/제외 범위 · 관련 파일·진입점 · 확정된 결정과 승인된 TDD 여부 · 검증 명령·기대치 · 금지 행동 · 반환할 diff·검증 결과·남은 위험.
+
+"확정된 결정"에는 사용자가 답했거나 승인된 문서(plan, requirements, ADR)에 적힌 것만 넣는다. 사용자가 지나가며 말한 추측이나 이전 실패의 원인 짐작은 넣지 않는다. implementor가 확인할 가치가 있으면 `[가설]`을 붙여 따로 적고, 확인했는지를 반환 항목에 넣는다.
 
 Implementor는 다른 에이전트를 만들거나 재위임하지 않고, 사용자 호출형 nara-kit 스킬을 실행하지 않으며, 범위를 확대하거나 무관한 리팩터링을 섞지 않는다. commit·push·PR·merge·tag·release·publish도 하지 않는다.
 

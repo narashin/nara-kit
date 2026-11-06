@@ -2,7 +2,7 @@
 
 > 사람용 문서. Claude는 런타임에 이 파일을 읽지 않음 (SKILL.md + references만 로드). 호출·용도 안내.
 
-Verify test scenarios via parallel QA Lead, Developer, and Red Team review personas, then synthesize a unified verdict.
+Verify test scenarios with one critic over fixed inputs (contract coverage + surviving bugs), tag each finding with where to fix it, and give a verdict. Read-only.
 
 ## 호출
 
