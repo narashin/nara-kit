@@ -25,7 +25,7 @@ description: >-
 ## 참조 자원
 
 - [vault 관례](references/vault-conventions.md) — 학습 노트 vault `study`의 폴더 두 계열, frontmatter 스키마, 톤, 노트 골격. 위치를 정하기 전에 읽는다.
-- [그림 패턴](references/diagram-patterns.md) — HTML/SVG 그림 패턴 8종, 스텝 재생기(지도와 시퀀스를 단계별로 재생, 스타터 `assets/step-player.html`), 매체 선택 규칙, HTML 스타일 베이스. 그림을 그리기 전에 읽는다.
+- [그림 패턴](references/diagram-patterns.md) — HTML/SVG 그림 패턴 8종, 스텝 재생기(지도와 시퀀스를 단계별로 재생, 스타터 `assets/step-player.html`), 상태 지도 시나리오 재생기(고정 상태 지도 위에서 갈래별 결말을 재생, 스타터 `assets/state-player.html`), 매체 선택 규칙, HTML 스타일 베이스. 그림을 그리기 전에 읽는다.
 - [대상 보정](references/audience.md) — 나이·학년·직군·관계 4계열과 각각의 어휘·비유·그림 비중. eli5 톤을 골랐고 대상이 5살이 아니면 읽는다.
 - [설명 형식](references/formats.md): 내용 유형별로 그림 문서 전체의 진행 방식(만져 보기, 동시 재생, 터미널 재현 등)을 고르는 표, 형식별로 지킬 것, 쓰지 않는 형식, 사용자 평가 기록. 3단계에서 그림 패턴보다 먼저 읽는다.
 
