@@ -33,7 +33,7 @@ S2-006 수량 0 주문 -> LOWER_LAYER_BETTER (폼 검증 단위 테스트)
 S2-007 인증 없이 -> OUT_OF_SCOPE (인증은 별도 미들웨어 테스트 범위)
 ```
 
-S3/S2 ratio: 4/8 = 0.50
+Selected: 4 of 8 candidates (4 excluded, each with a reason code)
 
 ## Example C: Scenario Detailing
 

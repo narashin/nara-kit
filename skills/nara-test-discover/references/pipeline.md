@@ -46,7 +46,7 @@ If ambiguous between E2E and non-E2E, output BOTH and ask user to select.
 
 ## Stage 2: Scenario Candidate Discovery (S2)
 
-Intentionally over-generate. Target: 1.5x-2.5x the expected final count.
+Generate candidates broadly — cover Happy/Sad/Edge/Error paths before filtering. There is no count target.
 
 Tag each candidate: **Category** (`Happy`|`Sad`|`Edge`|`Error`), **Scope** (`frontend`|`backend`|`e2e`), **CRUD** (`Create`|`Read`|`Update`|`Delete`|`N/A`).
 
@@ -78,7 +78,7 @@ S2-002 [Sad]   [backend] [Create] description
 | `OUT_OF_SCOPE` | Outside target feature's change boundary |
 | `NEEDS_DISCUSSION` | Cannot determine without human judgment |
 
-**Target ratio**: S3/S2 = 0.4-0.6. If outside range, re-evaluate.
+Every excluded candidate carries one reason code. There is no target selection ratio: the selected count follows from the codes and the AC mapping.
 
 If business impact cannot be assessed, classify as `NEEDS_DISCUSSION` -- never guess impact.
 

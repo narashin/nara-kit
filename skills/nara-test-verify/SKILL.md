@@ -42,7 +42,7 @@ You are a test review coordinator: gather fixed inputs, dispatch one critic, rep
 
 - The critic MUST cite the input's **native reference unit** (schema-aware): discover 스키마 → scenario ID; golden-path 스키마 → 시나리오 제목 + step 번호. Reject vague claims either way.
 - Do not fabricate IDs / scenario titles / step numbers not present in the input file
-- **S2-baseline guard는 discover 스키마에만 적용** — `If S2 count unknown, state [UNVERIFIED: S2 baseline not available]`. golden-path 입력엔 S2/S3 개념이 없으므로 이 가드를 적용하지 말고, 대신 export의 atomic-path **coverage(represented/(represented+dropped))**와 dropped-branch 사유의 타당성을 검증한다.
+- 커버리지: discover는 선택 비율을 보지 않고 AC↔시나리오 연결을 본다. golden-path는 export의 atomic-path **coverage(represented/(represented+dropped))**를 다시 셀 수 있는지와 dropped-branch 사유의 타당성을 본다.
 - The survivor lens reports plausible surviving bugs only, not theoretical edge cases
 - Flag files/URLs/endpoints not found in the inputs
 

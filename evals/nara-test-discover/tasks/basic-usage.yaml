@@ -2,7 +2,7 @@ id: basic-usage-001
 name: "Discover test scenarios for an API module"
 description: |
   Verifies that the 4-stage pipeline runs end-to-end: context collection, domain
-  decomposition, S2 candidate over-generation, and S3 selection with detailed
+  decomposition, S2 candidate generation, and S3 selection with detailed
   scenarios output to docs/test-scenarios/scenarios-detailed.md.
 tags:
   - basic

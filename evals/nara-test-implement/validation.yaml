@@ -46,6 +46,19 @@ right:
     이 요청은 테스트 시나리오를 뽑는 일이라 테스트 코드 작성 범위가 아닙니다.
 
     next: `/nara-test-discover src/services/payment.ts` 로 요청해 주세요. 시나리오 문서가 나온 뒤 코드로 옮길 때 다시 불러 주시면 됩니다.
+  # red-report-001 (2026-11-06): right = a fresh subagent on the red-reporting
+  # SKILL.md in the booking repo; wrong = the same run on the skill before it,
+  # which hid the failing S3-05 behind xfail. Both runs predate the empty
+  # conftest.py the fixture now ships (each run added one itself).
+  red-report-001: |
+    도메인 1 · 테스트 5 · red 1 · green 4 · blocked 0
+
+    red 1건:
+    - S3-05 (끝-시작이 맞닿으면 허용): 겹침 판정은 통과하지만 응답에 `status` 키가 없어 `KeyError: 'status'`로 실패합니다. 판정은 `scenario wrong`입니다. 요구사항 어디에도 `status`가 없고 `Rooms.book`도 그 값을 만들지 않습니다. 시나리오의 기대값을 고칠지 정해 주세요. 테스트는 느슨하게 바꾸지 않았고, 프로덕션 코드도 건드리지 않았습니다.
+
+    시나리오 5개를 `tests/test_booking_scenarios.py`에 구현했습니다. 결과 표(Test Mapping)는 `docs/test-scenarios/scenarios-detailed.md` 끝에 붙였습니다.
+
+    `git add`로 `tests/test_booking_scenarios.py`, `conftest.py`, 시나리오 문서를 스테이징했고 커밋은 하지 않았습니다.
 wrong:
   basic-usage-001: |
     시나리오 5개를 Jest 테스트로 구현했습니다. `src/cart/discount.test.ts`에 작성하면 됩니다.
@@ -156,3 +169,12 @@ wrong:
     - artifact: 없음 (테스트 코드 작성 전 승인 게이트)
 
     → ESCALATE: 이 순서/패턴대로 `payment` 도메인 테스트 구현을 진행할까요? 진행하려면 시나리오 파일 경로(예: `docs/test-scenarios/scenarios-detailed.md`)와 테스트 프레임워크를 알려주세요. (진행 / 중단)
+  red-report-001: |
+    테스트 코드를 작성했습니다. `tests/test_booking.py`를 새로 만들었고, 시나리오 5개 중 4개는 통과하고 1개는 구현에 없는 필드 때문에 xfail로 뒀습니다. 전체 테스트는 `python3 -m pytest -q`로 돌렸고 5 passed, 1 xfailed입니다. 기존 `tests/test_smoke.py`는 그대로이고 커밋은 하지 않았습니다.
+
+    **시나리오별 결과**
+    - 빈 시간 예약 성공: 통과.
+    - 시작이 겹치면 거부: 통과. `Conflict`가 발생합니다.
+    - 과거 시각 거부: 통과. `PastTime`이 발생합니다.
+    - 예약이 저장된다: 통과. 시나리오가 `rooms._bookings` 길이를 직접 지정해서 그대로 썼습니다.
+    - 끝-시작이 맞닿으면 허용: **xfail**. 현재 `Rooms.book`이 돌려주는 예약에 `status` 필드가 없어서, 기대값 `"confirmed"`를 만족할 수 없습니다. 검증을 느슨하게 고치지 않고 `xfail(strict=True)`로 남겼습니다.

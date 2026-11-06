@@ -11,7 +11,7 @@ digraph pipeline {
   verify [label="Phase 3\nVerify\n(per domain)"];
   
   detect -> golden -> implement -> verify;
-  verify -> implement [label="fail\n(fix + retry)"];
+  verify -> implement [label="test-code error\n(fix + retry)"];
 }
 ```
 
@@ -77,22 +77,22 @@ When modifying existing test files:
 After generating/modifying tests for ONE domain:
 
 1. Run test command for that specific file
-2. **All tests pass** → mark domain complete, proceed to next
-3. **Any test fails** → analyze error, fix, re-run (max 3 attempts)
-4. **3 failures** → report to user with error details, ask before continuing
+2. **Test-code error** (syntax, import, fixture, the runner does not collect the test) → fix the test code, re-run (max 3 attempts); 3 failures → report to user with error details, ask before continuing
+3. **The test runs** → record it: green, or red with the failing assertion. Do not touch production code and do not loosen the assertion to make it pass. A red caused by your own setup (wrong fixture, wrong instantiation) is a test-code error, not a red.
+4. Mark the domain complete and proceed to the next
 
 ```dot
 digraph verify {
   run [label="Run tests"];
-  pass [label="Pass?" shape=diamond];
-  fix [label="Fix"];
+  err [label="Test-code\nerror?" shape=diamond];
+  fix [label="Fix test code"];
   count [label="Attempt ≤ 3?" shape=diamond];
-  done [label="Domain\ncomplete"];
+  record [label="Record\nred / green"];
   ask [label="Ask user"];
-  
-  run -> pass;
-  pass -> done [label="yes"];
-  pass -> count [label="no"];
+
+  run -> err;
+  err -> record [label="no"];
+  err -> count [label="yes"];
   count -> fix [label="yes"];
   count -> ask [label="no"];
   fix -> run;
@@ -101,8 +101,18 @@ digraph verify {
 
 ## Completion
 
-After all domains pass:
+After all domains are verified:
 
-1. Run full test suite (all test files, not just new ones)
-2. Report summary: domains implemented, tests added, tests passing
-3. If any regression in existing tests → fix before reporting done
+1. Run full test suite (all test files, not just new ones). Existing tests that newly fail because this run changed shared test infrastructure → fix or revert that change.
+2. Append the mapping to the scenarios file, one row per scenario, blocked ones included:
+
+```markdown
+## Test Mapping
+| 시나리오 | 테스트 파일 | 테스트 이름 | 결과 |
+|---|---|---|---|
+| {scenario ID} | {path} | {test name} | green \| red: {judgment} \| [BLOCKED: {reason}] |
+```
+
+   `{judgment}` is `suspected product bug`, `scenario wrong` or `unclear`, followed by the failing assertion in a few words. A blocked row has `—` for file and name.
+3. `git add` the test files in the table (no commit). If a file cannot be staged (ignored path), print `기준점 없음: {file}` and continue.
+4. Report `도메인 N · 테스트 N · red N · green N · blocked N`, then each red row.

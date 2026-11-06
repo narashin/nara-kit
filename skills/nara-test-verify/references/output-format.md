@@ -24,7 +24,7 @@ Write to: `docs/test-scenarios/scenarios-review.md`
 
 ## Summary Verdict
 - Overall: PASS | NEEDS_WORK | FAIL
-- Coverage assessment: {S3/S2 ratio evaluation or [S2 baseline not available] | golden-path coverage}
+- Coverage assessment: {discover: ACs with no scenario, or "all AC mapped" | golden-path: atomic-path coverage}
 - Prior review: {see SKILL.md Prior Review Handling; omit when there is none}
 - Key gaps: {top 3 findings summarized}
 

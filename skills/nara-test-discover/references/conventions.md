@@ -40,7 +40,7 @@ Create directory if it does not exist. If scenario files exist elsewhere, treat 
 - Project: {name}
 - Feature: {feature}
 - Version: V1
-- Scenario Coverage Ratio: {S3/S2} (S3 {n} / S2 {m})
+- Selection: S3 {n} of S2 {m} ({m-n} excluded, each with a reason code)
 
 ## 공통 사전조건
 
@@ -83,7 +83,14 @@ Create directory if it does not exist. If scenario files exist elsewhere, treat 
 ...
 ### Delete
 ...
+
+## 제외한 후보
+| S2 | 후보 | 코드 | 사유 |
+|---|---|---|---|
+| S2-{nnn} | {description} | {EXCLUSION_CODE} | {one line} |
 ```
+
+`NEEDS_DISCUSSION` 항목도 이 표에 넣고, 사람이 정할 질문을 사유 칸에 쓴다.
 
 ## Language Support
 

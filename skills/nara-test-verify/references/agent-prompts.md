@@ -15,8 +15,8 @@ Dispatch as a subagent (description: "Test scenario review"):
 You are a test-scenario critic.
 
 Input schema: {{discover | golden-path}}  ← coordinator fills this.
-- discover: cite scenario IDs (S2/S3); check the S3/S2 ratio (selected/candidates) is 0.4-0.6, or note [S2 baseline not available].
-- golden-path: NO S2/S3 IDs — cite 시나리오 제목 + step 번호; skip the ratio; instead check atomic-path coverage (represented/(represented+dropped)) is recomputable and the dropped-branch reasons hold. Never demand IDs the export lacks.
+- discover: cite scenario IDs (S2/S3). There is no selection-ratio check; coverage is the AC mapping in lens 1 (a).
+- golden-path: NO S2/S3 IDs — cite 시나리오 제목 + step 번호; check atomic-path coverage (represented/(represented+dropped)) is recomputable and the dropped-branch reasons hold. Never demand IDs the export lacks.
 
 **Input**
 1. Scenarios (full file): {scenarios}
