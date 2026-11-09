@@ -13,15 +13,19 @@ description: >-
 
 ## Steps
 
-0. 인자가 기존 PR URL·본문 갱신 의도면 → [existing-PR 모드](references/existing-pr-mode.md). 기존 PR에 이미지만 넣는 요청도 여기로 간다. 1~8은 신규 생성.
-1. 아래 스크립트로 base branch 자동 감지.
+0. 인자가 기존 PR URL·본문 갱신 의도면 → [existing-PR 모드](references/existing-pr-mode.md). 기존 PR에 이미지만 넣는 요청도 여기로 간다.
+1. base branch 자동 감지 (아래).
 2. `git log $BASE..HEAD --oneline`으로 커밋 목록 수집. 리뷰 관심사가 둘 이상 직선 의존으로 이어지거나 사용자가 나눠 올리라고 하면 → [stacked](references/stacked.md)로 형태를 판정한다(줄 수 기준 없음, `single`이면 계속).
-3. **repo의 PR 규칙을 먼저 읽는다** ([repo-rules.md](references/repo-rules.md)): 기본 브랜치의 PR 템플릿, CONTRIBUTING·AGENTS·CLAUDE.md의 PR 지침, 최근 머지된 PR 제목. 규칙이 있으면 그것이 이기고, 아래 Title Format·5섹션은 규칙이 없을 때의 기본값이다.
+3. [repo 규칙](references/repo-rules.md)을 먼저 읽는다: 기본 브랜치 PR 템플릿, CONTRIBUTING·AGENTS·CLAUDE.md, 최근 머지 제목. 아래 형식보다 우선한다. 담당자·AI 트레일러·AI 커밋 범위는 확인된 정책으로 정한다. 모르면 묻고 작성자로 추측하지 않는다.
 4. 커밋 분석 → 제목 생성 (repo 규칙 > Title Format). [body-guide.md](references/body-guide.md) Read → 본문 생성 (Korean). 템플릿이 있으면 템플릿 헤딩에 채운다.
-5. naranizer post-pass 어투 변환 (프로필 없음·미설치면 스킵). 규칙: body-guide.md.
-6. `nara-ko-prose` repair post-pass — 한국어 명확성 수리 (규칙 원문 없음·미설치면 스킵). naranizer **다음**에 실행하며, 어휘·말투를 건드리지 않으므로 5의 결과를 되돌리지 않는다.
-7. `gh pr create` 제안, 유저 확인 후 실행. 확인 화면에 어떤 규칙이 제목·본문을 정했는지 한 줄 (`규칙: template <path> · title <source>` 또는 `규칙: 내장 형식`). diff가 화면 파일을 바꿨는데 이미지 경로가 없으면 확인 화면 전에 [화면 캡처](references/visual-capture.md)로 배포 환경과 로컬을 찍는다. 구성·흐름·상태가 바뀌었으면 [구조 그림](references/diagram.md)을 archify로 그린다. 첨부할 이미지 경로가 주어졌거나 캡처했으면 같은 확인 화면에 파일 목록을 넣고, 생성 직후 [이미지 첨부](references/attach-images.md) 절차로 본문에 넣는다. 확인은 한 번으로 PR 생성과 업로드를 함께 덮는다.
-8. 미기록 작업시간 알림 — `python3 ../nara-worklog/assets/worklog.py list` 실행 (스크립트 없으면 이 스텝 스킵). 이 PR의 티켓에 미기록 시간이 있으면 **한 줄만** 알린다: `미기록 작업시간 3h 12m (2일) — /nara-worklog`. 여기서 Jira에 쓰지 않는다 — worklog 쓰기는 승인 게이트가 있는 별도 스킬 소관이다.
+5. naranizer 어투 변환 (프로필 없음·미설치면 스킵). 규칙: body-guide.md.
+6. naranizer 다음 `nara-ko-prose`로 한국어 명확성을 수리한다 (규칙 없음·미설치면 스킵). 어휘·말투는 보존한다.
+7. 화면 변경에 이미지가 없으면 승인 전에 [배포 환경·로컬 캡처](references/visual-capture.md), 구성·흐름·상태 변경이면 [archify 구조 그림](references/diagram.md)을 준비한다. 적용 규칙, 제목·본문·이미지, 담당자·트레일러·AI 커밋 범위를 보여주고 생성·업로드를 승인받는다. `gh pr create`에 승인된 담당자를 지정하고 본문 끝에 정확한 AI 트레일러 한 개를 둔다. 생성·[이미지 첨부](references/attach-images.md) 후 게시 검증을 실행한다.
+8. 미기록 시간: `python3 ../nara-worklog/assets/worklog.py list` (없으면 스킵). 이 PR 티켓에 시간이 남았으면 한 줄로 `/nara-worklog`를 안내한다. Jira에는 쓰지 않는다.
+
+## 게시 검증 (모든 게시 모드 공통)
+
+신규·기존·이미지 전용·stacked 각 PR의 마지막 원격 변경 후 [nara-publish-verify](../nara-publish-verify/SKILL.md)를 호출한다. 확인된 호스트·담당자·트레일러·AI 커밋 full SHA를 전달한다. 미설치·정책/범위 미확정·미지원은 `unverifiable`; `fail`도 완료가 아니다. 불일치·게시 상태만 보고하며 자동 수정·재할당·커밋 재작성·push·Jira 쓰기는 금지한다. 원격 게시 없는 초안만 스킵한다.
 
 ## Base Branch Detection
 
@@ -38,7 +42,7 @@ repo 템플릿이 없으면 섹션 5개: 요약 / 주요 변경 / 확인 방법 
 
 ## Examples
 
-예시 제목/본문: body-guide.md 하단 Example.
+body-guide.md 하단 Example.
 
 ## Error Handling
 

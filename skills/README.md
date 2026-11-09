@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**60 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**61 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -66,6 +66,7 @@
 | `nara-code-review` | Evidence-based multi-agent review (core 4 + conditional 7, Reviewer→Judge→Fixer→Verifier) / 증거 기반 멀티에이전트 코드 리뷰 |
 | `nara-adversarial-review` | Attack an existing review report (refuter / blind hunter / rigor auditor), append-only / 리뷰 리포트 공격 검증 |
 | `nara-pr` | Generate PR title and body in Korean / PR 제목 + 본문 생성 |
+| `nara-publish-verify` | Verify published GitHub PR assignee, attribution and selected AI commit metadata, read-only / 게시된 PR 담당자·트레일러·선택한 AI 작성 커밋의 메타데이터를 읽기 전용으로 검증 |
 | `nara-pr-review` | Remote PR review via gh (code plane + PR plane: description/commits/CI/discussion), approval-gated comments / 원격 PR 리뷰 |
 | `nara-pr-respond` | Respond to PR review comments (accept/rebut/hold) / PR 리뷰 코멘트 대응 |
 | `nara-release-prep` | One-shot release prep: merged-PR diff → release branch recreate → QA deploy dispatch → Jira Fix Version append / 원샷 릴리즈 준비 (PR 수집 → pre-release 재생성 → QA 배포 → Fix Version) |
@@ -142,6 +143,8 @@ Jira·Slack과 주고받거나 주기적으로 돈다. 스케줄 호스트(cron,
 **워크플로우 진입**: **`nara-now`** — 상태를 보고 다음 행동을 명령 형태로 제시한다. 워크플로우 진입용 별도 스킬은 없다.
 
 **첫 사용 권장 순서**: `nara-now` (상태 점검) → `nara-ac-draft <TICKET>` (요구사항 정리) → `nara-plan` (작업 단위) → `nara-implement` → `nara-gap` (verify) → `nara-code-review` → `nara-pr` → `nara-worklog` (Jira 시간 기록, 미기록분은 `nara-pr`이 알려준다).
+
+`nara-pr`은 PR 생성·수정·이미지 첨부의 마지막 원격 변경 후 `nara-publish-verify`로 담당자·AI 기여 표시를 검증한다. 이미 게시된 PR을 확인할 때는 별도로 호출할 수도 있다. 검증은 원격 상태를 수정하지 않으며 코드 리뷰·머지·배포 승인을 대신하지 않는다.
 
 ## Workflow / 워크플로우
 
