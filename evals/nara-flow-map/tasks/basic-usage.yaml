@@ -1,0 +1,30 @@
+id: basic-usage-001
+name: "Payment webhook flow as an animated map"
+description: |
+  Given a flow memo with path:line sources, the skill should collect facts with
+  their sources, offer the three layouts before writing data, and say the page is
+  shown only after flowSelfCheck passes.
+tags:
+  - basic
+  - happy-path
+inputs:
+  prompt: |
+    결제 웹훅이 들어와서 원장에 기록되고 큐로 나가기까지를 애니메이션 지도로 만들어줘.
+    (코드에서 확인한 내용은 첨부한 payment-webhook.md와 같다.)
+  files:
+    - path: payment-webhook.md
+expected:
+  output_contains:
+    - "flowSelfCheck"
+    - "ledger_entries"
+  output_not_contains:
+    - "mermaid"
+  outcomes:
+    - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "(지도|주인공 카드|장면별)"
+        - "handler\\.ts:\\d+"

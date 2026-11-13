@@ -1,0 +1,16 @@
+id: should-not-trigger-001
+name: "PR explanation for a planner should not trigger flow-map"
+description: |
+  Explaining a PR to a planner is nara-explain's job. flow-map should not start
+  its fact-collection and layout steps for this prompt.
+tags:
+  - anti-trigger
+  - negative-test
+inputs:
+  prompt: "이 PR이 뭘 바꿨는지 기획자에게 설명할 문서 만들어줘"
+  files: []
+expected:
+  output_not_contains:
+    - "flowSelfCheck"
+    - "flow-map.html"
+    - "주인공 카드"

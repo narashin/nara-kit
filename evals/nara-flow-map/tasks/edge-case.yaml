@@ -1,0 +1,22 @@
+id: edge-case-001
+name: "Unseen consumer stays marked unverified"
+description: |
+  The memo says nobody in this repo reads the order-events queue. The skill must not
+  invent a consumer box with a solid line; the reader side is [미확인] (dashed path,
+  dashed node, or warn chip).
+tags:
+  - edge-case
+inputs:
+  prompt: |
+    결제 웹훅 흐름 지도를 만들되, order_paid가 큐에서 어디로 가는지까지 이어서 보여줘.
+    (코드에서 확인한 내용은 첨부한 payment-webhook.md와 같다.)
+  files:
+    - path: payment-webhook.md
+expected:
+  output_contains:
+    - "[미확인]"
+  output_not_contains:
+    - "배송 서비스"
+    - "정산 서비스"
+  outcomes:
+    - type: task_completed

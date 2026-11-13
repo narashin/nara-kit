@@ -1,6 +1,6 @@
 # nara-kit skills
 
-**61 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
+**62 skills**, grouped below. Invoke explicitly (`/nara-<skill>`, Codex는 `$nara-<skill>`) or via natural-language trigger (each skill's `USE FOR` keywords). 흐름상 다음에 뭘 할지는 `nara-now`가 알려준다.
 
 ← Back to [root README](../README.md).
 
@@ -90,6 +90,7 @@
 |-------|---------------------|
 | `nara-explain` | Shareable explanations for different audiences / 대상별 설명 문서 생성 |
 | `nara-eli5-note` | ELI5-or-practitioner note into Obsidian with mandatory HTML/SVG diagrams (never ASCII/mermaid) — tone asked first, vault conventions respected / 쉬운 설명 + HTML/SVG 그림을 Obsidian 노트로 저장 |
+| `nara-flow-map` | One system flow as an animated map HTML: facts from code/docs only, layout picked from previews, fixed engine + data block, in-page self-check (overlap, dangling lines, camera framing, unused boxes, playback, jump restore) before showing; split/merge with pair colors; webm save button + mp4 recorder / 시스템 흐름을 애니메이션 지도 HTML로 (자체 검사 통과 후 공개, 영상 export) |
 | `nara-humanizer` | Detect AI writing patterns in Korean text and rewrite as natural prose (KatFishNet 94.88% AUC, 41 patterns) / 한국어 AI 작문 패턴 감지 + 윤문 |
 | `naranizer` | Rewrite AI-drafted Korean text into the user's own measured style from a local profile (register auto-detect, fact-preserving) / 실측 프로필 기반 개인 말투 변환 |
 | `nara-ko-prose` | Repair Korean prose in shared artifacts — restore dropped particles/endings, complete noun-phrase sentence breaks, replace em-dashes. Applies snflkd/fluent-korean (MIT) by reading the installed rules file; ships no copy / 공유 문서 한국어 명확성 수리 |

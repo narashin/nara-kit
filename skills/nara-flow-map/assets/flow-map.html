@@ -1,0 +1,930 @@
+<!doctype html>
+<!--
+nara-flow-map starter. Rules: ../SKILL.md and ../references/engine.md.
+Copy this file, replace only the DATA block with verified facts, leave the engine code alone.
+Inside DATA strings write "</" as "<\/": a literal "</script" ends this script early.
+Before showing the page, run window.flowSelfCheck() in a browser and fix everything it reports.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>흐름 지도</title>
+<style>
+:root {
+  --bg: #f4f5f2; --panel: #ffffff; --panel2: #fafbf9; --ink: #1f2328; --sub: #57606a; --faint: #8c959f;
+  --rule: #d0d7de; --path: #c3cad2; --accent: #d97706; --accent-soft: #fef3c7;
+  --c-ext: #8250df; --c-core: #0969da; --c-store: #1a7f37; --c-edge: #bc4c00; --c-worker: #cf222e; --c-batch: #0a7a8a;
+  --ok: #1a7f37; --ok-bg: #dafbe1; --bad: #cf222e; --bad-bg: #ffebe9; --eval: #9a6700; --eval-bg: #fff8c5;
+  --card-bg: #fffbeb; --card-ink: #3d2c00; --card-line: #d97706;
+  --chip-data-bg: #ddf4ff; --chip-data-ink: #0550ae; --chip-store-bg: #dafbe1; --chip-store-ink: #116329;
+  --chip-warn-bg: #fff8c5; --chip-warn-ink: #7d4e00;
+  --pair1: #8250df; --pair1-bg: #f6efff; --pair1-ink: #4b1d8f; --pair2: #bf3989; --pair2-bg: #ffeff7; --pair2-ink: #6e1146;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --panel: #161b22; --panel2: #1b222c; --ink: #e6edf3; --sub: #9da7b3; --faint: #6e7681;
+    --rule: #3a424d; --path: #3a424d; --accent: #f59e0b; --accent-soft: #3d2e00;
+    --c-ext: #bc8cff; --c-core: #58a6ff; --c-store: #3fb950; --c-edge: #f0883e; --c-worker: #ff7b72; --c-batch: #39c5cf;
+    --ok: #3fb950; --ok-bg: #0f3d1f; --bad: #ff7b72; --bad-bg: #4a1414; --eval: #d29922; --eval-bg: #3d2e00;
+    --card-bg: #2d2205; --card-ink: #fde68a; --card-line: #f59e0b;
+    --chip-data-bg: #0c2d6b; --chip-data-ink: #a5d6ff; --chip-store-bg: #0f3d1f; --chip-store-ink: #7ee787;
+    --chip-warn-bg: #3d2e00; --chip-warn-ink: #f2cc60;
+    --pair1: #bc8cff; --pair1-bg: #2c1a4d; --pair1-ink: #e2c9ff; --pair2: #ff80c8; --pair2-bg: #4a1430; --pair2-ink: #ffd0ea;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --panel: #161b22; --panel2: #1b222c; --ink: #e6edf3; --sub: #9da7b3; --faint: #6e7681;
+  --rule: #3a424d; --path: #3a424d; --accent: #f59e0b; --accent-soft: #3d2e00;
+  --c-ext: #bc8cff; --c-core: #58a6ff; --c-store: #3fb950; --c-edge: #f0883e; --c-worker: #ff7b72; --c-batch: #39c5cf;
+  --ok: #3fb950; --ok-bg: #0f3d1f; --bad: #ff7b72; --bad-bg: #4a1414; --eval: #d29922; --eval-bg: #3d2e00;
+  --card-bg: #2d2205; --card-ink: #fde68a; --card-line: #f59e0b;
+  --chip-data-bg: #0c2d6b; --chip-data-ink: #a5d6ff; --chip-store-bg: #0f3d1f; --chip-store-ink: #7ee787;
+  --chip-warn-bg: #3d2e00; --chip-warn-ink: #f2cc60;
+  --pair1: #bc8cff; --pair1-bg: #2c1a4d; --pair1-ink: #e2c9ff; --pair2: #ff80c8; --pair2-bg: #4a1430; --pair2-ink: #ffd0ea;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Segoe UI", sans-serif;
+  display: flex; flex-direction: column;
+}
+header { padding: 14px 20px 6px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+header h1 { margin: 0; font-size: 20px; }
+header p { margin: 0; color: var(--sub); font-size: 13px; }
+.stage { flex: 1 1 auto; min-height: 380px; position: relative; padding: 0 16px; }
+svg#map { width: 100%; height: 100%; display: block; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; }
+.nojs { padding: 12px 20px; color: var(--sub); }
+
+/* map nodes */
+.node rect.box { fill: var(--panel); stroke: var(--rule); stroke-width: 1.5; transition: stroke .3s, stroke-width .3s; }
+.node .bar { transition: opacity .3s; }
+.node.hot rect.box, .node.hot .cylbody { stroke: var(--accent); stroke-width: 3.5; }
+.node.dashed rect.box { stroke-dasharray: 6 5; }
+.ntitle { font-size: 15px; font-weight: 700; fill: var(--ink); }
+.nsub { font-size: 12px; fill: var(--sub); }
+.nstat { font-size: 12.5px; font-weight: 600; fill: var(--accent); }
+.frame rect { fill: none; stroke: var(--c-core); stroke-width: 1.5; stroke-dasharray: 8 6; }
+.frame text { font-size: 13px; font-weight: 700; fill: var(--c-core); }
+.cylbody { fill: var(--panel2); stroke: var(--c-store); stroke-width: 1.5; transition: stroke .3s, stroke-width .3s; }
+.cyltop { fill: var(--panel); stroke: var(--c-store); stroke-width: 1.5; }
+.row text { font-size: 12px; fill: var(--ink); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.row rect { fill: var(--ok-bg); opacity: 0; }
+.row.new rect { animation: rowflash 1.6s ease-out; }
+.row.disp text { fill: var(--eval); }
+@keyframes rowflash { 0% { opacity: 1; } 100% { opacity: 0; } }
+.gate rect.box { fill: var(--panel); stroke: var(--rule); }
+.gate.eval rect.box { fill: var(--eval-bg); stroke: var(--eval); }
+.gate.pass rect.box { fill: var(--ok-bg); stroke: var(--ok); }
+.gate.block rect.box { fill: var(--bad-bg); stroke: var(--bad); }
+.gate .lamp { fill: var(--rule); }
+.gate.eval .lamp { fill: var(--eval); }
+.gate.pass .lamp { fill: var(--ok); }
+.gate.block .lamp { fill: var(--bad); }
+.gate .gstat { font-size: 12.5px; fill: var(--sub); }
+.gate.pass .gstat { fill: var(--ok); font-weight: 600; }
+.gate.block .gstat { fill: var(--bad); font-weight: 600; }
+.gate.eval .gstat { fill: var(--eval); font-weight: 600; }
+/* A node that does not exist yet: drawn faint and dashed so arrows pointing at it still have a target. */
+.node { transition: opacity .5s; }
+.node.ghost { opacity: .5; }
+.node.ghost rect.box, .node.ghost .cylbody, .node.ghost .cyltop { stroke-dasharray: 6 5; }
+.path { fill: none; stroke: var(--path); stroke-width: 2; transition: stroke .3s, stroke-width .3s; }
+.path.dash { stroke-dasharray: 5 5; }
+.path.active { stroke: var(--accent); stroke-width: 3.5; }
+.card rect { fill: var(--card-bg); stroke: var(--card-line); stroke-width: 1.5; }
+.card text { font-size: 12.5px; font-weight: 600; fill: var(--card-ink); }
+.card.ok rect { fill: var(--ok-bg); stroke: var(--ok); }
+.card.ok text { fill: var(--ok); }
+/* Pair colors: two cards that will merge share one color from the moment they leave. At most two pairs per map. */
+.card.pair1 rect { fill: var(--pair1-bg); stroke: var(--pair1); }
+.card.pair1 text { fill: var(--pair1-ink); }
+.card.pair2 rect { fill: var(--pair2-bg); stroke: var(--pair2); }
+.card.pair2 text { fill: var(--pair2-ink); }
+.card.pop { transform-box: fill-box; transform-origin: center; animation: pop .35s ease-out; }
+@keyframes pop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.clock { opacity: 0; transition: opacity .4s; }
+.clock.on { opacity: 1; }
+.clock circle { fill: var(--panel); stroke: var(--c-batch); stroke-width: 2; }
+.clock line { stroke: var(--c-batch); stroke-width: 2; stroke-linecap: round; }
+.toast rect { fill: var(--ink); opacity: .88; }
+.toast text { fill: var(--bg); font-size: 12px; font-weight: 600; }
+
+/* bottom panel */
+.panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 20px; padding: 12px 20px 16px; align-items: start; }
+.narr { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 12px 16px; min-height: 132px; }
+.narr .meta { color: var(--faint); font-size: 12px; font-weight: 600; }
+.narr .trig { font-weight: 700; color: var(--eval); }
+.narr .trig.clock-t { color: var(--c-batch); }
+.narr h2 { margin: 2px 0 6px; font-size: 17px; }
+.narr h2 code { font-size: 14px; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; line-height: 19px; margin: 2px 4px 0 0; }
+.chip.data { background: var(--chip-data-bg); color: var(--chip-data-ink); }
+.chip.store { background: var(--chip-store-bg); color: var(--chip-store-ink); }
+.chip.warn { background: var(--chip-warn-bg); color: var(--chip-warn-ink); }
+.narr .note { color: var(--sub); font-size: 13px; margin-top: 4px; }
+.narr .src { color: var(--faint); font-size: 11.5px; margin-top: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.side { display: flex; flex-direction: column; gap: 10px; min-width: 330px; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.btns button, .btns select {
+  font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--rule);
+  background: var(--panel); color: var(--ink); cursor: pointer;
+}
+.btns button.primary { background: var(--c-core); border-color: transparent; color: #fff; min-width: 84px; }
+.btns button:focus-visible, .btns select:focus-visible, .dot:focus-visible { outline: 2px solid var(--c-core); outline-offset: 2px; }
+.timeline { display: flex; gap: 10px; flex-wrap: wrap; }
+.chapter { display: flex; flex-direction: column; gap: 4px; }
+.chapter span { font-size: 11px; color: var(--faint); white-space: nowrap; }
+.chapter .dots { display: flex; gap: 4px; }
+.dot {
+  width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--rule); background: var(--panel);
+  font-size: 10.5px; color: var(--sub); cursor: pointer; padding: 0; font-family: inherit;
+}
+.dot.done { background: var(--chip-store-bg); border-color: var(--ok); color: var(--ok); }
+.dot.cur { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.legend { color: var(--faint); font-size: 12px; }
+@media (max-width: 900px) {
+  .panel { grid-template-columns: 1fr; }
+  .side { min-width: 0; }
+}
+/* Recording mode: controls leave the frame, the map fills it, and the step title becomes a subtitle on the map. */
+/* The subtitle sits in its own row above the map, never over it, so it cannot hide a box. */
+.subtitle { display: none; order: -1; margin: 0 0 8px; padding: 8px 14px;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; }
+.subtitle .meta { color: var(--faint); font-size: 12px; font-weight: 600; }
+.subtitle .ttl { font-size: 17px; font-weight: 700; }
+body.recording .panel { display: none; }
+body.recording .stage { display: flex; flex-direction: column; padding-bottom: 16px; }
+body.recording svg#map { flex: 1 1 auto; height: auto; min-height: 0; }
+body.recording .subtitle { display: block; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1>
+  <p id="intro"></p>
+</header>
+<noscript><p class="nojs">이 지도는 JavaScript가 켜져 있어야 그려집니다.</p></noscript>
+
+<div class="stage">
+  <svg id="map" viewBox="0 0 1400 830" preserveAspectRatio="xMidYMid meet" role="img" aria-label="구성 요소와 데이터 흐름 지도">
+    <g id="paths"></g>
+    <g id="nodes"></g>
+    <g id="cards"></g>
+  </svg>
+  <div class="subtitle" id="subtitle" aria-hidden="true"></div>
+</div>
+
+<div class="panel">
+  <div class="narr" id="narr" aria-live="polite"></div>
+  <div class="side">
+    <div class="btns">
+      <button type="button" class="primary" id="btnPlay">▶ 재생</button>
+      <button type="button" id="btnPrev" aria-label="이전 단계">◀</button>
+      <button type="button" id="btnNext" aria-label="다음 단계">▶▶</button>
+      <select id="speed" aria-label="재생 속도">
+        <option value="1.5">느리게</option>
+        <option value="1" selected>보통</option>
+        <option value="0.65">빠르게</option>
+      </select>
+      <button type="button" id="btnFull">전체 지도</button>
+      <button type="button" id="btnRec" hidden>● 영상으로 저장</button>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="legend">키보드: 스페이스 재생/정지 · ← → 이동 · 점을 누르면 그 단계로</div>
+  </div>
+</div>
+
+<script>
+// ===== DATA: replace everything in this block with verified facts. The engine below stays as is. =====
+// SAMPLE domain: one photo upload becoming an album card. Every value here is illustrative.
+const META = {
+  title: "SAMPLE 사진 한 장이 앨범에 뜨기까지",
+  intro: "SAMPLE 예시: 사진 한 장을 올리는 경우. 노란 카드가 실려 가는 데이터, 원통이 쌓이는 곳, 규칙 칸이 조건을 검사하는 문입니다.",
+  startTitle: "재생을 누르면 사진 한 장이 지도를 따라 움직입니다",
+  startNote: "각 단계는 \"무엇이 깨웠나 → 무엇이 실려 가나 → 어디에 쌓이나\" 순서로 보여 줍니다. 노란 [미확인]은 코드로 확인하지 못한 부분이고, 점선은 확인하지 못한 경로입니다.",
+};
+
+// type: box | cyl (rows stack inside) | gate (rule that passes or blocks) | frame (grouping outline, no content).
+// Flags: stat (status line), ghost (does not exist yet; drawn faint until exist(id, true)), clock, dashed ([미확인] node),
+// rows (box or cyl: how many rows stay visible), color (left bar, a --c-* token).
+const NODES = [
+  { id: "svc", type: "frame", x: 260, y: 40, w: 600, h: 560, title: "업로드 서비스" },
+  { id: "app", type: "box", x: 40, y: 90, w: 180, h: 90, title: "모바일 앱", sub: "사진 선택", color: "--c-ext", stat: true },
+  { id: "api", type: "box", x: 290, y: 90, w: 200, h: 70, title: "upload API", sub: "요청 받기", color: "--c-core" },
+  { id: "orig", type: "cyl", x: 290, y: 200, w: 200, h: 170, title: "원본 저장소", sub: "사진마다 1줄", rows: 3 },
+  { id: "meta", type: "cyl", x: 290, y: 400, w: 230, h: 170, title: "사진 메타 테이블", sub: "photo_id당 1줄", rows: 4 },
+  { id: "g1", type: "gate", x: 580, y: 100, w: 250, h: 80, title: "크기 검사 규칙" },
+  { id: "g2", type: "gate", x: 580, y: 200, w: 250, h: 80, title: "공개 앨범 알림 규칙" },
+  { id: "card", type: "box", x: 600, y: 420, w: 210, h: 78, title: "앨범 카드", sub: "썸네일이 붙으면 생김", color: "--c-worker", ghost: true },
+  { id: "queue", type: "box", x: 910, y: 110, w: 180, h: 90, title: "작업 큐", sub: "비동기 전달", color: "--c-edge", stat: true },
+  { id: "worker", type: "box", x: 1150, y: 240, w: 220, h: 110, title: "썸네일 worker", sub: "크기 줄이기", color: "--c-worker", stat: true },
+  { id: "cdn", type: "cyl", x: 1150, y: 420, w: 220, h: 150, title: "CDN 캐시", sub: "썸네일 파일", rows: 2 },
+  { id: "batch", type: "box", x: 900, y: 680, w: 190, h: 84, title: "정리 배치", sub: "매시 정각", color: "--c-batch", stat: true, clock: true },
+  { id: "album", type: "box", x: 1180, y: 680, w: 180, h: 80, title: "앨범 화면", sub: "목록 보기", color: "--c-batch", stat: true },
+];
+
+// Every route starts and ends on a box edge and runs through the empty corridors between boxes:
+// x≈535 between the stores and the rules, y≈395 between the rules and the album card,
+// y≈660 above the bottom row, x≈270 left of the stores.
+const PATHS = {
+  app_api: "M220,135 C255,135 255,125 290,125",
+  api_orig: "M390,160 L390,200",
+  // One event fans out at (535,240) to both rules: a split junction, used by split().
+  orig_split: "M490,285 C515,285 535,270 535,240",
+  split_g1: "M535,240 C535,170 555,140 580,140",
+  split_g2: "M535,240 L580,240",
+  rules_queue: "M830,140 C870,140 870,155 910,155",
+  queue_worker: "M1090,155 C1120,155 1115,295 1150,295",
+  worker_cdn: "M1260,350 L1260,420",
+  worker_meta: "M1150,330 C1125,330 1125,395 1095,395 L620,395 C585,395 555,470 520,470",
+  meta_card: "M520,520 C560,520 570,470 600,470",
+  // Two legs meet at one point (1270,620) and one path leaves it: a merge junction, used by merge().
+  card_join: "M705,498 L705,610 C705,617 712,620 720,620 L1270,620",
+  cdn_join: "M1270,570 L1270,620",
+  join_album: "M1270,620 L1270,680",
+  batch_orig: "M900,722 L290,722 C272,722 270,712 270,700 L270,300 C270,288 280,285 290,285",
+};
+// Routes not confirmed in code or docs are dashed.
+const DASHED = new Set(["batch_orig"]);
+
+// Camera presets as SVG viewBox [x, y, w, h]. "full" is required.
+const VIEW = {
+  full: [0, 0, 1400, 830],
+  in: [0, 30, 900, 600],
+  svc: [240, 20, 640, 600],
+  rules: [260, 40, 880, 560],
+  work: [860, 60, 540, 560],
+  back: [260, 180, 1140, 440],
+  end: [560, 380, 840, 420],
+  batch: [240, 180, 900, 620],
+};
+
+const CH = ["올리기", "검사", "썸네일", "보기와 정리"];
+
+// run(ctx) may change the map only through the engine verbs (fly, addRow, setStat, setGate, exist, clock, hot,
+// toast, sleep), never behind `if (!ctx.instant)` and never by editing the DOM directly. flowSelfCheck enforces it.
+const STEPS = [
+  { ch: 0, view: "in", trig: "사용자가 업로드 버튼을 누름", title: "앱이 사진을 upload API로 보냄",
+    data: ["사진 파일", "album_id", "taken_at"], note: "설명용 가정: 사진 크기는 4MB입니다.", src: "SAMPLE app/upload.ts:20",
+    async run(ctx) {
+      setStat("app", "● 업로드 중"); hot("app", ctx);
+      await fly("app_api", "사진 + album_id", ctx);
+      hot("api", ctx);
+    } },
+  { ch: 0, view: "svc", trig: "요청 도착", title: "API가 원본을 저장하고 photo_id를 발급",
+    store: ["원본 저장소 1줄"], note: "응답은 원본 저장까지만 기다립니다.", src: "SAMPLE api/upload.ts:48",
+    async run(ctx) {
+      toast(300, 168, "photo_id 발급", ctx);
+      await fly("api_orig", "원본", ctx, { dur: 700 });
+      addRow("orig", "p_001 · 4MB · 원본", ctx);
+      hot("orig", ctx); setStat("app", "");
+    } },
+  { ch: 1, view: "rules", trig: "원본 저장됨", title: "저장 이벤트에 걸린 규칙을 전부 평가",
+    data: ["저장 이벤트: photo_id · album_id"], src: "SAMPLE rules/index.ts:12",
+    note: "같은 이벤트가 두 규칙에 동시에 갑니다. 규칙끼리는 서로의 결과를 보지 않고, 멈춘 쪽은 거기서 끝납니다.",
+    async run(ctx) {
+      await split({ from: ["orig_split", "저장 이벤트: p_001"], to: [["split_g1", "p_001"], ["split_g2", "p_001"]] }, ctx);
+      setGate("g1", "eval", "검사 중…"); setGate("g2", "eval", "검사 중…");
+      await sleep(700, ctx);
+      setGate("g1", "pass", "통과: 20MB 이하");
+      setGate("g2", "block", "건너뜀: 비공개라 알림 안 보냄");
+    } },
+  { ch: 1, view: "rules", trig: "크기 검사 통과", title: "썸네일 작업을 큐에 넣음",
+    data: ["job: photo_id · 원본 위치 · 크기 3종"], note: "작업만 넣고 바로 돌아옵니다. 업로드 응답은 썸네일을 기다리지 않습니다.", src: "SAMPLE rules/size.ts:30",
+    async run(ctx) {
+      await fly("rules_queue", "job: p_001", ctx);
+      hot("queue", ctx); setStat("queue", "대기 1건");
+    } },
+  { ch: 2, view: "work", trig: "큐에 작업 있음", title: "worker가 작업을 꺼냄",
+    data: ["job: p_001"], src: "SAMPLE worker/main.ts:15",
+    async run(ctx) {
+      await fly("queue_worker", "job: p_001", ctx);
+      setStat("queue", "대기 0건"); hot("worker", ctx); setStat("worker", "줄이는 중…");
+    } },
+  { ch: 2, view: "work", trig: "작업 받음", title: "썸네일 3종을 만들어 CDN에 올림",
+    store: ["CDN: 썸네일 파일 3개"], warn: "CDN 캐시 만료 시간 [미확인]", src: "SAMPLE worker/resize.ts:40",
+    async run(ctx) {
+      await fly("worker_cdn", "썸네일 3종", ctx);
+      addRow("cdn", "p_001 · s/m/l", ctx);
+      hot("cdn", ctx);
+    } },
+  { ch: 2, view: "back", trig: "업로드 완료", title: "worker가 메타 테이블에 결과를 기록",
+    store: ["thumb_url", "status = ready"], src: "SAMPLE worker/resize.ts:58",
+    async run(ctx) {
+      setStat("worker", "완료");
+      await fly("worker_meta", "thumb_url · ready", ctx, { dur: 1700 });
+      addRow("meta", "p_001 · ready", ctx, { key: "st" });
+      addRow("meta", "thumb_url = /t/p_001", ctx, { key: "tu" });
+      hot("meta", ctx); setStat("worker", "");
+    } },
+  { ch: 2, view: "back", trig: "status가 ready로 바뀜", title: "앨범 카드가 생김",
+    note: "그 전까지 앨범 카드 상자는 흐리게 \"아직 없음\"으로 보입니다.", src: "SAMPLE album/cards.ts:22",
+    async run(ctx) {
+      await fly("meta_card", "ready", ctx, { dur: 800 });
+      exist("card", true); hot("card", ctx);
+    } },
+  { ch: 3, view: "end", trig: "사용자가 앨범을 엶", title: "앨범 화면이 카드 목록과 썸네일 파일을 합쳐 보여 줌",
+    data: ["카드: photo_id · thumb_url", "썸네일 파일 (CDN)"], src: "SAMPLE album/list.ts:9",
+    note: "보라 카드 둘은 화면에서 합쳐지는 짝입니다.",
+    async run(ctx) {
+      await merge({ from: [["card_join", "카드 목록"], ["cdn_join", "썸네일 파일"]], to: ["join_album", "카드 + 썸네일"], pair: 1 }, ctx);
+      hot("album", ctx); setStat("album", "● 표시됨");
+    } },
+  { ch: 3, view: "batch", trig: "매시 정각", clockTrig: true, title: "정리 배치가 오래된 원본을 확인",
+    warn: "원본 보관 기간 [미확인]", note: "선이 점선인 것은 코드로 확인하지 못한 경로라서입니다.", src: "SAMPLE jobs/cleanup.ts:5",
+    async run(ctx) {
+      clock("batch", true); setStat("batch", "확인 중…");
+      await fly("batch_orig", "보관 기간 확인 [미확인]", ctx, { dur: 1800 });
+      setStat("batch", "");
+    } },
+];
+// ===== end DATA =====
+
+// ===== Engine. Do not edit below this line for a new flow. =====
+const SVGNS = "http://www.w3.org/2000/svg";
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const NODE_TYPES = new Set(["box", "cyl", "gate", "frame"]);
+
+// Data mistakes are reported before anything is drawn, so a broken page names its own cause.
+function validateData() {
+  const errs = [];
+  const ids = new Set();
+  for (const n of NODES) {
+    if (ids.has(n.id)) errs.push(`NODES: id "${n.id}"가 두 번 나옵니다`);
+    ids.add(n.id);
+    if (!NODE_TYPES.has(n.type)) errs.push(`NODES ${n.id}: 모르는 type "${n.type}"`);
+    if (n.type === "cyl" && !(n.rows > 0)) errs.push(`NODES ${n.id}: cyl에는 rows가 필요합니다`);
+    const extra = ["stat", "ghost", "clock", "rows"].filter(f => n[f]);
+    if (n.type === "frame" && extra.length) errs.push(`NODES ${n.id}: frame에는 ${extra.join(", ")}를 줄 수 없습니다`);
+    if (n.type === "gate" && extra.length) errs.push(`NODES ${n.id}: gate에는 ${extra.join(", ")}를 줄 수 없습니다`);
+    // Rows must fit above the status line, or the two overlap.
+    if (n.rows && (n.type === "box" || n.type === "cyl")) {
+      const need = (n.type === "cyl" ? 90 : 66) + n.rows * 20 + (n.stat || n.ghost ? 22 : 0);
+      if (n.h < need) errs.push(`NODES ${n.id}: 줄 ${n.rows}개를 담으려면 h가 ${need} 이상이어야 합니다`);
+    }
+  }
+  if (!VIEW.full) errs.push("VIEW: full이 필요합니다");
+  for (const id of DASHED) if (!(id in PATHS)) errs.push(`DASHED: PATHS에 없는 경로 "${id}"`);
+  STEPS.forEach((s, i) => {
+    if (!(s.ch >= 0 && s.ch < CH.length)) errs.push(`STEPS ${i + 1}: ch ${s.ch}가 CH 범위 밖입니다`);
+    if (!VIEW[s.view]) errs.push(`STEPS ${i + 1}: VIEW에 없는 view "${s.view}"`);
+    if (typeof s.run !== "function") errs.push(`STEPS ${i + 1}: run이 함수가 아닙니다`);
+  });
+  CH.forEach((name, ci) => { if (!STEPS.some(s => s.ch === ci)) errs.push(`CH "${name}": 단계가 하나도 없습니다`); });
+  return errs;
+}
+const DATA_ERRORS = validateData();
+DATA_ERRORS.forEach(e => console.error("[flow-map] " + e));
+
+document.title = META.title;
+document.getElementById("title").textContent = META.title;
+document.getElementById("intro").textContent = META.intro;
+
+const gPaths = document.getElementById("paths");
+const gNodes = document.getElementById("nodes");
+const gCards = document.getElementById("cards");
+const svg = document.getElementById("map");
+const narr = document.getElementById("narr");
+const ROWSLOT = {};
+
+function mk(tag, attrs, parent) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, cls, s, id) {
+  const t = mk("text", { x, y, class: cls }, parent);
+  if (id) t.id = id;
+  t.textContent = s;
+  return t;
+}
+
+function build() {
+  // Two arrowhead markers (idle and active) because marker colors cannot follow the path's stroke reliably.
+  const defs = mk("defs", {}, svg);
+  for (const [mid, color] of [["arrow", "var(--path)"], ["arrow-on", "var(--accent)"]]) {
+    const m = mk("marker", { id: mid, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" }, defs);
+    mk("path", { d: "M0,0 L10,5 L0,10 z", style: `fill:${color}` }, m);
+  }
+  for (const [id, d] of Object.entries(PATHS)) {
+    mk("path", { id: "p_" + id, d, class: "path" + (DASHED.has(id) ? " dash" : ""), "marker-end": "url(#arrow)" }, gPaths);
+  }
+  for (const id of Object.keys(PATHS)) {
+    const p = document.getElementById("p_" + id);
+    if (isJunction(p.getPointAtLength(p.getTotalLength()))) { p.dataset.join = "1"; p.removeAttribute("marker-end"); }
+  }
+  for (const n of NODES) {
+    const g = mk("g", { id: "n_" + n.id, class: "node" + (n.dashed ? " dashed" : "") + (n.type === "gate" ? " gate" : "") }, gNodes);
+    if (n.type === "frame") {
+      g.setAttribute("class", "frame");
+      mk("rect", { x: n.x, y: n.y, width: n.w, height: n.h, rx: 18 }, g);
+      txt(g, n.x + 16, n.y + 24, "", n.title);
+      continue;
+    }
+    if (n.type === "cyl") {
+      const ry = 12;
+      mk("path", {
+        class: "cylbody",
+        d: `M${n.x},${n.y + ry} L${n.x},${n.y + n.h - ry} A${n.w / 2},${ry} 0 0 0 ${n.x + n.w},${n.y + n.h - ry} L${n.x + n.w},${n.y + ry}`,
+      }, g);
+      mk("ellipse", { class: "cyltop", cx: n.x + n.w / 2, cy: n.y + ry, rx: n.w / 2, ry }, g);
+      txt(g, n.x + 14, n.y + 46, "ntitle", n.title);
+      txt(g, n.x + 14, n.y + 63, "nsub", n.sub || "");
+      ROWSLOT[n.id] = { g: mk("g", {}, g), x: n.x + 10, y: n.y + 76, w: n.w - 20, max: n.rows, items: [] };
+    } else {
+      mk("rect", { class: "box", x: n.x, y: n.y, width: n.w, height: n.h, rx: 10 }, g);
+      if (n.color) mk("rect", { class: "bar", x: n.x, y: n.y + 10, width: 4, height: n.h - 20, rx: 2, fill: `var(${n.color})` }, g);
+      txt(g, n.x + 16, n.y + 27, "ntitle", n.title);
+      if (n.type === "gate") {
+        mk("circle", { class: "lamp", cx: n.x + n.w - 20, cy: n.y + 21, r: 7 }, g);
+        txt(g, n.x + 16, n.y + 55, "gstat", "대기", "s_" + n.id);
+        continue;
+      }
+      txt(g, n.x + 16, n.y + 46, "nsub", n.sub || "");
+      if (n.rows) ROWSLOT[n.id] = { g: mk("g", {}, g), x: n.x + 16, y: n.y + 60, w: n.w - 28, max: n.rows, items: [] };
+    }
+    // Shared by box and cyl: status line and clock.
+    if (n.stat || n.ghost) txt(g, n.x + 16, n.y + n.h - (n.type === "cyl" ? 22 : 14), "nstat", "", "s_" + n.id);
+    if (n.clock) {
+      const c = mk("g", { id: "clock_" + n.id, class: "clock" }, g);
+      const cx = n.x + n.w - 26, cy = n.y + 26;
+      mk("circle", { cx, cy, r: 14 }, c);
+      mk("line", { x1: cx, y1: cy, x2: cx, y2: cy - 8 }, c);
+      mk("line", { x1: cx, y1: cy, x2: cx + 6, y2: cy + 3 }, c);
+    }
+  }
+}
+
+// ── Verbs a step may use ──────────────────────────────────────────────────
+function el(id, what) {
+  const e = document.getElementById(id);
+  if (!e) throw new Error(`[flow-map] ${what}`);
+  return e;
+}
+function setStat(id, s) { el("s_" + id, `상태 줄이 없는 노드 "${id}" (stat: true가 필요)`).textContent = s; }
+function setGate(id, state, s) {
+  el("n_" + id, `NODES에 없는 gate "${id}"`).setAttribute("class", "node gate " + (state || ""));
+  setStat(id, s);
+}
+function exist(id, on) {
+  el("n_" + id, `NODES에 없는 노드 "${id}"`).classList.toggle("ghost", !on);
+  setStat(id, on ? "● 생성됨" : "아직 없음");
+}
+function clock(id, on) { el("clock_" + id, `clock이 없는 노드 "${id}"`).classList.toggle("on", on); }
+function hot(id, ctx) {
+  const g = el("n_" + id, `NODES에 없는 노드 "${id}"`);
+  if (ctx.instant) return;
+  g.classList.add("hot");
+  setTimeout(() => g.classList.remove("hot"), 1400 * speedK());
+}
+function renderRows(id) {
+  const slot = ROWSLOT[id];
+  slot.g.replaceChildren();
+  slot.items.slice(-slot.max).forEach((it, i) => {
+    const r = mk("g", { class: "row" + (it.fresh ? " new" : "") + (it.disp ? " disp" : "") }, slot.g);
+    mk("rect", { x: slot.x - 4, y: slot.y + i * 20 - 2, width: slot.w + 8, height: 19, rx: 4 }, r);
+    txt(r, slot.x, slot.y + i * 20 + 12, "", it.text);
+    it.fresh = false;
+  });
+}
+function addRow(id, text, ctx, opts = {}) {
+  const slot = ROWSLOT[id];
+  if (!slot) throw new Error(`[flow-map] 줄을 쌓을 수 없는 노드 "${id}" (rows가 필요)`);
+  const same = opts.key ? slot.items.find(it => it.key === opts.key) : null;
+  if (same) { same.text = text; same.fresh = !ctx.instant; same.disp = !!opts.disp; }
+  else slot.items.push({ text, key: opts.key, disp: !!opts.disp, fresh: !ctx.instant });
+  renderRows(id);
+}
+function clearRows() { for (const id of Object.keys(ROWSLOT)) { ROWSLOT[id].items = []; renderRows(id); } }
+
+function toast(x, y, s, ctx) {
+  if (ctx.instant) return;
+  const g = mk("g", { class: "toast" }, gCards);
+  const t = txt(g, x + 10, y + 16, "", s);
+  const w = t.getComputedTextLength() + 20;
+  const r = mk("rect", { x, y, width: w, height: 24, rx: 6 }, null);
+  g.insertBefore(r, t);
+  setTimeout(() => g.remove(), 2600 * speedK());
+}
+
+// Initial state is derived from NODES, so a new flow never edits this function.
+function resetMap() {
+  clearRows();
+  for (const n of NODES) {
+    if (n.type === "gate") setGate(n.id, "", "대기");
+    else if (n.ghost) exist(n.id, false);
+    else if (n.stat) setStat(n.id, "");
+    if (n.clock) clock(n.id, false);
+  }
+  gCards.replaceChildren();
+  document.querySelectorAll(".path.active").forEach(p => { p.classList.remove("active"); if (!p.dataset.join) p.setAttribute("marker-end", "url(#arrow)"); });
+  document.querySelectorAll(".node.hot").forEach(p => p.classList.remove("hot"));
+}
+
+// ── Motion ────────────────────────────────────────────────────────────────
+let runId = 0;
+class Cancelled extends Error {}
+let speedOverride = null;
+let flyLog = null; // set only by flowSelfCheck to learn which paths a step animates
+const speedK = () => speedOverride ?? Number(document.getElementById("speed").value);
+const ease = t => (t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+
+function sleep(ms, ctx) {
+  if (ctx.instant) return Promise.resolve();
+  return new Promise((res, rej) => setTimeout(() => (ctx.id === runId ? res() : rej(new Cancelled())), ms * speedK()));
+}
+
+// Fallback keeps the page alive when VIEW.full is missing, so the data error is shown instead of a blank page.
+let view = (VIEW.full || [0, 0, 1400, 830]).slice();
+function setView(v) { view = v.slice(); svg.setAttribute("viewBox", v.join(" ")); }
+function camera(name, ctx) {
+  const target = VIEW[name];
+  if (ctx.instant || reduceMotion) { setView(target); return Promise.resolve(); }
+  const from = view.slice();
+  const dur = 750 * speedK();
+  return new Promise((res, rej) => {
+    const t0 = performance.now();
+    const tick = now => {
+      if (ctx.id !== runId) return rej(new Cancelled());
+      const k = ease(Math.min(1, (now - t0) / dur));
+      setView(from.map((a, i) => a + (target[i] - a) * k));
+      k < 1 ? requestAnimationFrame(tick) : res();
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+function cardClass(opts) {
+  if (opts.pair !== undefined && opts.pair !== 1 && opts.pair !== 2) throw new Error(`[flow-map] pair는 1 또는 2만 씁니다 (받은 값: ${opts.pair})`);
+  return (opts.ok ? " ok" : "") + (opts.pair ? " pair" + opts.pair : "");
+}
+function makeCard(label, cls) {
+  const g = mk("g", { class: "card" + cls }, gCards);
+  const t = txt(g, 0, 0, "", label);
+  const w = t.getComputedTextLength() + 18;
+  const r = mk("rect", { x: -w / 2, y: -13, width: w, height: 26, rx: 13 }, null);
+  g.insertBefore(r, t);
+  t.setAttribute("x", -w / 2 + 9);
+  t.setAttribute("y", 4.5);
+  return g;
+}
+const pathEnd = (id, f) => { const p = el("p_" + id, `PATHS에 없는 경로 "${id}"`); return p.getPointAtLength(f * p.getTotalLength()); };
+
+// Two or more cards fly to one junction at the same time, become one card there, and leave on `to`.
+// spec: { from: [[path, label], ...], to: [path, label], pair: 1 | 2, dur }
+async function merge(spec, ctx) {
+  const start = pathEnd(spec.to[0], 0);
+  for (const [p] of spec.from) {
+    const e = pathEnd(p, 1);
+    if (Math.hypot(e.x - start.x, e.y - start.y) > 4) throw new Error(`[flow-map] merge: "${p}" 끝점이 "${spec.to[0]}" 시작점과 만나지 않습니다`);
+  }
+  const cls = cardClass(spec);
+  if (ctx.instant) return;
+  await Promise.all(spec.from.map(([p, label]) => fly(p, label, ctx, { pair: spec.pair, dur: spec.dur })));
+  const holder = mk("g", { transform: `translate(${start.x},${start.y})` }, gCards);
+  const c = makeCard(spec.to[1], cls + " pop");
+  holder.appendChild(c);
+  try { await sleep(450, ctx); } finally { holder.remove(); }
+  await fly(spec.to[0], spec.to[1], ctx, { pair: spec.pair, dur: spec.dur });
+}
+
+// The reverse of merge: one card reaches a junction and leaves as several cards at once, one per path.
+// spec: { from: [path, label], to: [[path, label], ...], dur }
+async function split(spec, ctx) {
+  const end = pathEnd(spec.from[0], 1);
+  for (const [p] of spec.to) {
+    const s = pathEnd(p, 0);
+    if (Math.hypot(s.x - end.x, s.y - end.y) > 4) throw new Error(`[flow-map] split: "${p}" 시작점이 "${spec.from[0]}" 끝점과 만나지 않습니다`);
+  }
+  if (ctx.instant) return;
+  await fly(spec.from[0], spec.from[1], ctx, { dur: spec.dur });
+  await Promise.all(spec.to.map(([p, label]) => fly(p, label, ctx, { dur: spec.dur })));
+}
+
+function fly(pathId, label, ctx, opts = {}) {
+  // Looked up before the instant shortcut so a misspelled path fails on a jump too, not only during playback.
+  const path = el("p_" + pathId, `PATHS에 없는 경로 "${pathId}"`);
+  if (ctx.instant) return Promise.resolve();
+  const cls = cardClass(opts);
+  if (flyLog) flyLog.add(pathId);
+  const len = path.getTotalLength();
+  const g = makeCard(label, cls);
+  // A leg that ends at a merge junction has no arrowhead: the arrow belongs to the path leaving it.
+  const tip = on => (path.dataset.join ? null : path.setAttribute("marker-end", on ? "url(#arrow-on)" : "url(#arrow)"));
+  const on = () => { path.classList.add("active"); tip(true); };
+  const off = () => { path.classList.remove("active"); tip(false); };
+  on();
+  const dur = (opts.dur || 1400) * speedK();
+  return new Promise((res, rej) => {
+    const t0 = performance.now();
+    const tick = now => {
+      if (ctx.id !== runId) { g.remove(); off(); return rej(new Cancelled()); }
+      const raw = reduceMotion ? 1 : Math.min(1, (now - t0) / dur);
+      const k = ease(raw);
+      const p = path.getPointAtLength((opts.reverse ? 1 - k : k) * len);
+      g.setAttribute("transform", `translate(${p.x},${p.y})`);
+      if (raw < 1) { requestAnimationFrame(tick); return; }
+      setTimeout(() => { g.remove(); off(); }, 250);
+      res();
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+// ── Narration and timeline ────────────────────────────────────────────────
+const chips = (a, c) => (a || []).map(s => `<span class="chip ${c}">${s}</span>`).join("");
+const subtitle = document.getElementById("subtitle");
+// Recording shows only the header and the map, so the step title moves onto the map as a subtitle.
+function setRecording(on) { document.body.classList.toggle("recording", on); }
+function narrate(i) {
+  if (i === 0) {
+    narr.innerHTML = `<div class="meta">시작 전</div><h2>${META.startTitle}</h2><div class="note">${META.startNote}</div>`;
+    subtitle.innerHTML = `<div class="ttl">${META.startTitle}</div>`;
+    return;
+  }
+  const s = STEPS[i - 1];
+  subtitle.innerHTML = `<div class="meta">${i} / ${STEPS.length} · ${CH[s.ch]} · 트리거: ${s.trig}</div><div class="ttl">${s.title}</div>`;
+  narr.innerHTML =
+    `<div class="meta">${i} / ${STEPS.length} · ${CH[s.ch]} · <span class="trig ${s.clockTrig ? "clock-t" : ""}">트리거: ${s.trig}</span></div>` +
+    `<h2>${s.title}</h2>` +
+    (s.data ? `<div>${chips(s.data, "data")}</div>` : "") +
+    (s.store ? `<div>${chips(s.store, "store")}</div>` : "") +
+    (s.warn ? `<div>${chips([s.warn], "warn")}</div>` : "") +
+    (s.note ? `<div class="note">${s.note}</div>` : "") +
+    (s.src ? `<div class="src">근거: ${s.src}</div>` : "");
+}
+
+const dots = [];
+function buildTimeline() {
+  const tl = document.getElementById("timeline");
+  CH.forEach((name, ci) => {
+    const c = document.createElement("div"); c.className = "chapter";
+    c.innerHTML = `<span>${ci + 1}. ${name}</span>`;
+    const row = document.createElement("div"); row.className = "dots";
+    STEPS.forEach((s, si) => {
+      if (s.ch !== ci) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "dot"; b.textContent = si + 1;
+      b.setAttribute("aria-label", `${si + 1}단계: ${s.title}`);
+      b.addEventListener("click", () => { stopPlay(); goto(si + 1); });
+      row.appendChild(b); dots[si] = b;
+    });
+    c.appendChild(row); tl.appendChild(c);
+  });
+}
+function markDots(i) { dots.forEach((d, k) => { d.classList.toggle("done", k + 1 < i); d.classList.toggle("cur", k + 1 === i); }); }
+
+// ── Player ────────────────────────────────────────────────────────────────
+let cur = 0;
+let playing = false;
+const btnPlay = document.getElementById("btnPlay");
+
+// A jump rebuilds every earlier step instantly, then animates only the target step.
+async function goto(i) {
+  i = Math.max(1, Math.min(STEPS.length, i));
+  const ctxInstant = { instant: true, id: ++runId };
+  const my = ctxInstant.id;
+  cur = i;
+  resetMap();
+  narrate(i); markDots(i);
+  try {
+    for (let k = 0; k < i - 1; k++) await STEPS[k].run(ctxInstant);
+    const ctx = { instant: false, id: my };
+    await camera(STEPS[i - 1].view, ctx);
+    await STEPS[i - 1].run(ctx);
+    if (playing && my === runId) {
+      await sleep(1600, ctx);
+      if (i < STEPS.length) goto(i + 1); else stopPlay();
+    }
+  } catch (e) {
+    if (!(e instanceof Cancelled)) throw e;
+  }
+}
+function startPlay() { playing = true; btnPlay.textContent = "❚❚ 정지"; goto(cur >= STEPS.length ? 1 : cur + 1); }
+function stopPlay() { playing = false; btnPlay.textContent = "▶ 재생"; }
+
+// ── Video export: the viewer records this tab while it plays from step 1, then saves a .webm. ──
+// Uses the browser's tab capture, so Chrome asks for permission once per recording. No upload anywhere.
+let recorder = null;
+const btnRec = document.getElementById("btnRec");
+async function recordVideo() {
+  if (recorder) { recorder.stop(); return; } // second press stops early and still saves
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "browser", frameRate: 30 }, audio: false, preferCurrentTab: true });
+  } catch (e) {
+    console.warn("[flow-map] recording was not started: " + e.message);
+    return;
+  }
+  const type = ["video/webm;codecs=vp9", "video/webm"].find(t => MediaRecorder.isTypeSupported(t));
+  const chunks = [];
+  recorder = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  recorder.onstop = () => {
+    setRecording(false);
+    stream.getTracks().forEach(t => t.stop());
+    recorder = null; btnRec.textContent = "● 영상으로 저장";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(chunks, { type: "video/webm" }));
+    a.download = (META.title || "flow-map").replace(/[\\/:*?"<>|]/g, "_") + ".webm";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  };
+  stream.getVideoTracks()[0].addEventListener("ended", () => recorder && recorder.stop());
+  btnRec.textContent = "■ 녹화 멈추고 저장";
+  stopPlay(); cur = 0; resetMap(); narrate(0); markDots(0); setView(VIEW.full);
+  // Controls are hidden while recording; Esc or the browser's "stop sharing" bar ends it early.
+  setRecording(true);
+  await new Promise(r => setTimeout(r, 300)); // let the layout settle before the first frame
+  recorder.start();
+  await new Promise(r => setTimeout(r, 600));
+  startPlay();
+  // Keep the final step on screen briefly so the video does not cut on the last motion.
+  while (recorder && playing) await new Promise(r => setTimeout(r, 200));
+  if (recorder) { await new Promise(r => setTimeout(r, 1500)); if (recorder) recorder.stop(); }
+}
+
+// ── Self-check: run in a browser before anyone sees the page. ─────────────
+// Returns plain JSON so any browser driver can read it. ok is true only when every list is empty.
+function snapshot() {
+  const out = [];
+  for (const e of gNodes.querySelectorAll("*")) {
+    const cls = [...e.classList].filter(c => c !== "hot" && c !== "new").join(".");
+    const t = e.tagName === "text" ? e.textContent : "";
+    if (cls || t) out.push(`${e.closest("[id^=n_]")?.id}|${e.tagName}|${cls}|${t}`);
+  }
+  return out;
+}
+function snapDiff(a, b) {
+  const sa = new Set(a), sb = new Set(b);
+  const onlyA = a.filter(x => !sb.has(x)).slice(0, 2), onlyB = b.filter(x => !sa.has(x)).slice(0, 2);
+  return onlyA.length || onlyB.length ? `재생에만: ${onlyA.join(", ") || "없음"} / 점프에만: ${onlyB.join(", ") || "없음"}` : "";
+}
+function edgeDist(p, n) {
+  const dx = Math.max(n.x - p.x, 0, p.x - (n.x + n.w)), dy = Math.max(n.y - p.y, 0, p.y - (n.y + n.h));
+  if (dx || dy) return Math.hypot(dx, dy);
+  return Math.min(p.x - n.x, n.x + n.w - p.x, p.y - n.y, n.y + n.h - p.y);
+}
+// A merge junction is a point where at least three path ends meet (two legs in, one path out).
+function isJunction(pt) {
+  let n = 0;
+  for (const id of Object.keys(PATHS)) {
+    const p = document.getElementById("p_" + id), L = p.getTotalLength();
+    for (const s of [0, L]) { const q = p.getPointAtLength(s); if (Math.hypot(q.x - pt.x, q.y - pt.y) <= 4) n++; }
+  }
+  return n >= 3;
+}
+function checkPaths(res) {
+  const boxes = NODES.filter(n => n.type !== "frame");
+  for (const id of Object.keys(PATHS)) {
+    const p = document.getElementById("p_" + id);
+    const L = p.getTotalLength();
+    const bad = new Set();
+    // Skip 8px at each end: an arrow legitimately touches the boxes it connects.
+    for (let s = 8; s <= L - 8; s += 3) {
+      const pt = p.getPointAtLength(s);
+      for (const b of boxes) {
+        if (pt.x > b.x + 1 && pt.x < b.x + b.w - 1 && pt.y > b.y + 1 && pt.y < b.y + b.h - 1) bad.add(b.id);
+      }
+    }
+    if (bad.size) res.through.push(`${id} → ${[...bad].join(", ")} 상자를 지나감`);
+    for (const [end, s] of [["시작", 0], ["끝", L]]) {
+      const pt = p.getPointAtLength(s);
+      const near = Math.min(...NODES.map(n => edgeDist(pt, n)));
+      if (near > 4 && !isJunction(pt)) res.dangling.push(`${id} ${end}점 (${Math.round(pt.x)},${Math.round(pt.y)})이 어느 상자 가장자리에도 닿지 않음`);
+    }
+  }
+}
+// The camera of a step must show both boxes at the ends of every path that step animates.
+function checkFraming(res, k, pathIds) {
+  const s = STEPS[k - 1], [vx, vy, vw, vh] = VIEW[s.view];
+  const cut = new Set();
+  for (const id of pathIds) {
+    const p = document.getElementById("p_" + id);
+    for (const at of [0, p.getTotalLength()]) {
+      const pt = p.getPointAtLength(at);
+      for (const n of NODES) {
+        if (n.type === "frame" || edgeDist(pt, n) > 4) continue;
+        if (n.x < vx - 2 || n.y < vy - 2 || n.x + n.w > vx + vw + 2 || n.y + n.h > vy + vh + 2) cut.add(n.id);
+      }
+    }
+  }
+  if (cut.size) res.framing.push(`${k}단계: view "${s.view}"가 ${[...cut].join(", ")} 상자를 자름`);
+}
+function checkHidden(res, k) {
+  for (const n of NODES) {
+    const e = document.getElementById("n_" + n.id);
+    const cs = getComputedStyle(e);
+    if (cs.display === "none" || cs.visibility === "hidden" || e.classList.contains("hidden") || e.style.opacity === "0") {
+      res.hidden.push(`${k}단계: ${n.id}가 숨겨져 있음 (아직 없는 노드는 ghost로 흐리게)`);
+    }
+  }
+}
+
+window.flowSelfCheck = async function (opts = {}) {
+  const speed = opts.speed ?? 0.12;
+  const stepTimeout = opts.stepTimeoutMs ?? 20000;
+  const res = { ok: false, data: DATA_ERRORS.slice(), leftover: [], through: [], dangling: [], framing: [], orphan: [], hidden: [], playback: [], restore: [] };
+  if (res.data.length) return res;
+  const sample = JSON.stringify({ META, NODES, CH, STEPS }).match(/SAMPLE/g);
+  if (sample) res.leftover.push(`SAMPLE 문구 ${sample.length}곳이 남아 있음`);
+  checkPaths(res);
+
+  const errs = res.playback;
+  const onErr = e => errs.push(String(e.message || e));
+  const onRej = e => { if (!(e.reason instanceof Cancelled)) errs.push(String((e.reason && e.reason.message) || e.reason)); };
+  addEventListener("error", onErr);
+  addEventListener("unhandledrejection", onRej);
+  const withTimeout = (p, ms, label) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(label)), ms))]);
+  speedOverride = speed;
+  try {
+    // 1. Real playback, start to end, with motion.
+    stopPlay(); runId++; cur = 0;
+    startPlay();
+    const deadline = performance.now() + stepTimeout * STEPS.length;
+    while (playing && !errs.length && performance.now() < deadline) await new Promise(r => setTimeout(r, 50));
+    if (playing) errs.push(`재생이 ${cur}단계에서 끝나지 않음`);
+    else if (cur !== STEPS.length) errs.push(`재생이 ${cur}단계에서 멈춤`);
+    stopPlay(); runId++;
+
+    // 2. Each step played from a jump must equal the same steps rebuilt instantly.
+    // Along the way, collect every box some step uses: a card leaves or reaches it, or its state changes.
+    const used = new Set();
+    const initial = new Set(INITIAL_SNAPSHOT);
+    for (let k = 1; k <= STEPS.length; k++) {
+      flyLog = new Set();
+      try { await withTimeout(goto(k), stepTimeout, `${k}단계 이동이 끝나지 않음`); }
+      catch (e) { errs.push(`${k}단계: ${e.message}`); continue; }
+      checkFraming(res, k, flyLog);
+      for (const pid of flyLog) {
+        const p = document.getElementById("p_" + pid);
+        for (const at of [0, p.getTotalLength()]) {
+          const pt = p.getPointAtLength(at);
+          for (const n of NODES) if (n.type !== "frame" && edgeDist(pt, n) <= 4) used.add(n.id);
+        }
+      }
+      flyLog = null;
+      const played = snapshot();
+      for (const line of played) if (!initial.has(line)) used.add(line.split("|")[0].slice(2));
+      const id = ++runId;
+      resetMap();
+      try { for (let j = 0; j < k; j++) await STEPS[j].run({ instant: true, id }); }
+      catch (e) { errs.push(`${k}단계 빠른 재구성: ${e.message}`); continue; }
+      const d = snapDiff(played, snapshot());
+      if (d) res.restore.push(`${k}단계: ${d}`);
+      checkHidden(res, k);
+    }
+    // A playback error stops steps early, which would flag every later box as unused; report the error alone.
+    for (const n of errs.length ? [] : NODES) {
+      if (n.type !== "frame" && !used.has(n.id)) res.orphan.push(`${n.id}: 어느 단계도 쓰지 않는 상자 (카드가 오가지도, 상태가 바뀌지도 않음)`);
+    }
+    // 3. Reset after the last step must give back the page as it first loaded.
+    resetMap();
+    const d = snapDiff(snapshot(), INITIAL_SNAPSHOT);
+    if (d) res.restore.push(`처음으로 되돌리기: ${d.replace("재생에만", "되돌린 뒤에만").replace("점프에만", "처음에만")}`);
+  } finally {
+    speedOverride = null; flyLog = null;
+    removeEventListener("error", onErr);
+    removeEventListener("unhandledrejection", onRej);
+    runId++; cur = 0; resetMap(); narrate(0); markDots(0); setView(VIEW.full);
+  }
+  res.ok = ["data", "leftover", "through", "dangling", "framing", "orphan", "hidden", "playback", "restore"].every(k => !res[k].length);
+  return res;
+};
+
+// ── Start ─────────────────────────────────────────────────────────────────
+let INITIAL_SNAPSHOT = [];
+if (DATA_ERRORS.length) {
+  narr.innerHTML = `<div class="meta">데이터 오류</div><h2>지도를 그리지 못했습니다</h2><div class="note">${DATA_ERRORS.join("<br>")}</div>`;
+} else {
+  build();
+  buildTimeline();
+  // Pausing lets the current step finish so the map never stops half-updated.
+  btnPlay.addEventListener("click", () => (playing ? stopPlay() : startPlay()));
+  document.getElementById("btnPrev").addEventListener("click", () => { stopPlay(); goto(cur - 1); });
+  document.getElementById("btnNext").addEventListener("click", () => { stopPlay(); goto(cur + 1); });
+  document.getElementById("btnFull").addEventListener("click", () => camera("full", { instant: false, id: runId }).catch(() => {}));
+  // Shown only where tab capture and MediaRecorder exist (desktop Chrome, Edge, Firefox).
+  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.MediaRecorder) {
+    btnRec.hidden = false;
+    btnRec.addEventListener("click", () => { recordVideo(); });
+  }
+  document.addEventListener("keydown", ev => {
+    if (ev.target.closest("select")) return;
+    // A focused button already toggles on space by default; avoid a double toggle.
+    if (ev.key === " ") { if (ev.target.closest("button")) return; ev.preventDefault(); btnPlay.click(); }
+    else if (ev.key === "ArrowRight") { stopPlay(); goto(cur + 1); }
+    else if (ev.key === "ArrowLeft") { stopPlay(); goto(cur - 1); }
+    else if (ev.key === "Escape" && recorder) recorder.stop();
+  });
+  resetMap();
+  INITIAL_SNAPSHOT = snapshot();
+  narrate(0);
+  markDots(0);
+}
+</script>
+</body>
+</html>
