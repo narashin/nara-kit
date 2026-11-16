@@ -1,0 +1,23 @@
+id: override-absent-001
+name: "No override file means no extra line"
+description: |
+  When ~/.claude/overrides/nara-now.md does not exist, now skips the override step
+  silently: it reads no ledger and reports no counts, even if a ledger file is present.
+tags:
+  - override
+inputs:
+  prompt: |
+    지금 뭐해
+
+    (상태: 브랜치 feature/PROJ-123-export, 변경사항 없음, docs/ 아래 작업 문서 없음.
+    `~/.claude/overrides/nara-now.md`는 없다.
+    `~/.local/state/acme-loop/ledger.jsonl`은 있고 다섯 줄이다: applied, rejected, applied, unlinked, extracted.)
+  files: []
+expected:
+  output_contains:
+    - "/nara-ac-draft"
+  output_not_contains:
+    - "자동 수정"
+    - "링크 해제"
+  outcomes:
+    - type: task_completed

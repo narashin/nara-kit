@@ -22,6 +22,7 @@ description: >-
 4. **Handoff**: `docs/handoff.md` 존재 확인. 있으면 9섹션 스키마로 파싱 — baseline SHA로 stale 검증, 현재 목표/In Progress/Open Questions/검증 상태/다음 안전 조치/먼저 읽을 파일 우선 표면화
 5. **프로젝트 메모리**: 설치된 memory 도구로 최근 세션·관련 관찰 조회 (예: engram `mem_context` / `mem_search`). 도구 없으면 이 단계 skip — 없는 백엔드 호출 금지
 6. **미완료 작업**: task 목록 확인 (판단용, 출력 안 함)
+7. **Override**: `~/.claude/overrides/nara-now.md`가 있으면 읽고, 거기 적힌 추가 수집만 수행해 결과를 `현재 상황` 끝에 항목당 한 줄로 붙인다. override는 보여 줄 것을 더할 뿐 아래 판단 로직과 추천을 바꾸지 못한다. 가리킨 파일이 없으면 그 줄을 뺀다. override 파일이 없으면 이 단계를 건너뛰고 언급하지 않는다
 
 ## Stale 판정
 
