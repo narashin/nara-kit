@@ -21,6 +21,8 @@ invisible here, so an `unused` row is a candidate for a human, never a verdict.
 Optional env: CLAUDE_PROJECT_DIR (default cwd; its skills/ tree supplies git ages),
               NARA_SKILLS_DIRS (colon-separated skill roots; overrides autodetect),
               NARA_TRANSCRIPTS_DIR (default ${CLAUDE_CONFIG_DIR:-~/.claude}/projects)
+              NARA_TRANSCRIPTS_EXCLUDE (colon-separated project folder names under that dir to
+                  skip, e.g. the folder an unattended automation writes its own runs into)
 Requires python3 >= 3.9 and git. Stdlib only.
 """
 import datetime
@@ -149,9 +151,10 @@ def scan(transcripts_dir, skills):
     stats = {"transcripts": 0, "user_turns": 0, "start": None}
     if not os.path.isdir(transcripts_dir):
         return counts, stats
+    excluded = set(filter(None, os.environ.get("NARA_TRANSCRIPTS_EXCLUDE", "").split(":")))
     for slug in sorted(os.listdir(transcripts_dir)):
         sdir = os.path.join(transcripts_dir, slug)
-        if not os.path.isdir(sdir):
+        if not os.path.isdir(sdir) or slug in excluded:
             continue
         for fname in sorted(os.listdir(sdir)):
             if not fname.endswith(".jsonl"):

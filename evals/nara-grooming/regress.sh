@@ -764,12 +764,30 @@ u5() {
   assert_jq U5 "a corrupt line does not break the scan" "$json" '.transcripts' 1
 }
 
+# ---- U6: an excluded project folder is not counted --------------------------
+# An unattended automation that invokes skills would otherwise mark them `used`
+# by its own runs. Only the named folder is skipped; its sibling still counts.
+u6() {
+  local roots json
+  roots="$ROOT/u6/roots"; mkdir -p "$ROOT/u6/t/bot" "$ROOT/u6/t/proj"
+  new_skill "$roots" botonly; new_skill "$roots" human
+  rec_tool /work/bot "$(ago 2)" Skill '{"skill":"botonly"}' > "$ROOT/u6/t/bot/s1.jsonl"
+  rec_tool /work/app "$(ago 2)" Skill '{"skill":"human"}' > "$ROOT/u6/t/proj/s1.jsonl"
+  json=$(run_usage env CLAUDE_PROJECT_DIR="$ROOT/u6" NARA_SKILLS_DIRS="$roots" \
+    NARA_TRANSCRIPTS_DIR="$ROOT/u6/t" NARA_TRANSCRIPTS_EXCLUDE="bot" python3 -I "$USAGE")
+  assert_jq U6 "excluded folder's invocation is not counted" "$json" '.skills.botonly.tool' 0
+  assert_jq U6 "sibling folder still counts" "$json" '.skills.human.tool' 1
+  json=$(run_usage env CLAUDE_PROJECT_DIR="$ROOT/u6" NARA_SKILLS_DIRS="$roots" \
+    NARA_TRANSCRIPTS_DIR="$ROOT/u6/t" python3 -I "$USAGE")
+  assert_jq U6 "without the exclusion it counts" "$json" '.skills.botonly.tool' 1
+}
+
 # ---- run --------------------------------------------------------------------
 echo "nara-grooming mechanical regression"
 echo "audit.sh: $AUDIT"
 echo "usage.py: $USAGE"
 echo
-for c in r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 u1 u2 u3 u4 u5; do
+for c in r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 u1 u2 u3 u4 u5 u6; do
   echo "[$c]"
   "$c"
 done
