@@ -69,13 +69,13 @@ def test_pack_config_overrides_defaults():
         _write(pack, "_adherence.json", json.dumps({
             "forbidRawHex": False,
             "allowedRawPx": ["0px", "1px", "16px"],
-            "ignorePatterns": ["data-studio-label"],
+            "ignorePatterns": ["<!-- adherence-ignore -->"],
         }))
         config, config_path = gate.load_config(pack)
         assert config_path.endswith("_adherence.json")
         path = _write(tmp, "screen.html",
                       '<div style="color: #18181b; padding: 16px">hex+px allowed here</div>\n'
-                      '<div data-studio-label="Row: 32px tall">ignored line</div>\n'
+                      '<div style="height: 32px">ignored line</div><!-- adherence-ignore -->\n'
                       '<div style="gap: 40px">caught</div>\n')
         found = gate.scan(path, config)
         assert [(line, snippet) for line, _rule, snippet in found] == [(3, "40px")]

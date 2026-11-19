@@ -29,7 +29,7 @@ graders:
     config:
       regex_match:
         - "(?i)greenfield"
-        - "(?i)startingpoints"
+        - "(?i)(startingpoints|starting points|example screens?|reference screens?)"
         - "(?i)(nav|navigation|sidebar|tab)"
         - "(?i)(status|sort|row click)"
       regex_not_match:

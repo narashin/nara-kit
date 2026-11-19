@@ -216,10 +216,13 @@ A pack tightens or relaxes the rules by shipping a JSON config and naming it in 
   "forbidRawHex": true,
   "forbidRawPx": true,
   "allowedRawPx": ["0px", "1px"],
-  "ignorePatterns": ["data-studio-label"],   // regexes; a matching line is skipped
+  "ignorePatterns": ["<!-- adherence-ignore -->"],   // regexes; a matching line is skipped
   "allowTokens": ["--ds-primary", "…"]       // informational: what this pack actually defines
 }
 ```
+
+Never put `data-studio-label` (or any pattern every candidate line carries) in `ignorePatterns`: every
+commentable element must carry that label, so the gate would skip exactly the lines it exists to check.
 
 Declaring `adherenceConfig` and then not shipping the file is a hard error, not a silent pass — a gate that
 quietly disables itself is worse than no gate. A pack that ships richer rules in another format (an ESLint or

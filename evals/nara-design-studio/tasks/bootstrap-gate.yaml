@@ -28,5 +28,5 @@ graders:
       regex_match:
         - "(?i)(build a pack|design system you already have|pack-builder)"
         - "(?i)(design\\.md|designmd_to_pack)"
-        - "(?i)(existing pack|point at)"
+        - "(?i)(existing pack|point (me )?at|pack (folder|directory|path)|already exists)"
         - "(?i)(starter pack|new design system)"
