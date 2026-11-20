@@ -4,7 +4,7 @@ Two-tier audit. Tier 1 is a cheap bash prefilter (~0 tokens); only flagged files
 
 ## Tier 1 — mechanical signals (bash, no LLM)
 
-`scripts/audit.sh [--log] <memory_file>` emits one-line JSON `{file, score, signals[], details, label}`. `scripts/audit.sh --summary <memory_dir>` audits every memory file in the dir (skipping `MEMORY.md`) and prints `total N | flagged M` followed by one `<score> <label> <file> <signals>` line per flagged file.
+`scripts/audit.sh [--log] <memory_file>` emits one-line JSON `{file, score, signals[], details, label}`. `scripts/audit.sh --summary <memory_dir>` audits every memory file in the dir (skipping `MEMORY.md`) and prints `total N | flagged M | watch W` (flagged = score 2+, watch = score 1) followed by one `<score> <label> <file> <signals>` line per file scoring 1+.
 
 Four signals score +1 each: `age_days`, `ref_validity`, `code_drift`, `skill_ref_broken`. `skill_ref_unknown` also appears in `signals[]` but scores **0** — it records a check the run could not perform, not a defect. So `signals` may be longer than `score`; derive the score from the field, never by counting the array.
 

@@ -2,8 +2,9 @@
 # nara-grooming memory Tier 1: score a memory file 0-4 by age/ref_validity/code_drift/skill_ref_broken
 # Usage: audit.sh [--log] <memory_file>
 #        audit.sh --summary <memory_dir>
-# Output: one line JSON per file; with --summary, "total N | flagged M" then one
-#         "<score> <label> <file> <signals>" line per flagged file (MEMORY.md is skipped)
+# Output: one line JSON per file; with --summary, "total N | flagged M | watch W" then one
+#         "<score> <label> <file> <signals>" line per file scoring 1+ (MEMORY.md is skipped).
+#         flagged = score 2+, watch = score 1, the same cut the skill's Tier 2 uses.
 #
 # Required: jq, git, stat, date, grep
 # Optional env: THRESHOLD_AGE_DAYS (default 90), CLAUDE_PROJECT_DIR (default cwd),
@@ -42,17 +43,25 @@ if [[ "${1:-}" == "--summary" ]]; then
   [[ -d "$dir" ]] || { echo "{\"error\":\"dir not found: $dir\"}"; exit 1; }
   total=0
   flagged=0
+  watch=0
   lines=""
   for f in "$dir"/*.md; do
     [[ -e "$f" && "$(basename "$f")" != "MEMORY.md" ]] || continue
     out="$(bash "${BASH_SOURCE[0]}" "$f")" || { echo "{\"error\":\"audit failed: $f\"}"; exit 1; }
     total=$((total + 1))
-    if [[ "$(jq -r '.score' <<<"$out")" -gt 0 ]]; then
+    score="$(jq -r '.score' <<<"$out")"
+    # A score-1 file is only watched; counting it as flagged made callers recommend
+    # grooming for a memory dir with nothing to fix.
+    if [[ "$score" -ge 2 ]]; then
       flagged=$((flagged + 1))
+    elif [[ "$score" -eq 1 ]]; then
+      watch=$((watch + 1))
+    fi
+    if [[ "$score" -gt 0 ]]; then
       lines+="$(jq -r '"\(.score) \(.label) \(.file | split("/") | last) \(.signals | join(","))"' <<<"$out")"$'\n'
     fi
   done
-  echo "total $total | flagged $flagged"
+  echo "total $total | flagged $flagged | watch $watch"
   printf '%s' "$lines"
   exit 0
 fi

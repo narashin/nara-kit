@@ -782,12 +782,52 @@ u6() {
   assert_jq U6 "without the exclusion it counts" "$json" '.skills.botonly.tool' 1
 }
 
+# ---- R19: --summary counts only score 2+ as flagged ------------------------
+# The skill flags score 2+ and only watches score 1, but --summary counted every
+# score above 0 as flagged, so nara-retro recommended grooming for a dir whose
+# only findings were watch-level. One score-1 and one score-2 file pin the cut.
+r19() {
+  local repo dir line
+  repo=$(new_repo r19)
+  printf 'x\n' > "$repo/kept.txt"
+  dir="$ROOT/r19/mem"; mkdir -p "$dir"
+  cat > "$dir/watch-only.md" <<'MD'
+---
+name: watch-only
+description: one valid anchor, old enough to trip the age signal only
+metadata:
+  type: project
+  verified_at: 2026-01-01
+  ref_paths: [kept.txt]
+---
+body
+MD
+  cat > "$dir/flagged-two.md" <<'MD'
+---
+name: flagged-two
+description: old and its anchor is gone, so age + ref_validity
+metadata:
+  type: project
+  verified_at: 2026-01-01
+  ref_paths: [gone.txt]
+---
+body
+MD
+  printf -- '- index\n' > "$dir/MEMORY.md"
+  # Age threshold 0 makes the age signal fire on both files on any date.
+  line=$(cd "$repo" && THRESHOLD_AGE_DAYS=0 CLAUDE_PROJECT_DIR="$repo" "$AUDIT" --summary "$dir" | head -1)
+  assert_jq R19 "score 1 is watch, score 2 is flagged" "$(jq -Rn --arg l "$line" '{l: $l}')" '.l' \
+    'total 2 | flagged 1 | watch 1'
+  line=$(cd "$repo" && THRESHOLD_AGE_DAYS=0 CLAUDE_PROJECT_DIR="$repo" "$AUDIT" --summary "$dir" | tail -n +2 | wc -l | tr -d ' ')
+  assert_jq R19 "both scored files are still listed" "$(jq -Rn --arg l "$line" '{l: $l}')" '.l' 2
+}
+
 # ---- run --------------------------------------------------------------------
 echo "nara-grooming mechanical regression"
 echo "audit.sh: $AUDIT"
 echo "usage.py: $USAGE"
 echo
-for c in r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 u1 u2 u3 u4 u5 u6; do
+for c in r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 r19 u1 u2 u3 u4 u5 u6; do
   echo "[$c]"
   "$c"
 done

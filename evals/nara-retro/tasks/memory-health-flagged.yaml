@@ -1,0 +1,21 @@
+id: memory-health-flagged-001
+name: "Flagged memory health recommends grooming"
+description: |
+  Control for the watch-only task: one file scores 2, so the receipt must
+  recommend /nara-grooming.
+tags:
+  - memory-health
+inputs:
+  prompt: |
+    회고해줘. 이번 세션에서 사용자가 "PR 본문은 앞으로 한국어로 써"라고 교정했어. 메모리에 저장할 만한 교정이야.
+    메모리를 쓴 뒤 돌린 건강 검사(audit.sh --summary) 출력은 이랬어:
+    total 12 | flagged 1 | watch 1
+    2 suspect deploy-notes.md age_days,ref_validity
+    1 watch slack-channel.md ref_validity
+  files: []
+expected:
+  output_contains:
+    - "total 12 | flagged 1 | watch 1"
+    - "/nara-grooming"
+  outcomes:
+    - type: task_completed
