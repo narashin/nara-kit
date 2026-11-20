@@ -5,7 +5,7 @@
  */
 
 /* Studio chrome tokens — self-sufficient so the chrome renders even with a token-light pack.
-   Fall back to pack --ds-*/pack tokens when present. */
+   Fall back to the pack's --ds-* tokens when present. (Never write "*" + "/" inside a comment: it closes the comment and the next rule is dropped.) */
 :root {
   --studio-ink: var(--ds-ink, #111);
   --studio-radius: var(--ds-radius-200, 5px);
@@ -110,6 +110,8 @@
 .studio-int-tgt { font-weight: 600; color: var(--ds-charcoal); white-space: nowrap; }
 .studio-int-arrow { color: var(--ds-stone); }
 .studio-hotspot { position: absolute; z-index: 54; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; background: var(--ds-indigo-100, #E0E0FD); color: #383878; border: 1.5px solid #383878; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: var(--ds-shadow-popover); pointer-events: none; }
+/* Hover a badge to read its action (native title). Off in comment / interaction mode, where it would swallow clicks on the target's corner. */
+body:not(.comment-mode):not(.spec-mode) .studio-hotspot { pointer-events: auto; }
 .studio-int-editing { margin-left: 10px; font-size: 10px; font-weight: 700; letter-spacing: 0; text-transform: none; color: #383878; background: var(--ds-indigo-100, #E0E0FD); border-radius: 999px; padding: 2px 8px; }
 
 /* ---- interaction (spec) mode: author element → result, like comment mode but indigo ---- */

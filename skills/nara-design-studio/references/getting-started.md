@@ -4,7 +4,7 @@ Human-facing quick start. (The agent-facing protocol is in `../SKILL.md`; this p
 
 ## What it is
 
-A design/prototyping studio that renders screens with a **design system pack** you plug in. You describe a screen, it interviews you until the spec is unambiguous, then builds **2–5 layout candidates** you compare, comment on, and refine — and hands off to implementers as HTML (built from the pack's real components) + a `Spec.md`.
+A design/prototyping studio that renders screens with a **design system pack** you plug in. You describe a screen, it interviews you until the spec is unambiguous, then builds **2–5 layout candidates** you compare, comment on, and refine — and hands off to implementers as HTML (built from the pack's real components) + its layout contract.
 
 The key idea: chrome that already exists in your product is **reused from the pack's real components**, never hand-redrawn — so the prototype can't drift from the shipped UI.
 
@@ -13,7 +13,7 @@ The key idea: chrome that already exists in your product is **reused from the pa
 ```
 describe a screen → interview (until spec is clear) → resolve a pack (see below)
   → build candidates → compare / Select → Comment + Interaction refine loop
-  → export (Spec.md / PDF / PNG) or open a live handoff
+  → export (layout contract / PDF / PNG) or open a live handoff
 ```
 
 The runtime lives in `assets/runtime/` (a small `serve.py` dev server + `studio.js`/`studio.css` + an HTML template). The design system lives in a separate **pack** the engine points at.
@@ -60,7 +60,7 @@ A pack must expose its tokens as `--ds-*` (the engine's vocabulary). A pack that
 
 - **Comment mode** — hover an element, click to leave a note, hit **Send to Agent**. `serve.py` captures notes to `<out>/comments.jsonl`; run `assets/runtime/watch-comments.sh <outDir>` in the background and the agent applies them and re-emits automatically.
 - **Interaction mode** — click an element to declare what it does (element → result); saved to a sidecar and shown as an on-page legend.
-- **Export** — `Spec.md` (implementer handoff), `PDF` (print dialog), or `PNG` (an agent running `watch-captures.sh <outDir>` with a browser MCP fulfills the capture).
+- **Export** — `Layout contract (JSON)` (implementer handoff, with the HTML), `PDF` (print dialog), or `PNG` (an agent running `watch-captures.sh <outDir>` with a browser MCP fulfills the capture).
 
 ## Handoff
 
@@ -82,7 +82,7 @@ It fails on raw hex colors and raw px values (a `1px` hairline is allowed; a `24
 
 ## The layout check
 
-Pixel fidelity is not what implementation has to reproduce — **layout** is: section order, table columns in order, field order, and which side each action sits on. Every exported `Spec.md` opens with that as a numbered list, and it is verifiable rather than advisory:
+Pixel fidelity is not what implementation has to reproduce — **layout** is: section order, table columns in order, field order, and which side each action sits on. Export → Layout contract (JSON) writes it down, and it is verifiable rather than advisory:
 
 ```bash
 # design side — in the studio: Export → "Layout contract (JSON)"
@@ -95,7 +95,7 @@ One extractor, run on both sides, so the comparison is mechanical instead of two
 
 ## Reference
 
-- `pack-contract.md` — fidelity tiers (T0–T3) and what T2/T3 does *not* eliminate, required files per tier, every manifest field the engine reads (including `components[].real`, the pack → real prop map), the adherence config, the serve topology, and the layout contract.
+- `pack-contract.md` — fidelity tiers (T0–T3) and what T2/T3 does *not* eliminate, required files per tier, every manifest field the engine and the Figma export read (including `components[].real`, the pack → real prop map), the adherence config, the serve topology, and the layout contract.
 - `settings.local.md.example` — the `defaultPackPath` template (pack resolution source 2).
 - `../assets/runtime/designmd_to_pack.py` — DESIGN.md → pack converter.
 - `../assets/runtime/check_adherence.py` — the emit-time hardcoded-value gate.

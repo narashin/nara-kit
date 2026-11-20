@@ -39,7 +39,7 @@
 
   var cfg, root, stage, bar, noteLayer, pickBtn, fidStyled, fidWire;
   var state = { activeId: null, pickedId: null, wireframe: false, commentMode: false, comments: [], seq: 0,
-                interactionMode: false, specOverride: {} };
+                interactionMode: false, specOverride: {}, figmaExport: null };
 
   function candidateEls() { return Array.prototype.slice.call(stage.querySelectorAll(".studio-candidate")); }
   function confOf(id) { return (cfg.candidates || []).find(function (x) { return x.id === id; }) || null; }
@@ -66,7 +66,7 @@
     Array.prototype.forEach.call(bar.querySelectorAll(".studio-tab"), function (t) { t.classList.toggle("is-picked", t.getAttribute("data-id") === state.pickedId); });
     syncPick();
   }
-  /* Which direction was chosen is exported to Spec.md as "Selected direction", so the
+  /* Which direction was chosen is what the Layout contract export reads, so the
      control that records it says what it records and shows whether it has been used.
      A button labelled "Select", with a tick on a tab as its only feedback, did not read
      as the decision it is. */
@@ -251,6 +251,12 @@
   }
   function afterSpecChange() { renderLegends(); renderHotspots(); icons(); persistSpec(); }
 
+  /* The element an interaction points at, or null when no [data-studio-label] in the candidate matches. */
+  function targetEl(cand, target) {
+    if (!target) return null;
+    try { return cand.querySelector('[data-studio-label="' + target + '"]'); } catch (e) { return null; }
+  }
+
   function renderLegends() {
     candidateEls().forEach(function (cand) {
       var old = cand.querySelector(".studio-interactions");
@@ -279,15 +285,20 @@
     if (!list || !list.length) return;
     var sr = stage.getBoundingClientRect();
     list.forEach(function (it, i) {
-      if (!it.target) return;
-      var el;
-      try { el = cand.querySelector('[data-studio-label="' + it.target + '"]'); } catch (e) { el = null; }
+      var el = targetEl(cand, it.target);
       if (!el) return;
       var er = el.getBoundingClientRect();
       if (!er.width && !er.height) return;
       var x = er.right - sr.left + stage.scrollLeft - 5;
       var y = er.top - sr.top + stage.scrollTop + 5;
-      noteLayer.appendChild(h("div", { class: "studio-hotspot", title: it.action || "", style: "left:" + x + "px;top:" + y + "px" }, [String(i + 1)]));
+      /* The badge sits on the target's corner and takes the pointer only for its tooltip; a click on it goes to
+         whatever is under the pointer (a row or button inside a labeled region), as if the badge were not there. */
+      noteLayer.appendChild(h("div", { class: "studio-hotspot", title: it.action || "", onClick: function (ev) {
+        var b = ev.currentTarget; b.style.pointerEvents = "none";
+        var under = document.elementFromPoint(ev.clientX, ev.clientY);
+        b.style.pointerEvents = "";
+        if (under) under.click();
+      }, style: "left:" + x + "px;top:" + y + "px" }, [String(i + 1)]));
     });
   }
 
@@ -364,8 +375,7 @@
   /* Does this host ship the tool a layout contract is for?
    *
    * The JSON is worth nothing on its own. It exists to be diffed against the same JSON
-   * captured from the implemented page, which is `check-layout.py`'s whole job, and
-   * Spec.md's contract section is already the readable version for a human. A host that
+   * captured from the implemented page, which is `check-layout.py`'s whole job. A host that
    * does not ship that script declares `layoutCheck: false` and stops being offered an
    * export it has nothing to compare.
    *
@@ -420,9 +430,8 @@
 
   /* ---- export (handoff) ----
      PDF = window.print() (dep-free, universal; print CSS stacks all candidates, hides chrome).
-     Spec.md = a structured handoff that POINTS AT the real code (this HTML built from real DS
-     components + the pack's source repo) so implementers reuse, not recreate — the md is an index, not a
-     standalone that can drift. PNG is intentionally not a button (needs agent/playwright; PDF +
+     The implementer gets this HTML (built from the pack's real components) and the Layout contract
+     JSON; there is no generated spec document to drift from either. PNG is intentionally not a button (needs agent/playwright; PDF +
      OS screenshot cover it). */
   function exportPDF() { window.print(); }
   /* Trigger a real browser download (→ the user's Downloads folder). */
@@ -437,6 +446,32 @@
      (one at a time) and let an agent with a browser MCP fulfill it — same watch-loop as comments
      (serve.py logs it to out/capture-requests.jsonl; watch-captures.sh wakes the agent). No server
      → show the recipe to run manually. */
+  /* Figma export: offered only when the pack ships figma-export.json naming its own procedure.
+     The engine holds no Figma ids or steps; it records which candidate to send, with the pack's
+     procedure and metadata, and an agent running watch-captures.sh on figma-requests.jsonl builds
+     the file from the pack's real library components. */
+  function loadFigmaExport() {
+    return fetch("/_pack/figma-export.json", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j && typeof j.procedure === "string" && j.procedure) state.figmaExport = j; })
+      .catch(function () { /* no server, or the pack has no Figma export: the menu leaves it out */ });
+  }
+  function exportFigma() {
+    var id = state.pickedId || state.activeId, label = labelOf(id), fx = state.figmaExport;
+    var recipe = "Export candidate “" + label + "” (data-id=" + id + ") of " + location.href + " to Figma, following the pack's procedure: " + fx.procedure;
+    /* procedure and pack are not sent: serve.py fills both from the pack itself. */
+    var body = JSON.stringify({ url: location.href, candidateId: id, candidateLabel: label });
+    fetch("/__figma", { method: "POST", headers: { "Content-Type": "application/json" }, body: body })
+      .then(function (r) { if (!r.ok) throw new Error("no figma route");
+        showResult(
+          "Figma export requested for “" + label + "” — an agent builds it",
+          "Logged to figma-requests.jsonl. An agent running watch-captures.sh <outDir> 600 figma-requests.jsonl wakes, asks you which Figma file to write to, then builds this screen from the pack's library components. Not watching? Tell your agent the line below.",
+          recipe); })
+      .catch(function () { showResult(
+        "Figma export needs an agent with the Figma MCP",
+        "The server did not take the request (no server, or this host has no Figma export). Tell your agent the line below.",
+        recipe); });
+  }
   function exportPNG() {
     var id = state.activeId, label = labelOf(id);
     var recipe = "Capture the current candidate (“" + label + "”, data-id=" + id + ") of " + location.href + " as a full-page PNG.";
@@ -458,73 +493,6 @@
         recipe); });
   }
 
-  /* ---- rendered-component introspection (React fiber) for the Spec.md handoff ----
-     Reads the REAL component names + key props off the live React tree that the pack
-     mounted, so the handoff doc carries a structural map without opening the HTML.
-     Pack-agnostic: works for any React-rendered pack; degrades to null for a
-     token-only pack (namespace "") or when React isn't present. */
-  function reactRootFiber(container) {
-    if (!container) return null;
-    var ck = Object.keys(container).find(function (x) { return x.indexOf("__reactContainer$") === 0; });
-    if (ck && container[ck] && container[ck].current) return container[ck].current;
-    var child = container.firstElementChild;                       // fallback: climb from a child fiber to the root
-    var fk = child && Object.keys(child).find(function (x) { return x.indexOf("__reactFiber$") === 0 || x.indexOf("__reactInternalInstance$") === 0; });
-    var f = fk ? child[fk] : null;
-    while (f && f.return) f = f.return;
-    return f;
-  }
-  function fiberCompName(type) {
-    if (!type || typeof type === "string") return null;           // null / host component (div, span…) → skip
-    if (typeof type === "function") return type.displayName || type.name || null;
-    if (typeof type === "object") {                               // memo / forwardRef wrappers
-      if (type.displayName) return type.displayName;
-      if (type.render) return type.render.displayName || type.render.name || null;
-      if (type.type) return fiberCompName(type.type);
-    }
-    return null;
-  }
-  function fiberKeyProps(props) {
-    if (!props) return "";
-    var out = [];
-    Object.keys(props).forEach(function (k) {
-      if (out.length >= 4) return;                                 // cap: a handoff wants signal, not every prop
-      if (k === "children" || k === "className" || k === "style" || k === "key" || k === "ref") return;
-      var v = props[k], t = typeof v;
-      if (t === "string") out.push(k + '="' + (v.length <= 32 ? v : v.slice(0, 29) + "…") + '"');
-      else if (t === "number" || t === "boolean") out.push(k + "=" + v);
-      /* skip functions / objects / arrays — too noisy for a handoff */
-    });
-    return out.join(" ");
-  }
-  function walkFiber(fiber, depth, acc, budget) {
-    while (fiber) {                                                // siblings via loop, children via recursion; fiber trees are acyclic
-      if (budget.n >= budget.max) { budget.truncated = true; return; }
-      var name = fiberCompName(fiber.type), nextDepth = depth;
-      if (name) {                                                  // host nodes descend without emitting/indenting
-        budget.n++;
-        var props = fiberKeyProps(fiber.memoizedProps);
-        acc.push(new Array(depth + 1).join("  ") + "- " + name + (props ? "  " + props : ""));
-        nextDepth = depth + 1;
-      }
-      if (fiber.child) walkFiber(fiber.child, nextDepth, acc, budget);
-      fiber = fiber.sibling;
-    }
-  }
-  function componentTreeFor(id) {
-    var mount = document.getElementById("mnt-" + id);
-    if (!mount) {
-      var sec = candidateEls().find(function (el) { return el.getAttribute("data-id") === id; });
-      mount = sec ? (sec.querySelector("[id^='mnt-']") || sec) : null;
-    }
-    var rootFiber = reactRootFiber(mount);
-    if (!rootFiber) return null;
-    var acc = [], budget = { n: 0, max: 120, truncated: false };
-    walkFiber(rootFiber.child || rootFiber, 0, acc, budget);
-    if (!acc.length) return null;
-    if (budget.truncated) acc.push("  … (tree truncated at " + budget.max + " components)");
-    return acc.join("\n");
-  }
-
   /* ---- layout contract ----
      The part of a design that MUST survive implementation regardless of pixel fidelity: section order,
      table column order, field order, and which side each action sits on. The extraction lives in
@@ -537,141 +505,6 @@
     return api.extract(page, { label: labelOf(cand.getAttribute("data-id")) });
   }
 
-  /* ---- pack component map ----
-     A pack's bundled components are ADAPTED copies (pack-builder strips store/router/context couplings
-     into plain props, converts CSS-in-JS to token styles…), so their prop shape can differ from the
-     real ones an implementer imports. `_ds_manifest.json` records each divergence in
-     `components[].real`; the manifest is fetched once and the rows for the components a candidate
-     actually rendered are written into the exported spec. No manifest / no `real` block → the spec
-     says so instead of pretending the mapping is 1:1. */
-  var packComponents = null;                                       // name -> real{} once loaded
-  function loadPackComponents() {
-    return fetch("/_pack/_ds_manifest.json", { cache: "no-store" })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (m) {
-        if (!m || !Array.isArray(m.components)) return;
-        packComponents = {};
-        m.components.forEach(function (c) { if (c && c.name && c.real) packComponents[c.name] = c.real; });
-      })
-      .catch(function () { /* file:// or no server — the spec degrades with a note */ });
-  }
-  function mdCell(s) { return String(s == null ? "" : s).replace(/\|/g, "\\|").replace(/\n/g, " "); }
-  function mappingRows(treeText) {
-    if (!packComponents) return null;
-    var seen = {}, rows = [];
-    (treeText || "").split("\n").forEach(function (line) {
-      var m = /^\s*- ([A-Za-z0-9_$]+)/.exec(line);
-      if (!m) return;
-      var name = m[1], real = packComponents[name];
-      if (!real || seen[name]) return;
-      seen[name] = 1;
-      var renames = real.propMap ? Object.keys(real.propMap).map(function (k) { return "`" + k + "` → `" + real.propMap[k] + "`"; }).join(", ") : "";
-      var drops = (real.drop || []).map(function (k) { return "`" + k + "`"; }).join(", ");
-      rows.push("| `" + name + "` | " + (real.import ? "`" + real.import + "`" : "**none**") + " | " + (real.from ? "`" + real.from + "`" : "—") +
-                " | " + (renames || "—") + " | " + (drops || "—") + " | " + mdCell(real.notes || "") + " |");
-    });
-    return rows;
-  }
-
-  function generateSpecMarkdown() {
-    var L = [];
-    L.push("# " + (cfg.title || (cfg.pack && cfg.pack.name ? cfg.pack.name + " screen" : "Design") ) + " — Interaction & Implementation Spec");
-    L.push("");
-    if (cfg.brief) { L.push("_" + cfg.brief + "_"); L.push(""); }
-    L.push("## How to use this spec (implementer)");
-    L.push("");
-    L.push("This is an **index** — pair it with the exported image and the real components:");
-    L.push("");
-    L.push("1. **Visual reference = the exported PNG / PDF** (from this design's Export → PNG/PDF, handed off alongside this file). It opens anywhere and shows the screen plus the Interactions legend — no repo needed.");
-    L.push("2. **Behavior = the Interactions list below** (element → result): what each button/link/row does, which modal opens, where it navigates.");
-    var pk = cfg.pack || {};
-    var repo = pk.sourceRepo || "the design system source";
-    var pkgs = (pk.sourcePackages && pk.sourcePackages.length) ? " (" + pk.sourcePackages.join(", ") + ")" : "";
-    if (pk.sourceRepo) {
-      L.push("3. **Implement by REUSING the design system's real components** — do NOT recreate from tokens. " + (pk.reuseRule || "Reuse the DS components; do not recreate.") + " Real source of truth: **" + repo + "**" + pkgs + ". The **Component tree** under each direction names the real components to map to your imports.");
-    } else {
-      L.push("3. **Implement by REUSING the design system's real components** — do NOT recreate from tokens. ⚠️ **Pack metadata missing**: this pack's manifest has no `pack.sourceRepo` / `sourcePackages` / `reuseRule`, so the real import source can't be named here — populate the pack manifest's `pack.*` block (see the nara-design-pack-builder skill) for a correct source-of-truth line. Meanwhile, map from the **Component tree** under each direction (real rendered component names) to your design system's imports.");
-    }
-    L.push("4. **Live prototype:** serve this design with the nara-design-studio runtime (`serve.py --pack <packDir> --out <outDir>`) and open this file — the live, interactive render with the real DS components. Finalized handoffs live under the output dir's `handoff/`.");
-    /* Emphasize the chosen direction: emit the Selected candidate first, mark the rest as alternatives. */
-    var pickedId = state.pickedId;
-    var ordered = candidateEls();
-    if (pickedId) {
-      ordered = ordered.slice().sort(function (a, b) {
-        return (b.getAttribute("data-id") === pickedId ? 1 : 0) - (a.getAttribute("data-id") === pickedId ? 1 : 0);
-      });
-      L.push(""); L.push("> **Selected direction: " + labelOf(pickedId) + "** — the other candidate(s) below are alternatives considered, kept for context.");
-    } else {
-      L.push(""); L.push("> _No candidate selected in the studio — all directions below are still open. Use a tab's **Select** to mark the chosen one before final handoff._");
-    }
-    ordered.forEach(function (cand) {
-      var id = cand.getAttribute("data-id");
-      var tag = pickedId ? (id === pickedId ? "  _(selected)_" : "  _(alternative)_") : "";
-      L.push(""); L.push("## " + labelOf(id) + tag);
-      var note = noteOf(id); if (note) { L.push(""); L.push(note); }
-
-      var contract = contractOf(cand);
-      if (contract && contract.sections.length) {
-        L.push(""); L.push("### Layout contract — MUST match");
-        /* The mechanical check is only named where it exists. Sending an implementer to a
-           menu item this host does not show, for a script it does not ship, spends their
-           time proving the instruction wrong. The contract below stands either way. */
-        L.push("Pixel fidelity is not the bar; **this structure is**. Section order, table column order, field order and the side each action sits on are the design decision — an implementation that changes any line below has changed the design, not just its styling."
-          + (hostChecksLayout() ? " Check it mechanically: Export → **Layout contract (JSON)**, capture the same JSON from the implemented page with `layout-contract.js`, then `python3 check-layout.py design.layout.json impl.layout.json`." : ""));
-        L.push("");
-        window.LAYOUT_CONTRACT.toMarkdownLines(contract).forEach(function (l) { L.push(l); });
-      } else if (!window.LAYOUT_CONTRACT) {
-        L.push(""); L.push("### Layout contract — MUST match");
-        L.push("⚠️ `layout-contract.js` isn't loaded in this output, so the structural contract (section order, table columns, action placement) is missing. Add `<script src=\"/_studio/layout-contract.js\"></script>` and re-export.");
-      }
-
-      L.push(""); L.push("### Interactions (element → result)");
-      var list = interactionsOf(id);
-      if (list && list.length) list.forEach(function (it, i) { L.push((i + 1) + ". **" + it.target + "** → " + it.action); });
-      else L.push("_none specified_");
-      var labels = [];
-      cand.querySelectorAll("[data-studio-label]").forEach(function (el) { var l = el.getAttribute("data-studio-label"); if (l && labels.indexOf(l) < 0) labels.push(l); });
-      L.push(""); L.push("### Labeled regions"); L.push(labels.length ? labels.map(function (l) { return "`" + l + "`"; }).join(", ") : "_none_");
-      var tree = componentTreeFor(id);
-      L.push(""); L.push("### Component tree (as rendered)");
-      if (tree) {
-        L.push("Component names + key props read from the live React render — these are the PACK's adapted components.");
-        L.push(""); L.push("```"); L.push(tree); L.push("```");
-      } else {
-        L.push("_Token-built (no mounted components) or React unavailable — see the HTML source for structure._");
-      }
-
-      var rows = tree ? mappingRows(tree) : null;
-      if (rows && rows.length) {
-        L.push(""); L.push("### Implementation mapping (pack → real)");
-        L.push("The pack's components are **adapted copies**, so their prop shape is not always the real one. Import the **Real** component, apply the renames, and drop the props with no counterpart — a dropped prop passed anyway is accepted silently by React and renders the wrong thing.");
-        L.push("");
-        L.push("| Pack | Real | Import from | Renamed props | No counterpart | Notes |");
-        L.push("|---|---|---|---|---|---|");
-        rows.forEach(function (r) { L.push(r); });
-      } else if (tree && packComponents === null) {
-        L.push("");
-        L.push("> ⚠️ The pack manifest couldn't be read (no server?), so no pack → real prop mapping is included. Serve with `serve.py --pack <packDir>` and re-export.");
-      } else if (tree && rows && !rows.length) {
-        L.push("");
-        L.push("> ⚠️ This pack's manifest records no `components[].real` blocks, so the pack → real prop mapping is unknown. The bundled components are adapted copies — prop names may differ from what you import. Populate `real` per component (see the nara-design-pack-builder manifest schema).");
-      }
-    });
-    L.push(""); L.push("## Components");
-    var ns = pk.namespace ? "`window." + pk.namespace + "`" : "the DS bundle";
-    var kit = pk.kitHelpersPath ? " plus the `KIT` helpers in `" + pk.kitHelpersPath + "`" : "";
-    L.push("Composed from " + ns + kit + ". Read the JSX in the source file for the exact components + props, and reuse them. Genuinely-new UI (token-built) is the only thing to implement from scratch.");
-    return L.join("\n");
-  }
-  function exportSpec() {
-    var md = generateSpecMarkdown();
-    var url = location.pathname.replace(/\.html?$/, ".spec.md");
-    var name = url.split("/").pop();
-    downloadFile(name, md, "text/markdown;charset=utf-8");   // → the browser's Downloads folder
-    /* best-effort: also drop a copy next to the HTML for the agent/repo (ignored if no server) */
-    fetch("/__spec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: url, markdown: md }) }).catch(function () {});
-    flash("Downloaded " + name + " — hand it off together with the HTML source (real DS components).");
-  }
   /* The design side of the layout check. Pair it with a contract captured from the implemented page
      (layout-contract.js in that page's console) and diff with check-layout.py. */
   function exportLayoutContract() {
@@ -694,7 +527,6 @@
     var open = document.querySelector(".studio-export");
     if (open) { open.remove(); return; }
     var menu = h("div", { class: "studio-export" }, [
-      h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportSpec(); } }, [h("i", { "data-lucide": "file-text" }), "Spec.md — implementer handoff"]),
       hostChecksLayout()
         ? h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportLayoutContract(); } }, [h("i", { "data-lucide": "list-checks" }), "Layout contract (JSON) — for check-layout.py"])
         : null,
@@ -703,8 +535,11 @@
          set up a tool to get something they already have. */
       h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportPNG(); } }, [h("i", { "data-lucide": "image" }),
         hostFulfills() ? "PNG per candidate — saved beside the design" : "PNG per candidate — needs a browser-MCP agent"]),
+      state.figmaExport
+        ? h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportFigma(); } }, [h("i", { "data-lucide": "figma" }), "Figma — editable design from the library (an agent builds it)"])
+        : null,
       h("button", { class: "studio-export-item", onClick: function () { menu.remove(); exportPDF(); } }, [h("i", { "data-lucide": "printer" }), "PDF — print / Save as PDF (all candidates)"]),
-      h("div", { class: "studio-export-note" }, ["Implementer handoff = the HTML source (real DS components) + Spec.md. PDF/PNG are for stakeholders / records."]),
+      h("div", { class: "studio-export-note" }, ["Implementer handoff = " + (state.figmaExport ? "the Figma file, or " : "") + "the HTML source (real DS components)" + (hostChecksLayout() ? " + the Layout contract" : "") + ". PDF/PNG are for stakeholders / records."]),
     ]);
     var r = anchor.getBoundingClientRect();
     menu.style.top = (r.bottom + 5) + "px";
@@ -754,22 +589,22 @@
       skip: "Skip", next: "Next", done: "Got it", help: "How this page is meant to be used",
       steps: [
         ["Directions", "Each tab is a different take on the same screen. Switch between them to compare."],
-        ["Choose one", "Records this take as the direction to build. It goes into the handoff as the selected one; the others are kept as alternatives."],
+        ["Choose one", "Records this take as the direction to build. Exports that hand off one direction read this one; the others are kept as alternatives."],
         ["Comment on anything", "Turn this on, then click any element to leave a note about it. Notes are pinned to the element, not to the page."],
         ["Say what it does", "Click an element to record what happens when it is used. Behaviour the picture cannot show."],
         ["Send the notes back", "Hands your notes to the agent, which revises the design from them. This is the loop: look, comment, send."],
-        ["Hand it over", "Spec.md and this HTML for whoever implements it. PDF or PNG for everyone who just needs to see it."],
+        ["Hand it over", "This HTML, plus the Layout contract or Figma file where Export offers them, for whoever implements it. PDF or PNG for everyone who just needs to see it."],
       ],
     },
     ko: {
       skip: "건너뛰기", next: "다음", done: "알겠어요", help: "이 화면을 쓰는 방법",
       steps: [
         ["방향", "탭마다 같은 화면의 다른 방향입니다. 눌러서 비교하세요."],
-        ["하나 고르기", "만들 방향으로 기록합니다. 핸드오프에 선택된 방향으로 나가고, 나머지는 검토한 대안으로 남습니다."],
+        ["하나 고르기", "만들 방향으로 기록합니다. 방향 하나를 넘기는 내보내기는 이 방향을 쓰고, 나머지는 검토한 대안으로 남습니다."],
         ["어디든 코멘트", "켜고 아무 요소나 누르면 메모를 남깁니다. 메모는 페이지가 아니라 그 요소에 붙습니다."],
         ["동작 적기", "요소를 누르고 눌렀을 때 무엇이 일어나는지 적습니다. 그림이 보여줄 수 없는 것입니다."],
         ["메모 보내기", "메모를 에이전트에게 넘기면 그걸로 디자인을 고칩니다. 이게 반복입니다. 보고, 적고, 보내기."],
-        ["넘기기", "구현할 사람에게는 Spec.md와 이 HTML. 보기만 하면 되는 사람에게는 PDF나 PNG."],
+        ["넘기기", "구현할 사람에게는 이 HTML과, Export에 있으면 레이아웃 계약이나 Figma 파일. 보기만 하면 되는 사람에게는 PDF나 PNG."],
       ],
     },
   };
@@ -849,7 +684,7 @@
     var tabs = h("div", { class: "studio-tabs" }, (cfg.candidates || []).map(function (c) {
       return h("button", { class: "studio-tab", "data-id": c.id, title: c.note || "", onClick: function () { setActive(c.id); } }, [c.label]);
     }));
-    pickBtn = h("button", { class: "studio-btn", title: "Record this candidate as the direction to build. Exported to Spec.md as the selected direction; the others are kept as alternatives.", onClick: function () { pick(state.activeId); flash("Selected " + labelOf(state.activeId)); } }, ["Select this direction"]);
+    pickBtn = h("button", { class: "studio-btn", title: "Record this candidate as the direction to build. Exports that hand off one direction read it; the others are kept as alternatives.", onClick: function () { pick(state.activeId); flash("Selected " + labelOf(state.activeId)); } }, ["Select this direction"]);
     /* `config.fidelity` is where the design opens, not what it is allowed to be.
      *
      * This used to be a static badge, shown only for a wireframe, on the reasoning that
@@ -882,7 +717,7 @@
     ]);
     var count = h("span", { class: "studio-count", style: "display:none" }, ["0"]);
     var sendBtn = h("button", { class: "studio-btn", title: "Send your element comments to your coding agent (via the local server); falls back to clipboard", onClick: sendToAgent }, [h("i", { "data-lucide": "send" }), "Send to Agent", count]);
-    var exportBtn = h("button", { class: "studio-btn", "data-role": "export", title: "Export for sharing / handoff — Spec.md (implementer) or PDF (stakeholders)", onClick: function (ev) { ev.stopPropagation(); toggleExportMenu(exportBtn); } }, [h("i", { "data-lucide": "download" }), "Export"]);
+    var exportBtn = h("button", { class: "studio-btn", "data-role": "export", title: "Export for sharing / handoff — what implementers get, and PDF / PNG for stakeholders", onClick: function (ev) { ev.stopPropagation(); toggleExportMenu(exportBtn); } }, [h("i", { "data-lucide": "download" }), "Export"]);
     var helpBtn = h("button", { class: "studio-btn", "data-role": "help", title: tourCopy().help, onClick: function (ev) { ev.stopPropagation(); showTour(0); } }, [h("i", { "data-lucide": "help-circle" })]);
     bar = h("div", { class: "studio-bar" }, [tabs, pickBtn, h("div", { class: "spacer" }), fidSeg, specBtn, commentBtn, sendBtn, exportBtn, helpBtn]);
     root.insertBefore(bar, root.firstChild);
@@ -917,9 +752,13 @@
     /* Load the persisted interaction sidecar (if any), then (re)render legends + hotspots. Also
        retry once for React/Babel-mounted candidate content that lands after init. */
     loadSpecOverride().then(function () { renderLegends(); renderHotspots(); icons(); });
-    /* Pack manifest -> the pack->real prop mapping written into every exported spec. */
-    loadPackComponents();
+    loadFigmaExport();
     setTimeout(renderHotspots, 400);
+    /* Mounts can land after any fixed retry; re-anchor badges when candidate
+       content changes. Observes candidates only: noteLayer (badges) sits outside them, so no loop. */
+    var reanchor = 0;
+    var mo = new MutationObserver(function () { clearTimeout(reanchor); reanchor = setTimeout(renderHotspots, 100); });
+    candidateEls().forEach(function (cand) { mo.observe(cand, { childList: true, subtree: true }); });
   }
 
   window.NaraStudio = { init: init };

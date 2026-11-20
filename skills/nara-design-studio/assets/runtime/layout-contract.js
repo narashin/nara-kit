@@ -140,23 +140,5 @@
     };
   }
 
-  /* Markdown rendering of a contract — what lands at the top of an exported Spec.md. */
-  function toMarkdownLines(contract) {
-    return (contract.sections || []).map(function (s) {
-      var parts = [];
-      if (s.title) parts.push('title "' + s.title + '"');
-      if (s.tabs.length) parts.push("tabs: " + s.tabs.join(" · "));
-      s.tables.forEach(function (t, ti) {
-        parts.push((s.tables.length > 1 ? "table " + (ti + 1) + " columns" : "columns") + " (in order): " + t.columns.join(" · "));
-      });
-      if (s.fields.length) parts.push("fields (in order): " + s.fields.join(" · "));
-      if (s.rows.length) parts.push("rows (in order): " + s.rows.join(" · "));
-      if (s.actions.length) {
-        parts.push("actions: " + s.actions.map(function (a) { return "`" + a.text + "`" + (a.align ? " (" + a.align + ")" : ""); }).join(", "));
-      }
-      return s.index + ". **" + s.name + "** — " + (parts.length ? parts.join("; ") : "_content only_");
-    });
-  }
-
-  window.LAYOUT_CONTRACT = { version: VERSION, extract: extract, toMarkdownLines: toMarkdownLines };
+  window.LAYOUT_CONTRACT = { version: VERSION, extract: extract };
 })();

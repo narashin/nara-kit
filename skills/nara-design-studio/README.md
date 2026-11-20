@@ -2,7 +2,7 @@
 
 > 사람용 문서. Claude는 런타임에 이 파일을 읽지 않음 (SKILL.md + references만 로드). 호출·용도 안내.
 
-Design and prototype product screens on ANY design system via a pluggable pack: interview → Studio candidates → element-comment refine loop → implementer handoff (HTML + Spec.md). Renders with the pack's REAL components (anti-drift), not hand-drawn chrome.
+Design and prototype product screens on ANY design system via a pluggable pack: interview → Studio candidates → element-comment refine loop → implementer handoff (HTML + layout contract, or Figma when the pack supports it). Renders with the pack's REAL components (anti-drift), not hand-drawn chrome.
 
 ## 호출
 

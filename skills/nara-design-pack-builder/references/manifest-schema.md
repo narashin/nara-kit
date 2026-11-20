@@ -49,10 +49,10 @@ it exists for exactly that one case, not as a shortcut around renaming.
 | Field | Fill it with |
 |---|---|
 | `name` | The design system's own display name (what the user calls it, not this pack's internal directory name). |
-| `sourceRepo` | Where the real source lives — printed verbatim into every `Spec.md` the studio exports, so implementers know where to go for the real thing. |
+| `sourceRepo` | Where the real source lives — carried into every Figma export the studio requests, so implementers know where to go for the real thing. |
 | `sourcePackages` | The actual package names / import paths an implementer would import from in the real product — not this pack's own paths. |
 | `kitHelpersPath` | Relative path (inside the pack) to shared layout helpers, if Step 8 produced any. Leave `""` for a T2 pack that skipped Step 8. |
-| `reuseRule` | One sentence, printed into every exported spec, telling implementers to reuse the real components rather than recreate them from tokens — this is the line that makes the studio's FROZEN-vs-DESIGNED rule concrete for this specific pack. |
+| `reuseRule` | One sentence, carried into every Figma export request, telling implementers to reuse the real components rather than recreate them from tokens — this is the line that makes the studio's FROZEN-vs-DESIGNED rule concrete for this specific pack. |
 | `tier` | `"T2"` once components + tokens are real and verified (Steps 1–7 done); `"T3"` only once Step 8's `data.js` + kit helpers are also real. Never mark a tier the pack doesn't actually back up — the studio's bootstrap gate surfaces this value to the user as a trust signal. |
 
 ## 3. `components[]` — entry shape (owned by this skill)
@@ -86,7 +86,7 @@ it exists for exactly that one case, not as a shortcut around renaming.
 | `promptPath` / `typesPath` | Pointers to the component's companion files (`adapt-guide.md` §5). |
 | `status` | `"adapted"` — mounted and verified per Step 7. `"flagged"` — attempted but not cleanly adaptable (see `adapt-guide.md` §6); still listed, never silently dropped, per `SKILL.md` §11's honesty note. |
 | `note` | Required when `status` is `"flagged"`: one line on why (e.g. `"reads 5 pieces of global app state to derive its own layout; no reasonable prop substitute this pass"`). Optional, usually empty, when `status` is `"adapted"`. |
-| `real` | **Required for every `"adapted"` entry.** What an implementer actually imports, and every way this adapted copy diverges from it — written during Step 4, while both sides are in view. Read by `nara-design-studio`'s runtime, which emits these rows into every exported `Spec.md`. See below. |
+| `real` | **Required for every `"adapted"` entry.** What an implementer actually imports, and every way this adapted copy diverges from it — written during Step 4, while both sides are in view. Kept for `nara-design-studio`'s Figma export: a pack whose Figma procedure maps pack components to real ones reads it there and names the components that have none. See below. |
 
 ### `real` — the pack → real prop map
 
@@ -177,5 +177,5 @@ re-declared.
 - [ ] `globalCssPaths` lists the token file (and bridge adapter, if any) — nothing a generated screen needs is
       missing.
 - [ ] `tier` matches what Steps 1–8 actually delivered, not what you hope to deliver next pass.
-- [ ] `pack.reuseRule` and `pack.sourceRepo` are filled in — these flow verbatim into every `Spec.md` the studio
-      exports for this pack.
+- [ ] `pack.reuseRule` and `pack.sourceRepo` are filled in — these flow verbatim into every Figma export the studio
+      requests for this pack.
