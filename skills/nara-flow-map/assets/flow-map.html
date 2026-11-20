@@ -924,7 +924,15 @@ function buildLegend() {
     [STEPS.some(s => String(s.run).includes("merge(")), `<svg width="24" height="14" viewBox="0 0 24 14"><rect x="1" y="1" width="10" height="12" rx="6" fill="var(--pair1-bg)" stroke="var(--pair1)" stroke-width="1.5"/><rect x="13" y="1" width="10" height="12" rx="6" fill="var(--pair1-bg)" stroke="var(--pair1)" stroke-width="1.5"/></svg>`, "같은 색 카드 = 한곳에서 합쳐지는 데이터"],
     [NODES.some(n => n.detail), `<span class="lgtag">사용 중</span>`, `"사용 중 / 예정" 표시가 붙은 상자 = 누르면 필드 표가 열림`],
   ].filter(x => x[0]).map(([, sw, text]) => row(sw, text));
-  body.replaceChildren(...rows, ...(rows.length && shapes.length ? [Object.assign(document.createElement("div"), { className: "lgsep" })] : []), ...shapes);
+  // Chips in the step narration below the map: same classes, so the swatch matches what the reader sees.
+  const chipRows = [
+    [STEPS.some(s => (s.data || []).length), `<span class="chip data">값</span>`, "아래 설명의 파란 글자 = 그 단계에서 실려 가는 값"],
+    [STEPS.some(s => (s.store || []).length), `<span class="chip store">곳</span>`, "초록 글자 = 그 단계에서 쌓이거나 바뀌는 곳"],
+    [STEPS.some(s => s.warn), `<span class="chip warn">!</span>`, "노란 글자 = 코드나 문서로 확인하지 못한 것"],
+  ].filter(x => x[0]).map(([, sw, text]) => row(sw, text));
+  // One divider between each non-empty group: box colors, map shapes, narration chips.
+  const sep = () => Object.assign(document.createElement("div"), { className: "lgsep" });
+  body.replaceChildren(...[rows, shapes, chipRows].filter(g => g.length).flatMap((g, i) => (i ? [sep(), ...g] : g)));
   if (!body.children.length) return;
   const KEY = "flowmap-legend:" + location.pathname;
   let open = innerWidth >= 700;
