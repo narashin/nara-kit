@@ -1,0 +1,39 @@
+id: copy-language-from-reference-001
+name: "Screen copy takes its language and terms from the reference screen, not from the chat language"
+description: |
+  Observed failure: the user wrote in Korean, and the agent decided on its own at the brief
+  stage that the screen copy would be Korean. The reference Figma frame and the back-office
+  code were both English, so the candidates came out with transliterated terms the product
+  never uses, and the user had to send the copy back to English.
+
+  Here the request is in Korean and the localized reference (Figma frame + BO code) is English
+  throughout. The skill should say that the screen copy follows the reference's language, and
+  propose the labels of the new screen in English, reusing the reference's own terms. The
+  language the user chats in decides the language of the reply, never of the screen.
+tags:
+  - brief
+  - regression-guard
+inputs:
+  prompt: "쿠폰 발급 이력 화면을 새로 디자인해줘. 기준은 지금 있는 쿠폰 화면이야."
+  files:
+    - path: project-decision.md
+    - path: reference-coupons-screen.md
+expected:
+  outcomes:
+    - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        # names the copy language and ties it to the screen copy
+        - "(?i)(문구|표기|라벨|레이블|용어|copy|label|wording)[^\\n]{0,120}(영문|영어|english)|(영문|영어|english)[^\\n]{0,120}(문구|표기|라벨|레이블|용어|copy|label|wording)"
+        # the source of that choice is the reference, not the user
+        - "(?i)(기준 화면|기준이 되는|기존 화면|기존 쿠폰|reference|figma|CouponsPage|BO 코드)"
+        # reuses the reference's own terms
+        - "Coupons"
+      regex_not_match:
+        # the copy language is put to the user as an open question
+        - "(?i)(한국어|한글|korean)[^\\n]{0,40}(할까요|하시겠|중 어느|\\?)"
+        # the copy language is decided as Korean
+        - "(?i)(한국어로|한글로)\\s*(씁니다|쓸게요|쓰겠|작성|통일|정했|잡았|진행)|(copy|labels?) (is|are|will be) in korean"

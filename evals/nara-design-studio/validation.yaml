@@ -5,6 +5,16 @@
 # loaded (normal tasks), or the skill applied to a request it should decline
 # (should-not-trigger). Tools were off for side effects: outputs are dry runs.
 #
+# Added 2026-11-17 (copy-language-from-reference-001, existing-screen-edit-001):
+# `right` is a fresh subagent on the SKILL.md that carries the copy-language and
+# existing-screen-edit rules. `wrong` for existing-screen-edit is a fresh subagent on
+# the SKILL.md before those rules (keeps the columns, never says changes get marked).
+# `wrong` for copy-language is a fresh subagent with no skill loaded: it kept the copy
+# English unprompted, so it fails on the suite-level relevance grader (no interview,
+# no Studio flow), not on the language assertions. The Korean-copy failure this task
+# guards was seen in a real session but did not reproduce here, so those assertions
+# are not yet backed by an observed wrong output.
+#
 # Run: tools/eval-fixture.py validate nara-design-studio
 # Expected: every task passes on right and fails on wrong.
 right:
@@ -136,6 +146,42 @@ right:
     I did not run anything. No pack was resolved, no studio was built, and nothing was sent to Confluence.
 
     Next step: start with `/nara-rfc <the architecture decision or ticket ID>`.
+  copy-language-from-reference-001: |
+    디자인 시스템은 이 프로젝트에 기록된 Acme DS 팩(`/Users/example/Work/acme-design-system-pack`)으로 진행합니다. 티어는 팩 매니페스트를 확인한 뒤 스펙 요약에서 함께 알려드릴게요.
+
+    기준 화면은 현재 쿠폰 화면(Figma `BO / Coupons / List` + `CouponsPage.tsx`)으로 잡았습니다. 화면에 들어가는 문구와 용어는 대화 언어가 아니라 이 기준 화면을 따라 영어 그대로 씁니다. 예를 들어 `Coupons`, `Code`, `Discount`, `Status`, `Valid until`, `Actions`, `Search by code`, `No coupons yet`를 그대로 가져오고, 발급 이력에 새로 필요한 라벨도 같은 톤의 영어로 만듭니다. 쿠폰 화면의 테이블, 필터바, 상태 라벨, 빈 상태 같은 기존 컴포넌트는 팩의 실제 컴포넌트를 그대로 쓰고, 이번 화면에서 새로 생기는 부분만 디자인합니다.
+
+    빌드 전에 비어 있는 부분만 먼저 여쭙니다.
+
+    1. 발급 이력의 한 행은 무엇인가요? 쿠폰 한 장을 한 사용자에게 발급한 기록(예: Code, Issued to, Issued at, Issued by, Status)이라고 보면 될까요? 꼭 필요한 컬럼이 있으면 알려주세요. 없다고 하시면 위 구성으로 가정하겠습니다.
+    2. 이 화면을 쓰는 사람과 하려는 일은 무엇인가요? (예: CS 담당자가 특정 사용자의 쿠폰 발급 여부를 확인) 성공했다고 볼 상태도 알려주세요.
+    3. 화면의 대표 액션은 무엇인가요? (예: 기간·상태 필터로 조회, CSV 내보내기) 행을 클릭하면 어디로 이동하나요?
+    4. 진입 경로와 돌아가는 경로는 어떻게 되나요? 쿠폰 목록이나 쿠폰 상세에서 들어오고, 거기로 돌아가면 되나요?
+    5. Empty, loading, error 상태를 이번에 같이 디자인할까요, 아니면 범위에서 뺄까요?
+    6. 방향 하나를 완성할까요, 아니면 레이아웃이 다른 2~3개 후보를 나란히 비교할까요? 별말씀 없으면 3개 후보로 가겠습니다.
+
+    답을 주시면 3~6줄로 스펙을 요약하고, "go"를 받은 뒤 빌드하겠습니다.
+  existing-screen-edit-001: |
+    이 프로젝트는 이미 디자인 시스템이 정해져 있습니다. `.claude/overrides/nara-design-studio.md`에 기록된 Acme DS 팩(packPath: /Users/example/Work/acme-design-system-pack)으로 진행합니다. 팩의 tier는 매니페스트를 읽은 뒤 빌드 전에 알려드리겠습니다.
+
+    기준 화면은 이미 출시된 BO의 Coupons 목록(Figma `BO / Coupons / List`와 `CouponsPage.tsx`)입니다. 새 화면을 만들지 않고 이 화면을 고친 안(diff)으로 만듭니다.
+
+    - **유지하는 것:** 기존 라벨, 컬럼, 컬럼 순서는 그대로 둡니다. 컬럼은 `Code` · `Discount` · `Status` · `Valid until` · `Actions` 순서입니다. `Create coupon` 버튼, `Status` 필터와 `Search by code`, 행 액션 `Edit`/`Pause`, 빈 상태 `No coupons yet`도 그대로입니다.
+    - **표시 방식:** 바뀌거나 추가된 요소에만 변경 표시를 붙입니다. 표시가 없는 요소는 기존과 같습니다.
+    - **문구 언어:** 기준 화면이 영어이므로 새로 들어가는 문구도 영어로 씁니다. 기존 용어를 따르고 한국어로 바꾸지 않습니다. 출처는 Figma 텍스트와 BO 코드 라벨입니다.
+    - **스타일:** 팩의 실제 컴포넌트와 토큰으로 styled 충실도로 만듭니다. 상태 라벨이나 테이블을 새로 그리지 않습니다.
+    - **후보:** "만료 임박을 바로 알아보게"를 푸는 방향 3가지를 나란히 비교할 수 있게 Studio로 보여드립니다.
+
+    빌드 전에 아래 항목만 정해주세요.
+
+    1. **"임박"의 기준:** 만료까지 며칠 이하를 임박으로 볼까요? (예: 7일 이내) 단계를 나눌까요(예: 3일 이내는 더 강하게)? 정해주시기 어려우면 "7일 이내, 한 단계"로 가정하겠습니다.
+    2. **주 사용자와 과업:** 이 화면에서 누가 임박 쿠폰을 보고 무엇을 하나요? (예: 운영자가 만료 전에 기간을 연장하거나 정리한다.) 이 답에 따라 `Edit`을 더 눈에 띄게 할지 정하겠습니다.
+    3. **Status와의 관계:** 임박 쿠폰은 `Active` 상태 그대로 두고 표시만 더할까요? `Status` 값(`Active`/`Paused`/`Expired`)에 새 값을 추가하지는 않는 것으로 가정합니다. 그래도 괜찮은가요?
+    4. **범위:** `Active`와 `Paused` 중 `Paused` 쿠폰도 임박 표시 대상인가요? 이미 `Expired`인 쿠폰은 제외하는 것으로 가정합니다.
+
+    로딩, 에러, 빈 상태는 이번 안에서 건드리지 않는 것으로 두겠습니다. 다르게 하고 싶으시면 알려주세요.
+
+    위 4가지에 답해주시거나 "가정대로 진행"이라고 해주시면, 요약을 확인받은 뒤 바로 빌드하겠습니다.
 wrong:
   adherence-gate-001: |
     조각을 정리해서 내보낼 수 있게 다듬었습니다. 배경색과 패딩을 그대로 두면 다른 카드와 톤이 살짝 어긋날 수 있어서, 값은 유지하되 읽기 쉽게 스타일을 정돈했습니다.
@@ -359,3 +405,39 @@ wrong:
     Once there are no open questions, I will give you a 3–6 bullet summary of the spec to approve. After you say go, I will build 3 candidate directions at `styled` fidelity and serve them with `serve.py`.
 
     Answer with a, b, c or d, plus answers to questions 1–4.
+  copy-language-from-reference-001: |
+    쿠폰 발급 이력 화면은 지금 있는 Coupons 목록 화면(BO / Coupons / List)을 기준으로 잡겠습니다. 프로젝트에 이미 Acme 디자인 시스템이 기록되어 있어서 그 시스템을 그대로 씁니다.
+
+    기준 화면의 모든 문구가 영어라서, 새 화면의 문구도 같은 영어로 맞추겠습니다. 한국어로 요청하셨더라도 BO 전체 문구가 영어로 통일되어 있어서, 한 화면만 한국어로 두면 어색해질 것 같습니다.
+
+    구성 (위에서 아래로)
+    - 내비게이션: `Coupons` 선택 상태 유지
+    - 페이지 제목: `Issuance history` (새 문구)
+    - 필터 바: `Status` 셀렉트(`All` / `Active` / `Paused` / `Expired`), 검색 placeholder `Search by code` (기준 화면과 동일)
+    - 테이블 헤더: `Code` · `Discount` · `Status` · `Issued at` (새 문구) · `Valid until`
+    - 행 동작: 이력 화면이므로 편집/일시중지 대신 행 클릭으로 쿠폰 상세만 열도록 제안합니다 (기준 화면의 `onRowClick`과 같은 방식)
+    - 빈 상태: `No issuance history yet` (새 문구)
+    - 상단 우측 기본 버튼(`Create coupon`)은 이력 화면에서 빼는 것을 제안합니다
+
+    새로 만든 문구(`Issuance history`, `Issued at`, 빈 상태 문구)는 확인이 필요합니다. 이 문구와 구성이 괜찮으면 디자인 초안을 이어서 만들겠습니다.
+  existing-screen-edit-001: |
+    이 프로젝트는 override에 기록된 팩(Acme DS, packPath: /Users/example/Work/acme-design-system-pack)으로 진행합니다. 티어는 매니페스트를 열어 확인한 뒤 빌드 때 밝히겠습니다. 이미 정해진 팩이라 다시 묻지 않습니다.
+
+    기준 화면은 BO의 Coupons 목록(Figma `BO / Coupons / List` + `CouponsPage.tsx`)으로 잡았습니다. 아래는 그대로 가져가서 바꾸지 않습니다.
+    - 라벨은 화면에 있는 영어 그대로 씁니다: `Coupons`, `Create coupon`, `Status`, `Search by code`, `No coupons yet`.
+    - 컬럼 순서는 `Code` · `Discount` · `Status` · `Valid until` · `Actions`입니다. 행 액션은 `Edit`, `Pause`입니다.
+    - Status 값은 Active / Paused / Expired이고, 팩에 있는 상태 Label 컴포넌트를 그대로 씁니다.
+    - 새로 설계하는 부분은 "만료 임박" 표시뿐입니다. 나머지 레이아웃은 건드리지 않습니다.
+
+    빌드 전에 확정할 것이 4가지 있습니다.
+    1. "임박"의 기준은 무엇인가요? 예를 들면 `Valid until`까지 7일 이내입니다. 기간을 알려주셔도 되고, "알아서 정해라"도 괜찮습니다. 알아서 정하면 7일로 가정하겠습니다.
+    2. 이 화면을 쓰는 사람은 누구이고, 만료 임박 쿠폰을 보고 무엇을 하나요? 연장하려는 건지, 종료를 확인하려는 건지, 아니면 새 쿠폰으로 교체하려는 건지 알려주세요. 이 답에 따라 강조할 대상과 CTA가 달라집니다.
+    3. 임박 쿠폰을 눌렀을 때의 동작은요? 지금은 행을 누르면 쿠폰 상세로 가고, `Edit`과 `Pause`가 있습니다. 임박 쿠폰에만 `Extend` 같은 액션을 새로 둘지, 기존 `Edit`으로 충분한지 정해주세요.
+    4. 임박 쿠폰이 하나도 없을 때는 아무 표시도 없이 지금과 같은 화면으로 두면 될까요? 아니면 "만료 임박 없음" 같은 안내가 필요한가요?
+
+    답을 받으면 스펙을 3~6줄로 정리해서 "go"를 받고, 그다음에 방향이 서로 다른 후보 3개를 Studio에서 보여드리겠습니다. 후보 예시는 아래와 같습니다. 질문 답에 따라 달라질 수 있습니다.
+    - A: 행 안에서 `Valid until` 옆에 남은 일수를 표시합니다.
+    - B: 필터 바에 `Expiring soon` 필터를 추가하고, 목록 상단에 임박 쿠폰 건수 요약을 둡니다.
+    - C: 임박 쿠폰을 목록 맨 위로 올리고 행 강조 + 상태 표시를 더합니다.
+
+    기본은 styled 충실도입니다. 구조만 먼저 보고 싶으시면 wireframe이라고 말씀해 주세요.

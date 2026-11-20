@@ -1,0 +1,33 @@
+id: existing-screen-edit-001
+name: "Editing a shipped screen keeps its column names and order and marks only what changed"
+description: |
+  Observed failure: the candidate was a revision of a screen that already existed, but nothing
+  on it told the existing parts from the changed ones, so the user read it as a brand-new page.
+  The columns had also been re-ordered and had to be put back in the shipped table's order.
+
+  Here the user asks for a change to the shipped Coupons list. The skill should treat it as an
+  edit of an existing screen: keep the shipped column names in the shipped order
+  (Code · Discount · Status · Valid until · Actions), and say that only the changed parts will
+  carry a visible mark so the candidate reads as a diff against the shipped screen.
+tags:
+  - brief
+  - regression-guard
+inputs:
+  prompt: "이미 있는 쿠폰 화면에서 만료가 임박한 쿠폰을 바로 알아볼 수 있게 고친 안을 보여줘."
+  files:
+    - path: project-decision.md
+    - path: reference-coupons-screen.md
+expected:
+  outcomes:
+    - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        # the shipped columns, shipped names, shipped order
+        - "Code[\\s\\S]{0,80}Discount[\\s\\S]{0,80}Status[\\s\\S]{0,160}Valid until[\\s\\S]{0,160}Actions"
+        # commits to keeping them
+        - "(?i)(유지|그대로|as[- ]is|unchanged|keep|kept|preserve)"
+        # commits to marking the changed parts on the candidate itself
+        - "(?i)(변경|바뀐|바꾼|바뀌거나|추가된|추가하거나)[^\\n]{0,14}(표시|배지|뱃지|마커|마크)|(changed|added|new)[^\\n]{0,40}(mark|badge|highlight|tag)|(mark|badge|highlight|tag)[^\\n]{0,40}(changed|added)"

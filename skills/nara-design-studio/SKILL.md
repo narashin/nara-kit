@@ -101,6 +101,7 @@ If any A/B/C item is unknown, it is an open blocker — keep interviewing. Green
 - **Primary actions & flow** — the main CTA; what each interactive element leads to; entry and back paths.
 - **Empty / loading / error** — shown or skipped for this pass.
 - **Refine mechanism** — Studio Mode captures element comments (hover-preview + click) and sends them to the agent; there is no live tweaks panel. Fidelity is picked per pass, not toggled.
+- **Copy language & terms** — taken from the reference screen (Figma text, existing code labels, `startingPoints`), never from the language the user chats in: an English reference keeps English labels and its own terms. Name the language and its source in the spec summary; ask only when no reference exists.
 - **Audience & task** — who uses it, what they came to do, what success looks like.
 - **Scope** — one screen or a small flow; keep each build to 1–2 screens.
 
@@ -110,6 +111,7 @@ If any A/B/C item is unknown, it is an open blocker — keep interviewing. Green
 - **Tokens only — no hardcoded brand values.** Use the pack's own CSS custom properties (declared in the files listed under the manifest's `globalCssPaths`) for every color/spacing/radius/type value; never hardcode a hex or px that the pack already tokenizes. For a **portable single file** (saved outside this tree, shared standalone, or opened without `serve.py`), inline the pack's token `:root` block so relative `@import`s don't break.
 - **Everything else — layout, spot color budget, card treatment, type scale, icon set, logo usage, status enums — is the resolved pack's own decision, not this engine's.** Read it from the pack's manifest and any docs it ships (its own `pack.md` / component docs); this engine imposes no brand-specific numbers of its own. `references/pack-contract.md` documents exactly which manifest fields carry this information.
 - **Starting points = real IA by default.** If the pack declares `startingPoints` (example screens/templates) and the request matches one, read its real structure and adopt it — its nav shape, its real columns, its real status enums — instead of inventing labels, columns, or statuses. Deviate only where the user explicitly overrides, and surface the reference structure during the interview so they can confirm or change it.
+- **Editing an existing screen = a diff, not a redesign.** Candidates keep the shipped labels, columns/fields, and their order; renaming or re-ordering what wasn't asked about is a bug. Visibly mark each added or changed element (unchanged ones carry no mark), or the user reads the candidate as a new page. State both in the spec summary.
 
 ## 6. Fidelity modes
 
@@ -121,8 +123,7 @@ If any A/B/C item is unknown, it is an open blocker — keep interviewing. Green
 ## 7. Iteration
 
 - **By voice** — apply only what's asked; leave all other layout/spacing/color/content untouched. ("add a Severity column, P1 in red" → change just that.)
-- **No live tweaks** — Studio Mode deliberately has no tweaks panel (knobs proved low-value). Fidelity is a build-time choice shown as a badge, not a toggle. Any change (density, accent, columns, copy, "make it styled now") goes through element comments → Send to Agent → regenerate. Keeps the surface small and the output honest.
-- **Options** — Studio Mode renders 2–5 layout-direction candidates (default 3) the user switches between and `Select`s; the element-comment → `Send to Agent` loop (precise selector per note, captured to `<outDir>/comments.jsonl`) feeds per-element edits back to you. (Outside Studio Mode, render directions side-by-side to compare or mix.)
+- **No live tweaks** — Studio Mode has no tweaks panel. Any change (density, accent, columns, copy, "make it styled now") goes through element comments → Send to Agent → regenerate.
 
 ## 8. Reference index
 
