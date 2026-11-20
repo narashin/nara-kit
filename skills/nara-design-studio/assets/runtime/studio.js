@@ -409,12 +409,20 @@
     var box = h("div", { class: "studio-copied" }, [
       h("div", { class: "studio-copied-head" }, [
         h("strong", {}, [title]),
-        h("button", { class: "studio-btn", onClick: function () { box.remove(); } }, ["Close"]),
+        h("span", { class: "studio-copied-actions" }, [
+          h("button", { class: "studio-btn", title: "Copy to clipboard", "aria-label": "Copy to clipboard", onClick: function () {
+            var done = function () { flash("Copied to clipboard"); };
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+            else { fallbackCopy(text); done(); }
+          } }, [h("i", { "data-lucide": "copy" })]),
+          h("button", { class: "studio-btn", onClick: function () { box.remove(); } }, ["Close"]),
+        ]),
       ]),
       h("p", { class: "studio-copied-hint" }, [hint]),
       h("pre", {}, [text]),
     ]);
     document.body.appendChild(box);
+    icons();
   }
   function fallbackCopy(text) {
     var ta = h("textarea", { style: "position:fixed;opacity:0" }); ta.value = text; document.body.appendChild(ta); ta.select();
