@@ -20,6 +20,8 @@ Before showing the page, run window.flowSelfCheck() in a browser and fix everyth
   --chip-data-bg: #ddf4ff; --chip-data-ink: #0550ae; --chip-store-bg: #dafbe1; --chip-store-ink: #116329;
   --chip-warn-bg: #fff8c5; --chip-warn-ink: #7d4e00;
   --pair1: #8250df; --pair1-bg: #f6efff; --pair1-ink: #4b1d8f; --pair2: #bf3989; --pair2-bg: #ffeff7; --pair2-ink: #6e1146;
+  --use: #0a7a8a; --use-bg: #dff6f8; --use-ink: #055560;
+  --plan: #8250df; --plan-bg: #f3ecff; --plan-ink: #4b1d8f;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -31,6 +33,8 @@ Before showing the page, run window.flowSelfCheck() in a browser and fix everyth
     --chip-data-bg: #0c2d6b; --chip-data-ink: #a5d6ff; --chip-store-bg: #0f3d1f; --chip-store-ink: #7ee787;
     --chip-warn-bg: #3d2e00; --chip-warn-ink: #f2cc60;
     --pair1: #bc8cff; --pair1-bg: #2c1a4d; --pair1-ink: #e2c9ff; --pair2: #ff80c8; --pair2-bg: #4a1430; --pair2-ink: #ffd0ea;
+    --use: #39c5cf; --use-bg: #0b3a40; --use-ink: #a5eef3;
+    --plan: #bc8cff; --plan-bg: #2c1a4d; --plan-ink: #e2c9ff;
   }
 }
 :root[data-theme="dark"] {
@@ -42,6 +46,8 @@ Before showing the page, run window.flowSelfCheck() in a browser and fix everyth
   --chip-data-bg: #0c2d6b; --chip-data-ink: #a5d6ff; --chip-store-bg: #0f3d1f; --chip-store-ink: #7ee787;
   --chip-warn-bg: #3d2e00; --chip-warn-ink: #f2cc60;
   --pair1: #bc8cff; --pair1-bg: #2c1a4d; --pair1-ink: #e2c9ff; --pair2: #ff80c8; --pair2-bg: #4a1430; --pair2-ink: #ffd0ea;
+  --use: #39c5cf; --use-bg: #0b3a40; --use-ink: #a5eef3;
+  --plan: #bc8cff; --plan-bg: #2c1a4d; --plan-ink: #e2c9ff;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -158,6 +164,75 @@ body.recording .panel { display: none; }
 body.recording .stage { display: flex; flex-direction: column; padding-bottom: 16px; }
 body.recording svg#map { flex: 1 1 auto; height: auto; min-height: 0; }
 body.recording .subtitle { display: block; }
+/* Detail panel: a table of what a box stores. Opened only by the viewer, never by a step. */
+.node.has-detail { cursor: pointer; outline: none; }
+.node.has-detail:hover rect.box, .node.has-detail:hover .cylbody,
+.node.has-detail:focus-visible rect.box, .node.has-detail:focus-visible .cylbody { stroke: var(--c-core); stroke-width: 3; }
+.dtag rect { fill: var(--panel); stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 2; }
+.dtag text { font-size: 11px; font-weight: 600; fill: var(--sub); }
+.dtag.now rect, .dtag.plan rect, .dtag.both rect { stroke-dasharray: none; }
+.dtag.now rect { fill: var(--use-bg); stroke: var(--use); }
+.dtag.plan rect { fill: var(--plan-bg); stroke: var(--plan); }
+.dtag tspan.now { fill: var(--use-ink); }
+.dtag tspan.plan { fill: var(--plan-ink); }
+.detail { position: fixed; top: 16px; right: 16px; z-index: 20; width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+  display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .25); }
+.detail[hidden] { display: none; }
+.dthead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 12px 14px 6px; }
+.dthead h2 { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
+.dthead button { flex: none; font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--rule);
+  background: var(--panel); color: var(--ink); cursor: pointer; }
+.dthead button:focus-visible { outline: 2px solid var(--c-core); outline-offset: 2px; }
+.dtscroll { overflow: auto; padding: 0 14px 14px; }
+.dtscroll p { margin: 0 0 8px; color: var(--sub); font-size: 13px; }
+.dtscroll p.dtlegend { font-size: 12px; margin-bottom: 4px; }
+.dtscroll p.dtlegend.now { color: var(--use-ink); }
+.dtscroll p.dtlegend.plan { color: var(--plan-ink); }
+.detail table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+.detail th { text-align: left; font-size: 12px; color: var(--faint); border-bottom: 1px solid var(--rule); padding: 4px 8px; }
+.detail td { vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--rule); overflow-wrap: anywhere; }
+.detail th:nth-child(1), .detail td:nth-child(1) { width: 34%; }
+.detail th:nth-child(2), .detail td:nth-child(2) { width: 26%; }
+.detail td.f, .detail td.v { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.detail tr.now td { background: var(--use-bg); }
+.detail tr.now td:first-child { box-shadow: inset 3px 0 0 var(--use); }
+.detail tr.plan td { background: var(--plan-bg); }
+.detail tr.plan td:first-child { box-shadow: inset 3px 0 0 var(--plan); }
+.usetag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 8px; font: 600 11px/17px -apple-system, "Apple SD Gothic Neo", sans-serif;
+  color: var(--bg); }
+.usetag.now { background: var(--use); }
+.usetag.plan { background: var(--plan); }
+@media (prefers-reduced-motion: no-preference) {
+  .detail { animation: dtin .16s ease-out; }
+  @keyframes dtin { 0% { opacity: 0; transform: translateY(-6px); } 100% { opacity: 1; transform: none; } }
+}
+body.recording .detail { display: none; }
+/* Pan and zoom: touch-action none lets pointer events drive the drag instead of the page scroll. */
+svg#map { cursor: grab; touch-action: none; }
+svg#map.panning, svg#map.panning * { cursor: grabbing !important; }
+body.recording svg#map { cursor: default; touch-action: auto; }
+body.recording .zoombtn { display: none; }
+/* Legend: an overlay at the map's top-left. It is a sibling of the svg, so pointer events inside it never start a pan. */
+.maplegend { position: absolute; top: 12px; left: 28px; z-index: 5; max-width: min(250px, calc(100% - 56px)); max-height: calc(100% - 24px);
+  display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .12); font-size: 12.5px; }
+.maplegend[hidden] { display: none; }
+.lgtoggle { flex: none; display: flex; align-items: center; gap: 6px; width: 100%; font: inherit; font-size: 12.5px; font-weight: 700; text-align: left;
+  padding: 5px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
+.lgtoggle::after { content: "▾"; margin-left: auto; color: var(--faint); }
+.lgtoggle[aria-expanded="false"]::after { content: "▸"; }
+.lgtoggle:focus-visible { outline: 2px solid var(--c-core); outline-offset: 1px; }
+.lgbody { overflow: auto; padding: 0 10px 8px; }
+.lgbody[hidden] { display: none; }
+.lgrow { display: flex; align-items: center; gap: 8px; padding: 2px 0; color: var(--sub); line-height: 1.35; }
+.lgrow.color { color: var(--ink); }
+.lgsw { flex: none; width: 26px; display: flex; justify-content: center; align-items: center; }
+.lgsw .lgbar { width: 22px; height: 14px; box-sizing: border-box; background: var(--panel2); border: 1px solid var(--rule); border-left: 4px solid; border-radius: 3px; }
+.lgsw svg { display: block; overflow: visible; }
+.lgsep { height: 1px; background: var(--rule); margin: 5px 0; }
+.lgsw .lgtag { font-size: 9px; font-weight: 700; line-height: 13px; padding: 0 4px; border-radius: 7px; border: 1px solid var(--use); background: var(--use-bg); color: var(--use-ink); }
+body.recording .maplegend { display: none; }
 </style>
 </head>
 <body>
@@ -168,12 +243,16 @@ body.recording .subtitle { display: block; }
 <noscript><p class="nojs">이 지도는 JavaScript가 켜져 있어야 그려집니다.</p></noscript>
 
 <div class="stage">
-  <svg id="map" viewBox="0 0 1400 830" preserveAspectRatio="xMidYMid meet" role="img" aria-label="구성 요소와 데이터 흐름 지도">
+  <svg id="map" viewBox="0 0 1400 830" preserveAspectRatio="xMidYMid meet" role="group" aria-label="구성 요소와 데이터 흐름 지도">
     <g id="paths"></g>
     <g id="nodes"></g>
     <g id="cards"></g>
   </svg>
   <div class="subtitle" id="subtitle" aria-hidden="true"></div>
+  <div class="maplegend" id="maplegend" hidden>
+    <button type="button" class="lgtoggle" id="lgToggle" aria-expanded="true" aria-controls="lgBody">범례</button>
+    <div class="lgbody" id="lgBody"></div>
+  </div>
 </div>
 
 <div class="panel">
@@ -188,13 +267,31 @@ body.recording .subtitle { display: block; }
         <option value="1" selected>보통</option>
         <option value="0.65">빠르게</option>
       </select>
+      <button type="button" id="btnZoomIn" class="zoombtn" aria-label="확대">＋</button>
+      <button type="button" id="btnZoomOut" class="zoombtn" aria-label="축소">−</button>
       <button type="button" id="btnFull">전체 지도</button>
       <button type="button" id="btnRec" hidden>● 영상으로 저장</button>
     </div>
     <div class="timeline" id="timeline"></div>
-    <div class="legend">키보드: 스페이스 재생/정지 · ← → 이동 · 점을 누르면 그 단계로</div>
+    <div class="legend">키보드: 스페이스 재생/정지 · ← → 이동 · + − 확대/축소 · 점을 누르면 그 단계로 · 지도는 끌어서 이동, Ctrl/⌘+휠로 확대</div>
   </div>
 </div>
+
+<aside class="detail" id="detail" role="dialog" aria-labelledby="dtTitle" hidden>
+  <div class="dthead">
+    <h2 id="dtTitle"></h2>
+    <button type="button" id="dtClose">닫기 (Esc)</button>
+  </div>
+  <div class="dtscroll">
+    <p id="dtCaption"></p>
+    <p class="dtlegend now" id="dtLegendNow"><span class="usetag now">사용 중</span> <span id="dtLegendNowText"></span></p>
+    <p class="dtlegend plan" id="dtLegendPlan"><span class="usetag plan">사용 예정</span> <span id="dtLegendPlanText"></span></p>
+    <table>
+      <thead><tr><th>필드</th><th>예시</th><th>뜻</th></tr></thead>
+      <tbody id="dtBody"></tbody>
+    </table>
+  </div>
+</aside>
 
 <script>
 // ===== DATA: replace everything in this block with verified facts. The engine below stays as is. =====
@@ -203,21 +300,35 @@ const META = {
   title: "SAMPLE 사진 한 장이 앨범에 뜨기까지",
   intro: "SAMPLE 예시: 사진 한 장을 올리는 경우. 노란 카드가 실려 가는 데이터, 원통이 쌓이는 곳, 규칙 칸이 조건을 검사하는 문입니다.",
   startTitle: "재생을 누르면 사진 한 장이 지도를 따라 움직입니다",
+  useLabel: "SAMPLE 화면이 지금 쓰는 값",
+  planLabel: "SAMPLE 화면이 쓰기로 한 값",
   startNote: "각 단계는 \"무엇이 깨웠나 → 무엇이 실려 가나 → 어디에 쌓이나\" 순서로 보여 줍니다. 노란 [미확인]은 코드로 확인하지 못한 부분이고, 점선은 확인하지 못한 경로입니다.",
 };
 
 // type: box | cyl (rows stack inside) | gate (rule that passes or blocks) | frame (grouping outline, no content).
 // Flags: stat (status line), ghost (does not exist yet; drawn faint until exist(id, true)), clock, dashed ([미확인] node),
-// rows (box or cyl: how many rows stay visible), color (left bar, a --c-* token).
+// rows (box or cyl: how many rows stay visible), color (left bar, a --c-* token),
+// detail (box or cyl: a table opened by clicking the box. { caption?, rows: [{ f, v?, d, use? }] }; use: "now" = in use now, "plan" = planned; true is an alias of "now").
 const NODES = [
   { id: "svc", type: "frame", x: 260, y: 40, w: 600, h: 560, title: "업로드 서비스" },
   { id: "app", type: "box", x: 40, y: 90, w: 180, h: 90, title: "모바일 앱", sub: "사진 선택", color: "--c-ext", stat: true },
   { id: "api", type: "box", x: 290, y: 90, w: 200, h: 70, title: "upload API", sub: "요청 받기", color: "--c-core" },
   { id: "orig", type: "cyl", x: 290, y: 200, w: 200, h: 170, title: "원본 저장소", sub: "사진마다 1줄", rows: 3 },
-  { id: "meta", type: "cyl", x: 290, y: 400, w: 230, h: 170, title: "사진 메타 테이블", sub: "photo_id당 1줄", rows: 4 },
+  { id: "meta", type: "cyl", x: 290, y: 400, w: 230, h: 170, title: "사진 메타 테이블", sub: "photo_id당 1줄", rows: 4,
+    detail: { caption: "SAMPLE 예시: 줄 하나에 들어 있는 값입니다. 실제 서비스 값이 아닙니다.", rows: [
+      { f: "photo_id", v: "p_001", d: "사진 한 장을 가리키는 번호", use: "now" },
+      { f: "taken_at", v: "2026-01-01T09:00:00Z", d: "사진을 찍은 시각" },
+      { f: "status", v: "ready", d: "썸네일이 다 만들어졌는지. ready가 되면 앨범 카드가 생김", use: "now" },
+      { f: "thumb_url", v: "https://cdn.example.invalid/t/p_001/medium.webp?v=1", d: "앨범 화면이 썸네일을 찾아가는 주소", use: "plan" },
+    ] } },
   { id: "g1", type: "gate", x: 580, y: 100, w: 250, h: 80, title: "크기 검사 규칙" },
   { id: "g2", type: "gate", x: 580, y: 200, w: 250, h: 80, title: "공개 앨범 알림 규칙" },
-  { id: "card", type: "box", x: 600, y: 420, w: 210, h: 78, title: "앨범 카드", sub: "썸네일이 붙으면 생김", color: "--c-worker", ghost: true },
+  { id: "card", type: "box", x: 600, y: 420, w: 210, h: 78, title: "앨범 카드", sub: "썸네일이 붙으면 생김", color: "--c-worker", ghost: true,
+    detail: { caption: "SAMPLE 예시: 카드 하나가 화면에 내보내는 값입니다.", rows: [
+      { f: "photo_id", v: "p_001", d: "어느 사진의 카드인지" },
+      { f: "album_id", v: "a_100", d: "카드가 속한 앨범" },
+      { f: "thumb_url", v: "/t/p_001", d: "카드에 붙는 썸네일 주소", use: "plan" },
+    ] } },
   { id: "queue", type: "box", x: 910, y: 110, w: 180, h: 90, title: "작업 큐", sub: "비동기 전달", color: "--c-edge", stat: true },
   { id: "worker", type: "box", x: 1150, y: 240, w: 220, h: 110, title: "썸네일 worker", sub: "크기 줄이기", color: "--c-worker", stat: true },
   { id: "cdn", type: "cyl", x: 1150, y: 420, w: 220, h: 150, title: "CDN 캐시", sub: "썸네일 파일", rows: 2 },
@@ -346,8 +457,30 @@ const STEPS = [
 const SVGNS = "http://www.w3.org/2000/svg";
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const NODE_TYPES = new Set(["box", "cyl", "gate", "frame"]);
+// Default legend meanings; META.colorLabels may rename any of them for one map.
+const LEGEND_COLORS = [["--c-ext", "외부 시스템"], ["--c-core", "중심 서비스"], ["--c-worker", "처리기"], ["--c-edge", "경계 · 큐"], ["--c-batch", "배치 · 화면"], ["--c-store", "저장소"]];
 
 // Data mistakes are reported before anything is drawn, so a broken page names its own cause.
+// use: true is kept as an alias of "now" for older data.
+const USE_KINDS = ["now", "plan", true];
+const useKind = r => (r.use === true ? "now" : r.use);
+function validateDetail(n) {
+  const errs = [], d = n.detail, at = `NODES ${n.id}: detail`;
+  const unknown = (o, allowed, where) => Object.keys(o).filter(k => !allowed.includes(k)).forEach(k => errs.push(`${where}에 모르는 키 "${k}"가 있습니다 (쓸 수 있는 키: ${allowed.join(", ")})`));
+  if (typeof d !== "object" || Array.isArray(d)) return [`${at}는 { caption?, rows: [...] } 객체여야 합니다`];
+  unknown(d, ["caption", "rows"], at);
+  if (d.caption !== undefined && typeof d.caption !== "string") errs.push(`${at}.caption은 문자열이어야 합니다`);
+  if (!Array.isArray(d.rows) || !d.rows.length) return [...errs, `${at}.rows는 줄이 하나 이상인 배열이어야 합니다`];
+  d.rows.forEach((r, i) => {
+    const w = `${at}.rows[${i + 1}]`;
+    if (typeof r !== "object" || r === null || Array.isArray(r)) { errs.push(`${w}은 { f, v?, d, use? } 객체여야 합니다`); return; }
+    unknown(r, ["f", "v", "d", "use"], w);
+    for (const k of ["f", "d"]) if (typeof r[k] !== "string" || !r[k].trim()) errs.push(`${w}.${k}는 비어 있지 않은 문자열이어야 합니다`);
+    if (r.v !== undefined && typeof r.v !== "string") errs.push(`${w}.v는 문자열이어야 합니다`);
+    if (r.use !== undefined && !USE_KINDS.includes(r.use)) errs.push(`${w}.use는 "now"(사용 중) 또는 "plan"(사용 예정)이어야 합니다 (true는 "now"와 같음, 받은 값: ${JSON.stringify(r.use)})`);
+  });
+  return errs;
+}
 function validateData() {
   const errs = [];
   const ids = new Set();
@@ -356,15 +489,25 @@ function validateData() {
     ids.add(n.id);
     if (!NODE_TYPES.has(n.type)) errs.push(`NODES ${n.id}: 모르는 type "${n.type}"`);
     if (n.type === "cyl" && !(n.rows > 0)) errs.push(`NODES ${n.id}: cyl에는 rows가 필요합니다`);
-    const extra = ["stat", "ghost", "clock", "rows"].filter(f => n[f]);
+    const extra = ["stat", "ghost", "clock", "rows", "detail"].filter(f => n[f]);
     if (n.type === "frame" && extra.length) errs.push(`NODES ${n.id}: frame에는 ${extra.join(", ")}를 줄 수 없습니다`);
     if (n.type === "gate" && extra.length) errs.push(`NODES ${n.id}: gate에는 ${extra.join(", ")}를 줄 수 없습니다`);
+    if (n.detail && (n.type === "box" || n.type === "cyl")) errs.push(...validateDetail(n));
     // Rows must fit above the status line, or the two overlap.
     if (n.rows && (n.type === "box" || n.type === "cyl")) {
       const need = (n.type === "cyl" ? 90 : 66) + n.rows * 20 + (n.stat || n.ghost ? 22 : 0);
       if (n.h < need) errs.push(`NODES ${n.id}: 줄 ${n.rows}개를 담으려면 h가 ${need} 이상이어야 합니다`);
     }
   }
+  if (META.colorLabels !== undefined) {
+    const cl = META.colorLabels, known = LEGEND_COLORS.map(c => c[0]);
+    if (typeof cl !== "object" || cl === null || Array.isArray(cl)) errs.push(`META.colorLabels는 { "--c-core": "뜻", ... } 객체여야 합니다`);
+    else for (const [k, v] of Object.entries(cl)) {
+      if (!known.includes(k)) errs.push(`META.colorLabels에 모르는 색 "${k}"가 있습니다 (쓸 수 있는 색: ${known.join(", ")})`);
+      else if (typeof v !== "string" || !v.trim()) errs.push(`META.colorLabels["${k}"]는 비어 있지 않은 문자열이어야 합니다`);
+    }
+  }
+  for (const k of ["useLabel", "planLabel"]) if (META[k] !== undefined && typeof META[k] !== "string") errs.push(`META.${k}은 문자열이어야 합니다`);
   if (!VIEW.full) errs.push("VIEW: full이 필요합니다");
   for (const id of DASHED) if (!(id in PATHS)) errs.push(`DASHED: PATHS에 없는 경로 "${id}"`);
   STEPS.forEach((s, i) => {
@@ -400,6 +543,34 @@ function txt(parent, x, y, cls, s, id) {
   if (id) t.id = id;
   t.textContent = s;
   return t;
+}
+
+// A box with a detail table is a button and wears a small tag on its top edge, so the affordance never rests on color alone.
+function addDetailTag(g, n) {
+  const nNow = n.detail.rows.filter(r => useKind(r) === "now").length, nPlan = n.detail.rows.filter(r => useKind(r) === "plan").length;
+  g.classList.add("has-detail");
+  g.setAttribute("tabindex", "0");
+  g.setAttribute("role", "button");
+  g.setAttribute("aria-haspopup", "dialog");
+  g.setAttribute("aria-label", `${n.title}: 필드 표 열기`);
+  const tag = mk("g", { class: "dtag" + (nNow && nPlan ? " both" : nNow ? " now" : nPlan ? " plan" : "") }, g);
+  const t = txt(tag, 0, 0, "", "");
+  // Each kind keeps its own color and its own words, so the tag never relies on color alone.
+  if (!nNow && !nPlan) t.textContent = "표 보기";
+  if (nNow) mk("tspan", { class: "now" }, t).textContent = `사용 중 ${nNow}`;
+  if (nNow && nPlan) t.appendChild(document.createTextNode(" · "));
+  if (nPlan) mk("tspan", { class: "plan" }, t).textContent = `예정 ${nPlan}`;
+  const w = t.getComputedTextLength() + 14, x = n.x + n.w - w - 8, y = n.y - 9;
+  tag.insertBefore(mk("rect", { x, y, width: w, height: 18, rx: 9 }, null), t);
+  t.setAttribute("x", x + 7);
+  t.setAttribute("y", y + 13);
+  g.addEventListener("click", () => openDetail(n, g));
+  // Handled here so the page-level space key (play/pause) does not also fire.
+  g.addEventListener("keydown", ev => {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    ev.preventDefault(); ev.stopPropagation();
+    openDetail(n, g);
+  });
 }
 
 function build() {
@@ -446,6 +617,7 @@ function build() {
       txt(g, n.x + 16, n.y + 46, "nsub", n.sub || "");
       if (n.rows) ROWSLOT[n.id] = { g: mk("g", {}, g), x: n.x + 16, y: n.y + 60, w: n.w - 28, max: n.rows, items: [] };
     }
+    if (n.detail) addDetailTag(g, n);
     // Shared by box and cyl: status line and clock.
     if (n.stat || n.ghost) txt(g, n.x + 16, n.y + n.h - (n.type === "cyl" ? 22 : 14), "nstat", "", "s_" + n.id);
     if (n.clock) {
@@ -549,12 +721,60 @@ function camera(name, ctx) {
     const t0 = performance.now();
     const tick = now => {
       if (ctx.id !== runId) return rej(new Cancelled());
-      const k = ease(Math.min(1, (now - t0) / dur));
+      // rAF timestamps can predate t0 (and lag badly in a background tab); clamp so the box never goes negative.
+      const k = ease(Math.max(0, Math.min(1, (now - t0) / dur)));
       setView(from.map((a, i) => a + (target[i] - a) * k));
       k < 1 ? requestAnimationFrame(tick) : res();
     };
     requestAnimationFrame(tick);
   });
+}
+
+// ── User pan and zoom. They only call setView, so the next step's camera simply overrides them. ──
+function zoomBy(f, cx, cy) {
+  const [x, y, w, h] = view, fw = VIEW.full[2];
+  f = Math.min(Math.max(w * f, fw / 6), fw * 1.2) / w;
+  if (f === 1) return;
+  const px = cx === undefined ? x + w / 2 : cx, py = cy === undefined ? y + h / 2 : cy;
+  setView([px - (px - x) * f, py - (py - y) * f, w * f, h * f]);
+}
+function initPanZoom() {
+  const toView = (cx, cy) => new DOMPoint(cx, cy).matrixTransform(svg.getScreenCTM().inverse());
+  const off = () => document.body.classList.contains("recording");
+  let drag = null, moved = false;
+  svg.addEventListener("pointerdown", ev => {
+    if (off() || ev.button > 0 || drag) return;
+    drag = { id: ev.pointerId, sx: ev.clientX, sy: ev.clientY, v: view.slice(), on: false };
+  });
+  svg.addEventListener("pointermove", ev => {
+    if (!drag || ev.pointerId !== drag.id) return;
+    const dx = ev.clientX - drag.sx, dy = ev.clientY - drag.sy;
+    // Below ~4 px it stays a click; capture starts only once it is a drag, so a plain click still reaches the box.
+    if (!drag.on) {
+      if (Math.hypot(dx, dy) < 4) return;
+      drag.on = true; svg.setPointerCapture(ev.pointerId); svg.classList.add("panning");
+    }
+    const r = svg.getBoundingClientRect(), u = Math.max(drag.v[2] / r.width, drag.v[3] / r.height); // viewBox units per px (meet)
+    setView([drag.v[0] - dx * u, drag.v[1] - dy * u, drag.v[2], drag.v[3]]);
+  });
+  const end = ev => {
+    if (!drag || ev.pointerId !== drag.id) return;
+    moved = drag.on; drag = null; svg.classList.remove("panning");
+    // The click that follows a drag is swallowed below; clear the flag if none comes.
+    if (moved) setTimeout(() => { moved = false; }, 0);
+  };
+  svg.addEventListener("pointerup", end);
+  svg.addEventListener("pointercancel", end);
+  svg.addEventListener("click", ev => { if (moved) { ev.stopPropagation(); ev.preventDefault(); moved = false; } }, true);
+  // Ctrl/meta + wheel (also a trackpad pinch) zooms; a plain wheel is left alone so the page scrolls.
+  svg.addEventListener("wheel", ev => {
+    if (off() || !(ev.ctrlKey || ev.metaKey)) return;
+    ev.preventDefault();
+    const p = toView(ev.clientX, ev.clientY);
+    zoomBy(Math.exp(ev.deltaY * 0.01), p.x, p.y);
+  }, { passive: false });
+  document.getElementById("btnZoomIn").addEventListener("click", () => zoomBy(1 / 1.25));
+  document.getElementById("btnZoomOut").addEventListener("click", () => zoomBy(1.25));
 }
 
 function cardClass(opts) {
@@ -617,12 +837,13 @@ function fly(pathId, label, ctx, opts = {}) {
   const on = () => { path.classList.add("active"); tip(true); };
   const off = () => { path.classList.remove("active"); tip(false); };
   on();
-  const dur = (opts.dur || 1400) * speedK();
+  // Without an explicit dur a long path keeps a readable card speed (about 0.4 px/ms, never under 1.4 s).
+  const dur = (opts.dur || Math.max(1400, len / 0.4)) * speedK();
   return new Promise((res, rej) => {
     const t0 = performance.now();
     const tick = now => {
       if (ctx.id !== runId) { g.remove(); off(); return rej(new Cancelled()); }
-      const raw = reduceMotion ? 1 : Math.min(1, (now - t0) / dur);
+      const raw = reduceMotion ? 1 : Math.max(0, Math.min(1, (now - t0) / dur));
       const k = ease(raw);
       const p = path.getPointAtLength((opts.reverse ? 1 - k : k) * len);
       g.setAttribute("transform", `translate(${p.x},${p.y})`);
@@ -634,11 +855,91 @@ function fly(pathId, label, ctx, opts = {}) {
   });
 }
 
+// ── Detail panel ──────────────────────────────────────────────────────────
+// Pure viewer UI: it reads NODES and never touches map state, so jumps, playback and flowSelfCheck are unaffected.
+const detailEl = document.getElementById("detail");
+const dtBody = document.getElementById("dtBody");
+let detailOpener = null;
+function openDetail(n, opener) {
+  if (document.body.classList.contains("recording")) return;
+  const d = n.detail, has = k => d.rows.some(r => useKind(r) === k);
+  detailOpener = opener;
+  document.getElementById("dtTitle").textContent = n.title;
+  const cap = document.getElementById("dtCaption");
+  cap.textContent = d.caption || ""; cap.hidden = !d.caption;
+  document.getElementById("dtLegendNow").hidden = !has("now");
+  document.getElementById("dtLegendNowText").textContent = META.useLabel || "사용 중인 값";
+  document.getElementById("dtLegendPlan").hidden = !has("plan");
+  document.getElementById("dtLegendPlanText").textContent = META.planLabel || "사용 예정인 값";
+  dtBody.replaceChildren(...d.rows.map(r => {
+    const tr = document.createElement("tr");
+    const kind = useKind(r);
+    if (kind) tr.className = kind;
+    for (const [cls, text] of [["f", r.f], ["v", r.v || "-"], ["", r.d]]) {
+      const td = document.createElement("td");
+      if (cls) td.className = cls;
+      td.textContent = text;
+      tr.appendChild(td);
+    }
+    if (kind) {
+      const tag = document.createElement("span");
+      tag.className = "usetag " + kind; tag.textContent = kind === "now" ? "사용 중" : "사용 예정";
+      tr.firstChild.appendChild(tag);
+    }
+    return tr;
+  }));
+  detailEl.hidden = false;
+  detailEl.querySelector(".dtscroll").scrollTop = 0;
+  document.getElementById("dtClose").focus();
+}
+function closeDetail() {
+  if (detailEl.hidden) return;
+  detailEl.hidden = true;
+  if (detailOpener) detailOpener.focus();
+  detailOpener = null;
+}
+
+// ── Legend ────────────────────────────────────────────────────────────────
+// Viewer UI outside the svg: it reads NODES, STEPS and PATHS only, so it is not part of the map snapshot.
+function buildLegend() {
+  const box = document.getElementById("maplegend"), body = document.getElementById("lgBody"), btn = document.getElementById("lgToggle");
+  const colored = NODES.filter(n => n.type !== "frame" && n.color).map(n => n.color);
+  const usedColors = new Set(NODES.some(n => n.type === "cyl") ? [...colored, "--c-store"] : colored);
+  const labels = META.colorLabels || {};
+  const row = (sw, text, cls) => {
+    const r = document.createElement("div"); r.className = "lgrow" + (cls ? " " + cls : "");
+    const s = document.createElement("span"); s.className = "lgsw"; s.innerHTML = sw;
+    const t = document.createElement("span"); t.textContent = text;
+    r.append(s, t); return r;
+  };
+  const rows = LEGEND_COLORS.filter(([tok]) => usedColors.has(tok))
+    .map(([tok, def]) => row(`<span class="lgbar" style="border-left-color:var(${tok})"></span>`, labels[tok] || def, "color"));
+  // shortcut: the merge test reads the step source text, so a merge called through an alias is missed; use merge( directly.
+  const shapes = [
+    [NODES.some(n => n.type === "cyl"), `<svg width="22" height="16" viewBox="0 0 22 16"><path d="M2,4 V12 A9,3 0 0 0 20,12 V4" fill="var(--panel2)" stroke="var(--c-store)" stroke-width="1.5"/><ellipse cx="11" cy="4" rx="9" ry="3" fill="var(--panel)" stroke="var(--c-store)" stroke-width="1.5"/></svg>`, "원통 = 데이터가 쌓이는 곳 (DB, 인덱스)"],
+    [NODES.some(n => n.type === "gate"), `<svg width="22" height="14" viewBox="0 0 22 14"><rect x="1" y="1" width="20" height="12" rx="3" fill="var(--eval-bg)" stroke="var(--eval)" stroke-width="1.5"/><circle cx="16" cy="7" r="2.5" fill="var(--eval)"/></svg>`, "규칙 칸 = 조건을 보고 보낼지 말지 정하는 곳"],
+    [DASHED.size > 0, `<svg width="22" height="6" viewBox="0 0 22 6"><path d="M1,3 H21" stroke="var(--faint)" stroke-width="2" stroke-dasharray="4 3"/></svg>`, "점선 = 확인하지 못했거나 아직 없는 경로"],
+    [NODES.some(n => n.ghost), `<svg width="22" height="14" viewBox="0 0 22 14" opacity=".5"><rect x="1" y="1" width="20" height="12" rx="3" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>`, "흐린 상자 = 아직 만들어지지 않은 것"],
+    [NODES.some(n => n.dashed), `<svg width="22" height="14" viewBox="0 0 22 14"><rect x="1" y="1" width="20" height="12" rx="3" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>`, "점선 테두리 상자 = 있는지 확인하지 못한 것"],
+    [STEPS.some(s => String(s.run).includes("merge(")), `<svg width="24" height="14" viewBox="0 0 24 14"><rect x="1" y="1" width="10" height="12" rx="6" fill="var(--pair1-bg)" stroke="var(--pair1)" stroke-width="1.5"/><rect x="13" y="1" width="10" height="12" rx="6" fill="var(--pair1-bg)" stroke="var(--pair1)" stroke-width="1.5"/></svg>`, "같은 색 카드 = 한곳에서 합쳐지는 데이터"],
+    [NODES.some(n => n.detail), `<span class="lgtag">사용 중</span>`, `"사용 중 / 예정" 표시가 붙은 상자 = 누르면 필드 표가 열림`],
+  ].filter(x => x[0]).map(([, sw, text]) => row(sw, text));
+  body.replaceChildren(...rows, ...(rows.length && shapes.length ? [Object.assign(document.createElement("div"), { className: "lgsep" })] : []), ...shapes);
+  if (!body.children.length) return;
+  const KEY = "flowmap-legend:" + location.pathname;
+  let open = innerWidth >= 700;
+  try { const v = localStorage.getItem(KEY); if (v === "1" || v === "0") open = v === "1"; } catch (e) { /* storage may be blocked */ }
+  const apply = () => { btn.setAttribute("aria-expanded", String(open)); body.hidden = !open; };
+  btn.addEventListener("click", () => { open = !open; apply(); try { localStorage.setItem(KEY, open ? "1" : "0"); } catch (e) { /* storage may be blocked */ } });
+  apply();
+  box.hidden = false;
+}
+
 // ── Narration and timeline ────────────────────────────────────────────────
 const chips = (a, c) => (a || []).map(s => `<span class="chip ${c}">${s}</span>`).join("");
 const subtitle = document.getElementById("subtitle");
 // Recording shows only the header and the map, so the step title moves onto the map as a subtitle.
-function setRecording(on) { document.body.classList.toggle("recording", on); }
+function setRecording(on) { document.body.classList.toggle("recording", on); if (on) closeDetail(); }
 function narrate(i) {
   if (i === 0) {
     narr.innerHTML = `<div class="meta">시작 전</div><h2>${META.startTitle}</h2><div class="note">${META.startNote}</div>`;
@@ -902,10 +1203,13 @@ if (DATA_ERRORS.length) {
 } else {
   build();
   buildTimeline();
+  buildLegend();
   // Pausing lets the current step finish so the map never stops half-updated.
   btnPlay.addEventListener("click", () => (playing ? stopPlay() : startPlay()));
   document.getElementById("btnPrev").addEventListener("click", () => { stopPlay(); goto(cur - 1); });
   document.getElementById("btnNext").addEventListener("click", () => { stopPlay(); goto(cur + 1); });
+  document.getElementById("dtClose").addEventListener("click", closeDetail);
+  initPanZoom();
   document.getElementById("btnFull").addEventListener("click", () => camera("full", { instant: false, id: runId }).catch(() => {}));
   // Shown only where tab capture and MediaRecorder exist (desktop Chrome, Edge, Firefox).
   if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.MediaRecorder) {
@@ -913,7 +1217,12 @@ if (DATA_ERRORS.length) {
     btnRec.addEventListener("click", () => { recordVideo(); });
   }
   document.addEventListener("keydown", ev => {
-    if (ev.target.closest("select")) return;
+    if (ev.key === "Escape" && !detailEl.hidden) { ev.preventDefault(); closeDetail(); return; }
+    if (ev.target.closest("select, input, textarea, .detail")) return;
+    if ((ev.key === "+" || ev.key === "=" || ev.key === "-") && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+      if (!document.body.classList.contains("recording")) zoomBy(ev.key === "-" ? 1.25 : 1 / 1.25);
+      return;
+    }
     // A focused button already toggles on space by default; avoid a double toggle.
     if (ev.key === " ") { if (ev.target.closest("button")) return; ev.preventDefault(); btnPlay.click(); }
     else if (ev.key === "ArrowRight") { stopPlay(); goto(cur + 1); }
