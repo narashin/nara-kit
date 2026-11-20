@@ -62,6 +62,26 @@ costs tokens; false-negative routing costs coverage.
   with the model argument omitted, record `session fallback (<rejected name>)` in the
   report header, and show the accepted list in the receipt so the user can rerun with
   `--model=`. The same rule applies to `$VERIFIER_MODEL`.
+- **Partial refusal** (a usage guard, concurrency cap, or quota refuses some spawns
+  in the batch): do not drop or replace those reviewers. Tell the user right away —
+  before waiting on the started ones — which perspectives were refused and why, and
+  that they will be re-dispatched when slots free. Re-dispatch only the refused ones,
+  within the limit the refusal stated. Every time the dispatch state changes (refusal,
+  re-dispatch, last return) print the one status block below, so the user never has
+  to infer it from scrolled-past refusal messages:
+
+  ```
+  리뷰어 현황: 완료 {n} / 대기 {n} / 거절 {n}
+  - 완료: <리뷰어>, …            (accepted return)
+  - 대기: <리뷰어>, …            (started, not yet returned)
+  - 거절: <리뷰어>, … (<사유>)   (refused, not yet re-dispatched)
+  - 거절 → 재실행: <리뷰어> (완료|대기|거절), …
+  ```
+
+  Each selected reviewer is in exactly one of 완료/대기/거절; the 거절 → 재실행 line
+  is history, not a fourth state. If the user asks to run reviewers that already
+  ran, answer with this block instead of dispatching again. A reviewer still
+  refused after one re-dispatch is `unverifiable` (as below), never zero findings.
 - No subagent tool at all (the runtime cannot dispatch subagents): stop before Flow 4
   with `→ ESCALATE:` naming that; the main session does not play the reviewers.
 - Each reviewer prompt = [reviewer-contract](reviewer-contract.md)

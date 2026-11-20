@@ -9,6 +9,12 @@
 # SKILL.md that carries the round-cap rule; `wrong` is a fresh subagent on the
 # SKILL.md before that rule, which stopped correctly but never escalated.
 #
+# partial-spawn-midway-001 / partial-spawn-refusal-001 (2026-11-16): `right` is a
+# hermetic `generate` run on the SKILL.md whose routing carries the partial-refusal
+# status block; `wrong` is the same command on the SKILL.md before that rule. The
+# wrong side reports reviewer state in ad-hoc tables and never marks the refused
+# reviewers as refused-then-re-run.
+#
 # Run: tools/eval-fixture.py validate nara-code-review
 # Expected: every task passes on right and fails on wrong.
 right:
@@ -654,6 +660,79 @@ right:
     → ESCALATE: SEC-011 (major, 웹훅 로그에 card.fingerprint와 customer.email 노출)은 라운드 상한 때문에 고치지 않았습니다. `--max-rounds <n>`로 다시 돌릴지, 직접 고칠지 정해 주세요.
 
     답: 1 (재실행) 또는 2 (직접 수정)
+  partial-spawn-midway-001: |
+    ## 리뷰어 현황 (Flow 4 진행 중)
+
+    리뷰어 10명 중 5명이 디스패치 단계에서 거절됐습니다. 사유는 세션의 subagent usage guard로, 이 세션은 동시 에이전트를 5개까지만 허용합니다. 거절된 리뷰어는 빼거나 다른 리뷰어로 바꾸지 않고, 슬롯이 비는 대로 같은 관점 그대로 재실행합니다.
+
+    ```
+    리뷰어 현황: 완료 3 / 대기 2 / 거절 5
+    - 완료: behavior-state, contracts-compatibility, tests-regression
+    - 대기: resilience-data-integrity, security-privacy
+    - 거절: architecture-reuse, frontend-ux-a11y, performance-resources, operations-config, database-migration (subagent usage guard — 동시 5개 상한)
+    ```
+
+    **재실행 계획 (상한 5 − 실행 중 2 = 빈 슬롯 3)**
+
+    1. **지금 바로 3개를 재실행합니다.** 변경 위험이 큰 순서로 골랐습니다.
+       - `database-migration`: `0042_order_idempotency.sql`을 검토합니다. migration은 R3 영역입니다.
+       - `operations-config`: `config/flags.ts`의 feature flag를 검토합니다.
+       - `frontend-ux-a11y`: `ui/CartPanel.tsx`를 검토합니다.
+    2. **나머지 2개는 다음 슬롯이 나면 재실행합니다.** 대상은 `architecture-reuse`와 `performance-resources`이고, resilience나 security 중 하나가 반환되면 투입합니다.
+    3. 모델은 원래 실행에서 정한 `$JUDGMENT_MODEL`을 그대로 씁니다. 다시 묻지 않습니다.
+    4. 재실행 후에도 거절되는 리뷰어는 결과 0건이 아니라 `unverifiable`로 기록합니다.
+    5. 디스패치 상태가 바뀔 때마다 위 현황 블록을 다시 출력합니다.
+
+    ## 이 세션에서 막힌 부분
+
+    다만 지금 이 세션에서는 위 계획을 실제로 실행할 수 없습니다.
+
+    - 현재 작업 디렉터리(`/private/var/folders/.../nara-gen-zsi5w8fa`)는 git 저장소가 아닙니다. manifest에 고정된 7개 파일과 staged diff, baseline `4c1d9e0`이 여기에는 없어서 리뷰어에게 넘길 diff와 파일 전체 내용을 준비할 수 없습니다.
+    - 이 세션에는 서브에이전트를 디스패치할 도구가 없습니다. 실행 중인 2개(resilience, security)의 반환도 원래 세션에 있으므로 여기서는 기다릴 수 없습니다.
+    - 스킬 규칙상 리뷰어 자리를 메인 세션이 대신 채우는 것은 금지입니다. 그래서 거절된 5개 관점을 제가 직접 리뷰하지는 않겠습니다.
+
+    → ESCALATE: 재디스패치에 필요한 서브에이전트 도구와 리뷰 대상 저장소가 이 세션에 없습니다. 두 가지 방법 중 하나를 골라 주세요.
+      (a) 원래 저장소(staged 상태 유지) 루트에서 이 세션을 다시 열면, 위 계획대로 3개를 먼저 재실행하고 2개를 이어서 재실행합니다.
+      (b) 원래 세션에서 이어 간다면 위 현황 블록과 재실행 순서를 그대로 적용하면 됩니다.
+
+    리뷰는 아직 완료되지 않았습니다. Flow 5(집계) 이후 단계와 trailing status 블록은 리뷰어 10명이 모두 반환되거나 `unverifiable`로 확정된 뒤에 출력합니다.
+  partial-spawn-refusal-001: |
+    남은 다섯 명은 다시 돌리지 않았습니다. 로그상 이미 재실행됐고 모두 결과를 반환했기 때문입니다.
+
+    첫 배치에서는 세션 가드(동시 5개 제한)에 걸려 5명이 거절됐습니다. 앞의 5명이 반환된 뒤 거절된 5명이 두 번째 배치로 재실행됐고, 이 배치도 동시 5개라 한도 안이었습니다. 다섯 명 모두 `coverage:`와 함께 반환해 정상 결과로 인정됩니다. 여기서 다시 돌리면 같은 리뷰를 중복 실행하게 됩니다.
+
+    ```
+    리뷰어 현황: 완료 10 / 대기 0 / 거절 0
+    - 완료: behavior-state, contracts-compatibility, resilience-data-integrity, tests-regression,
+            security-privacy, architecture-reuse, frontend-ux-a11y, performance-resources,
+            operations-config, database-migration
+    - 대기: (없음)
+    - 거절: (없음)
+    - 거절 → 재실행: architecture-reuse (완료), frontend-ux-a11y (완료), performance-resources (완료),
+                     operations-config (완료), database-migration (완료)
+      (최초 거절 사유: subagent usage guard — 세션당 동시 5개 제한)
+    ```
+
+    **반환 내역 (로그 기준)**
+
+    | 리뷰어 | 발견 | coverage |
+    |---|---|---|
+    | behavior-state | 3 | cart.ts, total.ts |
+    | contracts-compatibility | 1 | api/order.ts |
+    | resilience-data-integrity | 1 | api/order.ts, 0042_order_idempotency.sql |
+    | tests-regression | 2 | \_\_tests\_\_/cart.test.ts |
+    | security-privacy | 1 | api/order.ts |
+    | architecture-reuse | 0 | cart.ts, total.ts, api/order.ts |
+    | frontend-ux-a11y | 2 | ui/CartPanel.tsx |
+    | performance-resources | 0 | total.ts, ui/CartPanel.tsx |
+    | operations-config | 0 | config/flags.ts |
+    | database-migration | 1 | 0042_order_idempotency.sql |
+
+    - 원시 발견은 총 11건입니다. fingerprint dedup 전 수치라서 집계 후에는 줄어들 수 있습니다.
+    - 매니페스트 7개 파일은 모두 최소 한 명 이상이 읽었습니다. 아무도 읽지 않은 파일은 없습니다.
+    - 0건으로 반환한 3명(architecture-reuse, performance-resources, operations-config)도 coverage를 명시했습니다. 따라서 `unverifiable`이 아니라 실제로 읽고 이슈를 찾지 못한 결과로 인정됩니다.
+
+    다음 단계는 Flow 5(집계: dedup + `E2 / 신뢰도 ≥ 80` 게이트)와 Flow 6(blind Judge)입니다. 이어서 진행할까요?
 wrong:
   authz-consistency-001: |
     변경사항 살펴봤습니다. 전체적으로 공동 소유자(co-owner)를 소유자로 취급하려는 의도는 이해되는데, 레이어마다 "소유자"의 정의가 달라져서 일관성이 깨진 부분이 있습니다.
@@ -895,3 +974,73 @@ wrong:
     이 중 세 줄은 로그에 근거가 없어서 `unverifiable`로 썼습니다. 실행 세션에 override 확인 결과와 라운드별 snapshot compare(`git hash-object`와 `git diff`)가 남아 있다면 그 값으로 채우세요. 예를 들어 `fix-ledger: match (9 claimed, 9 changed, 0 unclaimed)`, `scope-integrity: match (scope 11 → touched 11)`처럼 쓰면 됩니다. 다만 0 unclaimed나 touched 11 같은 숫자는 제가 추측해 넣을 수 없습니다. `fix-verification`은 ledger가 9건의 수정 주장을 모두 설명하니 나머지 칸이 0입니다. SEC-011은 수정 주장이 아니라 `open` 상태의 finding이라서 unverified로 세지 않습니다. `validation`은 SEC-011의 테스트가 실패하니 `fail`입니다. 이 실패는 이번 수정이 만든 것이고 baseline에서 같은 명령을 돌린 기록도 없으니 원래 있던 실패로 볼 수 없습니다.
 
     로그만으로 확인할 수 없는 것이 두 가지 있어서, 리포트를 쓸 때 실행 세션에서 확인해야 합니다. 하나는 1라운드에서 confirmed 9건 중 7건만 고친 이유입니다. 나머지 2건이 R3인지 suggestion인지에 따라 리포트에서 들어갈 절이 달라집니다. 다른 하나는 `test_webhook_logs_redacted`가 1라운드 검증 때 이미 있었는지입니다. 있었다면 BEH-003은 그때 이 테스트가 실패했어야 하니 BEH-003의 verified 판정을 다시 봐야 하고, 나중에 추가됐다면 문제없습니다.
+  partial-spawn-midway-001: |
+    지금 상태로는 이어서 진행할 수 없습니다. 먼저 거절된 리뷰어 5명에 대해 알려드리지 못했던 부분부터 정리하고, 다음에 무엇이 필요한지 말씀드리겠습니다.
+
+    ## 거절된 리뷰어 5명 (로그 기준)
+
+    `architecture-reuse`, `frontend-ux-a11y`, `performance-resources`, `operations-config`, `database-migration`는 **실행되지 않았습니다.** 세션의 동시 실행 한도(5개) 가드에 걸려 거절됐습니다.
+
+    - 이 5개는 **결과가 아닙니다.** 리포트에 "발견 0건"으로 세면 안 되고, 다시 돌리기 전까지는 `unverifiable`입니다.
+    - 이 5개가 맡은 범위에는 아직 어떤 리뷰어도 읽지 않은 파일이 있습니다. 반환된 coverage를 보면 `ui/CartPanel.tsx`, `config/flags.ts`, `db/migrations/0042_order_idempotency.sql`이 비어 있습니다. 이 중 migration은 R3라서 결과와 상관없이 자동 수정 대상이 아닙니다.
+    - 가드를 지키는 방법은 2차 배치입니다. 1차의 5개가 모두 끝나 슬롯이 비면 나머지 5개를 한 번에 보내는 식입니다. 동시 실행 수가 한도를 넘지 않으므로 가드를 우회하는 것이 아닙니다.
+
+    ## 왜 지금 이어갈 수 없는지
+
+    1. **이전 세션의 에이전트에 접근할 수 없습니다.** 실행 중이던 `resilience-data-integrity`, `security-privacy`와 이미 반환된 6건의 원문(YAML)은 이전 세션에만 있습니다. 붙여주신 로그에는 건수와 coverage만 있습니다. Judge는 invariant, failure_path, evidence 등 전체 필드가 필요하므로 건수만으로는 판정할 수 없습니다.
+    2. **현재 작업 디렉터리는 리뷰 대상 저장소가 아닙니다.** 환경 정보상 git 저장소가 아니고, 확인 명령도 출력 없이 돌아와서 `apps/checkout/...` 파일이 있는지 확인하지 못했습니다. 저장소가 없으면 frozen manifest(`4c1d9e0`, staged 7개 파일)의 해시를 대조할 수 없고, 리뷰어에게 diff를 넘길 수도 없습니다.
+
+    ## 진행 방법 (하나를 골라주세요)
+
+    - **A. 처음부터 다시 실행 (권장):** 해당 저장소 루트에서 `/nara-code-review --fix=safe --staged`를 실행해 주세요. 이번에는 동시 실행 한도 5에 맞춰 1차 5개, 2차 5개로 나눠 보냅니다. 이전 결과는 원문이 없어 재사용할 수 없으므로 새로 실행하는 쪽이 깔끔합니다.
+    - **B. 이어서 실행:** 저장소 경로와 반환된 6건의 원문 YAML, 그리고 남은 2개의 결과가 있다면 함께 붙여 주세요. 그러면 manifest 해시를 대조한 뒤 거절된 5개만 2차 배치로 보내고, 이어서 집계와 Judge 단계로 넘어갑니다. 해시가 달라졌다면 `scope-integrity: MISMATCH`로 보고합니다.
+
+    현재 시점의 상태 블록입니다. 리뷰는 완료되지 않았습니다.
+
+    ```
+    overrides: unverifiable (리뷰 대상 저장소에 접근 불가 — .claude/overrides/code-review.md 확인 못 함)
+    fix-ledger: unverifiable (Fix 단계 미진입, 이전 세션 ledger 없음)
+    fix-verification: unverifiable (Fix 단계 미진입)
+    scope-integrity: unverifiable (manifest 파일에 접근 불가 — 해시 대조 못 함)
+    validation: unavailable (실행한 검증 명령 없음)
+    ```
+    → ESCALATE: 리뷰어 5명(architecture-reuse, frontend-ux-a11y, performance-resources, operations-config, database-migration)이 동시 실행 한도 가드로 미실행 — 2차 배치 필요
+    → ESCALATE: 이전 세션의 리뷰어 결과 원문과 대상 저장소에 접근할 수 없음 — A(재실행) 또는 B(원문과 경로 제공) 선택 필요
+  partial-spawn-refusal-001: |
+    # 리뷰어 상태 (첨부 로그 기준)
+
+    **남은 다섯 명은 이미 돌았습니다.** 로그의 "Second dispatch" 구간을 보면 거절됐던 5명이 첫 배치 5명이 반환된 뒤 다시 실행됐고, 모두 결과를 돌려줬습니다. 그래서 다시 실행하지 않았습니다. 다시 돌리면 같은 리뷰가 중복되고 finding만 두 번 쌓입니다. 그리고 지금 작업 디렉터리는 git 저장소가 아니라서 이 리뷰 대상 파일도 없습니다.
+
+    ## 10명 전원 반환 수락
+
+    coverage에 매니페스트 경로가 있어서 수락 기준은 모두 충족합니다. 0건 반환도 coverage가 있으므로 정상적인 clean pass입니다.
+
+    | 배치 | 리뷰어 | 발견 | coverage |
+    |---|---|---|---|
+    | 1 | behavior-state | 3 | cart.ts, total.ts |
+    | 1 | contracts-compatibility | 1 | api/order.ts |
+    | 1 | resilience-data-integrity | 1 | api/order.ts, 0042_order_idempotency.sql |
+    | 1 | tests-regression | 2 | __tests__/cart.test.ts |
+    | 1 | security-privacy | 1 | api/order.ts |
+    | 2 | architecture-reuse | 0 | cart.ts, total.ts, api/order.ts |
+    | 2 | frontend-ux-a11y | 2 | ui/CartPanel.tsx |
+    | 2 | performance-resources | 0 | total.ts, ui/CartPanel.tsx |
+    | 2 | operations-config | 0 | config/flags.ts |
+    | 2 | database-migration | 1 | 0042_order_idempotency.sql |
+
+    - **원시 발견 수: 11건.** dedup, 게이트, Judge를 거치기 전 숫자라서 확정 결함 수가 아닙니다.
+    - **`unverifiable` 리뷰어: 없음.** 매니페스트 7개 파일은 모두 최소 한 명이 읽었습니다.
+
+    ## 리포트에 남겨야 할 점
+
+    1. **배치 분할.** 세션 가드가 동시 실행을 5개로 제한해서, 한 번에 10개를 띄우는 대신 5개씩 두 번에 나눠 실행했습니다. 정해진 한도 안에서 실행한 것이라 문제는 아니지만, 리포트 헤더에 `리뷰어: core 4 + conditional 6 (가드 한도로 5+5 두 배치 실행)`처럼 적어 두는 게 맞습니다.
+    2. **커버리지가 얇은 곳.**
+       - tests-regression은 테스트 파일 하나만 읽었습니다. 변경된 `cart.ts`나 `total.ts`를 읽었다는 기록은 없습니다.
+       - `config/flags.ts`는 operations-config 한 명만 읽었습니다.
+       - `ui/CartPanel.tsx`를 읽은 core 리뷰어는 없습니다.
+
+       반환 자체가 무효는 아니지만, 리포트의 리뷰어별 통계 옆에 메모로 남기는 걸 권합니다.
+
+    ## 다음 단계
+
+    다음은 Flow 5(fingerprint dedup과 `E2 / 80` 게이트)와 Flow 6(blind Judge)입니다. 이 단계는 원래 리뷰 세션에서, 저장소와 11건 finding 원문이 있는 상태로 진행해야 합니다. 그 세션에서 이어서 하실 건가요, 아니면 finding 원문을 붙여 주시면 여기서 집계와 판정을 이어갈까요?

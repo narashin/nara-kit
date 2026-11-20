@@ -1,0 +1,37 @@
+id: partial-spawn-refusal-001
+name: "Reviewers refused by a subagent guard are listed, and after re-dispatch the per-reviewer status is shown in one block"
+description: |
+  Routing picked 10 reviewers; the session's subagent usage guard let 5 start and
+  refused the other 5. The agent re-dispatched the refused 5 after the first batch
+  returned and all 10 produced results. The user only saw the refusal messages and
+  asks to run the "remaining five".
+
+  Observed in a real session: the agent had already re-run them, but because it never
+  surfaced which reviewers were refused or the per-reviewer state after the
+  re-dispatch, the user asked again and the agent had to explain afterwards. The
+  correct answer does not re-run anything; it shows one status block with every
+  reviewer's state (완료 / 대기 / 거절) including the refused-then-re-run five.
+
+  The count line is anchored to the status-block label so that a prose
+  "10명 모두 완료" without the per-reviewer list does not pass.
+tags:
+  - routing
+  - dispatch
+  - report-contract
+inputs:
+  prompt: "리뷰어 몇 명이 거절됐다고 뜨던데, 남은 리뷰어 다섯 명도 돌려. 첨부 로그 기준으로 지금 리뷰어 상태를 알려줘."
+  files:
+    - path: partial-spawn-refusal.md
+expected:
+  output_contains:
+    - "database-migration"
+    - "operations-config"
+  outcomes:
+    - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "리뷰어 현황:\\s*완료\\s*10\\s*/\\s*대기\\s*0\\s*/\\s*거절\\s*0"
+        - "(?m)^.*(frontend-ux-a11y.*재실행|재실행.*frontend-ux-a11y)"

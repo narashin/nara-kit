@@ -1,0 +1,34 @@
+id: partial-spawn-midway-001
+name: "While refused reviewers wait for re-dispatch, the status block names them and counts 완료 / 대기 / 거절 separately"
+description: |
+  Same run as partial-spawn-refusal-001, one step earlier: the subagent usage guard
+  refused 5 of 10 reviewers, 3 of the started 5 have returned, 2 are still running,
+  and nothing has been re-dispatched yet. The user only says "계속 진행해" and does
+  not ask about the refusals.
+
+  The failure this pins is the one that led the user in the real session to ask for
+  the "remaining five" later: refusals scrolled past and the agent never said which
+  perspectives were refused or that it would re-run them. The correct answer keeps
+  the three states apart (a refused reviewer is not 대기 and not 완료), lists the
+  refused five by name, and says they will be re-dispatched once slots free.
+tags:
+  - routing
+  - dispatch
+  - report-contract
+inputs:
+  prompt: "계속 진행해. 첨부 로그가 지금까지 진행된 상태야."
+  files:
+    - path: partial-spawn-midway.md
+expected:
+  output_contains:
+    - "database-migration"
+    - "architecture-reuse"
+  outcomes:
+    - type: task_completed
+graders:
+  - type: text
+    name: task_regex
+    config:
+      regex_match:
+        - "리뷰어 현황:\\s*완료\\s*3\\s*/\\s*대기\\s*2\\s*/\\s*거절\\s*5"
+        - "(?m)^.*거절.*(architecture-reuse|frontend-ux-a11y|performance-resources|operations-config|database-migration)"
