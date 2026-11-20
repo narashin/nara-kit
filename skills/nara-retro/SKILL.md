@@ -73,7 +73,7 @@ skill 추천은 **절차형이면서 반복**일 때만 낸다. 두 lane에 걸�
 - **evidence 필수**: 본문에 세션에서 실제로 관찰한 근거(파일, 커밋, 사용자 발언)를 적는다.
 - **frontmatter**: memory 도구·디렉터리 컨벤션을 따른다. 최소 셋은 `name`, `description`, `metadata.type`, `metadata.verified_at`, `metadata.ref_paths`. `ref_paths`는 코드에 묶인 항목만 repo 상대 경로로, user·feedback은 `[]`.
 - 🔴 **CHECKPOINT: write 전 preview.** create·update할 전문이나 diff를 먼저 보여 준다. 승인 대기는 아니다.
-- write 뒤 메모리 건강 점수만 읽는다(고치지 않는다). `nara-grooming`의 `scripts/audit.sh`가 있으면 돌려 `total | flagged`를 receipt에 적고, flagged가 있으면 `/nara-grooming`을 권한다. 스크립트가 없으면 그 줄을 생략한다.
+- write 뒤 메모리 건강 점수만 읽는다(고치지 않는다). `nara-grooming`의 `scripts/audit.sh`가 있으면 memory 대상 repo에서 `bash <nara-grooming>/scripts/audit.sh --summary <memory dir>`를 돌려 첫 줄(`total N | flagged M`)을 receipt에 적고, flagged가 있으면 `/nara-grooming`을 권한다. 파일 하나만 받는 형식(`audit.sh <memory_file>`)으로 디렉터리 전체를 세지 않는다. 스크립트가 없으면 그 줄을 생략한다.
 
 ## skill-incident 모드
 

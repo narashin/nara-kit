@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # nara-grooming memory Tier 1: score a memory file 0-4 by age/ref_validity/code_drift/skill_ref_broken
 # Usage: audit.sh [--log] <memory_file>
-# Output: one line JSON
+#        audit.sh --summary <memory_dir>
+# Output: one line JSON per file; with --summary, "total N | flagged M" then one
+#         "<score> <label> <file> <signals>" line per flagged file (MEMORY.md is skipped)
 #
 # Required: jq, git, stat, date, grep
 # Optional env: THRESHOLD_AGE_DAYS (default 90), CLAUDE_PROJECT_DIR (default cwd),
@@ -33,12 +35,34 @@ set -euo pipefail
 THRESHOLD_AGE_DAYS="${THRESHOLD_AGE_DAYS:-90}"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 
+# --summary: callers such as nara-retro want one health line for a whole memory dir,
+# so the per-file loop lives here instead of in every caller.
+if [[ "${1:-}" == "--summary" ]]; then
+  dir="${2:?memory dir required}"
+  [[ -d "$dir" ]] || { echo "{\"error\":\"dir not found: $dir\"}"; exit 1; }
+  total=0
+  flagged=0
+  lines=""
+  for f in "$dir"/*.md; do
+    [[ -e "$f" && "$(basename "$f")" != "MEMORY.md" ]] || continue
+    out="$(bash "${BASH_SOURCE[0]}" "$f")" || { echo "{\"error\":\"audit failed: $f\"}"; exit 1; }
+    total=$((total + 1))
+    if [[ "$(jq -r '.score' <<<"$out")" -gt 0 ]]; then
+      flagged=$((flagged + 1))
+      lines+="$(jq -r '"\(.score) \(.label) \(.file | split("/") | last) \(.signals | join(","))"' <<<"$out")"$'\n'
+    fi
+  done
+  echo "total $total | flagged $flagged"
+  printf '%s' "$lines"
+  exit 0
+fi
+
 LOG_MODE=0
 if [[ "${1:-}" == "--log" ]]; then
   LOG_MODE=1
   shift
 fi
-target="${1:?memory file path required}"
+target="${1:?memory file path required (for a whole memory dir use --summary <memory_dir>)}"
 [[ -f "$target" ]] || { echo "{\"error\":\"file not found: $target\"}"; exit 1; }
 
 # Read a scalar frontmatter field's value. Indentation-tolerant so it also
